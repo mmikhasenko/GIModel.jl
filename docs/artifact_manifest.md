@@ -11,11 +11,17 @@ Generated: 2026-04-25
 - `scripts/validate_seed.py`: local schema check for the seed mass table.
 - `paper/Godfrey-Isgur-1985.pdf`: local copy of the primary paper.
 - `paper/text/pdftotext_layout.txt`: layout-preserving raw text extraction.
+- `paper/text/pdftotext_raw.txt`: reading-order raw text extraction.
 - `paper/text/pdftotext_bbox.html`: positional raw text extraction.
+- `paper/text/pdftotext_words.tsv`: word-position raw extraction.
 - `paper/text/godfrey_isgur_1985.md`: searchable Markdown reference derived from the layout extraction.
 - `paper/text/godfrey_isgur_1985_polished.md`: conservative OCR-polished Markdown reference.
+- `paper/text/godfrey_isgur_1985_readable.md`: paragraph-joined readable Markdown reference.
+- `paper/text/godfrey_isgur_1985_prose.md`: prose-only Markdown reference generated from raw extraction.
 - `scripts/build_paper_markdown.py`: regenerates the Markdown reference.
 - `scripts/polish_paper_markdown.py`: regenerates the polished Markdown reference.
+- `scripts/build_readable_paper_markdown.py`: regenerates the readable Markdown reference.
+- `scripts/build_paper_prose.py`: regenerates the prose-only Markdown reference.
 
 ## Important caveats
 

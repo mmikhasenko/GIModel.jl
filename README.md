@@ -26,14 +26,24 @@ Use these files to resume work quickly:
 - `data/seed/godfrey_isgur_sources.csv`: manifest for the seed sources.
 - `paper/Godfrey-Isgur-1985.pdf`: primary authority.
 - `paper/text/pdftotext_layout.txt`: raw layout text extraction.
+- `paper/text/pdftotext_raw.txt`: raw reading-order text extraction.
+- `paper/text/pdftotext_words.tsv`: word-position extraction for future table
+  reconstruction experiments.
 - `paper/text/pdftotext_bbox.html`: positional text extraction.
 - `paper/text/godfrey_isgur_1985.md`: searchable Markdown reference derived
   from layout text.
 - `paper/text/godfrey_isgur_1985_polished.md`: polished Markdown reference for
   smoother reading and future agent interaction.
+- `paper/text/godfrey_isgur_1985_readable.md`: paragraph-joined readable
+  Markdown reference derived from raw extraction.
+- `paper/text/godfrey_isgur_1985_prose.md`: prose-only reference for smooth
+  reading and future agent interaction.
 - `scripts/validate_seed.py`: seed schema validation.
 - `scripts/build_paper_markdown.py`: rebuilds the Markdown paper reference.
 - `scripts/polish_paper_markdown.py`: rebuilds the polished paper reference.
+- `scripts/build_readable_paper_markdown.py`: rebuilds the readable paper
+  reference.
+- `scripts/build_paper_prose.py`: rebuilds the prose-only paper reference.
 
 ## Immediate Workflow
 
@@ -48,8 +58,12 @@ Use these files to resume work quickly:
    ```bash
    pdftotext -layout paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_layout.txt
    pdftotext -bbox-layout paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_bbox.html
+   pdftotext -raw paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_raw.txt
+   pdftotext -tsv paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_words.tsv
    python3 scripts/build_paper_markdown.py
    python3 scripts/polish_paper_markdown.py
+   python3 scripts/build_readable_paper_markdown.py
+   python3 scripts/build_paper_prose.py
    ```
 
 3. Render page images for table verification when needed:

@@ -1,8 +1,9 @@
 # Paper Navigation
 
 Use this as a fast map into the Godfrey-Isgur paper while coding or extracting
-tables. Page markers refer to `paper/text/godfrey_isgur_1985_polished.md`;
-always verify equations and table values against `paper/Godfrey-Isgur-1985.pdf`.
+tables. For prose, start with `paper/text/godfrey_isgur_1985_prose.md`.
+Always verify equations and
+table values against `paper/Godfrey-Isgur-1985.pdf`.
 
 ## Core Model
 

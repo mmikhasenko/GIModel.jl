@@ -14,11 +14,17 @@
 ## Derived Paper References
 
 - `paper/text/pdftotext_layout.txt`: raw layout-preserving text extraction.
+- `paper/text/pdftotext_raw.txt`: raw reading-order text extraction.
 - `paper/text/pdftotext_bbox.html`: raw positional text extraction.
+- `paper/text/pdftotext_words.tsv`: raw word-position extraction.
 - `paper/text/godfrey_isgur_1985.md`: readable Markdown reference generated
   from the layout text.
 - `paper/text/godfrey_isgur_1985_polished.md`: conservative OCR cleanup of the
   Markdown reference for reading and search.
+- `paper/text/godfrey_isgur_1985_readable.md`: paragraph-joined Markdown
+  reference generated from raw extraction.
+- `paper/text/godfrey_isgur_1985_prose.md`: prose-only reference generated from
+  raw extraction.
 
 The derived text files are for search and navigation. The PDF and rendered page
 images remain the authority for equations, signs, table alignment, and state
