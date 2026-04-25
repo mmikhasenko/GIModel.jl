@@ -1,0 +1,15 @@
+source,page,table,category,parameter_key,raw_label,value,unit,extraction_method,confidence,notes
+Godfrey-Isgur 1985,5,Table II,masses,m_ud_avg,"(m_u + m_d) / 2",220,MeV,pdftotext_layout_manual,medium,"Paper footnote says isospin violation is ignored unless otherwise indicated."
+Godfrey-Isgur 1985,5,Table II,masses,m_s,"m_s",419,MeV,pdftotext_layout_manual,medium,"OCR row clear."
+Godfrey-Isgur 1985,5,Table II,masses,m_c,"m_c",1628,MeV,pdftotext_layout_manual,medium,"OCR row clear."
+Godfrey-Isgur 1985,5,Table II,masses,m_b,"m_b",4977,MeV,pdftotext_layout_manual,medium,"OCR shows 'mb — 4977 Mev'; normalized to m_b = 4977 MeV."
+Godfrey-Isgur 1985,5,Table II,potential,b,"b",0.18,GeV^2,pdftotext_layout_manual,medium,"OCR shows QeV2; normalized to GeV^2."
+Godfrey-Isgur 1985,5,Table II,potential,Lambda,"A / Lambda",200,MeV,pdftotext_layout_manual,low,"OCR label ambiguous; likely QCD Lambda/running-coupling parameter. Verify symbol on PDF."
+Godfrey-Isgur 1985,5,Table II,potential,c,"c",-253,MeV,pdftotext_layout_manual,medium,"Constant offset."
+Godfrey-Isgur 1985,5,Table II,relativistic_smearing,sigma0,"sigma_0 / oo",1.80,GeV,pdftotext_layout_manual,low,"OCR shows 'oo'; likely sigma_0. Verify symbol on PDF."
+Godfrey-Isgur 1985,5,Table II,relativistic_smearing,s,"s",1.55,dimensionless,pdftotext_layout_manual,medium,"Smearing exponent/parameter; verify convention in Appendix A."
+Godfrey-Isgur 1985,5,Table II,relativistic_factors,epsilon_c,"epsilon_c",-0.168,dimensionless,pdftotext_layout_manual,low,"OCR label appears e_c; verify symbol."
+Godfrey-Isgur 1985,5,Table II,relativistic_factors,epsilon_t,"epsilon_t",0.025,dimensionless,pdftotext_layout_manual,low,"OCR label appears e_t; verify symbol."
+Godfrey-Isgur 1985,5,Table II,relativistic_factors,epsilon_so_vector,"epsilon_so(v)",-0.035,dimensionless,pdftotext_layout_manual,low,"OCR label appears e(y); likely vector spin-orbit epsilon. Verify on PDF."
+Godfrey-Isgur 1985,5,Table II,relativistic_factors,epsilon_so_scalar,"epsilon_so(S)",0.0,dimensionless,pdftotext_layout_manual,low,"OCR label appears iso(S); likely scalar spin-orbit epsilon. Verify on PDF."
+

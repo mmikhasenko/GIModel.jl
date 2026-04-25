@@ -23,6 +23,15 @@ Use these files to resume work quickly:
   figures, and caution zones.
 - `docs/formula_map.md`: required map from implementation terms to the paper.
 - `docs/conventions.md`: spectroscopic, spin, sector, and basis conventions.
+- `data/table_ii_parameters.csv`: central Table II parameter digitization.
+- `data/parameters.provisional.toml`: provisional solver-facing parameter file
+  copied from the Table II digitization.
+- `data/reference_spectrum_charmonium.csv`: central Fig. 6 `ccbar` reference
+  spectrum.
+- `data/reference_spectrum_bottomonium.csv`: central Fig. 8 `bbbar` reference
+  spectrum.
+- `data/reference_spectrum_*.csv`: top-level copies of Fig. 3-9 model-label
+  spectra for convenient use by scripts and tests.
 - `data/seed/godfrey_isgur_seed_masses.csv`: bootstrap mass table, not final
   authority.
 - `data/seed/godfrey_isgur_sources.csv`: manifest for the seed sources.
@@ -33,9 +42,10 @@ Use these files to resume work quickly:
 - `paper/text/pdftotext_words.tsv`: word-position extraction for table
   reconstruction experiments.
 - `paper/screenshots/spectrum_pages/`: rendered spectrum pages, PDF pages 6-10.
-- `data/raw/digitized_tables/`: table-specific raw snippets and provisional
-  structured transcriptions.
-- `data/raw/digitized_figures/`: figure-specific label transcriptions.
+- `data/raw/digitized_tables/`: reference/provenance copies for table-specific
+  raw snippets and structured transcriptions.
+- `data/raw/digitized_figures/`: reference/provenance copies for figure-specific
+  label transcriptions and replots.
 - `scripts/validate_seed.py`: seed schema validation.
 - `scripts/build_paper_prose.py`: rebuilds the prose-only paper reference.
 - `scripts/plot_spectrum_digitizations.py`: regenerates clean Fig. 4-9
@@ -46,16 +56,25 @@ provenance and experiments, but they are not recommended handoff entry points.
 
 ## Central Data Targets
 
-The spectrum figures are the central numerical result to reproduce. Treat the
-digitized Figure 3-9 model labels in `data/raw/digitized_figures/` as the
-first-pass cross-check targets for any solver output, after auditing each row
-against the original PDF image. The clean SVG/PNG replots are comparison aids;
-the CSV files are the data source.
+Use the top-level files in `data/` as the working inputs:
 
-Table II is the central setup input. Its digitization at
-`data/raw/digitized_tables/table_ii_parameters/table_ii_parameters.csv` records
-the fitted model parameters and should be audited before any production solver
-configuration is promoted to `data/clean/`.
+- `data/table_ii_parameters.csv`: Table II parameter digitization.
+- `data/parameters.provisional.toml`: provisional parameter TOML derived from
+  Table II.
+- `data/reference_spectrum_charmonium.csv`: Fig. 6 `ccbar` target spectrum.
+- `data/reference_spectrum_bottomonium.csv`: Fig. 8 `bbbar` target spectrum.
+- `data/reference_spectrum_isovector.csv`: Fig. 3 isovector spectrum.
+- `data/reference_spectrum_strange.csv`: Fig. 4 strange spectrum.
+- `data/reference_spectrum_isoscalar.csv`: Fig. 5 isoscalar spectrum.
+- `data/reference_spectrum_charmed.csv`: Fig. 7 charmed/charmed-strange
+  spectra.
+- `data/reference_spectrum_b_flavored.csv`: Fig. 9 bottom-light,
+  bottom-strange, and bottom-charm spectra.
+
+The deeper `data/raw/digitized_tables/` and `data/raw/digitized_figures/`
+folders are kept as provenance/reference material. They preserve the original
+per-table and per-figure working context, raw snippets, and replots, but routine
+solver and validation scripts should start from the top-level `data/` files.
 
 ## Immediate Workflow
 
@@ -65,7 +84,30 @@ configuration is promoted to `data/clean/`.
    python3 scripts/validate_seed.py
    ```
 
-2. Rebuild paper text references if the PDF changes:
+2. Run the current local spectrum baseline:
+
+   ```bash
+   julia --project=. scripts/run_baseline_solver.jl
+   ```
+
+   This writes:
+
+   - `docs/residual_reports/ccbar_baseline.md`
+   - `docs/residual_reports/bbbar_baseline.md`
+
+   The current baseline is intentionally diagnostic: it uses the Table II
+   quark masses, `b`, `c`, the Fig. 2 running Coulomb ansatz, semirelativistic
+   kinetic energy, and the smeared S-wave contact hyperfine term. It does not
+   yet include the full GI smearing/nonlocal potential, tensor interaction,
+   spin-orbit terms, or mixing.
+
+3. Run Julia tests:
+
+   ```bash
+   julia --project=. test/runtests.jl
+   ```
+
+4. Rebuild paper text references if the PDF changes:
 
    ```bash
    pdftotext -layout paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_layout.txt
@@ -75,20 +117,20 @@ configuration is promoted to `data/clean/`.
    python3 scripts/build_paper_prose.py
    ```
 
-3. Render page images for table verification when needed:
+5. Render page images for table verification when needed:
 
    ```bash
    pdftoppm -r 300 -png paper/Godfrey-Isgur-1985.pdf paper/pages/gi
    ```
 
-4. Create raw extraction CSVs in `data/raw/`.
-5. Promote verified rows into `data/clean/` with provenance preserved.
+6. Create raw extraction CSVs in `data/raw/`.
+7. Promote verified rows into `data/clean/` with provenance preserved.
 
-Current first-pass digitizations live under `data/raw/digitized_tables/` and
-`data/raw/digitized_figures/`. Table I and Table II have structured provisional
-CSVs; Table III is a low-confidence visible-row transcription that needs
-image-audited cleanup. Figures 3-9 have first-pass model-label CSVs and clean
-comparison replots.
+Current first-pass digitizations are copied to the top level of `data/`.
+Reference/provenance copies remain under `data/raw/digitized_tables/` and
+`data/raw/digitized_figures/`. Table I and Table III are retained only in the
+raw reference folders for now; the central workflow needs Table II and the
+Figure 3-9 model spectra.
 
 ## Authority Rules
 
