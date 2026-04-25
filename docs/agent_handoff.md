@@ -11,6 +11,8 @@ to continue the Godfrey-Isgur reproduction.
 - Preferred prose reference is `paper/text/godfrey_isgur_1985_prose.md`.
 - Seed data is available under `data/seed/`.
 - Seed schema validation passes with `python3 scripts/validate_seed.py`.
+- Spectrum pages 6-10 are rendered under `paper/screenshots/spectrum_pages/`.
+- First-pass table digitizations live under `data/raw/digitized_tables/`.
 - No cleaned physics reference data has been produced yet.
 - No solver implementation has started yet.
 
@@ -130,6 +132,10 @@ Complete Phase 1 enough to support the first model milestone:
 - Create raw extraction CSVs with page/table provenance.
 - Log disagreements in `data/raw/extraction_audit.csv`.
 
+The first two bullets have a provisional start: Table II is digitized under
+`data/raw/digitized_tables/table_ii_parameters/`, and spectrum screenshots are
+available for visual extraction. They are not yet audited clean data.
+
 ## Do Not Trust By Default
 
 - Later quoted GI values in `data/seed/`.
@@ -137,4 +143,3 @@ Complete Phase 1 enough to support the first model milestone:
 - Intermediate Markdown files in `paper/text/` other than
   `godfrey_isgur_1985_prose.md`.
 - Any sector marked complete without residuals and discrepancy classification.
-

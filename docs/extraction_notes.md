@@ -11,6 +11,8 @@ Expected generated files:
 - `paper/text/pdftotext_words.tsv`
 - `paper/text/godfrey_isgur_1985_prose.md`
 - `paper/pages/*.png`
+- `paper/screenshots/spectrum_pages/*.png`
+- `data/raw/digitized_tables/*`
 - `data/raw/tables_from_pdf_text.csv`
 - `data/raw/tables_from_page_images.csv`
 - `data/raw/extraction_audit.csv`
@@ -31,3 +33,18 @@ The prose Markdown is currently the preferred reading/navigation file. Table
 extraction must still be checked against the PDF and rendered page images.
 Intermediate generated Markdown experiments are retained in `paper/text/` for
 provenance, but should not be used as default references.
+
+## 2026-04-25 Spectrum Screenshots And First Tables
+
+- Rendered PDF pages 6-10 to `paper/screenshots/spectrum_pages/`.
+- Created `data/raw/digitized_tables/` with one folder per table.
+- Digitized Table I into
+  `data/raw/digitized_tables/table_i_confinement/table_i_confinement.csv`.
+- Digitized Table II into
+  `data/raw/digitized_tables/table_ii_parameters/table_ii_parameters.csv` and
+  a provisional TOML copy.
+- Added a low-confidence visible-row transcription for Table III at
+  `data/raw/digitized_tables/table_iii_isoscalar_mixings/table_iii_visible_rows.provisional.csv`.
+
+Table II and especially Table III still need visual verification before clean
+promotion.

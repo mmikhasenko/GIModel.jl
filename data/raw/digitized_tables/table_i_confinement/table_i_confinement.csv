@@ -1,0 +1,7 @@
+source,page,table,row_index,quark_mass_GeV,typical_alpha_s,ao_fm,approx_percent_2S_1S_from_confinement,extraction_method,confidence,notes
+Godfrey-Isgur 1985,1,Table I,1,1.5,0.34,0.58,50,pdftotext_layout_manual,medium,"OCR header normalized; values are visually simple."
+Godfrey-Isgur 1985,1,Table I,2,5,0.21,0.28,35,pdftotext_layout_manual,medium,"OCR header normalized; values are visually simple."
+Godfrey-Isgur 1985,1,Table I,3,25,0.16,0.07,20,pdftotext_layout_manual,medium,"OCR header normalized; values are visually simple."
+Godfrey-Isgur 1985,1,Table I,4,50,0.14,0.04,15,pdftotext_layout_manual,medium,"OCR header normalized; values are visually simple."
+Godfrey-Isgur 1985,1,Table I,5,100,0.12,0.02,10,pdftotext_layout_manual,medium,"OCR header normalized; values are visually simple."
+

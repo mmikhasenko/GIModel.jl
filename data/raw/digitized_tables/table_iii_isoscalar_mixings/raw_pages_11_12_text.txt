@@ -1,0 +1,159 @@
+                                                   MESONS IN A RELATIVISTIC QUARK MODEL. . .                                                                                      199
+
+
+GeV
+
+59.80—                                                                                                                                                                       I'P~(39.75)
+
+
+
+
+39.40—                                                                                                                                         'S (39.29)      I(   '    )
+                                                                                                                                           I
+
+
+
+
+                                                                                                                      I   P2 (36.
+                                                                                                                                72)
+
+56.60—
+                                                                                                    (36 29) I Sl(36.30)
+56. 20-
+                                                                              I   Pg(35.87)
+                                      Pg(35. 79)
+35.80—
+                                  I
+
+
+
+
+                                                       Sp($5 45) I S l (35.46)
+             (I 38) Sl(35.39)
+                     I
+
+
+
+
+                         I             2                 0           I             2.               0                                            0             I
+
+
+                    (a)-td, tU                                  (b) ts                                    (c) tc                                      (d) tb
+                                               FIG. 11. Some hypothetical t-flavored mesons with m, =35 GeV.
+
+
+
+
+   TABLE III. The approximate composition of some mixed isoscalars. These are amplitude decompositions in terms of the eigen-
+states in the absence of annihilation. The annihilation parameters are A ( SI) =+2. 5, A( P2) = — 0. 8, and in the case of the pseudo-
+scalars in model P1, A„~ =+0.5 while in model P2 we used A„~ =+0.55 and Mp ——1. 17 GeV. Other states, in the absence of com-
+pelling evidence to the contrary, have been assumed for now to be ideally mixed. Also shown are the predicted and observed splittings
+of these states from their isovector companion states. We have denoted (I /V 2)(uu+dd ) by ns; n in the column labeling is the radial
+quantum number. Note that since (18b) is mass dependent, poles of the inverse propagator are not orthogonal.
+                                                                                                                                                      theory
+                                                                                                                                                                        g~ expt
+ State    (Name)         Model               ns         $$               cc                                         SS                cc          (MeV)                 (MeV)
+1   Sp   x/( 548)            P1         + 0.67       —0.73          + 0.001             +2X10-4   + 0.11         + 0.042 —5 X 10-4                 + 370            + 410
+                             P2         + 0.68       —0.73          —0.005              + 3X10-'  + 0.09         + 0.051 + 0.002                   + 340
+         g'(958)             P1         + 0.58       + 0.62         + 0.004             + 5X10-'  + 0.47         + 0.13   —0.002                   + 810            + 820
+                             P2         + 0.48       + 0.78         —0.008              + 9X10    + 0.34         + 0. 14  + 0.004                  + 780
+         q, (2980)           P1         —0.008       —0.005         + 1.000             + 2X10    + 0.004        + 0.003 —0.002
+                             P2         —0.002       —0.001         + 1.000             + 2X10-'  + 0.001        + 0.001 —0.002
+2 Sp     9,(?)               P1         —0.26        —0. 17         —0.003              —3 X 10-' + 0.79         —0.44    + 0.001                     see Sec. VA
+                             P2         + 0.07       + 0.08         —0.005              —2X 10    + 0.99         + 0.07   + 0.002                     see Sec. VA
+         g,'(?)              P1         —0. 17       —0.10          —0.003              —3 X 10-" + 0.26         + 0.86   + 0.001                     see Sec. VA
+                             P2         + 0;09       + 0.08         —0.006              —1X10-4 —0.16            + 0.97   + 0.003                     see Sec. VA
+1   Si   co(783)                        + 0.999        0.02         —0.001              —1X 10-'                                                   +10 +15 +10
+         $(1019)                        + 0.02       + 0.999        —0.0006             —7X 10                                                     + 250 + 250+10
+         g(3097)                        + 0.0009     + 0.0006       + 1.000             —3X10—'
+13Pp     f (1270)                       + 0.997      + 0.06         + 0.007             + 9X10-'                                                   —40 —45 +15
+         f'(1515)                       —0.07        + 0.997        + 0.004             + 4X10—'                                                   + 215 + 200+20
+                                                                                   STEPHEN GODFREY AND NATHAN ISGUR                                                                             32
+
+
+
+    Hc~~ &)
+     (Gev)
+
+
+                 T          T'        T"
+
+                     9cf         XP
+
+
+             0        ~a~   i&~»      ipse     u
+                                             )L Ji
+                                                     ir)
+
+                                                       (
+                                                           Jk   il   II   iL   a   )I   JIJ   »   i
+                                                                                                        I
+
+
+
+                                                                                                        2
+
+                                             D Q+ K             K+ ~S~p A~p g
+
+
+                                                                                                                                        FIG. 13. A single quark transition q~qP.
+
+
+
+                                                                                                                             be strictly valid; we comment further on this point below.
+                                                                                                                                To proceed with the model in the simplest way we add
+   FIG. 12. The universal qq potential H"" (r) in a color-singlet                                                            two other assumptions (both of which are supported by
+meson; also shown is the rms qq separation in some representa-                                                               our results): (1) pair creation of u, d, and s quarks is ap-
+tive mesons calculated by analogy to rz defined in Table VII.                                                                proximately SU(3) symmetric and (2) violations of Zweig's
+                                                                                                                             rule proceed mainly via meson wave functions. By this
+                                                                                                                             latter assumption we mean that in a decay like X*~Eq,
+                                                                                                                             only diagrams like Fig. 14 are taken into account, it being
+always necessary to bear in mind that amplitudes like that                                                                   assumed that the effects of disconnected diagrams like
+of Fig. 13 are being used as approximations to a pair-                                                                       Fig. 15(a) are mostly taken into account by using the
+creation amplitude and that the correct amplitude is ob-                                                                     Zweig-rule-violating   g wave function which arises from
+tained by summing over distinct pair creation plus rear-                                                                     the annihilation mixing of Fig. 15(b) as discussed in Sec.
+rangement processes. This awkward feature is a symptom                                                                       II. With these approximations, the amplitudes for pseu-
+of the fact that the spectator model we are using cannot                                                                     doscalar emission from a quark (antiquark) take the form
+
+
+
+                                                                                                            1/2
+    3q(q)~(M (k, s)
+       ~
+                                 M(k', s')P'(q))= i                                                        9&
+                                                                                                      (2~)9/2
+                                                                                                                  (M(s') (go' ~-~ q ho ~-~ p')e+'q'X'~
+                                                                                                                         ~
+                                                                                                                                                              ~
+                                                                                                                                                                  ~M*(s)),                    (19)
+
+                                                                                                                             I
+
+
+where o.q(q)
+           ( )/2
+                 and r ( ) are the spin and position of the                                                                  wave functions for the harmonic-oscillator            wave functions
+quark (antiquark), p'= iV is a g—      radient acting on the                                                                 of the SU(6) limit. This allows us to calculate the ampli-
+final-state wave function, and the upper (lower) sign refers                                                                 tudes analytically to reveal their basic simplicity and the
+to the q (q) case. The X'~ q(q) are flavor operators
+                                                      defined
+                                                       ~
+                                                                                                                             intrinsic relations between them. We discuss the effect of
+and detailed in Appendix B. The calculations are most                                                                        using more realistic wave functions and the possibility of
+readily performed by taking q=qz thereby calculating                                                                         using a more realistic decay model below.
+helicity amplitudes     H where           =s'=s, and then
+transforming to the usual partial-wave basis; details of
+                                                                               I                                                In our approach we find that all of the states in a given
+                                                                                                                             SU(6) XO(3) multiplet often share (apart from individual
+this process are given in Appendix C.                                                                                        strength factors) common partial-wave amplitudes          in-
+   We apply this crude decay model by mimicking com-
+pletely the previous baryon analysis,      forsaking our full                      "
+
+
+
+
+                                                                                                                                                                             (b)
+
+   FIG. 14. On the danger of double counting in meson decays                                                                    FIG. 15. (a) A disconnected   diagram.   (b) A diagram     contri-
+to two pseudoscalar mesons.                                                                                                  buting to g-g' mixing.
+

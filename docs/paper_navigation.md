@@ -42,6 +42,8 @@ table values against `paper/Godfrey-Isgur-1985.pdf`.
 - Figures 6-9, PDF pages 8-9: first target spectra for `ccbar`, `cqbar`,
   `csbar`, `bbbar`, `bqbar`, `bsbar`, and `bcbar`.
 
+Rendered spectrum pages are available under `paper/screenshots/spectrum_pages/`.
+
 ## Caution Zones
 
 - Markdown references are convenient for search but not reliable enough for

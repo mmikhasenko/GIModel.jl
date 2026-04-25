@@ -1,0 +1,70 @@
+32                                                    MESONS IN A RELATIVISTIC QUARK MODEL. . .                                                    193
+
+Fourier transform of the wave function '0;(r) and                                      under any reasonable modification of (16). On the other
+                                                                                      hand, we find ourselves unable to draw definite con-
+              (   2+ 2) 1/2                                                           clusions about pseudoscalar mixing. The consequences of
+    In the pseudoscalar mesons, (16) and (17) fail. We be-                            the models (18) will, however, be discussed in Sec. V A as
+lieve that the behavior of this channel is related to the                             two possible scenarios for these states.
+U(1) problem of QCD in which the mass of the ninth                                        This completes the specification of our model and
+pseudoscalar meson is hfted from zero in the chiral limit                              leaves us ready to determine its parameters. A search in
+by nonperturbatiUe    annihilation amplitudes.    These non-                           this parameter space converged more or less uniquely to
+perturbative effects actually have the opposite sign to the                            the physically reasonable values quoted in Table II which
+perturbative two-gluon annihilation amplitude, implying                               form the basis for the results of this paper. An exception
+ that the pseudoscalar amplitude A ('So ) must have a com-                            to the uniqueness of these parameters is that we found
+ plicated dependence on the annihilation channel mass M.                              that our results were relatively insensitive (after readjust-
+ We can consequently offer no compelling description of                               ment of our other parameters) to the addition to our
+ annihilation in this channel, but we have found two exam-                            quark masses of an overall constant that kept —,(m„+md )
+ ples of possible behavior for A ( So) with interesting                               in the range from zero to about 250 MeV. We initially
+ phenomenological consequences. The simplest possibility                              hoped to take advantage of this freedom to assign our
+ (Pl) is that there is a large positive nonperturbative an-                           quarks current quark masses. However, this proved to be
+ nihilation amplitude in this channel which dies away ex-                             inconsistent once isospin splittings were taken into ac-
+ ponentially with a scale of m„and which is to be added                               count; indeed, observed isospin splittings along with the
+ directly to the perturbative piece (which is, as already im-                         constraint md —   m„-5 MeV led     us to the typical. relativ-
+                                                                                                                      '
+ plied above, known in this case). Thus in Pl, in place of                            ized constituent quark mass —,    (m„+ md ) =220 MeV. In
+ the bracketed factor in (16), we take                                                retrospect this seems inevitable: to maintain the domi-
+                                                                                      nance of the qq sector of Pock space for light quarks, we
+           —(m; 2 +m 2 )/m   2
+     npe
+                                                                                      clearly must choose a cutoff p which produces an extend-
+                                                                                      ed (constituent) quark with "gluonic mass" of order A.
+                                             a, (MJ )a, (M;2)                             We close this section by commenting on the level of ac-
+                   + 2m3 (ln2 —1)                              %2
+                                                                              (18a)   curacy we expect from the model we have just described.
+                                                                                      A source of error common to all mesons is our restriction
+This simple possibility has many attractive features, but,                            to the simplest sectors of Fock space. This means, in par-
+as we shall see below, it would be ruled out if the experi-                           ticular, that we are not considering the mass shifts and
+mental indication for an isoscalar pseudoscalar meson at                              mixings that will arise from the interaction between these
+around 1275 MeV is confirmed. We consequently consid-                                 mesons and their decay channels (both open and closed).
+er a second more exotic possibility (P2). At large
+annihilation-channel   invariant mass M, the perturbative
+calculation must be correct so we know that in this region
+                                         2                                                TABLE II. The parameters of soft-QCD spectroscopy.
+      a('So)- ~         a, (M )                                                                                      Masses'
+                                                                                                           21
+                                                                                                                (m„+md)    220 Mev
+is small and negative. As M is decreased it is possible                                                           m, =419 MeV
+that it becomes (nonperturbatively)   large and negative be-                                                     m, =1628 MeV
+fore becoming large and positive at M =0 as it is con-                                                           mb — 4977 Mev
+strained to do. In this picture the simple exponential in
+(18a) is replaced by a nonperturbative contribution which                                                          Potentials
+                                                                                                                 b =0. 18 QeV2
+rapidly changes sign at some Mo: the bracketed factor in                                                           critical
+(16) becomes
+                                                                                                                  A=200 MeV
+                                 ( 7Bl    + P?lJ' ) /CVO        M /4MO                                           c= —253 MeV
+                                                           T
+                                                                         '2
+                                                  a, (M )
+                             + 3         (ln2 —1)                             (18b)
+                                                                                                           Relativistic effects
+The reader will note that, apart from satisfying the gen-                                                   (see Appendix A}
+eral features required for P2, we allowed ourselves great                                           Smearing:               oo —1.80 GeV
+freedom in parametrizing the dependence of A ('So) on                                                                           s =1.55
+the annihilation-channel  invariant mass M. With this ela-                                       m+ E ambiguity:             e, = —0. 168
+borately defined (but perhaps not implausible) model we                                                                      e, =+0.025
+are able to accommodate an isoscalar in this sector near or                                                                     e ( y) = —0. 035
+below the m'.                                                                                                                   iso(S) =+0 0
+   The results of applying (16) and (18) are given in Sec.                            'Note that we ignore isospin violation here and throughout   this
+III. As already mentioned, our results are very stable                                paper unless otherwise indicated.
+

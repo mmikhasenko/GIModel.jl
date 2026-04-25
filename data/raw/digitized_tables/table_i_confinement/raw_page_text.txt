@@ -1,0 +1,72 @@
+PHYSICAL REVIEW D                                        VOLUME 32, NUMBER 1                                               1 JULY 1985
+
+
+                             Mesons in a relativized quark model with chromodynamics
+
+                                                  Stephen Godfrey and Nathan Isgur
+                                  Department of Physics, Uniuersity of Toronto, Toronto, M5S 1A 7 Canada
+                                  (Received 12 December 1983; revised manuscript received 10 May 1985)
+                                             —                        —
+                       We show that mesons from the m to the Y can be described in a unified quark model with
+                    chromodynamics;      The key ingredient of the model is a universal one-gluon-exchange-plus-linear-
+                    confinement potential motivated by QCD, but it is crucial to the success of the description to take
+                    into account relativistic effects. The spectroscopic results of the model are supported by an exten-
+                    sive analysis of strong, electromagnetic, and weak meson couplings.
+
+
+
+
+                        I. INTRODUCTION                                 qualitatively    understood   on the basis of these same
+                                                                        models.
+    The discovery and exploration of the charmonium sys-                    In this paper we present the results of a study of light
+tem and the parallel development of quantum chromo-                     and heavy mesons in soft QCD. We have found that all
+ dynamics (QCD) hive revolutionized hadron physics. It                          —
+                                                                        mesons from the pion to the upsilon        "an be described in
+is becoming clear that heavy-quark systems can be well                  a unified framework       We .substantiate this conclusion by
+described by nonrelativistic      potential models and that             first calculating meson spectra and then performing an
+many of their properties reflect the dynamics expected                  extensive analysis of meson couplings.         Section II de-
+from QCD. '                                                             scribes the model, while Secs. III and IV deal with spec-
+    However, until confinement is better understood it is               troscopy and decays, respectively. In Sec. V we discuss
+urilikely that we will be able to rigorously compare quar-              our results. Some conclusions and comments are given in
+konia with the predictions of QCD. This is illustrated in               the final section.
+Table I which shows the fraction of the 2S-1S splitting                     Since most of the elements of our model have appeared
+which arises from confinement in a typical "Coulomb-                     in one form or another elsewhere, some general comments
+plus-linear" fit to heavy quarkonia: clearly the properties              on its relationship to earlier work in this area seem to us
+of the confinement potential will continue to play an im-                to be mandatory; we will make more specific comments in
+portant role in the foreseeable future. Therefore, to study              the appropriate sections below. Almost all quark poten-
+these systems we must for the present rely on models                     tial models are based on some variant of the Coulomb-
+which are a mixture of "true" QCD and phenomenologi-                     plus-linear potential expected from QCD and ours turned
+cal treatments of confinement which are motivated by                     out to be no exception (we tried and rejected several alter-
+QCD: we call such models "soft QCD" to remind our-                       natives). Many models have also included some form of
+selves both of their rigor and their region of applicability.            the running coupling constant of QCD, but we know of
+   Despite this appellation, and notwithstanding the many                no other work in which the effects of a, (Q ) have been
+possible criticisms, such models have been successfully ap-              treated in such a consistent and complete manner as is the
+plied to the charmonium        ( cc ) and more recently       b          case here. Relativistic effects have also often been dis-
+quarkonium ( bb ) families, so that the value of such a                  cussed, but their treatment has normally been a somewhat
+picture is now widely accepted. Moreover, the success of                patchwork affair. Here we have attempted to identify all
+soft QCD in these sectors at least raises the question of               possible types of relativistic effects, including smearing,
+where, as the quark mass is decreased, such models be-                  nonlocality, and momentum-dependent           effective poten-
+come useless. Even though it seems certain that they will               tials, and to then treat them for all mesons in a unified
+become inaccurate if small masses are involved, one might               and physically motivated way. We are not satisfied with
+hope that the dynamics of light quarks can be at least                  our relativization of the quark model, but we believe it to
+                                                                        be a step forward. Aside from such fundamental differ-
+                                                                        ences in the framework of our model (we have mentioned
+                                                                        the most important new features, but there are others), we
+         TABLE I. The importance of confinement                         believe the work presented here is also distinguishable
+                                                      in QQ.
+                                                                        from earlier work by its breadth of application. We have
+ m~       Typical    ao —( 3 o., m~)
+                                     '   Approximate % of 2S-1S         not only compared the results of our unified model to all
+(GreV)      cx,            (fm)              from confinement           known mesons simultaneously,         but we have also made
+                                                                        predictions for hundreds of the as-yet-unseen low-lying
+  1.5      0.34            0.58                     50
+                                                                        excitations of the various meson flavor sectors. As ex-
+    5      0.21            0.28                     35
+           0. 16                                                        plained in the text, our calculations were not only exten-
+  25                       0.07                     20
+  50       0. 14           0.04                     15                  sive, but they were also accurately done: we did not rely
+ 100       0. 12           0.02                     10                  on dubious perturbative treatments of various terms in the
+                                                                        Hamiltonian. Once in possession of predictions for meson
+
+                                                                 32
+

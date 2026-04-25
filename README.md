@@ -32,6 +32,9 @@ Use these files to resume work quickly:
 - `paper/text/pdftotext_bbox.html`: positional extraction for audit work.
 - `paper/text/pdftotext_words.tsv`: word-position extraction for table
   reconstruction experiments.
+- `paper/screenshots/spectrum_pages/`: rendered spectrum pages, PDF pages 6-10.
+- `data/raw/digitized_tables/`: table-specific raw snippets and provisional
+  structured transcriptions.
 - `scripts/validate_seed.py`: seed schema validation.
 - `scripts/build_paper_prose.py`: rebuilds the prose-only paper reference.
 
@@ -64,6 +67,10 @@ provenance and experiments, but they are not recommended handoff entry points.
 
 4. Create raw extraction CSVs in `data/raw/`.
 5. Promote verified rows into `data/clean/` with provenance preserved.
+
+Current first-pass digitizations live under `data/raw/digitized_tables/`.
+Table I and Table II have structured provisional CSVs; Table III is a
+low-confidence visible-row transcription that needs image-audited cleanup.
 
 ## Authority Rules
 

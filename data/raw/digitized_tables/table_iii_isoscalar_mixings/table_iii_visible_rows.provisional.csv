@@ -1,0 +1,17 @@
+source,page,table,state_group,state_name,model,amp_1_ns,amp_1_ss,amp_1_cc,amp_2_ns,amp_2_ss,amp_2_cc,theory_delta_MeV,exp_delta_MeV,extraction_method,confidence,notes
+Godfrey-Isgur 1985,11,Table III,"1 S0","eta(548)",P1,0.67,-0.73,0.001,"+2e-4",0.11,0.042,370,410,pdftotext_layout_manual,low,"OCR state label appears x/(548); final tiny cc-like component column partly ambiguous."
+Godfrey-Isgur 1985,11,Table III,"1 S0","eta(548)",P2,0.68,-0.73,-0.005,"+3e-?",0.09,0.051,340,,pdftotext_layout_manual,low,"Power of ten ambiguous in OCR."
+Godfrey-Isgur 1985,11,Table III,"1 S0","eta_prime(958)",P1,0.58,0.62,0.004,"+5e-?",0.47,0.13,810,820,pdftotext_layout_manual,low,"Power of ten ambiguous in OCR."
+Godfrey-Isgur 1985,11,Table III,"1 S0","eta_prime(958)",P2,0.48,0.78,-0.008,"+9e-?",0.34,0.14,780,,pdftotext_layout_manual,low,"Power of ten ambiguous in OCR."
+Godfrey-Isgur 1985,11,Table III,"1 S0","eta_c(2980)",P1,-0.008,-0.005,1.000,"+2e-?",0.004,0.003,,,pdftotext_layout_manual,low,"OCR uses q,(2980); power of ten ambiguous."
+Godfrey-Isgur 1985,11,Table III,"1 S0","eta_c(2980)",P2,-0.002,-0.001,1.000,"+2e-?",0.001,0.001,,,pdftotext_layout_manual,low,"Power of ten ambiguous."
+Godfrey-Isgur 1985,11,Table III,"2 S0","eta(?)",P1,-0.26,-0.17,-0.003,"-3e-?",0.79,-0.44,,"see Sec. VA",pdftotext_layout_manual,low,"State name uncertain in OCR."
+Godfrey-Isgur 1985,11,Table III,"2 S0","eta(?)",P2,0.07,0.08,-0.005,"-2e-?",0.99,0.07,,"see Sec. VA",pdftotext_layout_manual,low,"State name uncertain in OCR."
+Godfrey-Isgur 1985,11,Table III,"2 S0","eta_prime(?)",P1,-0.17,-0.10,-0.003,"-3e-?",0.26,0.86,,"see Sec. VA",pdftotext_layout_manual,low,"State name uncertain in OCR."
+Godfrey-Isgur 1985,11,Table III,"2 S0","eta_prime(?)",P2,0.09,0.08,-0.006,"-1e-4",-0.16,0.97,,"see Sec. VA",pdftotext_layout_manual,low,"State name uncertain in OCR."
+Godfrey-Isgur 1985,11,Table III,"1 S1","omega(783)",,0.999,0.02,-0.001,"-1e-?",,,10,"+15 +/- 10",pdftotext_layout_manual,low,"Columns after amp_1_cc ambiguous."
+Godfrey-Isgur 1985,11,Table III,"1 S1","phi(1019)",,0.02,0.999,-0.0006,"-7e-?",,,250,"+250 +/- 10",pdftotext_layout_manual,low,"OCR state label appears $(1019)."
+Godfrey-Isgur 1985,11,Table III,"1 S1","J/psi(3097)",,0.0009,0.0006,1.000,"-3e-?",,,,,pdftotext_layout_manual,low,"OCR state label appears g(3097)."
+Godfrey-Isgur 1985,11,Table III,"1 3P0","f(1270)",,0.997,0.06,0.007,"+9e-?",,,-40,"-45 +/- 15",pdftotext_layout_manual,low,"Verify table column grouping."
+Godfrey-Isgur 1985,11,Table III,"1 3P0","f_prime(1515)",,-0.07,0.997,0.004,"+4e-?",,,215,"+200 +/- 20",pdftotext_layout_manual,low,"Verify table column grouping."
+
