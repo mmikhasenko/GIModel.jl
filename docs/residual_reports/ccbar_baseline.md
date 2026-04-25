@@ -36,4 +36,21 @@ Baseline model: radial finite-difference solver with `relativistic` kinetic ener
 Mean absolute residual: 82.1 MeV.
 Max absolute residual: 161.4 MeV.
 
+## Spin-Averaged Diagnostics
+
+Weighted by `2J+1` within each available `(n, L)` group.
+
+| multiplet | states | reference GeV | baseline GeV | residual MeV |
+|---|---:|---:|---:|---:|
+| `1D` | 4 | 3.841 | 3.901 |   +61.0 |
+| `2D` | 4 | 4.211 | 4.279 |   +68.5 |
+| `3D` | 1 | 4.520 | 4.605 |   +84.9 |
+| `1F` | 4 | 4.093 | 4.149 |   +56.8 |
+| `1P` | 4 | 3.523 | 3.601 |   +78.1 |
+| `2P` | 4 | 3.962 | 4.047 |   +84.1 |
+| `1S` | 2 | 3.068 | 3.172 |  +104.7 |
+| `2S` | 2 | 3.665 | 3.768 |  +102.7 |
+| `3S` | 2 | 4.090 | 4.187 |   +96.7 |
+| `4S` | 1 | 4.450 | 4.552 |  +101.9 |
+
 This is a diagnostic baseline, not the final GI Hamiltonian. Large residuals are expected until the full smeared potential, tensor/spin-orbit terms, and mixing are added.

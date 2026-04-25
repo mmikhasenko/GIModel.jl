@@ -305,6 +305,25 @@ function write_residual_report(path::AbstractString, title::AbstractString, rows
             println(io, @sprintf("Mean absolute residual: %.1f MeV.", sum(residuals) / length(residuals)))
             println(io, @sprintf("Max absolute residual: %.1f MeV.", maximum(residuals)))
         end
+        groups = Dict{Tuple{Int, String}, Vector{eltype(rows)}}()
+        for row in rows
+            push!(get!(groups, (row.n, row.L), eltype(rows)[]), row)
+        end
+        println(io)
+        println(io, "## Spin-Averaged Diagnostics")
+        println(io)
+        println(io, "Weighted by `2J+1` within each available `(n, L)` group.")
+        println(io)
+        println(io, "| multiplet | states | reference GeV | baseline GeV | residual MeV |")
+        println(io, "|---|---:|---:|---:|---:|")
+        for key in sort(collect(keys(groups)); by = x -> (x[2], x[1]))
+            group = groups[key]
+            weights = [2 * row.J + 1 for row in group]
+            weight_sum = sum(weights)
+            ref = sum(w * row.reference_GeV for (w, row) in zip(weights, group)) / weight_sum
+            pred = sum(w * row.predicted_GeV for (w, row) in zip(weights, group)) / weight_sum
+            println(io, @sprintf("| `%d%s` | %d | %.3f | %.3f | %+7.1f |", key[1], key[2], length(group), ref, pred, 1000 * (pred - ref)))
+        end
         println(io)
         println(io, "This is a diagnostic baseline, not the final GI Hamiltonian. Large residuals are expected until the full smeared potential, tensor/spin-orbit terms, and mixing are added.")
     end
