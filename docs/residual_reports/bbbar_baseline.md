@@ -1,6 +1,6 @@
 # Bottomonium Baseline Residuals
 
-Baseline model: radial finite-difference solver with `relativistic` kinetic energy, with smeared S-wave contact hyperfine, GI Table II masses, `b`, `c`, and Fig. 2 running Coulomb ansatz.
+Baseline model: radial finite-difference solver with `relativistic` kinetic energy, with smeared S-wave contact hyperfine, GI Table II masses, `b`, `c`, Fig. 2 running Coulomb ansatz, and pointwise Coulomb + linear + constant (no Appendix A smearing), see `src/GIModel/GIModel.jl`.
 
 | state | reference GeV | baseline GeV | residual MeV | confidence |
 |---|---:|---:|---:|---|

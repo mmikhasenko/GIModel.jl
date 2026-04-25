@@ -22,6 +22,11 @@ struct GIParameters
     c::Float64
     sigma0::Float64
     smearing_s::Float64
+    appendix_a_central::Bool
+    epsilon_c::Float64
+    epsilon_t::Float64
+    epsilon_so_vector::Float64
+    epsilon_so_scalar::Float64
 end
 
 struct ReferenceState
@@ -45,12 +50,22 @@ function load_parameters(path::AbstractString)
         "c" => raw["masses"]["m_c_MeV"] / 1000,
         "b" => raw["masses"]["m_b_MeV"] / 1000,
     )
+    rf = get(raw, "relativistic_factors", nothing)
+    eps_c = isnothing(rf) ? 0.0 : get(rf, "epsilon_c", 0.0)
+    eps_t = isnothing(rf) ? 0.0 : get(rf, "epsilon_t", 0.0)
+    eps_v = isnothing(rf) ? 0.0 : get(rf, "epsilon_so_vector", 0.0)
+    eps_s = isnothing(rf) ? 0.0 : get(rf, "epsilon_so_scalar", 0.0)
     GIParameters(
         masses,
         raw["potential"]["b_GeV2"],
         raw["potential"]["c_MeV"] / 1000,
         raw["relativistic_smearing"]["sigma0_GeV"],
         raw["relativistic_smearing"]["s"],
+        get(raw["potential"], "appendix_a_smearing", false),
+        float(eps_c),
+        float(eps_t),
+        float(eps_v),
+        float(eps_s),
     )
 end
 
@@ -119,6 +134,74 @@ function central_potential(r::Real, params::GIParameters)
     params.b * r - (4 / 3) * alpha_s_r(r) / r + params.c
 end
 
+"""Coulomb piece G(r) = -4 α_s / (3 r) from the text; independent of the linear + constant term S(r) = b r + c."""
+function static_coulomb_G(r::Real, params::GIParameters)
+    ri = max(float(r), 1.0e-12)
+    -(4 / 3) * alpha_s_r(ri) / ri
+end
+
+function static_confinement_S(r::Real, params::GIParameters)
+    params.b * float(r) + params.c
+end
+
+#
+# 3D isotropic Gaussian smearing of a spherically symmetric radial function V (|r|),
+# Appendix A, Eqs. (A7)–(A8), PDF p. 36. Same σ as contact_smearing_sigma (A9), Table II.
+# R > 0: one-dimensional form from the angle-integrated convolution (e.g. difference of
+# Gaussians). R → 0: direct radial integral with isotropic 3D Gaussian.
+#
+function smear_3d_radial(v::AbstractVector{<:Real}, r::AbstractVector{<:Real}, σ::Real)
+    n = length(r)
+    n == 0 && return eltype(r)[]
+    n == 1 && return v
+    h = r[2] - r[1]
+    w = fill(h, n)
+    w[1] = h / 2
+    w[n] = h / 2
+    σf = float(σ)
+    pre0 = (2 * π * σf^2)^(-3 / 2)
+    R0 = 0.25 * h
+    out = similar(r, Float64)
+    for i in eachindex(r)
+        R = r[i]
+        s = 0.0
+        if R < R0
+            for j in eachindex(r)
+                rp = r[j]
+                s += 4 * π * rp^2 * w[j] * pre0 * exp(-rp^2 / (2 * σf^2)) * v[j]
+            end
+        else
+            pre = 1.0 / (R * σf * sqrt(2 * π))
+            for j in eachindex(r)
+                rp = r[j]
+                s +=
+                    w[j] * pre * rp * (exp(-(R - rp)^2 / (2 * σf^2)) - exp(-(R + rp)^2 / (2 * σf^2))) * v[j]
+            end
+        end
+        out[i] = s
+    end
+    return out
+end
+
+# Experimental. Not the GI (A12)–(A13) smeared potential used in the paper: (A7)–(A8)
+# with the Table II width applied to the pointwise G and S (Eqs. (11)–(13) orient.)
+# is numerically uncontrolled on a fixed radial line when $\sigma$ is O(1): the 3D
+# convolution weights the large-$r$ region by volume and can remove the $1/r$ well.
+# Enable only for research; production defaults keep `appendix_a_smearing = false`.
+function smeared_central_values(params::GIParameters, m1::Real, m2::Real, r::AbstractVector{<:Real})
+    σ = contact_smearing_sigma(params, m1, m2)
+    n = length(r)
+    n < 2 && return [central_potential(ri, params) for ri in r]
+    h = r[2] - r[1]
+    rmax0 = r[end]
+    n_tail = max(0, Int(ceil(8 * σ / h)))
+    r_ext = n_tail > 0 ? vcat(r, collect(range(rmax0 + h, rmax0 + n_tail * h; step = h))) : r
+    g0 = [static_coulomb_G(ri, params) for ri in r_ext]
+    s0 = [static_confinement_S(ri, params) for ri in r_ext]
+    vsum = smear_3d_radial(g0, r_ext, σ) .+ smear_3d_radial(s0, r_ext, σ)
+    return vsum[1:n]
+end
+
 function reduced_mass(m1::Real, m2::Real)
     m1 * m2 / (m1 + m2)
 end
@@ -138,8 +221,11 @@ function p2_operator(m::Real, L::Integer, r::AbstractVector, h::Real)
     SymTridiagonal(diagonal, offdiag)
 end
 
-function potential_diagonal(params::GIParameters, r::AbstractVector)
-    [central_potential(ri, params) for ri in r]
+function potential_diagonal(params::GIParameters, m1::Real, m2::Real, r::AbstractVector)
+    if params.appendix_a_central
+        return smeared_central_values(params, m1, m2, r)
+    end
+    return [central_potential(ri, params) for ri in r]
 end
 
 function nonrelativistic_hamiltonian(params::GIParameters, m1::Real, m2::Real, L::Integer; ngrid::Integer = 900, rmax::Real = 24.0)
@@ -147,9 +233,10 @@ function nonrelativistic_hamiltonian(params::GIParameters, m1::Real, m2::Real, L
     r, h = radial_grid(ngrid, rmax)
     diagonal = similar(r)
     offdiag = fill(-1 / (2 * mu * h^2), ngrid - 1)
+    vdiag = potential_diagonal(params, m1, m2, r)
     for i in eachindex(r)
         ri = r[i]
-        diagonal[i] = 1 / (mu * h^2) + L * (L + 1) / (2 * mu * ri^2) + central_potential(ri, params)
+        diagonal[i] = 1 / (mu * h^2) + L * (L + 1) / (2 * mu * ri^2) + vdiag[i]
     end
     SymTridiagonal(diagonal, offdiag), r
 end
@@ -163,7 +250,7 @@ function relativistic_hamiltonian(params::GIParameters, m1::Real, m2::Real, L::I
     r, h = radial_grid(ngrid, rmax)
     p2 = p2_operator(m1, L, r, h)
     kinetic = sqrt_kinetic_matrix(p2, m1) + sqrt_kinetic_matrix(p2, m2)
-    Symmetric(kinetic + Diagonal(potential_diagonal(params, r))), r
+    Symmetric(kinetic + Diagonal(potential_diagonal(params, m1, m2, r))), r
 end
 
 function channel_solution(
@@ -275,13 +362,28 @@ function compare_sector(
     rows
 end
 
-function write_residual_report(path::AbstractString, title::AbstractString, rows; kinetic::Symbol = :relativistic, contact_hyperfine::Bool = true)
+function write_residual_report(
+    path::AbstractString,
+    title::AbstractString,
+    rows;
+    kinetic::Symbol = :relativistic,
+    contact_hyperfine::Bool = true,
+    appendix_a_central::Bool = false,
+)
     mkpath(dirname(path))
     open(path, "w") do io
         println(io, "# ", title)
         println(io)
         hyperfine_note = contact_hyperfine ? "with smeared S-wave contact hyperfine" : "without spin-dependent terms"
-        println(io, "Baseline model: radial finite-difference solver with `$kinetic` kinetic energy, $hyperfine_note, GI Table II masses, `b`, `c`, and Fig. 2 running Coulomb ansatz.")
+        central_note =
+            appendix_a_central ?
+            "Appendix A 3D isotropic smearing of Coulomb G and confinement S (Table II σ₀, s), " : "pointwise Coulomb + linear + constant (no Appendix A smearing), "
+        println(
+            io,
+            "Baseline model: radial finite-difference solver with `$kinetic` kinetic energy, $hyperfine_note, GI Table II masses, `b`, `c`, Fig. 2 running Coulomb ansatz, and ",
+            central_note,
+            "see `src/GIModel/GIModel.jl`.",
+        )
         println(io)
         println(io, "| state | reference GeV | baseline GeV | residual MeV | confidence |")
         println(io, "|---|---:|---:|---:|---|")
