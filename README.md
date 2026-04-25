@@ -38,6 +38,8 @@ Use these files to resume work quickly:
 - `data/raw/digitized_figures/`: figure-specific label transcriptions.
 - `scripts/validate_seed.py`: seed schema validation.
 - `scripts/build_paper_prose.py`: rebuilds the prose-only paper reference.
+- `scripts/plot_spectrum_digitizations.py`: regenerates clean Fig. 4-9
+  comparison replots from digitized figure CSVs.
 
 Intermediate generated paper references exist under `paper/text/` for
 provenance and experiments, but they are not recommended handoff entry points.
@@ -69,9 +71,11 @@ provenance and experiments, but they are not recommended handoff entry points.
 4. Create raw extraction CSVs in `data/raw/`.
 5. Promote verified rows into `data/clean/` with provenance preserved.
 
-Current first-pass digitizations live under `data/raw/digitized_tables/`.
-Table I and Table II have structured provisional CSVs; Table III is a
-low-confidence visible-row transcription that needs image-audited cleanup.
+Current first-pass digitizations live under `data/raw/digitized_tables/` and
+`data/raw/digitized_figures/`. Table I and Table II have structured provisional
+CSVs; Table III is a low-confidence visible-row transcription that needs
+image-audited cleanup. Figures 3-9 have first-pass model-label CSVs and clean
+comparison replots.
 
 ## Authority Rules
 

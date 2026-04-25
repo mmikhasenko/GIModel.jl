@@ -61,3 +61,15 @@ promotion.
 - Added clean comparison plot outputs:
   `data/raw/digitized_figures/fig03_isovector_mesons/figure_03_replot.svg`
   and `.png`, generated from the CSV without experimental hatching or bands.
+
+## 2026-04-25 Figures 4-9 Label Digitization
+
+- Added first-pass model-state label CSVs for Figures 4-9 under
+  `data/raw/digitized_figures/`.
+- Added `scripts/plot_spectrum_digitizations.py` to regenerate clean
+  comparison replots for Figures 4-9 from those CSV files.
+- Scope remains model mass-bar labels only; experimental shaded bands, quoted
+  errors, and omitted near-degenerate states from captions are not drawn.
+- Figure 5 is particularly crowded and has several `medium` or `low`
+  confidence rows that should receive crop-by-crop audit before promotion to
+  clean data.

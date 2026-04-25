@@ -137,8 +137,10 @@ Complete Phase 1 enough to support the first model milestone:
 The first two bullets have a provisional start: Table II is digitized under
 `data/raw/digitized_tables/table_ii_parameters/`, and spectrum screenshots are
 available for visual extraction. They are not yet audited clean data.
-Figure 3 is also digitized as a first-pass label table under
-`data/raw/digitized_figures/fig03_isovector_mesons/`.
+Figures 3-9 are also digitized as first-pass label tables under
+`data/raw/digitized_figures/`. Figure 3 has its original single-figure plot
+script; Figures 4-9 are regenerated with
+`python3 scripts/plot_spectrum_digitizations.py`.
 
 ## Do Not Trust By Default
 
