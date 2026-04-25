@@ -1,0 +1,5 @@
+source_short,url,role
+Godfrey-Isgur 1985 primary paper,https://doi.org/10.1103/PhysRevD.32.189,Primary authority for final verification; original all-sector GI model.
+"Quoted GI charmonium table, arXiv:2508.17841",https://arxiv.org/pdf/2508.17841,Seed table for charmonium GI values; verify each value against original PDF.
+"Quoted GI bottomonium table, arXiv:1607.04696",https://arxiv.org/pdf/1607.04696,Seed table for bottomonium GI values; verify each value against original PDF.
+"Open-heavy review tables, arXiv:1609.08928",https://arxiv.org/pdf/1609.08928,"Seed tables for open charm/bottom; marked as updated GI-Original, not strict 1985 authority."

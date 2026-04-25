@@ -1,0 +1,14 @@
+.DS_Store
+*.log
+*.tmp
+
+# Generated PDF extraction products
+paper/text/*.txt
+paper/text/*.html
+paper/pages/*.png
+
+# Local environments and caches
+.venv/
+__pycache__/
+.pytest_cache/
+
