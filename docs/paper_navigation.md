@@ -44,8 +44,8 @@ table values against `paper/Godfrey-Isgur-1985.pdf`.
 
 ## Caution Zones
 
-- Extracted tables in the Markdown are convenient for search but not reliable
-  enough for final numbers.
+- Markdown references are convenient for search but not reliable enough for
+  final numbers.
 - Two-column layout causes split words and interleaved prose; use page images
   for row-level extraction.
 - Greek symbols, bars, primes, signs, and superscripts are frequently degraded
