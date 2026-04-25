@@ -48,3 +48,13 @@ provenance, but should not be used as default references.
 
 Table II and especially Table III still need visual verification before clean
 promotion.
+
+## 2026-04-25 Figure 3 Label Digitization
+
+- Added `data/raw/digitized_figures/fig03_isovector_mesons/`.
+- Transcribed Fig. 3 model-state labels into
+  `data/raw/digitized_figures/fig03_isovector_mesons/figure_03_labels.csv`.
+- Scope is model mass-bar labels only; experimental shaded bands and axis ticks
+  are excluded.
+- A crop check corrected the `0-+` label `3^1S_0(1.88)` and confirmed
+  `1--` label `3^3S_1(2.00)`.

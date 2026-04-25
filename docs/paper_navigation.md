@@ -43,6 +43,7 @@ table values against `paper/Godfrey-Isgur-1985.pdf`.
   `csbar`, `bbbar`, `bqbar`, `bsbar`, and `bcbar`.
 
 Rendered spectrum pages are available under `paper/screenshots/spectrum_pages/`.
+Digitized spectrum labels begin under `data/raw/digitized_figures/`.
 
 ## Caution Zones
 

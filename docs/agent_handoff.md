@@ -13,6 +13,8 @@ to continue the Godfrey-Isgur reproduction.
 - Seed schema validation passes with `python3 scripts/validate_seed.py`.
 - Spectrum pages 6-10 are rendered under `paper/screenshots/spectrum_pages/`.
 - First-pass table digitizations live under `data/raw/digitized_tables/`.
+- First-pass figure-label digitizations live under
+  `data/raw/digitized_figures/`.
 - No cleaned physics reference data has been produced yet.
 - No solver implementation has started yet.
 
@@ -135,6 +137,8 @@ Complete Phase 1 enough to support the first model milestone:
 The first two bullets have a provisional start: Table II is digitized under
 `data/raw/digitized_tables/table_ii_parameters/`, and spectrum screenshots are
 available for visual extraction. They are not yet audited clean data.
+Figure 3 is also digitized as a first-pass label table under
+`data/raw/digitized_figures/fig03_isovector_mesons/`.
 
 ## Do Not Trust By Default
 

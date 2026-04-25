@@ -35,6 +35,7 @@ Use these files to resume work quickly:
 - `paper/screenshots/spectrum_pages/`: rendered spectrum pages, PDF pages 6-10.
 - `data/raw/digitized_tables/`: table-specific raw snippets and provisional
   structured transcriptions.
+- `data/raw/digitized_figures/`: figure-specific label transcriptions.
 - `scripts/validate_seed.py`: seed schema validation.
 - `scripts/build_paper_prose.py`: rebuilds the prose-only paper reference.
 

@@ -17,6 +17,7 @@ Generated: 2026-04-25
 - `paper/text/pdftotext_words.tsv`: word-position raw extraction for table reconstruction experiments.
 - `paper/screenshots/spectrum_pages/`: rendered PNG pages containing spectrum figures.
 - `data/raw/digitized_tables/`: one-folder-per-table raw snippets and provisional structured transcriptions.
+- `data/raw/digitized_figures/`: one-folder-per-figure model-label transcriptions.
 - `scripts/build_paper_prose.py`: regenerates the prose-only Markdown reference.
 
 Intermediate generated references under `paper/text/` are retained for
