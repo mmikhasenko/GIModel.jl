@@ -7,6 +7,7 @@ Generated: 2026-04-25
 - `data/seed/godfrey_isgur_seed_masses.csv`: seed mass table assembled from later papers quoting GI or GI-Original values. Contains 192 rows.
 - `data/seed/godfrey_isgur_sources.csv`: source manifest with URLs and usage notes.
 - `docs/orchestrator_task.md`: task brief for an orchestrator agent, including extraction, verification, implementation, and audit phases.
+- `docs/paper_navigation.md`: fast map to high-value paper sections, figures, and extraction caveats.
 - `scripts/validate_seed.py`: local schema check for the seed mass table.
 - `paper/Godfrey-Isgur-1985.pdf`: local copy of the primary paper.
 - `paper/text/pdftotext_layout.txt`: layout-preserving raw text extraction.

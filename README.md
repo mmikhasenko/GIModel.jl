@@ -17,6 +17,8 @@ Use these files to resume work quickly:
 - `docs/source_inventory.md`: bibliographic metadata and source authority
   policy.
 - `docs/extraction_notes.md`: running notes for PDF/text/image extraction.
+- `docs/paper_navigation.md`: fast map to paper sections, tables, spectrum
+  figures, and caution zones.
 - `docs/formula_map.md`: required map from implementation terms to the paper.
 - `docs/conventions.md`: spectroscopic, spin, sector, and basis conventions.
 - `data/seed/godfrey_isgur_seed_masses.csv`: bootstrap mass table, not final
