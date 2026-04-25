@@ -12,7 +12,9 @@ Generated: 2026-04-25
 - `paper/text/pdftotext_layout.txt`: layout-preserving raw text extraction.
 - `paper/text/pdftotext_bbox.html`: positional raw text extraction.
 - `paper/text/godfrey_isgur_1985.md`: searchable Markdown reference derived from the layout extraction.
+- `paper/text/godfrey_isgur_1985_polished.md`: conservative OCR-polished Markdown reference.
 - `scripts/build_paper_markdown.py`: regenerates the Markdown reference.
+- `scripts/polish_paper_markdown.py`: regenerates the polished Markdown reference.
 
 ## Important caveats
 

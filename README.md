@@ -27,8 +27,11 @@ Use these files to resume work quickly:
 - `paper/text/pdftotext_bbox.html`: positional text extraction.
 - `paper/text/godfrey_isgur_1985.md`: searchable Markdown reference derived
   from layout text.
+- `paper/text/godfrey_isgur_1985_polished.md`: polished Markdown reference for
+  smoother reading and future agent interaction.
 - `scripts/validate_seed.py`: seed schema validation.
 - `scripts/build_paper_markdown.py`: rebuilds the Markdown paper reference.
+- `scripts/polish_paper_markdown.py`: rebuilds the polished paper reference.
 
 ## Immediate Workflow
 
@@ -44,6 +47,7 @@ Use these files to resume work quickly:
    pdftotext -layout paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_layout.txt
    pdftotext -bbox-layout paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_bbox.html
    python3 scripts/build_paper_markdown.py
+   python3 scripts/polish_paper_markdown.py
    ```
 
 3. Render page images for table verification when needed:
@@ -58,7 +62,7 @@ Use these files to resume work quickly:
 ## Authority Rules
 
 - The original 1985 paper is the primary authority.
-- The Markdown paper file is a navigation aid, not an authority.
+- The Markdown paper files are navigation aids, not authorities.
 - Later quoted tables are seed data only.
 - Every numerical value must carry source, table/page when available,
   extraction method, and confidence.

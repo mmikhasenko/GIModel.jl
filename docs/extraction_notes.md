@@ -8,6 +8,7 @@ Expected generated files:
 - `paper/text/pdftotext_layout.txt`
 - `paper/text/pdftotext_bbox.html`
 - `paper/text/godfrey_isgur_1985.md`
+- `paper/text/godfrey_isgur_1985_polished.md`
 - `paper/pages/*.png`
 - `data/raw/tables_from_pdf_text.csv`
 - `data/raw/tables_from_page_images.csv`
@@ -21,6 +22,8 @@ Expected generated files:
 - Generated `paper/text/pdftotext_bbox.html` with `pdftotext -bbox-layout`.
 - Generated `paper/text/godfrey_isgur_1985.md` with
   `scripts/build_paper_markdown.py`.
+- Generated `paper/text/godfrey_isgur_1985_polished.md` with
+  `scripts/polish_paper_markdown.py`.
 
-The Markdown file is a search reference only. Table extraction must still be
+The Markdown files are search references only. Table extraction must still be
 checked against the PDF and rendered page images.

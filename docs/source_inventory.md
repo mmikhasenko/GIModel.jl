@@ -17,6 +17,8 @@
 - `paper/text/pdftotext_bbox.html`: raw positional text extraction.
 - `paper/text/godfrey_isgur_1985.md`: readable Markdown reference generated
   from the layout text.
+- `paper/text/godfrey_isgur_1985_polished.md`: conservative OCR cleanup of the
+  Markdown reference for reading and search.
 
 The derived text files are for search and navigation. The PDF and rendered page
 images remain the authority for equations, signs, table alignment, and state
