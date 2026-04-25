@@ -6,7 +6,21 @@
   chromodynamics*, Phys. Rev. D 32, 189-231 (1985).
 - DOI: `10.1103/PhysRevD.32.189`
 - Status: primary authority for final reference values.
-- Local PDF target: `paper/Godfrey-Isgur-1985.pdf`
+- Local PDF: `paper/Godfrey-Isgur-1985.pdf`
+- Source URL used for local copy:
+  `https://harvest.aps.org/v2/journals/articles/10.1103/PhysRevD.32.189/fulltext`
+- PDF metadata: 43 pages, letter page size, PDF 1.4.
+
+## Derived Paper References
+
+- `paper/text/pdftotext_layout.txt`: raw layout-preserving text extraction.
+- `paper/text/pdftotext_bbox.html`: raw positional text extraction.
+- `paper/text/godfrey_isgur_1985.md`: readable Markdown reference generated
+  from the layout text.
+
+The derived text files are for search and navigation. The PDF and rendered page
+images remain the authority for equations, signs, table alignment, and state
+labels.
 
 ## Seed Sources
 
@@ -29,4 +43,3 @@ Each extracted numerical value must record:
 - extraction method,
 - confidence,
 - raw row provenance.
-

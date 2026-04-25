@@ -8,6 +8,11 @@ Generated: 2026-04-25
 - `data/seed/godfrey_isgur_sources.csv`: source manifest with URLs and usage notes.
 - `docs/orchestrator_task.md`: task brief for an orchestrator agent, including extraction, verification, implementation, and audit phases.
 - `scripts/validate_seed.py`: local schema check for the seed mass table.
+- `paper/Godfrey-Isgur-1985.pdf`: local copy of the primary paper.
+- `paper/text/pdftotext_layout.txt`: layout-preserving raw text extraction.
+- `paper/text/pdftotext_bbox.html`: positional raw text extraction.
+- `paper/text/godfrey_isgur_1985.md`: searchable Markdown reference derived from the layout extraction.
+- `scripts/build_paper_markdown.py`: regenerates the Markdown reference.
 
 ## Important caveats
 

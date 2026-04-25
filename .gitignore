@@ -2,13 +2,10 @@
 *.log
 *.tmp
 
-# Generated PDF extraction products
-paper/text/*.txt
-paper/text/*.html
+# Generated page images can be large; regenerate from the PDF when needed.
 paper/pages/*.png
 
 # Local environments and caches
 .venv/
 __pycache__/
 .pytest_cache/
-
