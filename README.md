@@ -44,6 +44,19 @@ Use these files to resume work quickly:
 Intermediate generated paper references exist under `paper/text/` for
 provenance and experiments, but they are not recommended handoff entry points.
 
+## Central Data Targets
+
+The spectrum figures are the central numerical result to reproduce. Treat the
+digitized Figure 3-9 model labels in `data/raw/digitized_figures/` as the
+first-pass cross-check targets for any solver output, after auditing each row
+against the original PDF image. The clean SVG/PNG replots are comparison aids;
+the CSV files are the data source.
+
+Table II is the central setup input. Its digitization at
+`data/raw/digitized_tables/table_ii_parameters/table_ii_parameters.csv` records
+the fitted model parameters and should be audited before any production solver
+configuration is promoted to `data/clean/`.
+
 ## Immediate Workflow
 
 1. Run seed validation:
