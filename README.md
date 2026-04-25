@@ -14,6 +14,8 @@ Use these files to resume work quickly:
 
 - `docs/orchestrator_task.md`: phase plan, validation gates, and acceptance
   criteria.
+- `docs/agent_handoff.md`: current status, recommended subagent split, and
+  immediate next milestone.
 - `docs/source_inventory.md`: bibliographic metadata and source authority
   policy.
 - `docs/extraction_notes.md`: running notes for PDF/text/image extraction.
