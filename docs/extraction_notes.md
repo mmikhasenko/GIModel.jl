@@ -58,3 +58,6 @@ promotion.
   are excluded.
 - A crop check corrected the `0-+` label `3^1S_0(1.88)` and confirmed
   `1--` label `3^3S_1(2.00)`.
+- Added clean comparison plot outputs:
+  `data/raw/digitized_figures/fig03_isovector_mesons/figure_03_replot.svg`
+  and `.png`, generated from the CSV without experimental hatching or bands.
