@@ -110,7 +110,8 @@ solver and validation scripts should start from the top-level `data/` files.
 
    This regenerates sector reports under `docs/residual_reports/` for every
    `data/reference_spectrum_*.csv` file. Heavy-light sectors use the
-   `quark_content` column to choose unequal constituent masses.
+   `quark_content` column to choose unequal constituent masses. It also writes
+   `docs/residual_reports/scorecard.md` as the compact progress dashboard.
 
 4. Run Julia tests:
 
