@@ -83,3 +83,14 @@ end
     manual_mean_r = sum(manual_weights .* r)
     @test GIModel.radial_expect_udr(u, r, h, (ri, i) -> ri) ≈ manual_mean_r atol = 1e-12
 end
+
+@testset "contact hyperfine shift uses u(r) normalization" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    m = params.masses["c"]
+    r = collect(0.05:0.05:1.0)
+    u = exp.(-2.0 .* r)
+    base = GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u, r)
+    @test base != 0.0
+    @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, 3.0 .* u, r) ≈ base rtol = 1e-12 atol = 0.0
+    @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, 0.2 .* u, r) ≈ base rtol = 1e-12 atol = 0.0
+end

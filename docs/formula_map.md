@@ -34,6 +34,10 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     `sigma0` and `s` smearing parameters with the standard GI mass-dependent
     Gaussian width form. The full momentum-dependent relativization factors
     are not yet included.
+  - Normalization convention: FD eigenvectors are treated as reduced radial
+    wavefunctions $u(r)$ with $\int |u|^2\,dr = 1$; the smeared 3D delta kernel
+    is normalized to $\int d^3r\,\delta_\sigma(r)=1$, so the S-wave radial
+    expectation uses $\int |u|^2 \delta_\sigma(r)\,dr$ (no extra $4\pi$ factor).
 
 - `src/GIModel/GIModel.jl`: **experimental** 3D isotropic Gaussian smearing
   of pointwise $G(r)$ and $S(r)$ as in the structure of (A7)–(A8) (spherical
