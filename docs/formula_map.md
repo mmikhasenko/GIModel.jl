@@ -82,6 +82,11 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     (uniform-mesh proxy $\sum |u_i|^2 h = 1$; no additional $4\pi$ factor).
     Scales $k$ bridge the small FD basis to the large HO result and are
     diagnostic, not paper refits.
+  - Regression tests in `test/runtests.jl`: triplet tensor/L·S angular sum rules
+    and Coulomb $d\alpha_s/dr$ consistency; `fine_structure_split` checks that
+    S-waves and P singlets have zero first-order fine-structure shift and that
+    the $1P$ triplet $J=0,1,2$ splittings are not all identical (finite
+    $r$-space on the diagnostic mesh).
 
 ## Not Yet Implemented
 
