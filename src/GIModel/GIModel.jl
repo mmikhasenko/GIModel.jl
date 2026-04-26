@@ -468,7 +468,7 @@ function write_residual_report(
         hyperfine_note = contact_hyperfine ? "with smeared S-wave contact hyperfine" : "without S-wave contact hyperfine"
         fs_note = use_fine_structure ? " first-order L·S (vector+Thomas) and OGE-tensor; " : " no first-order L·S/tensor; "
         central_note = if appendix_a_smearing
-            "Appendix A 3D isotropic smearing of Coulomb G and confinement S (Table II σ₀, s), "
+            "experimental (A7)–(A8)-style 3D isotropic smearing of pointwise Coulomb G and confinement S (Table II σ₀, s), "
         elseif coulomb_1d_smear
             "1D Gaussian renormalization of G(r) only (pointwise S); same σ as contact (A9); not the full (A12)–(A13) expansion, "
         else

@@ -292,6 +292,7 @@ end
         close(io)
         GIModel.write_residual_report(path, "alias check", rows; appendix_a_central = true)
         txt = read(path, String)
-        @test occursin("Appendix A 3D isotropic smearing", txt)
+        @test occursin("experimental (A7)", txt)
+        @test occursin("3D isotropic smearing", txt)
     end
 end

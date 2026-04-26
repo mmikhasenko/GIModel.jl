@@ -63,6 +63,20 @@ guardrail: when the code is only a diagnostic approximation, say so here.
   - Code toggle: `GIParameters.appendix_a_smearing` gates `potential_diagonal` →
     `smeared_central_values`.
 
+- `src/GIModel/radial_1d_coulomb_smear.jl`: **diagnostic** 1D Gaussian
+  renormalization of the pointwise Coulomb piece $G(r)$ on the radial mesh, with
+  $S(r)=br+c$ kept pointwise.
+  - Paper context: shares the Table II $\sigma_0$, $s$ mass-dependent width family
+    (A9) with the contact term, but this is **not** the 3D convolution (A7)–(A8),
+    and **not** the paper’s spin-independent effective form (A12)–(A13).
+  - Numerical implementation: `convolve_1d_gaussian_same_length` computes a
+    local Gaussian-weighted average in $r$ and explicitly renormalizes by the
+    1D weight sum (so constants are preserved on a uniform grid). There are no
+    $4\pi$ volume factors in this construction; it is a mesh-local proxy used to
+    bracket “pointwise” vs “smeared” sensitivity in heavy-quarkonium diagnostics.
+  - Code toggle: `GIParameters.coulomb_1d_smear` gates `potential_diagonal` →
+    `coulomb_1d_smeared_central_values`. Precedence: `appendix_a_smearing` wins.
+
 - `src/GIModel/masses_from_content.jl`: map `sector` + first `quark_content`
   segment to constituent $(m_1, m_2)$ for `compare_sector` (unequal-mass channels).
   - Paper: Sec. II flavor content; Table II masses.
