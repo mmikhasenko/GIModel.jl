@@ -19,9 +19,9 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     2-3.
   - Parameters: `data/parameters.provisional.toml`, copied from Table II
     (`data/table_ii_parameters.csv`). `scripts/verify_table_ii_toml.py` checks
-    they still agree on mapped entries.
-    (`relativistic_factors` $\epsilon_i$ from (A10) are applied in the first-order
-    fine-structure and contact terms as noted below).
+    they still agree on mapped entries. Table II `relativistic_factors`
+    $\epsilon_i$ from (A10) are applied in the first-order fine-structure and
+    contact terms as noted below.
 
 - `src/GIModel/GIModel.jl`: running Coulomb ansatz
   `alpha_s(r) = sum_k alpha_k erf(gamma_k r)`.
@@ -91,6 +91,43 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     S-waves and P singlets have zero first-order fine-structure shift and that
     the $1P$ triplet $J=0,1,2$ splittings are not all identical (finite
     $r$-space on the diagnostic mesh).
+
+## Appendix A: paper method vs this codebase (completion target)
+
+The 1985 paper does **not** stop at a pointwise $V(r)$ on a radial line. Appendix
+A explains (i) **relativistic smearing** so spin-dependent singularities become
+well-defined operators, and (ii) a **harmonic-oscillator (HO) diagonalization**
+path for the spin-independent problem, with expanded effective forms of the
+potentials. In the prose (e.g. around the discussion of Eq. (2)), Godfrey and
+Isgur state that the coordinate $r$ is smeared at the scale of inverse quark
+masses and that detailed smearing is “relegated to Appendix A.”
+
+**What we implement today**
+
+- A **finite-difference** radial mesh with semirelativistic $\sqrt{p^2+m^2}$
+  kinetics and a **pointwise** spin-independent $V$ (plus the experimental
+  `appendix_a_smearing` branch that 3D-blurs pointwise $G$ and $S$ in the spirit
+  of (A7)–(A8), but **not** the (A12)–(A13) derivative expansion the HO
+  solution actually uses).
+- Smeared **contact** hyperfine and first-order **fine structure** on the same
+  $u(r)$, with (A10) $\epsilon$ factors and **diagnostic** global $k$ scales.
+
+**What “done” should look like for the spin-independent sector**
+
+- Replace or strictly **bracket** the pointwise central potential with the
+  **paper’s Appendix A** effective spin-independent operator: either implement the
+  **(A12)–(A13)** structure (or equivalent) on the FD mesh, or reproduce the
+  paper’s **HO-basis** construction and map to observables we can compare to
+  Fig. 6 / Fig. 8. Until then, the **common mass offset** seen in
+  `heavy_quarkonium_diagnostics.md` is expected to be dominated by this gap, not
+  by retuning `k_spin_orbit` / `k_tensor`.
+- Spin-dependent operators should eventually use the **same** smeared $G(r)$ and
+  confinement $S(r)$ as the central sector (the paper ties this together in
+  Appendix A and in the discussion of (A10)–(A13)).
+
+**Reference row lock-in:** Table II inputs are checked against
+`data/table_ii_parameters.csv` via `scripts/verify_table_ii_toml.py`. Reference
+spectrum rows are checked for schema via `scripts/validate_reference_spectra.py`.
 
 ## Not Yet Implemented
 
