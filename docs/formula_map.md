@@ -52,6 +52,8 @@ guardrail: when the code is only a diagnostic approximation, say so here.
   small-$r$ potential toward less binding on a fixed radial line. The flag
   `appendix_a_smearing` in the parameters file is **off** by default; keep it off
   until the (A12)–(A13) structure (or a momentum/HO-basis path) is implemented.
+  - Code toggle: `GIParameters.appendix_a_smearing` gates `potential_diagonal` →
+    `smeared_central_values`.
 
 - `src/GIModel/masses_from_content.jl`: map `sector` + first `quark_content`
   segment to constituent $(m_1, m_2)$ for `compare_sector` (unequal-mass channels).

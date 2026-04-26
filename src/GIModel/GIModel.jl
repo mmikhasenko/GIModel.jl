@@ -23,7 +23,7 @@ struct GIParameters
     c::Float64
     sigma0::Float64
     smearing_s::Float64
-    appendix_a_central::Bool
+    appendix_a_smearing::Bool
     epsilon_c::Float64
     epsilon_t::Float64
     epsilon_so_vector::Float64
@@ -235,7 +235,7 @@ function p2_operator(m::Real, L::Integer, r::AbstractVector, h::Real)
 end
 
 function potential_diagonal(params::GIParameters, m1::Real, m2::Real, r::AbstractVector)
-    if params.appendix_a_central
+    if params.appendix_a_smearing
         return smeared_central_values(params, m1, m2, r)
     end
     return [central_potential(ri, params) for ri in r]
@@ -419,17 +419,21 @@ function write_residual_report(
     rows;
     kinetic::Symbol = :relativistic,
     contact_hyperfine::Bool = true,
-    appendix_a_central::Bool = false,
+    appendix_a_smearing::Bool = false,
+    appendix_a_central::Union{Nothing, Bool} = nothing,
     use_fine_structure::Bool = true,
 )
     mkpath(dirname(path))
     open(path, "w") do io
         println(io, "# ", title)
         println(io)
+        if !isnothing(appendix_a_central)
+            appendix_a_smearing = appendix_a_central
+        end
         hyperfine_note = contact_hyperfine ? "with smeared S-wave contact hyperfine" : "without S-wave contact hyperfine"
         fs_note = use_fine_structure ? " first-order L·S (vector+Thomas) and OGE-tensor; " : " no first-order L·S/tensor; "
         central_note =
-            appendix_a_central ?
+            appendix_a_smearing ?
             "Appendix A 3D isotropic smearing of Coulomb G and confinement S (Table II σ₀, s), " : "pointwise Coulomb + linear + constant (no Appendix A smearing), "
         println(
             io,

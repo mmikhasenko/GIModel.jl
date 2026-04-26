@@ -42,7 +42,7 @@ for fn in readdir(data_dir)
         report_path, title, rows;
         kinetic = :relativistic,
         contact_hyperfine = true,
-        appendix_a_central = params.appendix_a_central,
+        appendix_a_smearing = params.appendix_a_smearing,
         use_fine_structure = params.fine_structure,
     )
     absres = [abs(r.residual_MeV) for r in rows]

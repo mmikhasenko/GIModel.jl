@@ -9,7 +9,7 @@ using .GIModel
     @test params.masses["c"] ≈ 1.628
     @test params.masses["b"] ≈ 4.977
     @test params.b ≈ 0.18
-    @test params.appendix_a_central == false
+    @test params.appendix_a_smearing == false
     @test params.epsilon_c ≈ -0.168
     @test params.fine_structure == true
     @test params.k_spin_orbit > 0.0
@@ -93,4 +93,27 @@ end
     @test base != 0.0
     @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, 3.0 .* u, r) ≈ base rtol = 1e-12 atol = 0.0
     @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, 0.2 .* u, r) ≈ base rtol = 1e-12 atol = 0.0
+end
+
+@testset "write_residual_report keyword alias (appendix_a_central)" begin
+    rows = [
+        (
+            sector = "test",
+            state = "1^1S_0",
+            L = "S",
+            n = 1,
+            J = 0,
+            multiplicity = 1,
+            reference_GeV = 1.0,
+            predicted_GeV = 1.0,
+            residual_MeV = 0.0,
+            confidence = "test-only",
+        ),
+    ]
+    mktemp() do path, io
+        close(io)
+        GIModel.write_residual_report(path, "alias check", rows; appendix_a_central = true)
+        txt = read(path, String)
+        @test occursin("Appendix A 3D isotropic smearing", txt)
+    end
 end

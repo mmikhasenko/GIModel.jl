@@ -39,7 +39,7 @@ for (name, flavor, reference_path, report_path, title) in sectors
         rows;
         kinetic = :relativistic,
         contact_hyperfine = true,
-        appendix_a_central = params.appendix_a_central,
+        appendix_a_smearing = params.appendix_a_smearing,
         use_fine_structure = params.fine_structure,
     )
     absres = abs.([row.residual_MeV for row in rows])
