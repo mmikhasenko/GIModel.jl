@@ -21,6 +21,9 @@ c_MeV = -253
 # treatment uses the expanded forms (A12)–(A13) (and typically an HO basis), not
 # this path. Kept for future (A12) work.
 appendix_a_smearing = false
+# Research: 1D Gaussian of G(r) on the mesh only; S(r) pointwise. Same σ as (A9). Not (A12)–(A13).
+# If `appendix_a_smearing` is true, 3D path takes precedence and this is ignored in `potential_diagonal`.
+coulomb_1d_smear = false
 
 [relativistic_smearing]
 sigma0_GeV = 1.80

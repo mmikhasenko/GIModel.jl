@@ -16,6 +16,13 @@ function central_potential_path(params::GIParameters)::CentralPotentialPath
             "Can remove small-r binding; default is `appendix_a_smearing = false` in `parameters.provisional.toml`.",
         )
     end
+    if params.coulomb_1d_smear
+        return CentralPotentialPath(
+            "coulomb_1d_gauss_on_mesh",
+            "1D Gaussian renormalization of G(r) on the radial grid; S(r) = br + c kept pointwise; same σ as contact (A9); not (A12)–(A13)",
+            "Precedence: if `appendix_a_smearing` is true, the 3D path wins. Otherwise optional `coulomb_1d_smear` in `[potential]`.",
+        )
+    end
     return CentralPotentialPath(
         "pointwise_fd",
         "Eqs. (11)–(13) orientation: V = b r - 4α_s/(3r) + c on the FD mesh",

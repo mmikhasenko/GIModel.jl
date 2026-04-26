@@ -44,6 +44,7 @@ for fn in readdir(data_dir)
         kinetic = :relativistic,
         contact_hyperfine = true,
         appendix_a_smearing = params.appendix_a_smearing,
+        coulomb_1d_smear = params.coulomb_1d_smear,
         use_fine_structure = params.fine_structure,
     )
     absres = [abs(r.residual_MeV) for r in rows]

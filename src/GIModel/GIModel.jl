@@ -39,6 +39,7 @@ struct GIParameters
     fine_structure::Bool
     k_spin_orbit::Float64
     k_tensor::Float64
+    coulomb_1d_smear::Bool
 end
 
 struct ReferenceState
@@ -86,6 +87,7 @@ function load_parameters(path::AbstractString)
         fine_on,
         float(k_so),
         float(k_tn),
+        get(raw["potential"], "coulomb_1d_smear", false),
     )
 end
 
@@ -241,6 +243,8 @@ function smeared_central_values(params::GIParameters, m1::Real, m2::Real, r::Abs
     return vsum[1:n]
 end
 
+include("radial_1d_coulomb_smear.jl")
+
 function reduced_mass(m1::Real, m2::Real)
     m1 * m2 / (m1 + m2)
 end
@@ -263,6 +267,9 @@ end
 function potential_diagonal(params::GIParameters, m1::Real, m2::Real, r::AbstractVector)
     if params.appendix_a_smearing
         return smeared_central_values(params, m1, m2, r)
+    end
+    if params.coulomb_1d_smear
+        return coulomb_1d_smeared_central_values(params, m1, m2, r)
     end
     return [central_potential(ri, params) for ri in r]
 end
@@ -447,6 +454,7 @@ function write_residual_report(
     kinetic::Symbol = :relativistic,
     contact_hyperfine::Bool = true,
     appendix_a_smearing::Bool = false,
+    coulomb_1d_smear::Bool = false,
     appendix_a_central::Union{Nothing, Bool} = nothing,
     use_fine_structure::Bool = true,
 )
@@ -459,9 +467,13 @@ function write_residual_report(
         end
         hyperfine_note = contact_hyperfine ? "with smeared S-wave contact hyperfine" : "without S-wave contact hyperfine"
         fs_note = use_fine_structure ? " first-order L·S (vector+Thomas) and OGE-tensor; " : " no first-order L·S/tensor; "
-        central_note =
-            appendix_a_smearing ?
-            "Appendix A 3D isotropic smearing of Coulomb G and confinement S (Table II σ₀, s), " : "pointwise Coulomb + linear + constant (no Appendix A smearing), "
+        central_note = if appendix_a_smearing
+            "Appendix A 3D isotropic smearing of Coulomb G and confinement S (Table II σ₀, s), "
+        elseif coulomb_1d_smear
+            "1D Gaussian renormalization of G(r) only (pointwise S); same σ as contact (A9); not the full (A12)–(A13) expansion, "
+        else
+            "pointwise Coulomb + linear + constant (no Appendix A or 1D G smear), "
+        end
         println(
             io,
             "Model: finite-difference + `$kinetic` kinetic, $hyperfine_note,$fs_note",
