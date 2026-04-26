@@ -62,6 +62,10 @@ the changes by default. Failed attempts can be recovered with `git stash list`.
 
 Use `--on-fail keep` to leave a failed worktree dirty for manual inspection.
 
+If the child agent reports a Codex usage limit, the loop marks the iteration
+with `usage_limit` and stops the current batch early instead of burning the
+remaining iterations.
+
 ## Verification Gate
 
 By default, every dirty successful agent iteration must pass:

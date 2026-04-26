@@ -105,6 +105,14 @@ def run_agent(args: argparse.Namespace, prompt: str, log_dir: Path) -> int:
     return completed.returncode
 
 
+def output_contains_usage_limit(log_dir: Path) -> bool:
+    output_file = log_dir / "agent.out"
+    if not output_file.exists():
+        return False
+    output = output_file.read_text(encoding="utf-8", errors="replace").lower()
+    return "usage limit" in output or "purchase more credits" in output
+
+
 def run_verify(args: argparse.Namespace, log_dir: Path) -> tuple[bool, list[dict]]:
     results: list[dict] = []
     ok = True
@@ -256,7 +264,10 @@ def main(argv: list[str]) -> int:
         dirty_after_agent = git_status_porcelain()
 
         if agent_code != 0:
+            hit_usage_limit = output_contains_usage_limit(iter_dir)
             status = reject_iteration(iter_dir, iteration, args.on_fail) if dirty_after_agent else "agent_failed_clean"
+            if hit_usage_limit:
+                status = f"{status}_usage_limit"
             verify_results: list[dict] = []
         elif not dirty_after_agent:
             status = "no_changes"
@@ -276,6 +287,9 @@ def main(argv: list[str]) -> int:
         })
 
         print(f"iteration {iteration}: {status}")
+        if "usage_limit" in status:
+            print("stopping batch early: agent reported a usage limit")
+            break
         if args.sleep_seconds and iteration != args.iterations:
             time.sleep(args.sleep_seconds)
 
