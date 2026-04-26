@@ -17,7 +17,9 @@ export GIParameters,
     fine_structure_split,
     LdotS,
     tensor_triplet_LJ,
-    spin_dot
+    spin_dot,
+    CentralPotentialPath,
+    central_potential_path
 
 const ALPHA_COEFFS = (0.25, 0.15, 0.20)
 const ALPHA_GAMMAS = (0.5, sqrt(10.0) / 2, sqrt(1000.0) / 2)
@@ -356,6 +358,7 @@ end
 
 include("masses_from_content.jl")
 include("spin_fine_structure.jl")
+include("appendix_a_status.jl")
 
 function solve_sector(params::GIParameters, flavor::String; maxn::Integer = 6, ngrid::Integer = 450, rmax::Real = 24.0, kinetic::Symbol = :relativistic)
     m = params.masses[flavor]
