@@ -33,6 +33,11 @@ end
     @test bb[(1, "S")] < bb[(1, "P")] < bb[(1, "D")]
 end
 
+@testset "reduced_mass" begin
+    @test reduced_mass(1.5, 0.3) ≈ (1.5 * 0.3) / (1.5 + 0.3)
+    @test reduced_mass(2.0, 2.0) ≈ 1.0
+end
+
 @testset "quark mass resolution" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     m1, m2 = parse_quark_masses(params, "ccbar", "ignore")
