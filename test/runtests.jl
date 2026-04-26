@@ -47,6 +47,22 @@ end
     @test bb[(1, "S")] < bb[(1, "P")] < bb[(1, "D")]
 end
 
+@testset "central: Coulomb+confinement = pointwise V" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    for r0 in (0.15, 0.4, 1.2, 3.0)
+        a = GIModel.central_potential(r0, params)
+        b = GIModel.static_coulomb_G(r0, params) + GIModel.static_confinement_S(r0, params)
+        @test a ≈ b rtol = 1e-12
+    end
+end
+
+@testset "central_potential_path (default = pointwise)" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    p = GIModel.central_potential_path(params)
+    @test p.name == "pointwise_fd"
+    @test params.appendix_a_smearing == false
+end
+
 @testset "reduced_mass" begin
     @test reduced_mass(1.5, 0.3) ≈ (1.5 * 0.3) / (1.5 + 0.3)
     @test reduced_mass(2.0, 2.0) ≈ 1.0
