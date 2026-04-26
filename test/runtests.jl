@@ -123,6 +123,13 @@ end
     ) == 0.0
 end
 
+@testset "erf_approx basic symmetries" begin
+    @test GIModel.erf_approx(0.0) ≈ 0.0 atol = 1e-7
+    for x in (0.05, 0.3, 0.8, 1.5)
+        @test GIModel.erf_approx(x) + GIModel.erf_approx(-x) ≈ 0.0 atol = 1e-12
+    end
+end
+
 @testset "Coulomb derivative consistency (erf_approx)" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     for r0 in (0.05, 0.2, 1.3)
