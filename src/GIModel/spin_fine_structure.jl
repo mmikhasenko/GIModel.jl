@@ -39,10 +39,10 @@ function LdotS(L::Int, S::Int, J::Int)
     0.5 * (J * (J + 1) - L * (L + 1) - S * (S + 1))
 end
 
-function physical_u_norm(r::Vector{Float64}, h::Real, u::Vector{Float64})
+function physical_u_norm(r::AbstractVector{<:Real}, h::Real, u::AbstractVector{<:Real})
     s = 0.0
     for i in eachindex(r)
-        s += abs2(u[i]) * h
+        s += abs2(float(u[i])) * h
     end
     s <= 0.0 && return 0.0
     return 1.0 / sqrt(s)
@@ -62,8 +62,8 @@ function smeared_r_inv(params::GIParameters, m1::Real, m2::Real, r::Real, p::Int
 end
 
 function radial_expect_udr(
-    u::Vector{Float64},
-    r::Vector{Float64},
+    u::AbstractVector{<:Real},
+    r::AbstractVector{<:Real},
     h::Real,
     f::F,
 ) where {F<:Function}
@@ -71,8 +71,8 @@ function radial_expect_udr(
     n == 0.0 && return 0.0
     s = 0.0
     for i in eachindex(r)
-        ui = n * u[i]
-        s += abs2(ui) * h * f(r[i], i)
+        ui = n * float(u[i])
+        s += abs2(ui) * h * f(float(r[i]), i)
     end
     return s
 end

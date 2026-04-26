@@ -273,6 +273,26 @@ end
     @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, 0.2 .* u, r) ≈ base rtol = 1e-12 atol = 0.0
 end
 
+@testset "contact hyperfine matches radial_expect_udr convention" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    m = params.masses["c"]
+    r = collect(0.05:0.05:1.0)
+    h = r[2] - r[1]
+    u = exp.(-2.0 .* r)
+    sigma = GIModel.contact_smearing_sigma(params, m, m)
+    expectation = GIModel.radial_expect_udr(
+        u,
+        r,
+        h,
+        (ri, i) -> begin
+            delta_sigma = sigma^3 / (pi^(3 / 2)) * exp(-(sigma * ri)^2)
+            GIModel.alpha_s_r(ri) * delta_sigma
+        end,
+    )
+    manual = (1.0 + params.epsilon_c) * (32 * pi / (9 * m * m)) * expectation * GIModel.spin_dot(3)
+    @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u, r) ≈ manual rtol = 1e-12 atol = 0.0
+end
+
 @testset "write_residual_report keyword alias (appendix_a_central)" begin
     rows = [
         (

@@ -348,19 +348,17 @@ function contact_hyperfine_shift(params::GIParameters, m1::Real, m2::Real, L::St
     length(r) >= 2 || return 0.0
     sigma = contact_smearing_sigma(params, m1, m2)
     h = r[2] - r[1]
-    u_norm = 0.0
-    for i in eachindex(r)
-        u_norm += abs2(vector[i]) * h
-    end
-    u_norm <= 0.0 && return 0.0
-    n = 1.0 / sqrt(u_norm)
-    expectation = 0.0
-    for i in eachindex(r)
-        delta_sigma = sigma^3 / (π^(3 / 2)) * exp(-(sigma * r[i])^2)
-        ui = n * vector[i]
-        expectation += abs2(ui) * h * alpha_s_r(r[i]) * delta_sigma
-    end
-    (1.0 + params.epsilon_c) * (32 * π / (9 * m1 * m2)) * expectation * spin_dot(multiplicity)
+    expectation = radial_expect_udr(
+        vector,
+        r,
+        h,
+        (ri, i) -> begin
+            delta_sigma = sigma^3 / (π^(3 / 2)) * exp(-(sigma * ri)^2)
+            alpha_s_r(ri) * delta_sigma
+        end,
+    )
+    (1.0 + params.epsilon_c) * (32 * π / (9 * m1 * m2)) * expectation *
+    spin_dot(multiplicity)
 end
 
 include("masses_from_content.jl")
