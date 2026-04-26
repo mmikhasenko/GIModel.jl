@@ -17,6 +17,14 @@ classification of residuals.
 - `docs/autonomous_runs/`: per-run prompts, outputs, diffs, verification logs,
   and summaries.
 
+## Chat-driven series (IDE)
+
+The same ratchet can be done **without** `autonomous_loop.py`: one bounded
+change, run the full verification gate, commit with
+`autonomous: iteration N`, repeat from a clean `main`. This matches multi-step
+work in the editor; the Python loop is for unattended **terminal** sub-agents
+(Codex, Cursor `agent` CLI) with the same program file.
+
 ## Quick Start
 
 Run one guarded iteration:
