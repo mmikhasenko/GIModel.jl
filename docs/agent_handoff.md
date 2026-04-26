@@ -15,8 +15,22 @@ to continue the Godfrey-Isgur reproduction.
 - First-pass table digitizations live under `data/raw/digitized_tables/`.
 - First-pass figure-label digitizations live under
   `data/raw/digitized_figures/`.
-- No cleaned physics reference data has been produced yet.
-- No solver implementation has started yet.
+- A diagnostic Godfrey-Isgur solver lives in `src/GIModel/` (semirelativistic
+  kinetic + central + running Coulomb, contact hyperfine, first-order
+  fine-structure, heavy-quarkonium comparisons). Provisional parameters are in
+  `data/parameters.provisional.toml`. Formula intent and flags are described in
+  `docs/formula_map.md`; sector residuals under `docs/residual_reports/`.
+- `test/runtests.jl` encodes several convention checks (Coulomb derivative,
+  fine-structure angular factors, reduced-radial expectations, smearing
+  constant-preservation).
+- No cleaned *promoted* reference dataset in `data/clean/` has been finished
+  yet; extraction remains partly first-pass and needs audit.
+- **Autonomous coding loop:** the guarded outer loop and program file are
+  `docs/autonomous_loop.md` and `docs/autonomous_program.md` (runner:
+  `scripts/autonomous_loop.py`). Logs are written to `docs/autonomous_runs/`
+  (gitignored). If the agent CLI hits a usage limit, the runner stops the batch
+  early; resume after credits reset or by doing a manual bounded iteration
+  (same program, same full verification gate as in the docs).
 
 ## Start Here
 
@@ -102,13 +116,15 @@ Start files:
 
 - `docs/formula_map.md`
 - `docs/conventions.md`
-- `data/clean/parameters.toml`
+- `data/parameters.provisional.toml` (provisional Table II–style input)
 - `src/GIModel/`
 
 First task:
 
-- Do not start heavy solver work until Table II parameters and the
-  spin-independent Hamiltonian conventions are extracted and reviewed.
+- Move the diagnostic implementation toward a paper-faithful Appendix A
+  central/smeared operator and keep `docs/formula_map.md` synchronized; avoid
+  silent refits and prefer tests plus residual classification over ad hoc tuning
+  (see `docs/autonomous_program.md`).
 
 ### Verifier
 
@@ -132,7 +148,8 @@ Complete Phase 1 enough to support the first model milestone:
 - Extract Table II parameters.
 - Extract `ccbar` and `bbbar` spectra from the original paper.
 - Create raw extraction CSVs with page/table provenance.
-- Log disagreements in `data/raw/extraction_audit.csv`.
+- Log disagreements in `data/raw/extraction_audit.csv` (header row is in
+  place; add one row per audited mismatch between extractors).
 
 The first two bullets have a provisional start: Table II is digitized under
 `data/raw/digitized_tables/table_ii_parameters/`, and spectrum screenshots are

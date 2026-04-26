@@ -36,7 +36,10 @@ Expected generated/relevant reports:
 
 ## Current Scorecard
 
-From `docs/residual_reports/scorecard.md` after commit `fa52c02`:
+Regenerate the numbers (they will drift when parameters or references change) with
+`julia --project=. scripts/run_all_spectrum_checks.jl`, then read
+`docs/residual_reports/scorecard.md`. Example snapshot (do not treat as a fixed
+tolerance test):
 
 | sector | rows | mean abs MeV | max abs MeV |
 |---|---:|---:|---:|

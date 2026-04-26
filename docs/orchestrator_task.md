@@ -10,6 +10,23 @@ Primary target:
 
 The attached `godfrey_isgur_seed_masses.csv` is only a bootstrap table assembled from later papers quoting GI values. It is not the final authority.
 
+## Current repository status (supervisor)
+
+This table orients contributors; the detailed acceptance gates are still the
+per-phase checklists below. A “complete” 1985 reproduction through Phase 7 is
+**not** claimed.
+
+| Phase | State |
+| --- | --- |
+| 0 — Inventory & seed | Done enough to work: PDF, seed, validation, `docs/source_inventory.md`. |
+| 1 — PDF / figure extraction | Substantial: `paper/text/*`, `data/raw/digitized_*`, top-level `data/reference_spectrum_*.csv`; not every planned aggregate CSV is filled. |
+| 2 — Clean schema | Staged: `data/clean/README.md`; `masses.csv` / `mixings.csv` TBD after audit. |
+| 3 — Parameters & formula map | In use: `data/parameters.provisional.toml`, `docs/formula_map.md`, `docs/conventions.md`. |
+| 4 — Minimal solver | Implemented under `src/GIModel/`: semirelativistic FD + pointwise central + smeared contact + diagnostic fine structure. Residuals in `docs/residual_reports/`. |
+| 5+ — Full spin + Appendix A + mixing | **Partial** (see `docs/midterm_review_brief.md`); remaining gaps are documented, not hidden. |
+
+Ongoing work order and safety rules: `docs/autonomous_program.md`.
+
 ## Non-negotiable rules
 
 1. Do not silently refit parameters.

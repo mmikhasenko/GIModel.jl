@@ -15,7 +15,7 @@ Expected generated files:
 - `data/raw/digitized_tables/*`
 - `data/raw/tables_from_pdf_text.csv`
 - `data/raw/tables_from_page_images.csv`
-- `data/raw/extraction_audit.csv`
+- `data/raw/extraction_audit.csv` (header-only template until text-vs-image rows are logged)
 
 ## 2026-04-25 Setup
 

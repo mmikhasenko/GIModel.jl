@@ -47,6 +47,40 @@ It reads the generated prompt from stdin. The explicit model avoids inheriting a
 local Codex CLI default that may require a newer CLI. Override it with
 `--agent-command` if you want a different coding agent.
 
+### Cursor Agent with Composer 2 (or Composer 2 Fast)
+
+Yes. The same runner works: point `--agent-command` at a helper that reads
+**stdin** (the loop always pipes the program text on stdin) and calls the
+Cursor **Agent** CLI. Install the CLI from [Cursor’s install
+page](https://cursor.com/install) so `agent` (or `cursor-agent`) is on your
+`PATH`—it is a separate install from the `cursor` editor launcher.
+
+This repo provides:
+
+```bash
+python3 scripts/autonomous_loop.py --iterations 1 \
+  --agent-command "bash scripts/cursor_loop_agent.sh"
+```
+
+The wrapper [scripts/cursor_loop_agent.sh](../scripts/cursor_loop_agent.sh) runs
+the agent in non-interactive **print** mode (`-p`) with `--force` so file/shell
+tools can run without manual approval. **Only use that on a trusted check-out**
+(the same risk profile as `codex exec --full-auto` in an open terminal).
+
+- Default model: **Composer 2 Fast** (`composer-2-fast`, overridable with
+  `CURSOR_LOOP_MODEL`, e.g. `composer-2` for the standard tier).
+- Override the binary with `CURSOR_LOOP_AGENT=agent` if you need to be
+  explicit.
+
+The Cursor Agent CLI is still evolving; if a flag in the wrapper is wrong for
+your version, run `agent --help` and adjust
+[scripts/cursor_loop_agent.sh](../scripts/cursor_loop_agent.sh) locally (model
+id, or whether the subcommand is `agent` vs `agent chat`).
+
+**Note:** This is the **terminal Agent** (same family as the editor’s agent), not
+the in-IDE “Composer 2 in chat” window. You get a comparable model when the CLI
+`--model` matches the Composer 2 / Composer 2 Fast ids your account exposes.
+
 ## Ratchet Behavior
 
 Each iteration starts from the last accepted git commit.

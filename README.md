@@ -49,6 +49,10 @@ Use these files to resume work quickly:
   raw snippets and structured transcriptions.
 - `data/raw/digitized_figures/`: reference/provenance copies for figure-specific
   label transcriptions and replots.
+- `data/raw/extraction_audit.csv`: template for text-vs-image (or other)
+  extraction disagreements; add rows as audits proceed.
+- `data/clean/README.md`: what promoted “clean” tables will be (Phase 2);
+  solver today still uses top-level `data/*.csv` and `parameters.provisional.toml`.
 - `scripts/validate_seed.py`: seed schema validation.
 - `scripts/build_paper_prose.py`: rebuilds the prose-only paper reference.
 - `scripts/plot_spectrum_digitizations.py`: regenerates clean Fig. 4-9

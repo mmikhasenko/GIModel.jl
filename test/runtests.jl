@@ -73,6 +73,43 @@ end
     @test GIModel.tensor_triplet_LJ(1, 2, 1) ≈ -0.4
 end
 
+@testset "fine_structure_split: S-wave and P-wave triplet" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    m = params.masses["c"]
+    _, umat, r = GIModel.channel_solution(params, m, m, 0; nlevels = 2, ngrid = 200, rmax = 20.0)
+    h = r[2] - r[1]
+    u_s = collect(umat[:, 1])
+    @test GIModel.fine_structure_split(
+        params, m, m, "S", 3, 1, u_s, r, h;
+        k_spin_orbit = params.k_spin_orbit, k_tensor = params.k_tensor,
+    ) == 0.0
+    @test GIModel.fine_structure_split(
+        params, m, m, "S", 1, 0, u_s, r, h;
+        k_spin_orbit = 1.0, k_tensor = 1.0,
+    ) == 0.0
+    v_p, umat_p, r_p = GIModel.channel_solution(params, m, m, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+    h_p = r_p[2] - r_p[1]
+    u1p = collect(umat_p[:, 1])
+    δ0 = GIModel.fine_structure_split(
+        params, m, m, "P", 3, 0, u1p, r_p, h_p;
+        k_spin_orbit = 1.0, k_tensor = 1.0,
+    )
+    δ1 = GIModel.fine_structure_split(
+        params, m, m, "P", 3, 1, u1p, r_p, h_p;
+        k_spin_orbit = 1.0, k_tensor = 1.0,
+    )
+    δ2 = GIModel.fine_structure_split(
+        params, m, m, "P", 3, 2, u1p, r_p, h_p;
+        k_spin_orbit = 1.0, k_tensor = 1.0,
+    )
+    @test isfinite(δ0) && isfinite(δ1) && isfinite(δ2)
+    @test δ0 != δ1 || δ1 != δ2
+    @test GIModel.fine_structure_split(
+        params, m, m, "P", 1, 0, u1p, r_p, h_p;
+        k_spin_orbit = 1.0, k_tensor = 1.0,
+    ) == 0.0
+end
+
 @testset "Coulomb derivative consistency (erf_approx)" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     for r0 in (0.05, 0.2, 1.3)
