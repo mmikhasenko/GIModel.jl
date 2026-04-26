@@ -115,9 +115,10 @@ Please review in this order.
 
 2. Check normalization.
    The finite-difference eigenvectors are discrete radial vectors. Verify all
-   expectation values use a consistent normalization. The current code uses a
-   `4π` normalization helper in spin diagnostics; this may be conceptually
-   inconsistent with reduced radial functions. Be intolerant here.
+   expectation values use a consistent normalization. The current code treats
+   FD eigenvectors as reduced radial functions `u(r)` with physical
+   normalization `∫ |u(r)|^2 dr = 1` (uniform-mesh proxy `∑ |uᵢ|² h = 1`), and
+   the spin diagnostics follow the same convention (no `4π` factor).
 
 3. Check the heavy-light mass parsing.
    `src/GIModel/masses_from_content.jl` previously had a bug class where

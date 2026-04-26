@@ -72,3 +72,14 @@ end
     @test GIModel.tensor_triplet_LJ(1, 1, 1) ≈ 2.0
     @test GIModel.tensor_triplet_LJ(1, 2, 1) ≈ -0.4
 end
+
+@testset "reduced radial u(r) expectation normalization" begin
+    h = 0.1
+    r = collect(h:h:(3h))
+    u = [1.0, 2.0, 3.0]
+    @test GIModel.radial_expect_udr(u, r, h, (ri, i) -> 1.0) ≈ 1.0 atol = 1e-12
+
+    manual_weights = abs2.(u) ./ sum(abs2.(u))
+    manual_mean_r = sum(manual_weights .* r)
+    @test GIModel.radial_expect_udr(u, r, h, (ri, i) -> ri) ≈ manual_mean_r atol = 1e-12
+end

@@ -8,6 +8,9 @@ implementation.
 - Energies and masses are in GeV internally.
 - Distances are in GeV^-1.
 - Reference spectrum CSV masses are read in GeV.
+- Finite-difference bound-state eigenvectors are treated as reduced radial
+  wavefunctions `u(r)` on a uniform mesh (so `ψ(r,Ω) = u(r)/r * Y_{LM}(Ω)`), with
+  physical normalization `∫ |u(r)|^2 dr = 1` (discrete proxy `∑ |uᵢ|² h = 1`).
 - `L` is stored as spectroscopic letters `S`, `P`, `D`, `F`, `G` and mapped to
   orbital angular momentum `0, 1, 2, 3, 4`.
 - Multiplicity is `2S+1`; the current contact hyperfine term supports

@@ -1,7 +1,11 @@
 # First-order color-magnetic + Thomas (scalar confinement) spin–orbit, plus OGE-tensor
 # in the structure of the paper, Eqs. (3)–(7) (text), using Table II ε in (A10).
-# Radial integrals: physical normalization ∫ 4π u² dr = 1 for the reduced Schrödinger
-# radial u(r) on the same mesh as the FD solver.
+# Radial integrals: we treat the FD eigenvector as the reduced Schrödinger radial
+# wavefunction u(r) sampled on a uniform mesh. The physical normalization is
+#   ∫ |u(r)|² dr = 1
+# (no extra 4π factor; the spherical-harmonic angular integral is already unity for
+# normalized Y_{LM}). On a uniform mesh with spacing h, the discrete proxy is
+#   ∑ |uᵢ|² h = 1.
 #
 # A global scale k_spin_orbit / k_tensor bridges the present FD + semirelativistic path to
 # the large HO-basis results in the original paper; defaults are in parameters.toml.
@@ -40,7 +44,7 @@ end
 function physical_u_norm(r::Vector{Float64}, h::Real, u::Vector{Float64})
     s = 0.0
     for i in eachindex(r)
-        s += 4.0 * π * abs2(u[i]) * h
+        s += abs2(u[i]) * h
     end
     s <= 0.0 && return 0.0
     return 1.0 / sqrt(s)
@@ -59,7 +63,7 @@ function smeared_r_inv(params::GIParameters, m1::Real, m2::Real, r::Real, p::Int
     return 0.0
 end
 
-function radial_expect_4piudr(
+function radial_expect_udr(
     u::Vector{Float64},
     r::Vector{Float64},
     h::Real,
@@ -70,7 +74,7 @@ function radial_expect_4piudr(
     s = 0.0
     for i in eachindex(r)
         ui = n * u[i]
-        s += 4.0 * π * abs2(ui) * h * f(r[i], i)
+        s += abs2(ui) * h * f(r[i], i)
     end
     return s
 end
@@ -98,14 +102,14 @@ function fine_structure_split(
     end
     m1, m2 = float(m1), float(m2)
     inv2 = 0.25 * (1.0 / m1^2 + 1.0 / m2^2)
-    Ivp = radial_expect_4piudr(u, r, h, (ri, i) -> (1.0 / max(ri, 1.0e-8)) * dV_coul_central_dr(ri, params))
-    I1 = radial_expect_4piudr(u, r, h, (ri, i) -> 1.0 / max(ri, 1.0e-8))
+    Ivp = radial_expect_udr(u, r, h, (ri, i) -> (1.0 / max(ri, 1.0e-8)) * dV_coul_central_dr(ri, params))
+    I1 = radial_expect_udr(u, r, h, (ri, i) -> 1.0 / max(ri, 1.0e-8))
     # For L>0 the FD radial wave function suppresses the origin. Using the same
     # broad Gaussian width as the S-wave contact term over-damps tensor
     # splittings; the full GI tensor term should come from derivatives of the
     # smeared G(r), but this unsmeared alpha_s/r^3 proxy is a better diagnostic
     # until that Appendix A operator is implemented.
-    Its = radial_expect_4piudr(u, r, h, (ri, i) -> alpha_s_r(ri) / max(ri, 1.0e-8)^3)
+    Its = radial_expect_udr(u, r, h, (ri, i) -> alpha_s_r(ri) / max(ri, 1.0e-8)^3)
     ls = LdotS(Ln, 1, J)
     vec_term = (1.0 + params.epsilon_so_vector) * Ivp
     thomas_term = (1.0 + params.epsilon_so_scalar) * params.b * I1

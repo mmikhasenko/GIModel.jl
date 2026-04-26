@@ -67,8 +67,11 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     proportional to $3G'(r)-S'(r)$. The tensor radial term is deliberately
     unsmeared for now because applying the broad contact width to $1/r^3$
     overdamps the P/D splittings; the correct next replacement is the
-    derivative of the Appendix A smeared $G(r)$. Scales $k$ bridge the small FD
-    basis to the large HO result and are diagnostic, not paper refits.
+    derivative of the Appendix A smeared $G(r)$. Radial expectation values treat
+    FD eigenvectors as reduced radial functions $u(r)$ with $\int |u|^2\,dr=1$
+    (uniform-mesh proxy $\sum |u_i|^2 h = 1$; no additional $4\pi$ factor).
+    Scales $k$ bridge the small FD basis to the large HO result and are
+    diagnostic, not paper refits.
 
 ## Not Yet Implemented
 
