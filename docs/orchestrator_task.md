@@ -37,6 +37,11 @@ if we keep adding diagnostic factors.
 1. **Lock provenance and inputs**
    - Table II: `data/table_ii_parameters.csv` must stay in sync with
      `data/parameters.provisional.toml` (checked by `scripts/verify_table_ii_toml.py`).
+   - All `data/reference_spectrum_*.csv` must keep columns the loader expects
+     (`scripts/validate_reference_spectra.py`).
+   - The experimental `appendix_a_smearing` code path is smoke-tested in
+     `test/runtests.jl` (finite S-wave), not endorsed as the final (A12)–(A13)
+     implementation.
    - Figure spectra: close the extraction loop (`data/raw/extraction_audit.csv` →
      audited `data/clean/masses.csv` when ready).
 2. **Spin-independent sector first**

@@ -62,6 +62,10 @@ end
     @test m1 ≈ params.masses["c"] && m2 ≈ params.masses["d"]
     m1, m2 = parse_quark_masses(params, "charmed_strange", "c sbar")
     @test m1 ≈ params.masses["c"] && m2 ≈ params.masses["s"]
+    m1, m2 = parse_quark_masses(params, "bottom_light", "b ubar; -b dbar")
+    @test m1 ≈ params.masses["b"] && m2 ≈ params.masses["u"]
+    m1, m2 = parse_quark_masses(params, "isoscalar", "ignore")
+    @test m1 ≈ m2 ≈ 0.5 * (params.masses["u"] + params.masses["d"])
 end
 
 @testset "appendix_a_smearing code path (finite S-wave energy)" begin
