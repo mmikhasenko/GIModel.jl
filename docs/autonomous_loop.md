@@ -114,16 +114,14 @@ By default, every dirty successful agent iteration must pass:
 
 ```bash
 python3 scripts/validate_seed.py
+python3 scripts/verify_table_ii_toml.py
+python3 scripts/validate_reference_spectra.py
 julia --project=. test/runtests.jl
 julia --project=. scripts/analyze_heavy_quarkonium.jl
 julia --project=. scripts/run_all_spectrum_checks.jl
 ```
 
-The repository also has `python3 scripts/verify_table_ii_toml.py` (Table II
-consistency) and a shell wrapper `bash scripts/verify_project.sh` that runs the
-Table II check plus the commands above. Prefer the wrapper for human sessions;
-the autonomous loop could be extended to include the Table II check in lockstep
-with the README.
+The same sequence is in `bash scripts/verify_project.sh` for a one-shot run.
 
 Override or shorten the gate with repeated `--verify-command` flags, for
 example:

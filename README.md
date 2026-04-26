@@ -56,7 +56,9 @@ Use these files to resume work quickly:
 - `scripts/validate_seed.py`: seed schema validation.
 - `scripts/verify_table_ii_toml.py`: ensures `data/parameters.provisional.toml`
   matches `data/table_ii_parameters.csv` for Table II–mapped entries.
-- `scripts/verify_project.sh`: one-shot full gate (seed + Table II + Julia tests
+- `scripts/validate_reference_spectra.py`: every `data/reference_spectrum_*.csv`
+  has the columns `compare_sector` / `load_reference_spectrum` need.
+- `scripts/verify_project.sh`: one-shot full gate (Python prechecks + Julia tests
   + analysis + all spectrum checks); use before committing substantive changes.
 - `scripts/build_paper_prose.py`: rebuilds the prose-only paper reference.
 - `scripts/plot_spectrum_digitizations.py`: regenerates clean Fig. 4-9

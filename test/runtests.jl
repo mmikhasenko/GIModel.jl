@@ -11,6 +11,13 @@ using .GIModel
     @test success(p)
 end
 
+@testset "reference spectrum CSVs (required columns)" begin
+    script = joinpath(root, "scripts", "validate_reference_spectra.py")
+    p = run(`python3 $script`, wait = false)
+    wait(p)
+    @test success(p)
+end
+
 @testset "reference loading" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     @test params.masses["c"] ≈ 1.628
