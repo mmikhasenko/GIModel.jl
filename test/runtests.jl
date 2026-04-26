@@ -150,6 +150,15 @@ end
     @test GIModel.radial_expect_udr(u, r, h, (ri, i) -> ri) ≈ manual_mean_r atol = 1e-12
 end
 
+@testset "contact hyperfine: only S-waves" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    m = params.masses["c"]
+    r = collect(0.05:0.05:1.0)
+    u = exp.(-2.0 .* r)
+    @test GIModel.contact_hyperfine_shift(params, m, m, "P", 3, u, r) == 0.0
+    @test GIModel.contact_hyperfine_shift(params, m, m, "D", 3, u, r) == 0.0
+end
+
 @testset "contact hyperfine shift uses u(r) normalization" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     m = params.masses["c"]
