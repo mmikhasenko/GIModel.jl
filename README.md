@@ -14,6 +14,9 @@ Use these files to resume work quickly:
 
 - `docs/orchestrator_task.md`: phase plan, validation gates, and acceptance
   criteria.
+- `docs/autonomous_loop.md`: guarded autonomous-agent loop for multi-iteration
+  project work.
+- `docs/autonomous_program.md`: current autonomous-agent program and guardrails.
 - `docs/agent_handoff.md`: current status, recommended subagent split, and
   immediate next milestone.
 - `docs/source_inventory.md`: bibliographic metadata and source authority

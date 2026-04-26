@@ -2,6 +2,9 @@
 *.log
 *.tmp
 
+# Autonomous loop logs can become large and are regenerated locally.
+docs/autonomous_runs/
+
 # Generated page images can be large; regenerate from the PDF when needed.
 paper/pages/*.png
 
