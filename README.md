@@ -113,13 +113,23 @@ solver and validation scripts should start from the top-level `data/` files.
    `quark_content` column to choose unequal constituent masses. It also writes
    `docs/residual_reports/scorecard.md` as the compact progress dashboard.
 
-4. Run Julia tests:
+4. Decompose the heavy-quarkonium mismatch:
+
+   ```bash
+   julia --project=. scripts/analyze_heavy_quarkonium.jl
+   ```
+
+   This writes `docs/residual_reports/heavy_quarkonium_diagnostics.md`, splitting
+   `ccbar` and `bbbar` errors into common offsets, multiplet-center spacing
+   errors, and spin-splitting errors.
+
+5. Run Julia tests:
 
    ```bash
    julia --project=. test/runtests.jl
    ```
 
-5. Rebuild paper text references if the PDF changes:
+6. Rebuild paper text references if the PDF changes:
 
    ```bash
    pdftotext -layout paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_layout.txt
@@ -129,14 +139,14 @@ solver and validation scripts should start from the top-level `data/` files.
    python3 scripts/build_paper_prose.py
    ```
 
-6. Render page images for table verification when needed:
+7. Render page images for table verification when needed:
 
    ```bash
    pdftoppm -r 300 -png paper/Godfrey-Isgur-1985.pdf paper/pages/gi
    ```
 
-7. Create raw extraction CSVs in `data/raw/`.
-8. Promote verified rows into `data/clean/` with provenance preserved.
+8. Create raw extraction CSVs in `data/raw/`.
+9. Promote verified rows into `data/clean/` with provenance preserved.
 
 Current first-pass digitizations are copied to the top level of `data/`.
 Reference/provenance copies remain under `data/raw/digitized_tables/` and
