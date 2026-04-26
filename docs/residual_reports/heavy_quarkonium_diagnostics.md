@@ -27,6 +27,8 @@ Purpose: decompose the remaining `ccbar`/`bbbar` mismatch into common mass offse
 | `3S` | 2 | 4.090 | 4.187 |   +96.7 |   +17.3 |
 | `4S` | 1 | 4.450 | 4.549 |   +98.8 |   +19.5 |
 
+- radial/orbital spacing errors (this table): RMSE = `13.9 MeV`, mean abs = `11.2 MeV` over `6` available rows
+
 ### Radial And Orbital Spacings
 
 | quantity | reference MeV | model MeV | error MeV |
@@ -75,6 +77,8 @@ Purpose: decompose the remaining `ccbar`/`bbbar` mismatch into common mass offse
 | `4S` | 1 | 10.630 | 10.681 |   +51.1 |   +12.3 |
 | `5S` | 1 | 10.880 | 10.922 |   +42.0 |    +3.2 |
 | `6S` | 1 | 11.100 | 11.139 |   +39.2 |    +0.4 |
+
+- radial/orbital spacing errors (this table): RMSE = `15.1 MeV`, mean abs = `12.5 MeV` over `6` available rows
 
 ### Radial And Orbital Spacings
 

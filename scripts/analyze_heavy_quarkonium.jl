@@ -64,6 +64,19 @@ function fraction_offset_explains(residuals_MeV::Vector{Float64})
     return 1.0 - sc / sst
 end
 
+function spacing_error_from_rows(sp_rows)
+    errs = Float64[]
+    for row in sp_rows
+        isnothing(row) && continue
+        push!(errs, row.error)
+    end
+    isempty(errs) && return (0.0, 0.0, 0)
+    n = length(errs)
+    rms = sqrt(sum(abs2, errs) / n)
+    mae = sum(abs, errs) / n
+    return (rms, mae, n)
+end
+
 function emit_split_table(io, title, rows)
     valid = [row for row in rows if !isnothing(row)]
     isempty(valid) && return
@@ -136,18 +149,18 @@ open(report_path, "w") do io
         end
         println(io)
 
-        emit_split_table(
-            io,
-            "Radial And Orbital Spacings",
-            [
-                spacing_row(centers, (2, "S"), (1, "S")),
-                spacing_row(centers, (3, "S"), (1, "S")),
-                spacing_row(centers, (1, "P"), (1, "S")),
-                spacing_row(centers, (1, "D"), (1, "P")),
-                spacing_row(centers, (2, "P"), (1, "P")),
-                spacing_row(centers, (2, "D"), (1, "D")),
-            ],
-        )
+        sp_rows = [
+            spacing_row(centers, (2, "S"), (1, "S")),
+            spacing_row(centers, (3, "S"), (1, "S")),
+            spacing_row(centers, (1, "P"), (1, "S")),
+            spacing_row(centers, (1, "D"), (1, "P")),
+            spacing_row(centers, (2, "P"), (1, "P")),
+            spacing_row(centers, (2, "D"), (1, "D")),
+        ]
+        rms_s, mae_s, n_s = spacing_error_from_rows(sp_rows)
+        println(io, "- radial/orbital spacing errors (this table): RMSE = `", @sprintf("%.1f", rms_s), " MeV`, mean abs = `", @sprintf("%.1f", mae_s), " MeV` over `", n_s, "` available rows")
+        println(io)
+        emit_split_table(io, "Radial And Orbital Spacings", sp_rows)
 
         emit_split_table(
             io,
