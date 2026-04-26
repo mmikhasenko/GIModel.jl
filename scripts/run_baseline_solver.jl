@@ -27,7 +27,12 @@ sectors = [
 
 for (name, flavor, reference_path, report_path, title) in sectors
     reference = load_reference_spectrum(reference_path)
-    rows = compare_sector(params, reference, flavor; kinetic = :relativistic, contact_hyperfine = true)
+    rows = compare_sector(
+        params, reference, flavor;
+        kinetic = :relativistic,
+        contact_hyperfine = true,
+        use_fine_structure = params.fine_structure,
+    )
     write_residual_report(
         report_path,
         title,
@@ -35,6 +40,7 @@ for (name, flavor, reference_path, report_path, title) in sectors
         kinetic = :relativistic,
         contact_hyperfine = true,
         appendix_a_central = params.appendix_a_central,
+        use_fine_structure = params.fine_structure,
     )
     absres = abs.([row.residual_MeV for row in rows])
     @printf("%s: rows=%d mean_abs=%.1f MeV max_abs=%.1f MeV -> %s\n", name, length(rows), sum(absres) / length(absres), maximum(absres), report_path)

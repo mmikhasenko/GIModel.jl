@@ -22,8 +22,8 @@ guardrail: when the code is only a diagnostic approximation, say so here.
   - Paper anchor: nonrelativistic orientation around Eqs. (2)-(3), PDF pages
     2-3.
   - Parameters: `data/parameters.provisional.toml`, copied from Table II
-    (Table II $\epsilon_i$ from (A10) are loaded as `relativistic_factors` but
-    not yet used in the baseline Hamiltonian beyond parameter storage).
+    (`relativistic_factors` $\epsilon_i$ from (A10) are applied in the first-order
+    fine-structure and contact terms as noted below).
 
 - `src/GIModel/GIModel.jl`: running Coulomb ansatz
   `alpha_s(r) = sum_k alpha_k erf(gamma_k r)`.
@@ -55,13 +55,32 @@ guardrail: when the code is only a diagnostic approximation, say so here.
   `appendix_a_smearing` in the parameters file is **off** by default; keep it off
   until the (A12)–(A13) structure (or a momentum/HO-basis path) is implemented.
 
+- `src/GIModel/masses_from_content.jl`: map `sector` + first `composition_raw`
+  segment to constituent $(m_1, m_2)$ for `compare_sector` (unequal-mass channels).
+  - Paper: Sec. II flavor content; Table II masses.
+
+- `src/GIModel/spin_fine_structure.jl`: first-order color-magnetic + Thomas
+  (scalar confinement) spin–orbit and an OGE-style tensor term on the FD radial
+  mesh, with $\int 4\pi\,u^2(r)\,dr=1$ for the reduced radial function; smeared
+  $1/r^3$ for the tensor piece; Table II $\epsilon_t$, $\epsilon_{\rm so(v)}$,
+  $\epsilon_{\rm so(s)}$; global `k_spin_orbit`, `k_tensor` in `[fine_structure]`.
+  - Paper: spin-dependent structure around Eqs. (3)–(7) (text), and (A10) (Appendix
+    A) for the $\epsilon$ factors. Tensor angular factors for $^3L_J$ are
+    hand-traced placeholders (Barnes-style) pending the full 6$j$ reduction used
+    in the HO-basis code of the original paper. Scales $k$ bridge the small FD
+  basis to the large HO result.
+
 ## Not Yet Implemented
 
 - Full GI effective spin-independent smearing from (A12)–(A13) and/or the paper’s
   HO-basis smearing, replacing the separate experimental (A7)–(A8) convolution
   when `appendix_a_smearing` is enabled.
-- Momentum-dependent relativization factors for contact, tensor, vector
-  spin-orbit, and scalar spin-orbit interactions.
-- Tensor and spin-orbit fine structure.
-- Unequal-mass antisymmetric spin-orbit mixing.
-- Isoscalar annihilation mixing.
+- Full $E_i/m_i$ or $(p^2{+}m_i^2)^{1/2}$ momentum dependence in the spin
+  couplings (paper’s relativization beyond constant $\epsilon$).
+- Momentum-dependent relativization factors for the contact and tensor
+  *operators* (beyond the $\epsilon$ factors already applied in the
+  `fine_structure` block).
+- Unequal-mass antisymmetric spin–orbit and tensor off-diagonal mixing
+  (perturbative in the text).
+- Isoscalar annihilation and explicit $n\bar n$—$s\bar s$ large mixings
+  (Table III).

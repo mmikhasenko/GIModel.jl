@@ -31,3 +31,10 @@ epsilon_t = 0.025
 epsilon_so_vector = -0.035
 epsilon_so_scalar = 0.0
 
+[fine_structure]
+# Vector + Thomas (scalar) spin–orbit and OGE-tensor, first order on the FD
+# radial u(r) with (A10) ε and global scales to align with the paper’s HO result.
+enabled = true
+k_spin_orbit = 0.48
+k_tensor = 0.42
+

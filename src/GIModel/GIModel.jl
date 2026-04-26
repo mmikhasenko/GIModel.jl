@@ -10,7 +10,8 @@ export GIParameters,
     load_reference_spectrum,
     solve_sector,
     compare_sector,
-    write_residual_report
+    write_residual_report,
+    parse_quark_masses
 
 const ALPHA_COEFFS = (0.25, 0.15, 0.20)
 const ALPHA_GAMMAS = (0.5, sqrt(10.0) / 2, sqrt(1000.0) / 2)
@@ -27,10 +28,14 @@ struct GIParameters
     epsilon_t::Float64
     epsilon_so_vector::Float64
     epsilon_so_scalar::Float64
+    fine_structure::Bool
+    k_spin_orbit::Float64
+    k_tensor::Float64
 end
 
 struct ReferenceState
     sector::String
+    quark_content::String
     composition::String
     n::Int
     multiplicity::Int
@@ -55,6 +60,10 @@ function load_parameters(path::AbstractString)
     eps_t = isnothing(rf) ? 0.0 : get(rf, "epsilon_t", 0.0)
     eps_v = isnothing(rf) ? 0.0 : get(rf, "epsilon_so_vector", 0.0)
     eps_s = isnothing(rf) ? 0.0 : get(rf, "epsilon_so_scalar", 0.0)
+    fs = get(raw, "fine_structure", nothing)
+    fine_on = isnothing(fs) ? true : get(fs, "enabled", true)
+    k_so = isnothing(fs) ? 0.5 : get(fs, "k_spin_orbit", 0.5)
+    k_tn = isnothing(fs) ? 0.4 : get(fs, "k_tensor", 0.4)
     GIParameters(
         masses,
         raw["potential"]["b_GeV2"],
@@ -66,6 +75,9 @@ function load_parameters(path::AbstractString)
         float(eps_t),
         float(eps_v),
         float(eps_s),
+        fine_on,
+        float(k_so),
+        float(k_tn),
     )
 end
 
@@ -106,6 +118,7 @@ function load_reference_spectrum(path::AbstractString)
             states,
             ReferenceState(
                 row[index["sector"]],
+                row[index["quark_content"]],
                 row[index["composition_raw"]],
                 parse(Int, row[index["n"]]),
                 parse(Int, row[index["multiplicity"]]),
@@ -305,8 +318,11 @@ function contact_hyperfine_shift(params::GIParameters, m1::Real, m2::Real, L::St
         delta_sigma = sigma^3 / (π^(3 / 2)) * exp(-(sigma * r[i])^2)
         expectation += abs2(vector[i]) * alpha_s_r(r[i]) * delta_sigma
     end
-    (32 * π / (9 * m1 * m2)) * expectation * spin_dot(multiplicity)
+    (1.0 + params.epsilon_c) * (32 * π / (9 * m1 * m2)) * expectation * spin_dot(multiplicity)
 end
+
+include("masses_from_content.jl")
+include("spin_fine_structure.jl")
 
 function solve_sector(params::GIParameters, flavor::String; maxn::Integer = 6, ngrid::Integer = 450, rmax::Real = 24.0, kinetic::Symbol = :relativistic)
     m = params.masses[flavor]
@@ -328,20 +344,46 @@ function compare_sector(
     rmax::Real = 24.0,
     kinetic::Symbol = :relativistic,
     contact_hyperfine::Bool = true,
+    use_fine_structure::Bool = true,
 )
-    m = params.masses[flavor]
-    channel_cache = Dict{String, Tuple{Vector{Float64}, Matrix{Float64}, Vector{Float64}}}()
-    for symbol in keys(L_SYMBOLS)
-        channel_cache[symbol] = channel_solution(params, m, m, L_SYMBOLS[symbol]; nlevels = 6, ngrid = ngrid, rmax = rmax, kinetic = kinetic)
+    m_fallback = params.masses[flavor]
+    function masses_for(s::ReferenceState)
+        try
+            return parse_quark_masses(params, String(s.sector), String(s.quark_content))
+        catch
+            return m_fallback, m_fallback
+        end
+    end
+    channel_cache = Dict{Tuple{Float64, Float64, String}, Tuple{Vector{Float64}, Matrix{Float64}, Vector{Float64}}}()
+    for state in reference
+        m1, m2 = masses_for(state)
+        cache_key = (round(m1, sigdigits = 12), round(m2, sigdigits = 12), state.L)
+        if !haskey(channel_cache, cache_key)
+            Lval = L_SYMBOLS[state.L]
+            channel_cache[cache_key] = channel_solution(
+                params, m1, m2, Lval;
+                nlevels = 6, ngrid = ngrid, rmax = rmax, kinetic = kinetic,
+            )
+        end
     end
     rows = NamedTuple[]
     for state in reference
-        haskey(channel_cache, state.L) || continue
-        values, vectors, r = channel_cache[state.L]
+        m1, m2 = masses_for(state)
+        cache_key = (round(m1, sigdigits = 12), round(m2, sigdigits = 12), state.L)
+        haskey(channel_cache, cache_key) || continue
+        values, vectors, r = channel_cache[cache_key]
         state.n <= length(values) || continue
+        h = r[2] - r[1]
         predicted = values[state.n]
         if contact_hyperfine
-            predicted += contact_hyperfine_shift(params, m, m, state.L, state.multiplicity, vectors[:, state.n], r)
+            predicted += contact_hyperfine_shift(params, m1, m2, state.L, state.multiplicity, vectors[:, state.n], r)
+        end
+        if use_fine_structure && params.fine_structure
+            predicted += fine_structure_split(
+                params, m1, m2, state.L, state.multiplicity, state.J,
+                collect(vectors[:, state.n]), collect(r), h;
+                enabled = true, k_spin_orbit = params.k_spin_orbit, k_tensor = params.k_tensor,
+            )
         end
         push!(
             rows,
@@ -369,20 +411,24 @@ function write_residual_report(
     kinetic::Symbol = :relativistic,
     contact_hyperfine::Bool = true,
     appendix_a_central::Bool = false,
+    use_fine_structure::Bool = true,
 )
     mkpath(dirname(path))
     open(path, "w") do io
         println(io, "# ", title)
         println(io)
-        hyperfine_note = contact_hyperfine ? "with smeared S-wave contact hyperfine" : "without spin-dependent terms"
+        hyperfine_note = contact_hyperfine ? "with smeared S-wave contact hyperfine" : "without S-wave contact hyperfine"
+        fs_note = use_fine_structure ? " first-order L·S (vector+Thomas) and OGE-tensor; " : " no first-order L·S/tensor; "
         central_note =
             appendix_a_central ?
             "Appendix A 3D isotropic smearing of Coulomb G and confinement S (Table II σ₀, s), " : "pointwise Coulomb + linear + constant (no Appendix A smearing), "
         println(
             io,
-            "Baseline model: radial finite-difference solver with `$kinetic` kinetic energy, $hyperfine_note, GI Table II masses, `b`, `c`, Fig. 2 running Coulomb ansatz, and ",
+            "Model: finite-difference + `$kinetic` kinetic, $hyperfine_note,$fs_note",
+            "GI Table II `b`, `c`, masses, `ε` factors, and Fig. 2 `α_s(r)`;",
+            " ",
             central_note,
-            "see `src/GIModel/GIModel.jl`.",
+            "see `src/GIModel/`.",
         )
         println(io)
         println(io, "| state | reference GeV | baseline GeV | residual MeV | confidence |")

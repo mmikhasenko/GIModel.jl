@@ -11,11 +11,15 @@ using .GIModel
     @test params.b ≈ 0.18
     @test params.appendix_a_central == false
     @test params.epsilon_c ≈ -0.168
+    @test params.fine_structure == true
+    @test params.k_spin_orbit > 0.0
 
     ccbar = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
     bbbar = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_bottomonium.csv"))
     @test length(ccbar) == 28
     @test length(bbbar) == 30
+    @test ccbar[1].quark_content == "c cbar"
+    @test ccbar[1].composition == "1^1S_0"
 end
 
 @testset "baseline solver shape" begin
@@ -27,6 +31,18 @@ end
     @test bb[(1, "S")] < bb[(2, "S")] < bb[(3, "S")]
     @test cc[(1, "S")] < cc[(1, "P")] < cc[(1, "D")]
     @test bb[(1, "S")] < bb[(1, "P")] < bb[(1, "D")]
+end
+
+@testset "quark mass resolution" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    m1, m2 = parse_quark_masses(params, "ccbar", "ignore")
+    @test m1 ≈ m2 ≈ params.masses["c"]
+    m1, m2 = parse_quark_masses(params, "charmonium", "c cbar")
+    @test m1 ≈ m2 ≈ params.masses["c"]
+    m1, m2 = parse_quark_masses(params, "charmed", "-c dbar; c ubar")
+    @test m1 ≈ params.masses["c"] && m2 ≈ params.masses["d"]
+    m1, m2 = parse_quark_masses(params, "charmed_strange", "c sbar")
+    @test m1 ≈ params.masses["c"] && m2 ≈ params.masses["s"]
 end
 
 @testset "Appendix A 3D smearing (constant preserves norm)" begin

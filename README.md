@@ -101,13 +101,23 @@ solver and validation scripts should start from the top-level `data/` files.
    yet include the full GI smearing/nonlocal potential, tensor interaction,
    spin-orbit terms, or mixing.
 
-3. Run Julia tests:
+3. Run all top-level reference spectrum checks:
+
+   ```bash
+   julia --project=. scripts/run_all_spectrum_checks.jl
+   ```
+
+   This regenerates sector reports under `docs/residual_reports/` for every
+   `data/reference_spectrum_*.csv` file. Heavy-light sectors use the
+   `quark_content` column to choose unequal constituent masses.
+
+4. Run Julia tests:
 
    ```bash
    julia --project=. test/runtests.jl
    ```
 
-4. Rebuild paper text references if the PDF changes:
+5. Rebuild paper text references if the PDF changes:
 
    ```bash
    pdftotext -layout paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_layout.txt
@@ -117,14 +127,14 @@ solver and validation scripts should start from the top-level `data/` files.
    python3 scripts/build_paper_prose.py
    ```
 
-5. Render page images for table verification when needed:
+6. Render page images for table verification when needed:
 
    ```bash
    pdftoppm -r 300 -png paper/Godfrey-Isgur-1985.pdf paper/pages/gi
    ```
 
-6. Create raw extraction CSVs in `data/raw/`.
-7. Promote verified rows into `data/clean/` with provenance preserved.
+7. Create raw extraction CSVs in `data/raw/`.
+8. Promote verified rows into `data/clean/` with provenance preserved.
 
 Current first-pass digitizations are copied to the top level of `data/`.
 Reference/provenance copies remain under `data/raw/digitized_tables/` and
