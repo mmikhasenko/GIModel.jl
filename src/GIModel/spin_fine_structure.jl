@@ -21,23 +21,15 @@ function dV_coul_central_dr(r::Real, params::GIParameters)
     ri = max(r, 1.0e-9)
     α = alpha_s_r(ri)
     αp = alpha_s_prime_r(ri)
-    return 4.0 * αp / (3.0 * ri) - 4.0 * α / (3.0 * ri^2)
+    return 4.0 * α / (3.0 * ri^2) - 4.0 * αp / (3.0 * ri)
 end
 
-function tensor_f_LJ_barnes(L::Int, J::Int, S::Int)
+function tensor_triplet_LJ(L::Int, J::Int, S::Int)
     S == 1 || return 0.0
-    (L, J) == (1, 0) && return -4.0
-    (L, J) == (1, 1) && return 1.0
-    (L, J) == (1, 2) && return -0.2
-    (L, J) == (2, 1) && return -1.0
-    (L, J) == (2, 2) && return 0.5
-    (L, J) == (2, 3) && return -0.1
-    (L, J) == (3, 2) && return 0.4
-    (L, J) == (3, 3) && return -0.2
-    (L, J) == (3, 4) && return 0.1
-    (L, J) == (4, 3) && return 0.2
-    (L, J) == (4, 4) && return -0.1
-    (L, J) == (4, 5) && return 0.05
+    L <= 0 && return 0.0
+    J == L - 1 && return -2.0 * (L + 1) / (2L - 1)
+    J == L && return 2.0
+    J == L + 1 && return -2.0 * L / (2L + 3)
     return 0.0
 end
 
@@ -115,7 +107,7 @@ function fine_structure_split(
     ls = LdotS(Ln, 1, J)
     vec_term = (1.0 + params.epsilon_so_vector) * Ivp
     thomas_term = (1.0 + params.epsilon_so_scalar) * params.b * I1
-    delta_so = k_spin_orbit * inv2 * ls * (vec_term + thomas_term)
-    tq = (1.0 + params.epsilon_t) * k_tensor * (1.0 / (3.0 * m1 * m2)) * Its * tensor_f_LJ_barnes(Ln, J, 1)
+    delta_so = k_spin_orbit * inv2 * ls * (vec_term - thomas_term)
+    tq = (1.0 + params.epsilon_t) * k_tensor * (1.0 / (3.0 * m1 * m2)) * Its * tensor_triplet_LJ(Ln, J, 1)
     return delta_so + tq
 end

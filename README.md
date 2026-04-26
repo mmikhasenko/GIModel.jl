@@ -97,9 +97,10 @@ solver and validation scripts should start from the top-level `data/` files.
 
    The current baseline is intentionally diagnostic: it uses the Table II
    quark masses, `b`, `c`, the Fig. 2 running Coulomb ansatz, semirelativistic
-   kinetic energy, and the smeared S-wave contact hyperfine term. It does not
-   yet include the full GI smearing/nonlocal potential, tensor interaction,
-   spin-orbit terms, or mixing.
+   kinetic energy, the smeared S-wave contact hyperfine term, and first-order
+   diagnostic tensor/spin-orbit terms. It does not yet include the full GI
+   smearing/nonlocal potential, momentum-dependent spin relativization, or
+   off-diagonal mixing.
 
 3. Run all top-level reference spectrum checks:
 

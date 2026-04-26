@@ -1,11 +1,5 @@
 # Formula Map
 
-Every implemented formula must be mapped to the original Godfrey-Isgur paper by
-equation, paragraph, page, or table.
-
-No model term should be introduced in code without an entry here.
-# Formula Map
-
 This file maps implemented local code to the Godfrey-Isgur paper. It is also a
 guardrail: when the code is only a diagnostic approximation, say so here.
 
@@ -55,20 +49,21 @@ guardrail: when the code is only a diagnostic approximation, say so here.
   `appendix_a_smearing` in the parameters file is **off** by default; keep it off
   until the (A12)–(A13) structure (or a momentum/HO-basis path) is implemented.
 
-- `src/GIModel/masses_from_content.jl`: map `sector` + first `composition_raw`
+- `src/GIModel/masses_from_content.jl`: map `sector` + first `quark_content`
   segment to constituent $(m_1, m_2)$ for `compare_sector` (unequal-mass channels).
   - Paper: Sec. II flavor content; Table II masses.
 
 - `src/GIModel/spin_fine_structure.jl`: first-order color-magnetic + Thomas
   (scalar confinement) spin–orbit and an OGE-style tensor term on the FD radial
-  mesh, with $\int 4\pi\,u^2(r)\,dr=1$ for the reduced radial function; smeared
-  $1/r^3$ for the tensor piece; Table II $\epsilon_t$, $\epsilon_{\rm so(v)}$,
-  $\epsilon_{\rm so(s)}$; global `k_spin_orbit`, `k_tensor` in `[fine_structure]`.
+  mesh; smeared $1/r^3$ for the tensor piece; Table II $\epsilon_t$,
+  $\epsilon_{\rm so(v)}$, $\epsilon_{\rm so(s)}$; global `k_spin_orbit`,
+  `k_tensor` in `[fine_structure]`.
   - Paper: spin-dependent structure around Eqs. (3)–(7) (text), and (A10) (Appendix
-    A) for the $\epsilon$ factors. Tensor angular factors for $^3L_J$ are
-    hand-traced placeholders (Barnes-style) pending the full 6$j$ reduction used
-    in the HO-basis code of the original paper. Scales $k$ bridge the small FD
-  basis to the large HO result.
+    A) for the $\epsilon$ factors. Tensor angular factors for triplet
+    $J=L-1,L,L+1$ states use the closed forms
+    $-2(L+1)/(2L-1)$, $2$, and $-2L/(2L+3)$, whose $(2J+1)$-weighted
+    average vanishes across the triplet multiplet. Scales $k$ bridge the small
+    FD basis to the large HO result and are diagnostic, not paper refits.
 
 ## Not Yet Implemented
 

@@ -58,3 +58,17 @@ end
     @test w[1] ≈ 1.0 atol = 0.01
     @test w[div(n, 2)] ≈ 1.0 atol = 0.01
 end
+
+@testset "triplet fine-structure angular factors" begin
+    for L in 1:4
+        js = collect((L - 1):(L + 1))
+        weights = [2J + 1 for J in js]
+        ldot = [GIModel.LdotS(L, 1, J) for J in js]
+        tensor = [GIModel.tensor_triplet_LJ(L, J, 1) for J in js]
+        @test sum(weights .* ldot) ≈ 0.0 atol = 1e-12
+        @test sum(weights .* tensor) ≈ 0.0 atol = 1e-12
+    end
+    @test GIModel.tensor_triplet_LJ(1, 0, 1) ≈ -4.0
+    @test GIModel.tensor_triplet_LJ(1, 1, 1) ≈ 2.0
+    @test GIModel.tensor_triplet_LJ(1, 2, 1) ≈ -0.4
+end
