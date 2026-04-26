@@ -64,6 +64,14 @@ end
     @test w[div(n, 2)] ≈ 1.0 atol = 0.01
 end
 
+@testset "L·S and spin_dot algebra" begin
+    @test GIModel.LdotS(1, 1, 0) ≈ -2.0
+    @test GIModel.LdotS(1, 1, 1) ≈ -1.0
+    @test GIModel.LdotS(1, 1, 2) ≈ 1.0
+    @test GIModel.spin_dot(1) ≈ -0.75
+    @test GIModel.spin_dot(3) ≈ 0.25
+end
+
 @testset "triplet fine-structure angular factors" begin
     for L in 1:4
         js = collect((L - 1):(L + 1))
