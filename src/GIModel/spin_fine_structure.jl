@@ -14,9 +14,7 @@ function alpha_s_prime_r(r::Real)
     r = float(r)
     s = 0.0
     for (a, g) in zip(ALPHA_COEFFS, ALPHA_GAMMAS)
-        z = g * r
-        e = exp(-z^2)
-        s += a * 2.0 * g / (sqrt(π) * 1) * e
+        s += a * g * erf_approx_prime(g * r)
     end
     return s
 end

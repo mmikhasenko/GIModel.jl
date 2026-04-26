@@ -26,6 +26,10 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     `alpha_k = (0.25, 0.15, 0.20)` and momentum-space denominators
     `(1, 10, 1000) GeV^2`, giving
     `gamma_k = (1/2, sqrt(10)/2, sqrt(1000)/2) GeV`.
+  - Numerical implementation: `erf_approx` is used (no external dependencies);
+    derivatives used by the Coulomb spin–orbit piece (`dV/dr`) are computed via
+    the analytic derivative of the same approximation (`erf_approx_prime`) to
+    avoid mixed conventions.
 
 - `src/GIModel/GIModel.jl`: smeared S-wave contact hyperfine shift.
   - Paper anchor: color hyperfine term around Eq. (4), PDF page 2, and

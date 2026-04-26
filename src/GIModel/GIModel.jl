@@ -141,6 +141,24 @@ function erf_approx(x::Real)
     signx * (1 - poly * exp(-z^2))
 end
 
+function erf_approx_prime(x::Real)
+    z = abs(float(x))
+    p = 0.3275911
+    t = 1 / (1 + p * z)
+    a1 = 0.254829592
+    a2 = -0.284496736
+    a3 = 1.421413741
+    a4 = -1.453152027
+    a5 = 1.061405429
+    q = a1 + t * (a2 + t * (a3 + t * (a4 + t * a5)))
+    qp = a2 + t * (2a3 + t * (3a4 + t * (4a5)))
+    poly = t * q
+    poly_p = q + t * qp
+    dt_dz = -p * t^2
+    expfac = exp(-z^2)
+    expfac * (2z * poly - poly_p * dt_dz)
+end
+
 alpha_s_r(r::Real) = sum(a * erf_approx(g * r) for (a, g) in zip(ALPHA_COEFFS, ALPHA_GAMMAS))
 
 function central_potential(r::Real, params::GIParameters)

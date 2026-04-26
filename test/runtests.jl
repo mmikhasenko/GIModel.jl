@@ -73,6 +73,22 @@ end
     @test GIModel.tensor_triplet_LJ(1, 2, 1) ≈ -0.4
 end
 
+@testset "Coulomb derivative consistency (erf_approx)" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    for r0 in (0.05, 0.2, 1.3)
+        δ = 1e-6 * max(1.0, r0)
+        num = (GIModel.alpha_s_r(r0 + δ) - GIModel.alpha_s_r(r0 - δ)) / (2δ)
+        @test GIModel.alpha_s_prime_r(r0) ≈ num rtol = 1e-6 atol = 1e-10
+    end
+
+    V(r) = -(4 / 3) * GIModel.alpha_s_r(r) / r
+    for r0 in (0.2, 1.0)
+        δ = 1e-6 * max(1.0, r0)
+        num = (V(r0 + δ) - V(r0 - δ)) / (2δ)
+        @test GIModel.dV_coul_central_dr(r0, params) ≈ num rtol = 1e-6 atol = 1e-10
+    end
+end
+
 @testset "reduced radial u(r) expectation normalization" begin
     h = 0.1
     r = collect(h:h:(3h))
