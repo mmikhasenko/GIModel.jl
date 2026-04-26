@@ -54,6 +54,16 @@ function spacing_row(centers, key_a, key_b)
     (name = "$(key_a[1])$(key_a[2]) - $(key_b[1])$(key_b[2])", ref = ref, pred = pred, error = pred - ref)
 end
 
+"""Share of `sum(r_i^2)` that is removed by subtracting the mean residual (common offset proxy)."""
+function fraction_offset_explains(residuals_MeV::Vector{Float64})
+    isempty(residuals_MeV) && return 0.0
+    sst = sum(abs2, residuals_MeV)
+    sst <= 0.0 && return 0.0
+    o = sum(residuals_MeV) / length(residuals_MeV)
+    sc = sum((r - o)^2 for r in residuals_MeV)
+    return 1.0 - sc / sst
+end
+
 function emit_split_table(io, title, rows)
     valid = [row for row in rows if !isnothing(row)]
     isempty(valid) && return
@@ -94,6 +104,14 @@ open(report_path, "w") do io
         println(io, @sprintf("- mean residual/common offset: `%+.1f MeV`", offset))
         println(io, @sprintf("- mean absolute residual: `%.1f MeV`", sum(abs.(residuals)) / length(residuals)))
         println(io, @sprintf("- mean absolute residual after removing common offset: `%.1f MeV`", sum(centered_abs) / length(centered_abs)))
+        f_off = fraction_offset_explains(residuals)
+        println(
+            io,
+            @sprintf(
+                "- approximate share of *squared* residuals explained by a single common offset: `%.0f%%` (order-of-magnitude; not a full variance decomposition across physics channels)",
+                100 * f_off,
+            ),
+        )
         println(io)
 
         println(io, "### Multiplet Centers")
@@ -146,6 +164,15 @@ open(report_path, "w") do io
             ],
         )
     end
+
+    println(io)
+    println(io, "## Where to go next (strategy)")
+    println(io)
+    println(io, "1. The dominant systematic in heavy quarkonia is still a *global mass offset* after Table II input; interpret that as **missing or simplified spin-independent smearing/central operator** (Appendix A (A12)–(A13) path in the 1985 paper) before inventing new splittings. See `docs/formula_map.md` and `docs/midterm_review_brief.md`.")
+    println(io, "2. **Do not** treat `k_spin_orbit` or `k_tensor` as the fix: they are diagnostic bridges, not paper parameters (`docs/autonomous_program.md`).")
+    println(io, "3. **Heavy–light** `^1L_J`/`^3L_J` mixing and same-`J` tensor mixing (`docs/midterm_review_brief.md`) are *later*; they depend on a trustworthy central + fine-structure base.")
+    println(io, "4. Close the **extraction loop**: log text-vs-figure issues in `data/raw/extraction_audit.csv` and promote reference rows to `data/clean/` with provenance before arguing about 5 MeV level agreement.")
+    println(io)
 end
 
 println("wrote $report_path")

@@ -54,6 +54,10 @@ Use these files to resume work quickly:
 - `data/clean/README.md`: what promoted “clean” tables will be (Phase 2);
   solver today still uses top-level `data/*.csv` and `parameters.provisional.toml`.
 - `scripts/validate_seed.py`: seed schema validation.
+- `scripts/verify_table_ii_toml.py`: ensures `data/parameters.provisional.toml`
+  matches `data/table_ii_parameters.csv` for Table II–mapped entries.
+- `scripts/verify_project.sh`: one-shot full gate (seed + Table II + Julia tests
+  + analysis + all spectrum checks); use before committing substantive changes.
 - `scripts/build_paper_prose.py`: rebuilds the prose-only paper reference.
 - `scripts/plot_spectrum_digitizations.py`: regenerates clean Fig. 4-9
   comparison replots from digitized figure CSVs.
@@ -84,6 +88,12 @@ per-table and per-figure working context, raw snippets, and replots, but routine
 solver and validation scripts should start from the top-level `data/` files.
 
 ## Immediate Workflow
+
+0. (Recommended before a large change) run the full gate:
+
+   ```bash
+   bash scripts/verify_project.sh
+   ```
 
 1. Run seed validation:
 

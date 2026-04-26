@@ -119,6 +119,12 @@ julia --project=. scripts/analyze_heavy_quarkonium.jl
 julia --project=. scripts/run_all_spectrum_checks.jl
 ```
 
+The repository also has `python3 scripts/verify_table_ii_toml.py` (Table II
+consistency) and a shell wrapper `bash scripts/verify_project.sh` that runs the
+Table II check plus the commands above. Prefer the wrapper for human sessions;
+the autonomous loop could be extended to include the Table II check in lockstep
+with the README.
+
 Override or shorten the gate with repeated `--verify-command` flags, for
 example:
 

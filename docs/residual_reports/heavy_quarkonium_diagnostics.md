@@ -10,6 +10,7 @@ Purpose: decompose the remaining `ccbar`/`bbbar` mismatch into common mass offse
 - mean residual/common offset: `+79.3 MeV`
 - mean absolute residual: `79.3 MeV`
 - mean absolute residual after removing common offset: `15.6 MeV`
+- approximate share of *squared* residuals explained by a single common offset: `94%` (order-of-magnitude; not a full variance decomposition across physics channels)
 
 ### Multiplet Centers
 
@@ -56,6 +57,7 @@ Purpose: decompose the remaining `ccbar`/`bbbar` mismatch into common mass offse
 - mean residual/common offset: `+38.8 MeV`
 - mean absolute residual: `38.8 MeV`
 - mean absolute residual after removing common offset: `10.0 MeV`
+- approximate share of *squared* residuals explained by a single common offset: `90%` (order-of-magnitude; not a full variance decomposition across physics channels)
 
 ### Multiplet Centers
 
@@ -97,4 +99,12 @@ Purpose: decompose the remaining `ccbar`/`bbbar` mismatch into common mass offse
 | `2^3P_1 - 2^3P_0` | 20.0 | 11.7 |    -8.3 |
 | `1^3D_3 - 1^3D_2` | 10.0 | 3.1 |    -6.9 |
 | `1^3D_2 - 1^3D_1` | 10.0 | 4.5 |    -5.5 |
+
+
+## Where to go next (strategy)
+
+1. The dominant systematic in heavy quarkonia is still a *global mass offset* after Table II input; interpret that as **missing or simplified spin-independent smearing/central operator** (Appendix A (A12)–(A13) path in the 1985 paper) before inventing new splittings. See `docs/formula_map.md` and `docs/midterm_review_brief.md`.
+2. **Do not** treat `k_spin_orbit` or `k_tensor` as the fix: they are diagnostic bridges, not paper parameters (`docs/autonomous_program.md`).
+3. **Heavy–light** `^1L_J`/`^3L_J` mixing and same-`J` tensor mixing (`docs/midterm_review_brief.md`) are *later*; they depend on a trustworthy central + fine-structure base.
+4. Close the **extraction loop**: log text-vs-figure issues in `data/raw/extraction_audit.csv` and promote reference rows to `data/clean/` with provenance before arguing about 5 MeV level agreement.
 

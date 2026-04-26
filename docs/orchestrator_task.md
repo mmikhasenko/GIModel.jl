@@ -27,6 +27,38 @@ per-phase checklists below. A “complete” 1985 reproduction through Phase 7 i
 
 Ongoing work order and safety rules: `docs/autonomous_program.md`.
 
+## Strategic path to completion (dependency order)
+
+“Completion” here means: **defensible** agreement with the 1985 paper for a stated
+set of states, with every formula traced in `docs/formula_map.md`, no silent
+tuning, and reference data that trace to the PDF/figures. It is *not* automatic
+if we keep adding diagnostic factors.
+
+1. **Lock provenance and inputs**
+   - Table II: `data/table_ii_parameters.csv` must stay in sync with
+     `data/parameters.provisional.toml` (checked by `scripts/verify_table_ii_toml.py`).
+   - Figure spectra: close the extraction loop (`data/raw/extraction_audit.csv` →
+     audited `data/clean/masses.csv` when ready).
+2. **Spin-independent sector first**
+   - Replace or bracket the current pointwise $V(r)$ with the paper’s Appendix A
+     effective smearing/HO path ((A12)–(A13) structure, not the experimental
+     `appendix_a_smearing`-only blur). The heavy-quarkonium **common offset** in
+     `docs/residual_reports/heavy_quarkonium_diagnostics.md` is the main sign this
+     is still missing, not a reason to retune $k$ factors.
+3. **Fine structure as in the paper**
+   - Make spin-orbit and tensor *operators* consistent with the smeared
+     $G(r)$, then re-evaluate whether any global `k_*` bridge remains at all
+     (they are not part of Godfrey-Isgur Table II).
+4. **Off-diagonal mixing (heavy–light and $^1L$–$^3L$)**
+   - Only after 2–3: explicit mass-matrix steps with unmixed vs mixed reporting.
+5. **Isoscalar / annihilation / flavor mixing**
+   - Last: requires different machinery; light-sector numbers stay qualitative
+     until then.
+
+**Anti-pattern:** ten one-line “iterations” that only touch exports or
+cosmetics. **Preferred:** one session that advances an item above with tests,
+docs, and the full `scripts/verify_project.sh` gate (see `README.md`).
+
 ## Non-negotiable rules
 
 1. Do not silently refit parameters.

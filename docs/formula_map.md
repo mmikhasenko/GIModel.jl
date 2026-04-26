@@ -18,6 +18,8 @@ guardrail: when the code is only a diagnostic approximation, say so here.
   - Paper anchor: nonrelativistic orientation around Eqs. (2)-(3), PDF pages
     2-3.
   - Parameters: `data/parameters.provisional.toml`, copied from Table II
+    (`data/table_ii_parameters.csv`). `scripts/verify_table_ii_toml.py` checks
+    they still agree on mapped entries.
     (`relativistic_factors` $\epsilon_i$ from (A10) are applied in the first-order
     fine-structure and contact terms as noted below).
 

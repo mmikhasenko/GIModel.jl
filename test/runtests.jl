@@ -4,6 +4,13 @@ root = dirname(@__DIR__)
 include(joinpath(root, "src", "GIModel", "GIModel.jl"))
 using .GIModel
 
+@testset "Table II digitization vs parameters TOML" begin
+    script = joinpath(root, "scripts", "verify_table_ii_toml.py")
+    p = run(`python3 $script`, wait = false)
+    wait(p)
+    @test success(p)
+end
+
 @testset "reference loading" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     @test params.masses["c"] ≈ 1.628

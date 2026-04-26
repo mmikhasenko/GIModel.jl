@@ -157,13 +157,19 @@ Please review in this order.
 - Should the next implementation step be Appendix A central potential or
   heavy-light mixing?
 
-## Suggested Next Step If Review Passes
+## Suggested next implementation priority (strategic)
 
-Implement heavy-light `^1L_J`/`^3L_J` mixing and same-`J` tensor mixing as
-explicit mass-matrix diagonalization, with reports showing unmixed and mixed
-predictions side by side.
+Follow `docs/orchestrator_task.md` (“Strategic path to completion”): the **next
+substantive physics step** is the Appendix A (A12)–(A13) / HO-consistent
+spin-independent effective potential, *not* additional phenomenological
+adjustments to `k_spin_orbit` or `k_tensor` and *not* heavy–light mass-matrix
+mixing while the global offset and smearing story are still open.
 
-## Suggested Next Step If Review Finds Formula Bugs
+Heavy–light `^1L_J`/`^3L_J` and same-`J` tensor mixing remain **later** (explicit
+mass-matrix diagonalization with unmixed/mixed side-by-side in reports) once
+the central and fine-structure base is defensible.
+
+## Suggested next step if review finds formula bugs
 
 Stop sector expansion. Fix the formula, add a targeted regression test, and
 regenerate:
@@ -176,15 +182,9 @@ julia --project=. scripts/run_all_spectrum_checks.jl
 
 Do not tune around a formula bug.
 
-## Current Git Context
+## Git history
 
-Recent relevant commits:
-
-- `fa52c02` Strengthen diagnostic spin splittings
-- `a3777e5` Add heavy quarkonium mismatch diagnostics
-- `7c1d2e4` Add spectrum scorecard report
-- `22bd085` Correct fine-structure angular factors
-- `017bda3` Extend spectrum checks across sectors
-
-The reviewer should inspect the diff from before `017bda3` if they want to
-audit the full solver evolution.
+Use `git log --oneline` for recent work. The evolution of the solver is
+visible there; for a formula audit, diff against a tag or commit the reviewer
+chooses as baseline rather than a fixed list of SHAs in this file (SHAs go
+stale as soon as the document is committed).

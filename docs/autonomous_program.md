@@ -73,12 +73,19 @@ julia --project=. scripts/run_all_spectrum_checks.jl
 
 ## Preferred Work Unit
 
-Each autonomous iteration should be small enough to review:
+When work is *clear a priori* (same file family, one physics goal, one
+verification), **batch it in a single session** and ship one meaningful commit
+or a short chain (code + docs + test), not many micro-commits. Reserve small
+patches for truly isolated fixes.
+
+Each reviewable unit should still be **auditable**:
 
 - one formula fix plus a regression test;
 - one normalization clarification plus updated diagnostics;
 - one report improvement that exposes a residual class;
-- one documentation update that removes stale or contradictory project state.
+- one documentation update that removes stale or contradictory project state;
+- or a **coherent slice** of the completion path in `docs/orchestrator_task.md`
+  (e.g. Table II lock + `verify_table_ii_toml` + doc update) in one go.
 
 The final response for each iteration should say:
 
