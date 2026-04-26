@@ -25,6 +25,11 @@ Use these files to resume work quickly:
 - `docs/paper_navigation.md`: fast map to paper sections, tables, spectrum
   figures, and caution zones.
 - `docs/formula_map.md`: required map from implementation terms to the paper.
+- `docs/appendix_a_from_paper.md`: Appendix A equation labels and what is
+  still missing vs the PDF (p.~36--38), beyond the current diagnostic code.
+- `docs/residual_reports/appendix_a_bracket_ccbar.md`: regenerated with
+  `scripts/compare_central_pointwise_vs_a7a8.jl` (pointwise *V* vs (A7)--(A8) blur;
+  not (A12)--(A13)).
 - `docs/conventions.md`: spectroscopic, spin, sector, and basis conventions.
 - `data/table_ii_parameters.csv`: central Table II parameter digitization.
 - `data/parameters.provisional.toml`: provisional solver-facing parameter file

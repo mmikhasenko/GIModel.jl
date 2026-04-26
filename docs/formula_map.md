@@ -129,6 +129,10 @@ masses and that detailed smearing is “relegated to Appendix A.”
 `data/table_ii_parameters.csv` via `scripts/verify_table_ii_toml.py`. Reference
 spectrum rows are checked for schema via `scripts/validate_reference_spectra.py`.
 
+**Paper navigation for Appendix A:** see `docs/appendix_a_from_paper.md` (equation
+labels and PDF pages). The runtime flag for which central path is active is
+summarized by `GIModel.central_potential_path` in `src/GIModel/appendix_a_status.jl`.
+
 ## Not Yet Implemented
 
 - Full GI effective spin-independent smearing from (A12)–(A13) and/or the paper’s

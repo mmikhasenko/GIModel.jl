@@ -50,6 +50,10 @@ if we keep adding diagnostic factors.
      `appendix_a_smearing`-only blur). The heavy-quarkonium **common offset** in
      `docs/residual_reports/heavy_quarkonium_diagnostics.md` is the main sign this
      is still missing, not a reason to retune $k$ factors.
+   - `docs/appendix_a_from_paper.md` maps (A7)–(A16) to goals; the automated
+     **(A7)–(A8) vs pointwise** diagnostic is
+     `docs/residual_reports/appendix_a_bracket_ccbar.md` (refreshed by the
+     compare script in `verify_project.sh`).
 3. **Fine structure as in the paper**
    - Make spin-orbit and tensor *operators* consistent with the smeared
      $G(r)$, then re-evaluate whether any global `k_*` bridge remains at all
