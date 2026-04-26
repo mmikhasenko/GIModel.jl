@@ -100,14 +100,16 @@ function fine_structure_split(
     inv2 = 0.25 * (1.0 / m1^2 + 1.0 / m2^2)
     Ivp = radial_expect_4piudr(u, r, h, (ri, i) -> (1.0 / max(ri, 1.0e-8)) * dV_coul_central_dr(ri, params))
     I1 = radial_expect_4piudr(u, r, h, (ri, i) -> 1.0 / max(ri, 1.0e-8))
-    Its = radial_expect_4piudr(
-        u, r, h,
-        (ri, i) -> alpha_s_r(ri) * smeared_r_inv(params, m1, m2, ri, 3),
-    )
+    # For L>0 the FD radial wave function suppresses the origin. Using the same
+    # broad Gaussian width as the S-wave contact term over-damps tensor
+    # splittings; the full GI tensor term should come from derivatives of the
+    # smeared G(r), but this unsmeared alpha_s/r^3 proxy is a better diagnostic
+    # until that Appendix A operator is implemented.
+    Its = radial_expect_4piudr(u, r, h, (ri, i) -> alpha_s_r(ri) / max(ri, 1.0e-8)^3)
     ls = LdotS(Ln, 1, J)
     vec_term = (1.0 + params.epsilon_so_vector) * Ivp
     thomas_term = (1.0 + params.epsilon_so_scalar) * params.b * I1
-    delta_so = k_spin_orbit * inv2 * ls * (vec_term - thomas_term)
+    delta_so = k_spin_orbit * inv2 * ls * (3 * vec_term - thomas_term)
     tq = (1.0 + params.epsilon_t) * k_tensor * (1.0 / (3.0 * m1 * m2)) * Its * tensor_triplet_LJ(Ln, J, 1)
     return delta_so + tq
 end

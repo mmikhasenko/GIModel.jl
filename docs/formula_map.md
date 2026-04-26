@@ -55,15 +55,20 @@ guardrail: when the code is only a diagnostic approximation, say so here.
 
 - `src/GIModel/spin_fine_structure.jl`: first-order color-magnetic + Thomas
   (scalar confinement) spin–orbit and an OGE-style tensor term on the FD radial
-  mesh; smeared $1/r^3$ for the tensor piece; Table II $\epsilon_t$,
+  mesh; unsmeared $\alpha_s(r)/r^3$ proxy for the tensor piece; Table II $\epsilon_t$,
   $\epsilon_{\rm so(v)}$, $\epsilon_{\rm so(s)}$; global `k_spin_orbit`,
   `k_tensor` in `[fine_structure]`.
   - Paper: spin-dependent structure around Eqs. (3)–(7) (text), and (A10) (Appendix
     A) for the $\epsilon$ factors. Tensor angular factors for triplet
     $J=L-1,L,L+1$ states use the closed forms
     $-2(L+1)/(2L-1)$, $2$, and $-2L/(2L+3)$, whose $(2J+1)$-weighted
-    average vanishes across the triplet multiplet. Scales $k$ bridge the small
-    FD basis to the large HO result and are diagnostic, not paper refits.
+    average vanishes across the triplet multiplet. The spin-orbit radial
+    coefficient uses the standard color-magnetic minus Thomas structure
+    proportional to $3G'(r)-S'(r)$. The tensor radial term is deliberately
+    unsmeared for now because applying the broad contact width to $1/r^3$
+    overdamps the P/D splittings; the correct next replacement is the
+    derivative of the Appendix A smeared $G(r)$. Scales $k$ bridge the small FD
+    basis to the large HO result and are diagnostic, not paper refits.
 
 ## Not Yet Implemented
 
