@@ -1,26 +1,30 @@
-# Environment Blockers
+# Environment Notes
 
-This file tracks environment issues that prevent running the repository’s
-standard verification gates in sandboxed/CI-like contexts.
+This file tracks environment issues observed while running nested autonomous
+agents. These are not necessarily project blockers: the outer autonomous runner
+still accepts an iteration only after the standard project gate passes.
 
-## Julia runtime missing (juliaup installed, no channel configured)
+## Julia launcher in nested Codex sandboxes
 
-- Symptom: `julia --version` (and any `julia --project=...`) fails with a
-  juliaup/launcher error about not being able to create a lockfile or not being
-  able to determine a juliaup channel.
-- Root cause in this sandbox: only `juliaup` is present; no Julia toolchain
-  (channel) is installed/configured, and the sandbox disallows writing to the
-  default home directory locations juliaup tries to use.
-- Impact: cannot run:
+- Symptom inside some nested Codex CLI executions: `julia --version` or
+  `julia --project=...` can fail through the `juliaup` launcher with a lockfile
+  or channel-selection error.
+- Root cause: the nested sandbox may not be able to write to the configured
+  juliaup depot/config path. A Julia runtime is installed locally; this is a
+  launcher/depot access issue, not evidence that the project lacks Julia.
+- Impact for nested agents: direct `julia` commands may fail unless the agent
+  uses a writable depot or the resolved Julia binary.
+- Impact for accepted project progress: the outer loop has successfully run:
   - `julia --project=. test/runtests.jl`
   - `julia --project=. scripts/analyze_heavy_quarkonium.jl`
   - `julia --project=. scripts/run_all_spectrum_checks.jl`
 
-### Suggested remediation (outside strict sandboxes)
+### Suggested remediation
 
-- Install a Julia channel via juliaup (example): `juliaup add release` and set a
-  default channel (example): `juliaup default release`.
-- If the runtime must run in restricted environments, ensure the launcher and
-  depot/config paths are writable (for example by setting `JULIAUP_DEPOT_PATH`
-  and `JULIA_DEPOT_PATH` to a writable directory).
-
+- Prefer the standard verification commands from a normal shell:
+  `julia --project=. ...`.
+- If running inside a restricted nested agent sandbox, set writable
+  `JULIAUP_DEPOT_PATH`/`JULIA_DEPOT_PATH`, or invoke the resolved Julia binary
+  from the local juliaup installation.
+- Do not weaken the repository verification gate because of this nested-tooling
+  issue.

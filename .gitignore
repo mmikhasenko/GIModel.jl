@@ -12,3 +12,5 @@ paper/pages/*.png
 .venv/
 __pycache__/
 .pytest_cache/
+.julia_depot/
+.juliaup_depot/

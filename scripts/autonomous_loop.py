@@ -169,7 +169,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--log-dir", type=Path, default=DEFAULT_LOG_DIR)
     parser.add_argument(
         "--agent-command",
-        default="codex exec --full-auto --cd . -",
+        default="codex exec --full-auto --cd . -m gpt-5.2 -",
         help="Command that reads the prompt on stdin.",
     )
     parser.add_argument(

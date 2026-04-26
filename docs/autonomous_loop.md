@@ -40,11 +40,12 @@ python3 scripts/autonomous_loop.py --iterations 100 --max-minutes 240
 The default agent command is:
 
 ```bash
-codex exec --full-auto --cd . -
+codex exec --full-auto --cd . -m gpt-5.2 -
 ```
 
-It reads the generated prompt from stdin. Override it with `--agent-command` if
-you want a different coding agent.
+It reads the generated prompt from stdin. The explicit model avoids inheriting a
+local Codex CLI default that may require a newer CLI. Override it with
+`--agent-command` if you want a different coding agent.
 
 ## Ratchet Behavior
 
@@ -91,4 +92,3 @@ python3 scripts/autonomous_loop.py \
   to silently refit parameters.
 - Do not use `--dangerously-bypass-approvals-and-sandbox` unless the whole
   environment is externally sandboxed.
-
