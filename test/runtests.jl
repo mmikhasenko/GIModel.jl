@@ -219,6 +219,25 @@ end
     ) == 0.0
 end
 
+@testset "fine_structure_components: decomposition sums correctly" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    m = params.masses["c"]
+    _v_p, umat_p, r_p = GIModel.channel_solution(params, m, m, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+    h_p = r_p[2] - r_p[1]
+    u1p = collect(umat_p[:, 1])
+    for J in (0, 1, 2)
+        comp = GIModel.fine_structure_components(
+            params, m, m, "P", 3, J, u1p, r_p, h_p;
+            k_spin_orbit = 1.0, k_tensor = 1.0,
+        )
+        @test comp.total ≈ comp.spin_orbit + comp.tensor atol = 1e-12
+        @test comp.total ≈ GIModel.fine_structure_split(
+            params, m, m, "P", 3, J, u1p, r_p, h_p;
+            k_spin_orbit = 1.0, k_tensor = 1.0,
+        ) atol = 1e-12
+    end
+end
+
 @testset "erf_approx basic symmetries" begin
     @test GIModel.erf_approx(0.0) ≈ 0.0 atol = 1e-7
     for x in (0.05, 0.3, 0.8, 1.5)
@@ -315,4 +334,22 @@ end
         @test occursin("experimental (A7)", txt)
         @test occursin("3D isotropic smearing", txt)
     end
+end
+
+@testset "compare_sector returns shift breakdown fields" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    reference = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
+    rows = compare_sector(
+        params, reference[1:1], "c";
+        ngrid = 120, rmax = 12.0, kinetic = :relativistic, contact_hyperfine = true, use_fine_structure = true,
+    )
+    @test length(rows) == 1
+    row = rows[1]
+    @test hasproperty(row, :central_GeV)
+    @test hasproperty(row, :contact_shift_GeV)
+    @test hasproperty(row, :spin_orbit_shift_GeV)
+    @test hasproperty(row, :tensor_shift_GeV)
+    @test hasproperty(row, :fine_structure_shift_GeV)
+    @test row.fine_structure_shift_GeV ≈ row.spin_orbit_shift_GeV + row.tensor_shift_GeV atol = 1e-12
+    @test row.predicted_GeV ≈ row.central_GeV + row.contact_shift_GeV + row.fine_structure_shift_GeV atol = 1e-12
 end

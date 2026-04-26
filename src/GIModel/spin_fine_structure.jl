@@ -77,6 +77,44 @@ function radial_expect_udr(
     return s
 end
 
+function fine_structure_components(
+    params::GIParameters,
+    m1::Real,
+    m2::Real,
+    Ls::String,
+    multiplicity::Int,
+    J::Int,
+    u::Vector{Float64},
+    r::Vector{Float64},
+    h::Real;
+    enabled::Bool = true,
+    k_spin_orbit::Real = 1.0,
+    k_tensor::Real = 1.0,
+)
+    !enabled && return (spin_orbit = 0.0, tensor = 0.0, total = 0.0)
+    Ln = L_SYMBOLS[Ls]
+    S = (multiplicity - 1) ÷ 2
+    (Ln == 0 || S < 0) && return (spin_orbit = 0.0, tensor = 0.0, total = 0.0)
+    S == 1 || return (spin_orbit = 0.0, tensor = 0.0, total = 0.0)
+
+    m1, m2 = float(m1), float(m2)
+    inv2 = 0.25 * (1.0 / m1^2 + 1.0 / m2^2)
+    Ivp = radial_expect_udr(u, r, h, (ri, i) -> (1.0 / max(ri, 1.0e-8)) * dV_coul_central_dr(ri, params))
+    I1 = radial_expect_udr(u, r, h, (ri, i) -> 1.0 / max(ri, 1.0e-8))
+    # For L>0 the FD radial wave function suppresses the origin. Using the same
+    # broad Gaussian width as the S-wave contact term over-damps tensor
+    # splittings; the full GI tensor term should come from derivatives of the
+    # smeared G(r), but this unsmeared alpha_s/r^3 proxy is a better diagnostic
+    # until that Appendix A operator is implemented.
+    Its = radial_expect_udr(u, r, h, (ri, i) -> alpha_s_r(ri) / max(ri, 1.0e-8)^3)
+    ls = LdotS(Ln, 1, J)
+    vec_term = (1.0 + params.epsilon_so_vector) * Ivp
+    thomas_term = (1.0 + params.epsilon_so_scalar) * params.b * I1
+    spin_orbit = k_spin_orbit * inv2 * ls * (3 * vec_term - thomas_term)
+    tensor = (1.0 + params.epsilon_t) * k_tensor * (1.0 / (3.0 * m1 * m2)) * Its * tensor_triplet_LJ(Ln, J, 1)
+    return (spin_orbit = spin_orbit, tensor = tensor, total = spin_orbit + tensor)
+end
+
 function fine_structure_split(
     params::GIParameters,
     m1::Real,
@@ -91,27 +129,18 @@ function fine_structure_split(
     k_spin_orbit::Real = 1.0,
     k_tensor::Real = 1.0,
 )
-    !enabled && return 0.0
-    Ln = L_SYMBOLS[Ls]
-    S = (multiplicity - 1) ÷ 2
-    (Ln == 0 || S < 0) && return 0.0
-    if S == 0
-        return 0.0
-    end
-    m1, m2 = float(m1), float(m2)
-    inv2 = 0.25 * (1.0 / m1^2 + 1.0 / m2^2)
-    Ivp = radial_expect_udr(u, r, h, (ri, i) -> (1.0 / max(ri, 1.0e-8)) * dV_coul_central_dr(ri, params))
-    I1 = radial_expect_udr(u, r, h, (ri, i) -> 1.0 / max(ri, 1.0e-8))
-    # For L>0 the FD radial wave function suppresses the origin. Using the same
-    # broad Gaussian width as the S-wave contact term over-damps tensor
-    # splittings; the full GI tensor term should come from derivatives of the
-    # smeared G(r), but this unsmeared alpha_s/r^3 proxy is a better diagnostic
-    # until that Appendix A operator is implemented.
-    Its = radial_expect_udr(u, r, h, (ri, i) -> alpha_s_r(ri) / max(ri, 1.0e-8)^3)
-    ls = LdotS(Ln, 1, J)
-    vec_term = (1.0 + params.epsilon_so_vector) * Ivp
-    thomas_term = (1.0 + params.epsilon_so_scalar) * params.b * I1
-    delta_so = k_spin_orbit * inv2 * ls * (3 * vec_term - thomas_term)
-    tq = (1.0 + params.epsilon_t) * k_tensor * (1.0 / (3.0 * m1 * m2)) * Its * tensor_triplet_LJ(Ln, J, 1)
-    return delta_so + tq
+    fine_structure_components(
+        params,
+        m1,
+        m2,
+        Ls,
+        multiplicity,
+        J,
+        u,
+        r,
+        h;
+        enabled = enabled,
+        k_spin_orbit = k_spin_orbit,
+        k_tensor = k_tensor,
+    ).total
 end

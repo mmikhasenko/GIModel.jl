@@ -415,17 +415,25 @@ function compare_sector(
         values, vectors, r = channel_cache[cache_key]
         state.n <= length(values) || continue
         h = r[2] - r[1]
-        predicted = values[state.n]
+        central = values[state.n]
+        contact_shift = 0.0
+        spin_orbit_shift = 0.0
+        tensor_shift = 0.0
+        fine_structure_shift = 0.0
         if contact_hyperfine
-            predicted += contact_hyperfine_shift(params, m1, m2, state.L, state.multiplicity, vectors[:, state.n], r)
+            contact_shift = contact_hyperfine_shift(params, m1, m2, state.L, state.multiplicity, vectors[:, state.n], r)
         end
         if use_fine_structure && params.fine_structure
-            predicted += fine_structure_split(
+            comp = fine_structure_components(
                 params, m1, m2, state.L, state.multiplicity, state.J,
                 collect(vectors[:, state.n]), collect(r), h;
                 enabled = true, k_spin_orbit = params.k_spin_orbit, k_tensor = params.k_tensor,
             )
+            spin_orbit_shift = comp.spin_orbit
+            tensor_shift = comp.tensor
+            fine_structure_shift = comp.total
         end
+        predicted = central + contact_shift + fine_structure_shift
         push!(
             rows,
             (
@@ -436,6 +444,11 @@ function compare_sector(
                 J = state.J,
                 multiplicity = state.multiplicity,
                 reference_GeV = state.mass_GeV,
+                central_GeV = central,
+                contact_shift_GeV = contact_shift,
+                spin_orbit_shift_GeV = spin_orbit_shift,
+                tensor_shift_GeV = tensor_shift,
+                fine_structure_shift_GeV = fine_structure_shift,
                 predicted_GeV = predicted,
                 residual_MeV = 1000 * (predicted - state.mass_GeV),
                 confidence = state.confidence,
@@ -497,6 +510,34 @@ function write_residual_report(
                 ),
             )
         end
+
+        if !isempty(rows) && hasproperty(rows[1], :central_GeV)
+            println(io)
+            println(io, "## Contribution Breakdown (diagnostic)")
+            println(io)
+            println(io, "All shifts below are relative to the central FD eigenvalue (the spin-independent Hamiltonian on the current mesh).")
+            println(io)
+            println(io, "| state | central GeV | contact MeV | L·S MeV | tensor MeV | total shift MeV | predicted GeV |")
+            println(io, "|---|---:|---:|---:|---:|---:|---:|")
+            for row in rows
+                label = @sprintf("%d^%d%s_%d", row.n, row.multiplicity, row.L, row.J)
+                total_shift = row.contact_shift_GeV + row.fine_structure_shift_GeV
+                println(
+                    io,
+                    @sprintf(
+                        "| `%s` | %.3f | %+7.1f | %+7.1f | %+7.1f | %+7.1f | %.3f |",
+                        label,
+                        row.central_GeV,
+                        1000 * row.contact_shift_GeV,
+                        1000 * row.spin_orbit_shift_GeV,
+                        1000 * row.tensor_shift_GeV,
+                        1000 * total_shift,
+                        row.predicted_GeV,
+                    ),
+                )
+            end
+        end
+
         residuals = [abs(row.residual_MeV) for row in rows]
         if !isempty(residuals)
             println(io)
