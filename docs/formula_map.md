@@ -8,8 +8,10 @@ guardrail: when the code is only a diagnostic approximation, say so here.
 - `src/GIModel/GIModel.jl`: semirelativistic kinetic operator
   `sqrt(p^2 + m_1^2) + sqrt(p^2 + m_2^2)`.
   - Paper anchor: Eq. (1b), PDF page 2.
-  - Numerical implementation: finite-difference radial `p^2` operator and
-    dense matrix square root.
+  - Numerical implementation: `radial_grid` (uniform $r$ mesh), `p2_operator`
+    (FD Laplacian with $L(L+1)/r^2$), and `sqrt_kinetic_matrix` on the $p^2$
+    eigenbasis; see `GIModel.jl` for the discrete stencil and matrix square
+    root.
 
 - `src/GIModel/GIModel.jl`: central spin-independent potential
   `b r - 4 alpha_s(r) / (3 r) + c`.
