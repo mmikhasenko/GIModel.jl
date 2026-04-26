@@ -64,6 +64,24 @@ end
     @test m1 ≈ params.masses["c"] && m2 ≈ params.masses["s"]
 end
 
+@testset "appendix_a_smearing code path (finite S-wave energy)" begin
+    mktempdir() do d
+        p = joinpath(d, "p.toml")
+        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
+        @test occursin("appendix_a_smearing = false", s)
+        write(p, replace(s, "appendix_a_smearing = false" => "appendix_a_smearing = true"))
+        params = load_parameters(p)
+        @test params.appendix_a_smearing == true
+        mc = params.masses["c"]
+        vals, _v, _r = GIModel.channel_solution(
+            params, mc, mc, 0;
+            nlevels = 2, ngrid = 120, rmax = 12.0, kinetic = :relativistic,
+        )
+        @test isfinite(vals[1]) && isfinite(vals[2])
+        @test vals[1] < vals[2]
+    end
+end
+
 @testset "Appendix A 3D smearing (constant preserves norm)" begin
     h = 0.02
     n = 2000
