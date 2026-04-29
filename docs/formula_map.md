@@ -107,7 +107,11 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     and Coulomb $d\alpha_s/dr$ consistency; `fine_structure_split` checks that
     S-waves and P singlets have zero first-order fine-structure shift and that
     the $1P$ triplet $J=0,1,2$ splittings are not all identical (finite
-    $r$-space on the diagnostic mesh).
+    $r$-space on the diagnostic mesh). Fine-structure expectations are also
+    tested to be **scale-invariant** under rescaling of the FD eigenvector,
+    enforcing the documented convention that the code treats solver eigenvectors
+    as reduced radial functions $u(r)$ that are normalized via $\int |u|^2 dr=1$
+    before computing expectation values.
 
 ## Appendix A: paper method vs this codebase (completion target)
 

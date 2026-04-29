@@ -238,6 +238,34 @@ end
     end
 end
 
+@testset "fine structure uses u(r) normalization (scale invariant)" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    m = params.masses["c"]
+    _v_p, umat_p, r_p = GIModel.channel_solution(params, m, m, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+    h_p = r_p[2] - r_p[1]
+    u1p = collect(umat_p[:, 1])
+    for J in (0, 1, 2)
+        base = GIModel.fine_structure_components(
+            params, m, m, "P", 3, J, u1p, r_p, h_p;
+            k_spin_orbit = 1.0, k_tensor = 1.0,
+        )
+        scaled_hi = GIModel.fine_structure_components(
+            params, m, m, "P", 3, J, 3.0 .* u1p, r_p, h_p;
+            k_spin_orbit = 1.0, k_tensor = 1.0,
+        )
+        scaled_lo = GIModel.fine_structure_components(
+            params, m, m, "P", 3, J, 0.2 .* u1p, r_p, h_p;
+            k_spin_orbit = 1.0, k_tensor = 1.0,
+        )
+        @test scaled_hi.total ≈ base.total rtol = 1e-12 atol = 0.0
+        @test scaled_lo.total ≈ base.total rtol = 1e-12 atol = 0.0
+        @test scaled_hi.spin_orbit ≈ base.spin_orbit rtol = 1e-12 atol = 0.0
+        @test scaled_lo.spin_orbit ≈ base.spin_orbit rtol = 1e-12 atol = 0.0
+        @test scaled_hi.tensor ≈ base.tensor rtol = 1e-12 atol = 0.0
+        @test scaled_lo.tensor ≈ base.tensor rtol = 1e-12 atol = 0.0
+    end
+end
+
 @testset "erf_approx basic symmetries" begin
     @test GIModel.erf_approx(0.0) ≈ 0.0 atol = 1e-7
     for x in (0.05, 0.3, 0.8, 1.5)
