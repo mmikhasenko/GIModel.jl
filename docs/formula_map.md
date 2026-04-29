@@ -44,14 +44,18 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     are not yet included.
   - Normalization convention: FD eigenvectors are treated as reduced radial
     wavefunctions $u(r)$ with $\int |u|^2\,dr = 1$; the smeared 3D delta kernel
-    is normalized to $\int d^3r\,\delta_\sigma(r)=1$, so the S-wave radial
+    is normalized to $\int d^3r\,\delta_\sigma(r)=1$ with
+    $\delta_\sigma(r)=(\sigma^3/\pi^{3/2})e^{-\sigma^2 r^2}$ (Table II $\sigma$
+    has units GeV, so $r$ is treated as GeV$^{-1}$), so the S-wave radial
     expectation uses $\int |u|^2 \delta_\sigma(r)\,dr$ (no extra $4\pi$ factor).
 
 - `src/GIModel/GIModel.jl`: **experimental** 3D isotropic Gaussian smearing
   of pointwise $G(r)$ and $S(r)$ as in the structure of (A7)–(A8) (spherical
-  shell integral with a normalized $(2\pi\sigma^2)^{-3/2} e^{-r^2/(2\sigma^2)}$
-  factor; $R>0$ via the standard difference-of-Gaussians radial reduction). The
-  quadrature extends the $r$ mesh by $8\sigma$ in $r$ to cover the kernel tail.
+  shell integral with a normalized $\rho(\Delta r)=(\sigma^3/\pi^{3/2})
+  e^{-\sigma^2 \Delta r^2}$ kernel; $R>0$ via the standard
+  difference-of-Gaussians radial reduction). The quadrature extends the $r$
+  mesh by $8/\sigma$ in $r$ (so the tail is $\sim e^{-64}$) to cover the kernel
+  support.
   - Paper: (A7)–(A8) with $\sigma$ from (A9), Table II; PDF p. 36.
   - **Not** the expanded derivative forms (A12)–(A13) that the paper actually uses
   for the spin-independent part in the HO diagonalization, and not equivalent to
@@ -70,10 +74,12 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     (A9) with the contact term, but this is **not** the 3D convolution (A7)–(A8),
     and **not** the paper’s spin-independent effective form (A12)–(A13).
   - Numerical implementation: `convolve_1d_gaussian_same_length` computes a
-    local Gaussian-weighted average in $r$ and explicitly renormalizes by the
-    1D weight sum (so constants are preserved on a uniform grid). There are no
-    $4\pi$ volume factors in this construction; it is a mesh-local proxy used to
-    bracket “pointwise” vs “smeared” sensitivity in heavy-quarkonium diagnostics.
+    local Gaussian-weighted average in $r$ using weights $\propto
+    e^{-\sigma^2(r-r')^2}$ (Table II $\sigma$ as in the 3D kernel), and explicitly
+    renormalizes by the 1D weight sum (so constants are preserved on a uniform
+    grid). There are no $4\pi$ volume factors in this construction; it is a
+    mesh-local proxy used to bracket “pointwise” vs “smeared” sensitivity in
+    heavy-quarkonium diagnostics.
   - Code toggle: `GIParameters.coulomb_1d_smear` gates `potential_diagonal` →
     `coulomb_1d_smeared_central_values`. Precedence: `appendix_a_smearing` wins.
 

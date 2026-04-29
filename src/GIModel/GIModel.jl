@@ -199,8 +199,7 @@ function smear_3d_radial(v::AbstractVector{<:Real}, r::AbstractVector{<:Real}, �
     w = fill(h, n)
     w[1] = h / 2
     w[n] = h / 2
-    σf = float(σ)
-    pre0 = (2 * π * σf^2)^(-3 / 2)
+    σf = max(float(σ), 1.0e-12)
     R0 = 0.25 * h
     out = similar(r, Float64)
     for i in eachindex(r)
@@ -209,14 +208,17 @@ function smear_3d_radial(v::AbstractVector{<:Real}, r::AbstractVector{<:Real}, �
         if R < R0
             for j in eachindex(r)
                 rp = r[j]
-                s += 4 * π * rp^2 * w[j] * pre0 * exp(-rp^2 / (2 * σf^2)) * v[j]
+                # ρ(r) = σ^3 / π^(3/2) exp(-σ^2 r^2), with σ in GeV and r in GeV^-1.
+                ρ = σf^3 / (π^(3 / 2)) * exp(-(σf * rp)^2)
+                s += 4 * π * rp^2 * w[j] * ρ * v[j]
             end
         else
-            pre = 1.0 / (R * σf * sqrt(2 * π))
             for j in eachindex(r)
                 rp = r[j]
-                s +=
-                    w[j] * pre * rp * (exp(-(R - rp)^2 / (2 * σf^2)) - exp(-(R + rp)^2 / (2 * σf^2))) * v[j]
+                # Angle-integrated convolution of a 3D isotropic Gaussian:
+                # f̃(R) = (σ / (√π R)) ∫ dr' r' [e^{-σ^2 (R-r')^2} - e^{-σ^2 (R+r')^2}] f(r')
+                pre = σf / (sqrt(π) * R)
+                s += w[j] * pre * rp * (exp(-(σf * (R - rp))^2) - exp(-(σf * (R + rp))^2)) * v[j]
             end
         end
         out[i] = s
@@ -235,7 +237,8 @@ function smeared_central_values(params::GIParameters, m1::Real, m2::Real, r::Abs
     n < 2 && return [central_potential(ri, params) for ri in r]
     h = r[2] - r[1]
     rmax0 = r[end]
-    n_tail = max(0, Int(ceil(8 * σ / h)))
+    # Kernel tail: exp(-(σ Δr)^2) at Δr = 8/σ gives exp(-64), effectively zero.
+    n_tail = σ > 0 ? max(0, Int(ceil(8 / (σ * h)))) : 0
     r_ext = n_tail > 0 ? vcat(r, collect(range(rmax0 + h, rmax0 + n_tail * h; step = h))) : r
     g0 = [static_coulomb_G(ri, params) for ri in r_ext]
     s0 = [static_confinement_S(ri, params) for ri in r_ext]

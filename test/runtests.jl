@@ -151,7 +151,7 @@ end
     n = 2000
     r = collect(h:h:(h * n))
     σ = 1.0
-    n_tail = max(0, Int(ceil(8 * σ / h)))
+    n_tail = σ > 0 ? max(0, Int(ceil(8 / (σ * h)))) : 0
     r_ext = n_tail > 0 ? vcat(r, collect((r[end] + h):h:(r[end] + n_tail * h))) : r
     w = GIModel.smear_3d_radial(ones(length(r_ext)), r_ext, σ)
     w = w[1:n]
