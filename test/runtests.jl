@@ -238,6 +238,25 @@ end
     end
 end
 
+@testset "contact_hyperfine_shift: normalization + spin algebra" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    m = params.masses["c"]
+    _vals, umat, r = GIModel.channel_solution(params, m, m, 0; nlevels = 2, ngrid = 200, rmax = 20.0)
+    u1s = collect(umat[:, 1])
+
+    δ_triplet = GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u1s, r)
+    δ_singlet = GIModel.contact_hyperfine_shift(params, m, m, "S", 1, u1s, r)
+    @test isfinite(δ_triplet) && isfinite(δ_singlet)
+    # spin_dot(3) / spin_dot(1) = 0.25 / (-0.75) = -1/3
+    @test δ_triplet ≈ (-1 / 3) * δ_singlet rtol = 1e-12
+
+    # contact_hyperfine_shift is defined as an expectation over u(r) with an
+    # internal physical normalization ∫|u|^2 dr = 1, so scaling u must not
+    # change the shift.
+    δ_scaled = GIModel.contact_hyperfine_shift(params, m, m, "S", 3, 7.0 .* u1s, r)
+    @test δ_scaled ≈ δ_triplet rtol = 1e-12
+end
+
 @testset "fine structure uses u(r) normalization (scale invariant)" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     m = params.masses["c"]
