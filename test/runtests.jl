@@ -309,6 +309,25 @@ end
     @test GIModel.contact_hyperfine_shift(params, m, m, "D", 3, u, r) == 0.0
 end
 
+@testset "contact smearing σ implements Appendix A (A9)" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    m1, m2 = params.masses["c"], params.masses["b"]
+
+    σ = GIModel.contact_smearing_sigma(params, m1, m2)
+    σ_swapped = GIModel.contact_smearing_sigma(params, m2, m1)
+    @test σ ≈ σ_swapped rtol = 0.0 atol = 0.0
+
+    mass_factor = 4 * m1 * m2 / (m1 + m2)^2
+    reduced_twice = 2 * m1 * m2 / (m1 + m2)
+    σ_manual = sqrt(params.sigma0^2 * (0.5 + 0.5 * mass_factor^4) + params.smearing_s^2 * reduced_twice^2)
+    @test σ ≈ σ_manual rtol = 0.0 atol = 0.0
+
+    m = params.masses["c"]
+    σ_equal = GIModel.contact_smearing_sigma(params, m, m)
+    σ_equal_manual = sqrt(params.sigma0^2 + params.smearing_s^2 * m^2)
+    @test σ_equal ≈ σ_equal_manual rtol = 0.0 atol = 0.0
+end
+
 @testset "contact hyperfine shift uses u(r) normalization" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     m = params.masses["c"]

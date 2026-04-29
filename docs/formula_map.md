@@ -42,6 +42,12 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     `sigma0` and `s` smearing parameters with the standard GI mass-dependent
     Gaussian width form. The full momentum-dependent relativization factors
     are not yet included.
+  - Smearing width: Appendix A (A9) is implemented as
+    $$
+      \sigma^2(m_1,m_2)=\sigma_0^2\left(\tfrac12+\tfrac12\left(\frac{4m_1m_2}{(m_1+m_2)^2}\right)^4\right)
+      + s^2\left(\frac{2m_1m_2}{m_1+m_2}\right)^2,
+    $$
+    via `contact_smearing_sigma` (Table II gives $\sigma_0$ and $s$).
   - Normalization convention: FD eigenvectors are treated as reduced radial
     wavefunctions $u(r)$ with $\int |u|^2\,dr = 1$; the smeared 3D delta kernel
     is normalized to $\int d^3r\,\delta_\sigma(r)=1$ with

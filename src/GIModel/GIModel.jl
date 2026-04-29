@@ -335,6 +335,11 @@ function solve_channel(args...; kwargs...)
 end
 
 function contact_smearing_sigma(params::GIParameters, m1::Real, m2::Real)
+    # Appendix A (A9), PDF p. 36–37: universal σ(m1,m2) built from Table II σ0 and s.
+    # We keep the paper's symmetric mass combinations explicit:
+    #   mass_factor   = 4 m1 m2 / (m1 + m2)^2
+    #   reduced_twice = 2 m1 m2 / (m1 + m2) = 2 μ
+    # so σ^2 = σ0^2 * (1/2 + 1/2 * mass_factor^4) + s^2 * reduced_twice^2.
     mass_factor = 4 * m1 * m2 / (m1 + m2)^2
     reduced_twice = 2 * m1 * m2 / (m1 + m2)
     sqrt(params.sigma0^2 * (0.5 + 0.5 * mass_factor^4) + params.smearing_s^2 * reduced_twice^2)
