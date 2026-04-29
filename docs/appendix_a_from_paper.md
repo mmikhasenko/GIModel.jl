@@ -40,7 +40,11 @@ for coefficients without checking the scan.
 **Repository consequence:** the flag `appendix_a_smearing` enables only the
 **experimental (A7)–(A8) style 3D blur** in `smeared_central_values` (see
 `src/GIModel/GIModel.jl`), which `docs/formula_map.md` states is **not** the
-same as (A12)–(A13). The next **serious** coding milestone is a paper-faithful
+same as (A12)–(A13). The flag `appendix_a_derivative_g` enables a modular
+finite-difference **proxy** for the first derivative-smearing term,
+`G + ∇²G/(4σ²)`, while leaving `S` pointwise. This is useful for comparison and
+testing the central-potential interface, but it is not yet the fully audited
+(A12)–(A13) expression. The next **serious** coding milestone is a paper-faithful
 (A12) path (or a verified HO-basis port), then aligning spin-dependent radial
 integrals with the same smeared $G$.
 
@@ -55,6 +59,10 @@ integrals with the same smeared $G$.
 ## Related code
 
 - `smeared_central_values` / `smear_3d_radial` — `src/GIModel/GIModel.jl`
+- `appendix_a_derivative_central_values` —
+  `src/GIModel/appendix_a_derivative_potential.jl`
 - `src/GIModel/appendix_a_status.jl` — explicit status (which path is active)
+- `scripts/compare_central_paths.jl` — pointwise, 3D blur, 1D G blur, and
+  derivative proxy on one grid
 - `scripts/compare_central_pointwise_vs_a7a8.jl` — pointwise vs (A7)–(A8) blur on
   a grid (diagnostic only)

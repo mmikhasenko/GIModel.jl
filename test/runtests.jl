@@ -24,6 +24,7 @@ end
     @test params.masses["b"] ≈ 4.977
     @test params.b ≈ 0.18
     @test params.appendix_a_smearing == false
+    @test params.appendix_a_derivative_g == false
     @test params.coulomb_1d_smear == false
     @test params.epsilon_c ≈ -0.168
     @test params.fine_structure == true
@@ -61,7 +62,9 @@ end
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     p = GIModel.central_potential_path(params)
     @test p.name == "pointwise_fd"
+    @test GIModel.central_potential_mode(params) == :pointwise
     @test params.appendix_a_smearing == false
+    @test params.appendix_a_derivative_g == false
     @test params.coulomb_1d_smear == false
 end
 
@@ -123,12 +126,45 @@ end
     end
 end
 
+@testset "appendix_a_derivative_g code path (finite S-wave energy)" begin
+    mktempdir() do d
+        p = joinpath(d, "p.toml")
+        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
+        @test occursin("appendix_a_derivative_g = false", s)
+        write(p, replace(s, "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true"))
+        params = load_parameters(p)
+        @test params.appendix_a_derivative_g == true
+        @test GIModel.central_potential_mode(params) == :appendix_a_derivative_g
+        mc = params.masses["c"]
+        vals, _v, _r = GIModel.channel_solution(
+            params, mc, mc, 0;
+            nlevels = 2, ngrid = 120, rmax = 12.0, kinetic = :relativistic,
+        )
+        @test isfinite(vals[1]) && isfinite(vals[2])
+        @test vals[1] < vals[2]
+    end
+end
+
 @testset "1D Coulomb smear: constant vector unchanged on uniform grid" begin
     h = 0.05
     n = 200
     r = collect(h:h:(h * n))
     c = GIModel.convolve_1d_gaussian_same_length(ones(n), r, h, 0.3)
     @test maximum(abs.(c .- 1.0)) < 1e-12
+end
+
+@testset "central_potential_values named modes" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    mc = params.masses["c"]
+    r, _h = GIModel.radial_grid(80, 8.0)
+    pointwise = GIModel.central_potential_values(params, mc, mc, r; mode = :pointwise)
+    @test pointwise ≈ [GIModel.central_potential(ri, params) for ri in r]
+    @test GIModel.central_potential_values(params, mc, mc, r; mode = :coulomb_1d) ≈
+          GIModel.coulomb_1d_smeared_central_values(params, mc, mc, r)
+    derivative = GIModel.central_potential_values(params, mc, mc, r; mode = :appendix_a_derivative_g)
+    @test all(isfinite, derivative)
+    @test maximum(abs.(derivative .- pointwise)) > 0.0
+    @test_throws ErrorException GIModel.central_potential_values(params, mc, mc, r; mode = :unknown_mode)
 end
 
 @testset "appendix_a_smearing wins over coulomb_1d in central_potential_path" begin
@@ -144,6 +180,31 @@ end
         path = GIModel.central_potential_path(params)
         @test path.name == "experimental_3d_convl_a7a8"
     end
+end
+
+@testset "appendix_a_derivative_g wins over older central smearing toggles" begin
+    mktempdir() do d
+        p = joinpath(d, "p.toml")
+        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
+        s2 = replace(s, "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true")
+        s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
+        s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
+        write(p, s2)
+        params = load_parameters(p)
+        @test params.appendix_a_derivative_g == true
+        @test params.appendix_a_smearing == true
+        @test params.coulomb_1d_smear == true
+        path = GIModel.central_potential_path(params)
+        @test path.name == "appendix_a_derivative_g_proxy"
+    end
+end
+
+@testset "radial_laplacian_values constant is zero" begin
+    h = 0.05
+    n = 200
+    r = collect(h:h:(h * n))
+    lap = GIModel.radial_laplacian_values(ones(n), r)
+    @test maximum(abs.(lap)) < 1e-12
 end
 
 @testset "Appendix A 3D smearing (constant preserves norm)" begin

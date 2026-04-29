@@ -18,6 +18,8 @@ export GIParameters,
     LdotS,
     tensor_triplet_LJ,
     spin_dot,
+    central_potential_mode,
+    central_potential_values,
     CentralPotentialPath,
     central_potential_path
 
@@ -32,6 +34,7 @@ struct GIParameters
     sigma0::Float64
     smearing_s::Float64
     appendix_a_smearing::Bool
+    appendix_a_derivative_g::Bool
     epsilon_c::Float64
     epsilon_t::Float64
     epsilon_so_vector::Float64
@@ -80,6 +83,7 @@ function load_parameters(path::AbstractString)
         raw["relativistic_smearing"]["sigma0_GeV"],
         raw["relativistic_smearing"]["s"],
         get(raw["potential"], "appendix_a_smearing", false),
+        get(raw["potential"], "appendix_a_derivative_g", false),
         float(eps_c),
         float(eps_t),
         float(eps_v),
@@ -247,6 +251,7 @@ function smeared_central_values(params::GIParameters, m1::Real, m2::Real, r::Abs
 end
 
 include("radial_1d_coulomb_smear.jl")
+include("appendix_a_derivative_potential.jl")
 
 function reduced_mass(m1::Real, m2::Real)
     m1 * m2 / (m1 + m2)
@@ -267,14 +272,39 @@ function p2_operator(m::Real, L::Integer, r::AbstractVector, h::Real)
     SymTridiagonal(diagonal, offdiag)
 end
 
-function potential_diagonal(params::GIParameters, m1::Real, m2::Real, r::AbstractVector)
-    if params.appendix_a_smearing
+function central_potential_mode(params::GIParameters)::Symbol
+    if params.appendix_a_derivative_g
+        return :appendix_a_derivative_g
+    elseif params.appendix_a_smearing
+        return :appendix_a_3d_a7a8
+    elseif params.coulomb_1d_smear
+        return :coulomb_1d
+    end
+    return :pointwise
+end
+
+function central_potential_values(
+    params::GIParameters,
+    m1::Real,
+    m2::Real,
+    r::AbstractVector;
+    mode::Symbol = central_potential_mode(params),
+)
+    if mode == :pointwise
+        return [central_potential(ri, params) for ri in r]
+    elseif mode == :appendix_a_3d_a7a8
         return smeared_central_values(params, m1, m2, r)
-    end
-    if params.coulomb_1d_smear
+    elseif mode == :coulomb_1d
         return coulomb_1d_smeared_central_values(params, m1, m2, r)
+    elseif mode == :appendix_a_derivative_g
+        return appendix_a_derivative_central_values(params, m1, m2, r)
+    else
+        error("unknown central potential mode: $mode")
     end
-    return [central_potential(ri, params) for ri in r]
+end
+
+function potential_diagonal(params::GIParameters, m1::Real, m2::Real, r::AbstractVector)
+    return central_potential_values(params, m1, m2, r)
 end
 
 function nonrelativistic_hamiltonian(params::GIParameters, m1::Real, m2::Real, L::Integer; ngrid::Integer = 900, rmax::Real = 24.0)
@@ -480,6 +510,7 @@ function write_residual_report(
     kinetic::Symbol = :relativistic,
     contact_hyperfine::Bool = true,
     appendix_a_smearing::Bool = false,
+    appendix_a_derivative_g::Bool = false,
     coulomb_1d_smear::Bool = false,
     appendix_a_central::Union{Nothing, Bool} = nothing,
     use_fine_structure::Bool = true,
@@ -493,7 +524,9 @@ function write_residual_report(
         end
         hyperfine_note = contact_hyperfine ? "with smeared S-wave contact hyperfine" : "without S-wave contact hyperfine"
         fs_note = use_fine_structure ? " first-order L·S (vector+Thomas) and OGE-tensor; " : " no first-order L·S/tensor; "
-        central_note = if appendix_a_smearing
+        central_note = if appendix_a_derivative_g
+            "Appendix-A derivative proxy for G(r), `G + ∇²G/(4σ²)`, with pointwise S(r); not the full audited (A12)–(A13) expansion, "
+        elseif appendix_a_smearing
             "experimental (A7)–(A8)-style 3D isotropic smearing of pointwise Coulomb G and confinement S (Table II σ₀, s), "
         elseif coulomb_1d_smear
             "1D Gaussian renormalization of G(r) only (pointwise S); same σ as contact (A9); not the full (A12)–(A13) expansion, "

@@ -87,7 +87,25 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     mesh-local proxy used to bracket “pointwise” vs “smeared” sensitivity in
     heavy-quarkonium diagnostics.
   - Code toggle: `GIParameters.coulomb_1d_smear` gates `potential_diagonal` →
-    `coulomb_1d_smeared_central_values`. Precedence: `appendix_a_smearing` wins.
+    `coulomb_1d_smeared_central_values`. Precedence: `appendix_a_derivative_g`,
+    then `appendix_a_smearing`, then `coulomb_1d_smear`.
+
+- `src/GIModel/appendix_a_derivative_potential.jl`: **Appendix-A derivative
+  proxy** for the Coulomb block on the same FD mesh.
+  - Paper context: the Gaussian smearing operator motivates
+    $\exp(\nabla^2/(4\sigma^2))G$. The implemented comparator keeps only the
+    first correction, $G_{\rm eff}\approx G+\nabla^2G/(4\sigma^2)$, and keeps
+    $S(r)=br+c$ pointwise, matching the pragmatic simplification noted around
+    (A12)–(A14). This is **not** yet the exact (A12)–(A13) transcription; those
+    coefficients still require PDF audit because the OCR extraction is fragile.
+  - Numerical implementation: `radial_laplacian_values` uses the uniform FD
+    radial Laplacian `f''+2f'/r`; `appendix_a_derivative_central_values` applies
+    it to `static_coulomb_G` using the same Table II width from
+    `contact_smearing_sigma`.
+  - Code toggle: `GIParameters.appendix_a_derivative_g` gates
+    `potential_diagonal` through the named dispatcher `central_potential_values`.
+    Precedence is `appendix_a_derivative_g`, then `appendix_a_smearing`, then
+    `coulomb_1d_smear`, then `pointwise`.
 
 - `src/GIModel/masses_from_content.jl`: map `sector` + first `quark_content`
   segment to constituent $(m_1, m_2)$ for `compare_sector` (unequal-mass channels).
@@ -151,7 +169,9 @@ masses and that detailed smearing is “relegated to Appendix A.”
   kinetics and a **pointwise** spin-independent $V$ (plus the experimental
   `appendix_a_smearing` branch that 3D-blurs pointwise $G$ and $S$ in the spirit
   of (A7)–(A8), but **not** the (A12)–(A13) derivative expansion the HO
-  solution actually uses).
+  solution actually uses). The named central dispatcher also exposes
+  `:coulomb_1d` and `:appendix_a_derivative_g` comparison modes so these choices
+  can be measured without editing solver internals.
 - Smeared **contact** hyperfine and first-order **fine structure** on the same
   $u(r)$, with (A10) $\epsilon$ factors and **diagnostic** global $k$ scales.
 
@@ -180,7 +200,8 @@ summarized by `GIModel.central_potential_path` in `src/GIModel/appendix_a_status
 
 - Full GI effective spin-independent smearing from (A12)–(A13) and/or the paper’s
   HO-basis smearing, replacing the separate experimental (A7)–(A8) convolution
-  when `appendix_a_smearing` is enabled.
+  and the first-term `appendix_a_derivative_g` proxy when those comparison modes
+  are enabled.
 - Full $E_i/m_i$ or $(p^2{+}m_i^2)^{1/2}$ momentum dependence in the spin
   couplings (paper’s relativization beyond constant $\epsilon$).
 - Momentum-dependent relativization factors for the contact and tensor

@@ -22,9 +22,10 @@ implementation.
 - Central potential “path” is parameterized and reported by
   `GIModel.central_potential_path(params)`:
   pointwise `V(r)`, optional `coulomb_1d_smear` (1D Gaussian renormalization of
-  Coulomb $G(r)$ only), or the experimental `appendix_a_smearing` (3D (A7)–(A8)
-  convolution of pointwise $G$ and $S$; not the paper’s (A12)–(A13) central
-  effective form).
+  Coulomb $G(r)$ only), experimental `appendix_a_smearing` (3D (A7)–(A8)
+  convolution of pointwise $G$ and $S$), or `appendix_a_derivative_g` (first
+  derivative-smearing proxy for $G$ with pointwise $S$). The last two are
+  comparison paths, not a completed audited (A12)–(A13) central effective form.
 
 ## Sector naming and reference CSVs
 
