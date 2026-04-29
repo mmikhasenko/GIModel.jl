@@ -20,8 +20,11 @@ guardrail: when the code is only a diagnostic approximation, say so here.
   - Parameters: `data/parameters.provisional.toml`, copied from Table II
     (`data/table_ii_parameters.csv`). `scripts/verify_table_ii_toml.py` checks
     they still agree on mapped entries. Table II `relativistic_factors`
-    $\epsilon_i$ from (A10) are applied in the first-order fine-structure and
-    contact terms as noted below.
+    $\epsilon$ values from (A10) are applied as follows (see below):
+    `epsilon_c` multiplies the **contact** hyperfine shift, while
+    `epsilon_t`, `epsilon_so_vector`, and `epsilon_so_scalar` multiply the
+    corresponding **fine-structure** tensor / vector spin–orbit / scalar
+    (Thomas) spin–orbit radial terms.
 
 - `src/GIModel/GIModel.jl`: running Coulomb ansatz
   `alpha_s(r) = sum_k alpha_k erf(gamma_k r)`.
