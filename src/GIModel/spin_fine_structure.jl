@@ -40,6 +40,8 @@ function LdotS(L::Int, S::Int, J::Int)
 end
 
 function physical_u_norm(r::AbstractVector{<:Real}, h::Real, u::AbstractVector{<:Real})
+    length(r) == length(u) || throw(ArgumentError("physical_u_norm: length(r) != length(u)"))
+    isfinite(float(h)) && h > 0 || throw(ArgumentError("physical_u_norm: invalid mesh spacing h=$h"))
     s = 0.0
     for i in eachindex(r)
         s += abs2(float(u[i])) * h
@@ -77,6 +79,7 @@ function radial_expect_udr(
     h::Real,
     f::F,
 ) where {F<:Function}
+    length(r) == length(u) || throw(ArgumentError("radial_expect_udr: length(r) != length(u)"))
     n = physical_u_norm(r, h, u)
     n == 0.0 && return 0.0
     s = 0.0

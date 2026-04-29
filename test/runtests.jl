@@ -319,6 +319,15 @@ end
     @test GIModel.radial_expect_udr(u, r, h, (ri, i) -> ri) ≈ manual_mean_r atol = 1e-12
 end
 
+@testset "reduced radial u(r) expectations validate mesh alignment" begin
+    r = [0.1, 0.2, 0.3]
+    u = [1.0, 2.0]
+    @test_throws ArgumentError GIModel.physical_u_norm(r, 0.1, u)
+    @test_throws ArgumentError GIModel.radial_expect_udr(u, r, 0.1, (ri, i) -> 1.0)
+    @test_throws ArgumentError GIModel.physical_u_norm(r[1:2], -0.1, u)
+    @test_throws ArgumentError GIModel.physical_u_norm(r[1:2], NaN, u)
+end
+
 @testset "contact hyperfine: only S-waves" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     m = params.masses["c"]
