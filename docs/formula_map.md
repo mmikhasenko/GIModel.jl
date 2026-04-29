@@ -115,6 +115,9 @@ guardrail: when the code is only a diagnostic approximation, say so here.
   - Audit hook: `fine_structure_components(...)` returns the separate `spin_orbit`
     and `tensor` contributions (and their sum) so residual reports can attribute
     splittings to the radial integrals and angular factors independently.
+  - Normalization / units guardrail: `smeared_r_inv(...)` (currently unused) treats
+    the Table II width $\sigma$ as having units GeV, with the corresponding
+    $r$-space smear length $\ell=1/\sigma$ in GeV$^{-1}$ on the FD mesh.
   - Regression tests in `test/runtests.jl`: triplet tensor/L·S angular sum rules
     and Coulomb $d\alpha_s/dr$ consistency; `fine_structure_split` checks that
     S-waves and P singlets have zero first-order fine-structure shift and that

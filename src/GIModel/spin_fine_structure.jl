@@ -49,14 +49,24 @@ function physical_u_norm(r::AbstractVector{<:Real}, h::Real, u::AbstractVector{<
 end
 
 function smeared_r_inv(params::GIParameters, m1::Real, m2::Real, r::Real, p::Int)
+    # Helper for Appendix-A-style "relativized" regulators of 1/r^p singularities.
+    #
+    # Convention audit: Table II σ(m1,m2) has units of GeV, while the FD mesh uses
+    # r in GeV⁻¹, so the corresponding smear length scale in r-space is 1/σ.
+    #
+    # This helper is currently unused by the active diagnostics, but keeping it
+    # unit-consistent avoids accidentally reintroducing a factor-of-σ^2 bug when
+    # wiring it into future Appendix A operators.
     σ = contact_smearing_sigma(params, m1, m2)
-    rs2 = r^2 + σ^2
+    ℓ = 1.0 / max(float(σ), 1.0e-12) # smear length in GeV⁻¹
+    rs2 = float(r)^2 + ℓ^2
     if p == 1
-        return 1.0 / max(r, 1.0e-8)
+        return 1.0 / sqrt(max(rs2, 1.0e-20))
     elseif p == 2
-        return 1.0 / rs2
+        return 1.0 / max(rs2, 1.0e-20)
     elseif p == 3
-        return 1.0 / (rs2 * sqrt(max(rs2, 1.0e-20)))
+        rs = sqrt(max(rs2, 1.0e-20))
+        return 1.0 / (rs2 * rs)
     end
     return 0.0
 end

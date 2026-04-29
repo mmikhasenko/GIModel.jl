@@ -328,6 +328,23 @@ end
     @test σ_equal ≈ σ_equal_manual rtol = 0.0 atol = 0.0
 end
 
+@testset "smeared_r_inv uses 1/σ length convention" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    m = params.masses["c"]
+    σ = GIModel.contact_smearing_sigma(params, m, m)
+    ℓ = 1.0 / σ
+
+    @test GIModel.smeared_r_inv(params, m, m, 0.0, 1) ≈ σ atol = 1e-12 rtol = 0.0
+    @test GIModel.smeared_r_inv(params, m, m, 0.0, 2) ≈ σ^2 atol = 1e-12 rtol = 0.0
+    @test GIModel.smeared_r_inv(params, m, m, 0.0, 3) ≈ σ^3 atol = 1e-12 rtol = 0.0
+
+    r0 = 2.3
+    rs2 = r0^2 + ℓ^2
+    @test GIModel.smeared_r_inv(params, m, m, r0, 1) ≈ 1.0 / sqrt(rs2) atol = 0.0 rtol = 1e-12
+    @test GIModel.smeared_r_inv(params, m, m, r0, 2) ≈ 1.0 / rs2 atol = 0.0 rtol = 1e-12
+    @test GIModel.smeared_r_inv(params, m, m, r0, 3) ≈ 1.0 / (rs2 * sqrt(rs2)) atol = 0.0 rtol = 1e-12
+end
+
 @testset "contact hyperfine shift uses u(r) normalization" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     m = params.masses["c"]
