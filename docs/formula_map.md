@@ -127,6 +127,12 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     enforcing the documented convention that the code treats solver eigenvectors
     as reduced radial functions $u(r)$ that are normalized via $\int |u|^2 dr=1$
     before computing expectation values.
+  - Unequal-mass scope note: the current implementation contracts the spin–orbit
+    operator into total `L·S` with a symmetric mass prefactor (an “equal-share”
+    convention). This is exact for equal-mass $q\bar q$ (the primary validation
+    target `ccbar`/`bbbar`), but is only diagnostic for unequal-mass channels
+    until the paper’s antisymmetric spin–orbit term and same-`J` mixing
+    machinery are implemented.
 
 ## Appendix A: paper method vs this codebase (completion target)
 

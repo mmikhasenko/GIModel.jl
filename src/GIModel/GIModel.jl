@@ -428,6 +428,7 @@ function compare_sector(
         spin_orbit_shift = 0.0
         tensor_shift = 0.0
         fine_structure_shift = 0.0
+        fine_structure_mass_convention = "disabled"
         if contact_hyperfine
             contact_shift = contact_hyperfine_shift(params, m1, m2, state.L, state.multiplicity, vectors[:, state.n], r)
         end
@@ -440,6 +441,9 @@ function compare_sector(
             spin_orbit_shift = comp.spin_orbit
             tensor_shift = comp.tensor
             fine_structure_shift = comp.total
+            fine_structure_mass_convention = isapprox(m1, m2; rtol = 0.0, atol = 0.0) ?
+                                             "equal_mass" :
+                                             "unequal_mass_equal_share_LdotS"
         end
         predicted = central + contact_shift + fine_structure_shift
         push!(
@@ -451,6 +455,9 @@ function compare_sector(
                 n = state.n,
                 J = state.J,
                 multiplicity = state.multiplicity,
+                m1_GeV = m1,
+                m2_GeV = m2,
+                fine_structure_mass_convention = fine_structure_mass_convention,
                 reference_GeV = state.mass_GeV,
                 central_GeV = central,
                 contact_shift_GeV = contact_shift,
@@ -543,6 +550,23 @@ function write_residual_report(
                         row.predicted_GeV,
                     ),
                 )
+            end
+        end
+
+        if use_fine_structure &&
+           !isempty(rows) &&
+           hasproperty(rows[1], :fine_structure_mass_convention) &&
+           any(!isapprox(row.m1_GeV, row.m2_GeV; rtol = 0.0, atol = 0.0) for row in rows)
+            println(io)
+            println(io, "## Fine-Structure Mass Convention (audit note)")
+            println(io)
+            println(io, "Fine structure is currently implemented in terms of total `L·S` and a symmetric mass prefactor; this is exact for equal-mass `q\\bar q` but only a diagnostic convention for unequal masses (antisymmetric spin–orbit and mixing are not yet implemented).")
+            println(io)
+            println(io, "| state | m1 GeV | m2 GeV | convention |")
+            println(io, "|---|---:|---:|---|")
+            for row in rows
+                label = @sprintf("%d^%d%s_%d", row.n, row.multiplicity, row.L, row.J)
+                println(io, @sprintf("| `%s` | %.6f | %.6f | `%s` |", label, row.m1_GeV, row.m2_GeV, row.fine_structure_mass_convention))
             end
         end
 

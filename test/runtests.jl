@@ -414,6 +414,11 @@ end
     @test hasproperty(row, :spin_orbit_shift_GeV)
     @test hasproperty(row, :tensor_shift_GeV)
     @test hasproperty(row, :fine_structure_shift_GeV)
+    @test hasproperty(row, :m1_GeV)
+    @test hasproperty(row, :m2_GeV)
+    @test hasproperty(row, :fine_structure_mass_convention)
+    @test isfinite(row.m1_GeV) && isfinite(row.m2_GeV)
+    @test row.fine_structure_mass_convention in ("equal_mass", "unequal_mass_equal_share_LdotS", "disabled")
     @test row.fine_structure_shift_GeV ≈ row.spin_orbit_shift_GeV + row.tensor_shift_GeV atol = 1e-12
     @test row.predicted_GeV ≈ row.central_GeV + row.contact_shift_GeV + row.fine_structure_shift_GeV atol = 1e-12
 end

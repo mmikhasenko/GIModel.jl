@@ -72,6 +72,43 @@ All shifts below are relative to the central FD eigenvalue (the spin-independent
 | `1^3G_4` | 2.524 |    +0.0 |   +54.3 |    +8.6 |   +62.9 | 2.587 |
 | `1^3G_5` | 2.524 |    +0.0 |  -217.2 |    -3.1 |  -220.3 | 2.304 |
 
+## Fine-Structure Mass Convention (audit note)
+
+Fine structure is currently implemented in terms of total `L·S` and a symmetric mass prefactor; this is exact for equal-mass `q\bar q` but only a diagnostic convention for unequal masses (antisymmetric spin–orbit and mixing are not yet implemented).
+
+| state | m1 GeV | m2 GeV | convention |
+|---|---:|---:|---|
+| `1^1S_0` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `2^1S_0` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `3^1S_0` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^3S_1` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `2^3S_1` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^3D_1` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `3^3S_1` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `2^3D_1` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^3P_0` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `2^3P_0` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^1P_1` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^3P_1` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `2^1P_1` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `2^3P_1` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^3P_2` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `2^3P_2` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^3F_2` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^1D_2` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^3D_2` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `2^1D_2` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `2^3D_2` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^3D_3` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `2^3D_3` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^3G_3` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^1F_3` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^3F_3` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^3F_4` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^1G_4` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^3G_4` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^3G_5` | 0.220000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+
 Mean absolute residual: 205.7 MeV.
 Max absolute residual: 503.2 MeV.
 
