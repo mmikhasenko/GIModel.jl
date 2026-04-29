@@ -294,6 +294,7 @@ end
             params, m, m, "P", 3, J, u1p, r_p, h_p;
             k_spin_orbit = 1.0, k_tensor = 1.0,
         )
+        @test comp.spin_orbit ≈ comp.spin_orbit_vector + comp.spin_orbit_thomas atol = 1e-12
         @test comp.total ≈ comp.spin_orbit + comp.tensor atol = 1e-12
         @test comp.total ≈ GIModel.fine_structure_split(
             params, m, m, "P", 3, J, u1p, r_p, h_p;
@@ -342,6 +343,10 @@ end
         )
         @test scaled_hi.total ≈ base.total rtol = 1e-12 atol = 0.0
         @test scaled_lo.total ≈ base.total rtol = 1e-12 atol = 0.0
+        @test scaled_hi.spin_orbit_vector ≈ base.spin_orbit_vector rtol = 1e-12 atol = 0.0
+        @test scaled_lo.spin_orbit_vector ≈ base.spin_orbit_vector rtol = 1e-12 atol = 0.0
+        @test scaled_hi.spin_orbit_thomas ≈ base.spin_orbit_thomas rtol = 1e-12 atol = 0.0
+        @test scaled_lo.spin_orbit_thomas ≈ base.spin_orbit_thomas rtol = 1e-12 atol = 0.0
         @test scaled_hi.spin_orbit ≈ base.spin_orbit rtol = 1e-12 atol = 0.0
         @test scaled_lo.spin_orbit ≈ base.spin_orbit rtol = 1e-12 atol = 0.0
         @test scaled_hi.tensor ≈ base.tensor rtol = 1e-12 atol = 0.0
