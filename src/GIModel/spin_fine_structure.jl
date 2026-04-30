@@ -1,4 +1,4 @@
-# First-order color-magnetic + Thomas (scalar confinement) spin–orbit, plus OGE-tensor
+# First-order color-magnetic + Thomas-precession spin–orbit, plus OGE-tensor
 # in the structure of the paper, Eqs. (3)–(7) (text), using Table II ε in (A10).
 # Radial integrals: we treat the FD eigenvector as the reduced Schrödinger radial
 # wavefunction u(r) sampled on a uniform mesh. The physical normalization is
@@ -183,9 +183,23 @@ function fine_structure_components(
     )
 
     m1, m2 = float(m1), float(m2)
-    inv2 = 0.25 * (1.0 / m1^2 + 1.0 / m2^2)
-    Ivp = radial_expect_udr(u, r, h, (ri, i) -> (1.0 / max(ri, 1.0e-8)) * dV_coul_central_dr(ri, params))
-    I1 = radial_expect_udr(u, r, h, (ri, i) -> 1.0 / max(ri, 1.0e-8))
+    # Paper Eq. (6) uses α_s(r)/r^3 directly (no α_s' term). Eq. (7) Thomas-precession
+    # term uses (1/2r) dH_conf/dr, which *does* include α_s'(r) via d/dr[-α_s(r)/r].
+    # For unequal masses the exact operator splits into symmetric and antisymmetric
+    # spin–orbit pieces. We currently keep only the symmetric L·S contraction:
+    #   L·(S_i/m_i^2 + S_j/m_j^2)  →  (1/2)(1/m1^2 + 1/m2^2) L·S
+    #   L·[(1/mi+1/mj)(S_i/mi + S_j/mj)]
+    #     → (1/2)(1/m1^2 + 1/m2^2 + 2/(m1 m2)) L·S
+    inv2_tp = 0.5 * (1.0 / m1^2 + 1.0 / m2^2)
+    inv2_cm = 0.5 * (1.0 / m1^2 + 1.0 / m2^2 + 2.0 / (m1 * m2))
+    Icm = radial_expect_udr(u, r, h, (ri, i) -> begin
+        r0 = max(ri, 1.0e-8)
+        (4.0 / 3.0) * alpha_s_r(r0) / r0^3
+    end)
+    Itp = radial_expect_udr(u, r, h, (ri, i) -> begin
+        r0 = max(ri, 1.0e-8)
+        (1.0 / (2.0 * r0)) * (params.b + dV_coul_central_dr(r0, params))
+    end)
     # For L>0 the FD radial wave function suppresses the origin. Using the same
     # broad Gaussian width as the S-wave contact term over-damps tensor
     # splittings; the full GI tensor term should come from derivatives of the
@@ -194,10 +208,10 @@ function fine_structure_components(
     # including the α_s'(r) and α_s''(r) pieces induced by running α_s(r).
     Itk = radial_expect_udr(u, r, h, (ri, i) -> tensor_kernel_coulomb_running(ri))
     ls = LdotS(Ln, 1, J)
-    vec_term = (1.0 + params.epsilon_so_vector) * Ivp
-    thomas_term = (1.0 + params.epsilon_so_scalar) * params.b * I1
-    spin_orbit_vector = k_spin_orbit * inv2 * ls * (3 * vec_term)
-    spin_orbit_thomas = k_spin_orbit * inv2 * ls * (-thomas_term)
+    vec_term = (1.0 + params.epsilon_so_vector) * Icm
+    thomas_term = (1.0 + params.epsilon_so_scalar) * Itp
+    spin_orbit_vector = k_spin_orbit * inv2_cm * ls * vec_term
+    spin_orbit_thomas = k_spin_orbit * (-inv2_tp) * ls * thomas_term
     spin_orbit = spin_orbit_vector + spin_orbit_thomas
     # Coulomb-limit check: for G(r) = -4 α_s / (3 r) with constant α_s,
     #   (1/r dG/dr - d²G/dr²) = 4 α_s / r³

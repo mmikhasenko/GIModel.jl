@@ -482,6 +482,45 @@ end
     end
 end
 
+@testset "spin–orbit convention: Eq. (6) uses α_s/r^3 (no α_s')" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    h = 0.02
+    r = collect(0.10:h:4.00)
+    u = exp.(-r)
+
+    I_cm = GIModel.radial_expect_udr(u, r, h, (ri, i) -> begin
+        r0 = max(ri, 1.0e-8)
+        (4.0 / 3.0) * GIModel.alpha_s_r(r0) / r0^3
+    end)
+    I_deriv = GIModel.radial_expect_udr(u, r, h, (ri, i) -> begin
+        r0 = max(ri, 1.0e-8)
+        (1.0 / r0) * GIModel.dV_coul_central_dr(r0, params)
+    end)
+    # With running α_s(r)=∑ α_k erf(γ_k r), α_s'(r)>0 so these must differ:
+    #   (4/3) α_s(r)/r^3  - (1/r) d/dr[-4α_s(r)/(3r)] = (4/3) α_s'(r)/r^2  > 0.
+    @test I_cm > I_deriv
+    @test abs(I_cm - I_deriv) > 1e-6
+
+    # Guardrail: fine_structure_components must use I_cm (Eq. (6)), not I_deriv.
+    m = params.masses["c"]
+    comp = GIModel.fine_structure_components(
+        params, m, m, "P", 3, 2, collect(u), collect(r), h;
+        k_spin_orbit = 1.0, k_tensor = 0.0,
+    )
+    inv2_cm = 0.5 * (1.0 / m^2 + 1.0 / m^2 + 2.0 / (m * m))
+    ls = GIModel.LdotS(1, 1, 2)
+    expected_vec = inv2_cm * ls * (1.0 + params.epsilon_so_vector) * I_cm
+    @test comp.spin_orbit_vector ≈ expected_vec rtol = 1e-12 atol = 0.0
+
+    I_tp = GIModel.radial_expect_udr(u, r, h, (ri, i) -> begin
+        r0 = max(ri, 1.0e-8)
+        (1.0 / (2.0 * r0)) * (params.b + GIModel.dV_coul_central_dr(r0, params))
+    end)
+    inv2_tp = 0.5 * (1.0 / m^2 + 1.0 / m^2)
+    expected_tp = (-inv2_tp) * ls * (1.0 + params.epsilon_so_scalar) * I_tp
+    @test comp.spin_orbit_thomas ≈ expected_tp rtol = 1e-12 atol = 0.0
+end
+
 @testset "OGE tensor kernel matches finite-difference derivatives of G(r)" begin
     # Tensor kernel is built from the Coulomb piece G(r) = -4 α_s(r)/(3 r) as
     #   K(r) = (1/r) dG/dr - d²G/dr².

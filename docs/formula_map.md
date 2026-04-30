@@ -142,9 +142,16 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     A) for the $\epsilon$ factors. Tensor angular factors for triplet
     $J=L-1,L,L+1$ states use the closed forms
     $-2(L+1)/(2L-1)$, $2$, and $-2L/(2L+3)$, whose $(2J+1)$-weighted
-    average vanishes across the triplet multiplet. The spin-orbit radial
-    coefficient uses the standard color-magnetic minus Thomas structure
-    proportional to $3G'(r)-S'(r)$. The tensor radial term is deliberately
+    average vanishes across the triplet multiplet. The spin–orbit implementation
+    now follows the *paper text* Eqs. (6)–(7) directly: the color-magnetic piece
+    uses $\alpha_s(r)/r^3$ (Eq. (6), **no** $\alpha_s'(r)$ term), while the
+    Thomas-precession piece uses $(1/2r)\,dH^{\rm conf}/dr$ (Eq. (7), which
+    **does** include $\alpha_s'(r)$ through $d/dr[-\alpha_s(r)/r]$ when running
+    $\alpha_s(r)$ is inserted). For unequal masses the exact operator contains
+    both symmetric and antisymmetric spin–orbit structures; the current
+    diagnostic code keeps only the symmetric contraction into total $L\!\cdot\!S$
+    (exact in the equal-mass validation sectors `ccbar`/`bbbar`).
+    The tensor radial term is deliberately
     unsmeared for now because applying the broad contact width to $1/r^3$
     overdamps the P/D splittings; the correct next replacement is the
     derivative of the Appendix A smeared $G(r)$. In the present diagnostic
