@@ -227,7 +227,7 @@ end
         @test params.appendix_a_smearing == true
         @test params.coulomb_1d_smear == true
         path = GIModel.central_potential_path(params)
-        @test path.name == "appendix_a_derivative_g_proxy"
+        @test path.name == "appendix_a_derivative_g"
     end
 end
 

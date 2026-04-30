@@ -12,7 +12,7 @@ function central_potential_path(params::GIParameters)::CentralPotentialPath
     mode = central_potential_mode(params)
     if mode == :appendix_a_derivative_g
         return CentralPotentialPath(
-            "appendix_a_derivative_g_proxy",
+            "appendix_a_derivative_g",
             "First finite-difference derivative term for Gaussian-smearing G(r): G + ∇²G/(4σ²); S(r)=br+c pointwise; A12/A13 coefficients still PDF-audit gated",
             "Comparator path for Appendix-A work. Precedence: `appendix_a_derivative_g` wins over the older 3D and 1D diagnostic toggles.",
         )
