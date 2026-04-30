@@ -387,6 +387,7 @@ end
 
         Itk = GIModel.radial_expect_udr(u1p, r_p, h_p, (ri, i) -> GIModel.tensor_kernel_coulomb_running(ri))
         comp = GIModel.fine_structure_components(params0, mc, mc, "P", 3, 2, u1p, r_p, h_p; k_spin_orbit = 0.0, k_tensor = 1.0)
+        @test comp.I_tk ≈ Itk rtol = 1e-12 atol = 0.0
         expected = (1.0 / (3.0 * mc * mc)) * Itk * GIModel.tensor_triplet_LJ(1, 2, 1)
         @test comp.tensor ≈ expected rtol = 1e-12 atol = 0.0
     end
@@ -507,6 +508,7 @@ end
         params, m, m, "P", 3, 2, collect(u), collect(r), h;
         k_spin_orbit = 1.0, k_tensor = 0.0,
     )
+    @test comp.I_cm ≈ I_cm rtol = 1e-12 atol = 0.0
     inv2_cm = 0.5 * (1.0 / m^2 + 1.0 / m^2 + 2.0 / (m * m))
     ls = GIModel.LdotS(1, 1, 2)
     expected_vec = inv2_cm * ls * (1.0 + params.epsilon_so_vector) * I_cm
@@ -516,6 +518,7 @@ end
         r0 = max(ri, 1.0e-8)
         (1.0 / (2.0 * r0)) * (params.b + GIModel.dV_coul_central_dr(r0, params))
     end)
+    @test comp.I_tp ≈ I_tp rtol = 1e-12 atol = 0.0
     inv2_tp = 0.5 * (1.0 / m^2 + 1.0 / m^2)
     expected_tp = (-inv2_tp) * ls * (1.0 + params.epsilon_so_scalar) * I_tp
     @test comp.spin_orbit_thomas ≈ expected_tp rtol = 1e-12 atol = 0.0

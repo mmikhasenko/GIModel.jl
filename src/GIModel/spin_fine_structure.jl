@@ -159,6 +159,9 @@ function fine_structure_components(
     k_tensor::Real = 1.0,
 )
     !enabled && return (
+        I_cm = 0.0,
+        I_tp = 0.0,
+        I_tk = 0.0,
         spin_orbit_vector = 0.0,
         spin_orbit_thomas = 0.0,
         spin_orbit = 0.0,
@@ -168,6 +171,9 @@ function fine_structure_components(
     Ln = L_SYMBOLS[Ls]
     S = (multiplicity - 1) ÷ 2
     (Ln == 0 || S < 0) && return (
+        I_cm = 0.0,
+        I_tp = 0.0,
+        I_tk = 0.0,
         spin_orbit_vector = 0.0,
         spin_orbit_thomas = 0.0,
         spin_orbit = 0.0,
@@ -175,6 +181,9 @@ function fine_structure_components(
         total = 0.0,
     )
     S == 1 || return (
+        I_cm = 0.0,
+        I_tp = 0.0,
+        I_tk = 0.0,
         spin_orbit_vector = 0.0,
         spin_orbit_thomas = 0.0,
         spin_orbit = 0.0,
@@ -218,6 +227,9 @@ function fine_structure_components(
     # so the tensor prefactor reduces to 4/(3 m1 m2) times ⟨α_s / r³⟩.
     tensor = (1.0 + params.epsilon_t) * k_tensor * (1.0 / (3.0 * m1 * m2)) * Itk * tensor_triplet_LJ(Ln, J, 1)
     return (
+        I_cm = Icm,
+        I_tp = Itp,
+        I_tk = Itk,
         spin_orbit_vector = spin_orbit_vector,
         spin_orbit_thomas = spin_orbit_thomas,
         spin_orbit = spin_orbit,

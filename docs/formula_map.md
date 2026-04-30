@@ -167,10 +167,11 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     Scales $k$ bridge the small FD basis to the large HO result and are
     diagnostic, not paper refits.
   - Audit hook: `fine_structure_components(...)` returns the `spin_orbit` and
-    `tensor` contributions (and their sum), and also splits the spin–orbit term
-    into `spin_orbit_vector` (color-magnetic) and `spin_orbit_thomas` (scalar
-    confinement / Thomas) so residual reports can attribute splittings to the
-    corresponding radial integrals and angular factors independently.
+    `tensor` contributions (and their sum), splits the spin–orbit term into
+    `spin_orbit_vector` (color-magnetic) and `spin_orbit_thomas` (scalar
+    confinement / Thomas), and also exposes the underlying radial expectation
+    values `I_cm`, `I_tp`, and `I_tk` so reports can separate “radial integral”
+    effects from angular/mass prefactors.
   - Normalization / units guardrail: `smeared_r_inv(...)` (currently unused) treats
     the Table II width $\sigma$ as having units GeV, with the corresponding
     $r$-space smear length $\ell=1/\sigma$ in GeV$^{-1}$ on the FD mesh.
