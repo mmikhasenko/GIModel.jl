@@ -380,6 +380,19 @@ function spin_dot(multiplicity::Integer)
     0.5 * (S * (S + 1) - 1.5)
 end
 
+"""
+3D normalized Gaussian regulator for a contact delta, with σ in GeV and r in GeV⁻¹.
+
+This returns δ_σ(r) such that ∫ d³r δ_σ(r) = 1, i.e.
+  4π ∫₀^∞ r² δ_σ(r) dr = 1.
+"""
+function delta_sigma_3d(r::Real, σ::Real)
+    σ = float(σ)
+    ri = float(r)
+    σ > 0 || return 0.0
+    return σ^3 / (π^(3 / 2)) * exp(-(σ * ri)^2)
+end
+
 function contact_hyperfine_shift(params::GIParameters, m1::Real, m2::Real, L::String, multiplicity::Integer, vector::AbstractVector, r::AbstractVector)
     L == "S" || return 0.0
     multiplicity in (1, 3) || return 0.0
@@ -391,8 +404,7 @@ function contact_hyperfine_shift(params::GIParameters, m1::Real, m2::Real, L::St
         r,
         h,
         (ri, i) -> begin
-            delta_sigma = sigma^3 / (π^(3 / 2)) * exp(-(sigma * ri)^2)
-            alpha_s_r(ri) * delta_sigma
+            alpha_s_r(ri) * delta_sigma_3d(ri, sigma)
         end,
     )
     (1.0 + params.epsilon_c) * (32 * π / (9 * m1 * m2)) * expectation *

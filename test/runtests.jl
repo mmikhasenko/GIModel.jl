@@ -73,6 +73,23 @@ end
     end
 end
 
+@testset "Gaussian contact regulator is 3D-normalized" begin
+    # δ_σ(r) is implemented as a 3D density. Its defining normalization is
+    #   ∫ d³r δ_σ(r) = 1  ⇔  4π ∫ r² δ_σ(r) dr = 1.
+    # We check it on a finite mesh that captures essentially all support.
+    for σ in (0.2, 0.5, 1.0, 2.0, 5.0)
+        rmax = 12.0 / σ
+        n = 4000
+        h = rmax / n
+        s = 0.0
+        for i in 1:n
+            r = (i - 0.5) * h
+            s += 4π * r^2 * GIModel.delta_sigma_3d(r, σ) * h
+        end
+        @test s ≈ 1.0 rtol = 2e-6 atol = 2e-6
+    end
+end
+
 @testset "central_potential_path (default = pointwise)" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     p = GIModel.central_potential_path(params)

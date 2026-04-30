@@ -61,8 +61,10 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     wavefunctions $u(r)$ with $\int |u|^2\,dr = 1$; the smeared 3D delta kernel
     is normalized to $\int d^3r\,\delta_\sigma(r)=1$ with
     $\delta_\sigma(r)=(\sigma^3/\pi^{3/2})e^{-\sigma^2 r^2}$ (Table II $\sigma$
-    has units GeV, so $r$ is treated as GeV$^{-1}$), so the S-wave radial
-    expectation uses $\int |u|^2 \delta_\sigma(r)\,dr$ (no extra $4\pi$ factor).
+    has units GeV, so $r$ is treated as GeV$^{-1}$). In code this kernel is
+    `GIModel.delta_sigma_3d(r, σ)` and is regression-tested to satisfy
+    $4\pi\int r^2 \delta_\sigma(r)\,dr=1$. The S-wave radial expectation then
+    uses $\int |u|^2 \delta_\sigma(r)\,dr$ (no extra $4\pi$ factor).
 
 - `src/GIModel/GIModel.jl`: **experimental** 3D isotropic Gaussian smearing
   of pointwise $G(r)$ and $S(r)$ as in the structure of (A7)–(A8) (spherical
