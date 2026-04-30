@@ -144,7 +144,10 @@ function fine_structure_components(
     spin_orbit_vector = k_spin_orbit * inv2 * ls * (3 * vec_term)
     spin_orbit_thomas = k_spin_orbit * inv2 * ls * (-thomas_term)
     spin_orbit = spin_orbit_vector + spin_orbit_thomas
-    tensor = (1.0 + params.epsilon_t) * k_tensor * (1.0 / (3.0 * m1 * m2)) * Its * tensor_triplet_LJ(Ln, J, 1)
+    # Coulomb-limit check: for V_G(r) = -4 α_s / (3 r) with constant α_s,
+    #   (1/r dV/dr - d²V/dr²) = 4 α_s / r³
+    # so the tensor prefactor is 4/(3 m1 m2) times ⟨α_s / r³⟩.
+    tensor = (1.0 + params.epsilon_t) * k_tensor * (4.0 / (3.0 * m1 * m2)) * Its * tensor_triplet_LJ(Ln, J, 1)
     return (
         spin_orbit_vector = spin_orbit_vector,
         spin_orbit_thomas = spin_orbit_thomas,

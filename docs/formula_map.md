@@ -142,7 +142,14 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     proportional to $3G'(r)-S'(r)$. The tensor radial term is deliberately
     unsmeared for now because applying the broad contact width to $1/r^3$
     overdamps the P/D splittings; the correct next replacement is the
-    derivative of the Appendix A smeared $G(r)$. Radial expectation values treat
+    derivative of the Appendix A smeared $G(r)$. In the present diagnostic
+    proxy we keep the **Coulomb-limit color factor** implied by
+    $G(r)=-4\alpha_s/(3r)$, so the tensor radial coefficient uses
+    $(4/(3m_1m_2))\langle\alpha_s(r)/r^3\rangle$ times the triplet $S_{12}$
+    angular factor. This proxy **still omits** $\alpha_s'(r)$ / $\alpha_s''(r)$
+    derivative contributions that would appear if one formed the tensor
+    coefficient from $(1/r)\,dG/dr-d^2G/dr^2$ with running $\alpha_s(r)$.
+    Radial expectation values treat
     FD eigenvectors as reduced radial functions $u(r)$ with $\int |u|^2\,dr=1$
     (uniform-mesh proxy $\sum |u_i|^2 h = 1$; no additional $4\pi$ factor).
     Scales $k$ bridge the small FD basis to the large HO result and are

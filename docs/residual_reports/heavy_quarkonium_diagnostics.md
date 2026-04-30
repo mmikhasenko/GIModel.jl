@@ -7,25 +7,25 @@ Purpose: decompose the remaining `ccbar`/`bbbar` mismatch into common mass offse
 ## charmonium
 
 - rows: `28`
-- mean residual/common offset: `+79.3 MeV`
-- mean absolute residual: `79.3 MeV`
-- mean absolute residual after removing common offset: `15.6 MeV`
-- approximate share of *squared* residuals explained by a single common offset: `94%` (order-of-magnitude; not a full variance decomposition across physics channels)
+- mean residual/common offset: `+76.7 MeV`
+- mean absolute residual: `76.7 MeV`
+- mean absolute residual after removing common offset: `18.2 MeV`
+- approximate share of *squared* residuals explained by a single common offset: `92%` (order-of-magnitude; not a full variance decomposition across physics channels)
 
 ### Multiplet Centers
 
 | multiplet | states | reference GeV | model GeV | residual MeV | offset-corrected MeV |
 |---|---:|---:|---:|---:|---:|
-| `1D` | 4 | 3.841 | 3.901 |   +61.0 |   -18.4 |
-| `2D` | 4 | 4.211 | 4.279 |   +68.5 |   -10.9 |
-| `3D` | 1 | 4.520 | 4.593 |   +72.6 |    -6.7 |
-| `1F` | 4 | 4.093 | 4.149 |   +56.8 |   -22.5 |
-| `1P` | 4 | 3.523 | 3.601 |   +78.1 |    -1.2 |
-| `2P` | 4 | 3.962 | 4.047 |   +84.1 |    +4.8 |
-| `1S` | 2 | 3.068 | 3.172 |  +104.7 |   +25.4 |
-| `2S` | 2 | 3.665 | 3.768 |  +102.7 |   +23.4 |
-| `3S` | 2 | 4.090 | 4.187 |   +96.7 |   +17.3 |
-| `4S` | 1 | 4.450 | 4.549 |   +98.8 |   +19.5 |
+| `1D` | 4 | 3.841 | 3.901 |   +61.0 |   -15.8 |
+| `2D` | 4 | 4.211 | 4.279 |   +68.5 |    -8.3 |
+| `3D` | 1 | 4.520 | 4.584 |   +64.4 |   -12.4 |
+| `1F` | 4 | 4.093 | 4.149 |   +56.8 |   -19.9 |
+| `1P` | 4 | 3.523 | 3.601 |   +78.1 |    +1.4 |
+| `2P` | 4 | 3.962 | 4.047 |   +84.1 |    +7.4 |
+| `1S` | 2 | 3.068 | 3.172 |  +104.7 |   +28.0 |
+| `2S` | 2 | 3.665 | 3.768 |  +102.7 |   +26.0 |
+| `3S` | 2 | 4.090 | 4.187 |   +96.7 |   +19.9 |
+| `4S` | 1 | 4.450 | 4.549 |   +98.8 |   +22.1 |
 
 - radial/orbital spacing errors (this table): RMSE = `13.9 MeV`, mean abs = `11.2 MeV` over `6` available rows
 
@@ -46,37 +46,37 @@ Purpose: decompose the remaining `ccbar`/`bbbar` mismatch into common mass offse
 |---|---:|---:|---:|
 | `1^3S_1 - 1^1S_0` | 130.0 | 97.6 |   -32.4 |
 | `2^3S_1 - 2^1S_0` | 60.0 | 73.7 |   +13.7 |
-| `1^3P_2 - 1^3P_1` | 40.0 | 17.8 |   -22.2 |
-| `1^3P_1 - 1^3P_0` | 70.0 | 39.1 |   -30.9 |
-| `2^3P_2 - 2^3P_1` | 30.0 | 17.9 |   -12.1 |
-| `2^3P_1 - 2^3P_0` | 30.0 | 38.2 |    +8.2 |
-| `1^3D_3 - 1^3D_2` | 10.0 | 3.4 |    -6.6 |
-| `1^3D_2 - 1^3D_1` | 20.0 | 9.6 |   -10.4 |
+| `1^3P_2 - 1^3P_1` | 40.0 | -12.5 |   -52.5 |
+| `1^3P_1 - 1^3P_0` | 70.0 | 114.8 |   +44.8 |
+| `2^3P_2 - 2^3P_1` | 30.0 | -11.4 |   -41.4 |
+| `2^3P_1 - 2^3P_0` | 30.0 | 111.3 |   +81.3 |
+| `1^3D_3 - 1^3D_2` | 10.0 | -6.6 |   -16.6 |
+| `1^3D_2 - 1^3D_1` | 20.0 | 25.0 |    +5.0 |
 
 ## bottomonium
 
 - rows: `30`
-- mean residual/common offset: `+38.8 MeV`
-- mean absolute residual: `38.8 MeV`
-- mean absolute residual after removing common offset: `10.0 MeV`
+- mean residual/common offset: `+38.1 MeV`
+- mean absolute residual: `38.1 MeV`
+- mean absolute residual after removing common offset: `10.2 MeV`
 - approximate share of *squared* residuals explained by a single common offset: `90%` (order-of-magnitude; not a full variance decomposition across physics channels)
 
 ### Multiplet Centers
 
 | multiplet | states | reference GeV | model GeV | residual MeV | offset-corrected MeV |
 |---|---:|---:|---:|---:|---:|
-| `1D` | 4 | 10.152 | 10.176 |   +24.4 |   -14.4 |
-| `2D` | 4 | 10.448 | 10.481 |   +33.0 |    -5.9 |
-| `3D` | 1 | 10.700 | 10.735 |   +35.4 |    -3.5 |
-| `1F` | 4 | 10.353 | 10.379 |   +25.4 |   -13.5 |
-| `1P` | 4 | 9.886 | 9.920 |   +34.2 |    -4.6 |
-| `2P` | 4 | 10.252 | 10.291 |   +38.1 |    -0.7 |
-| `1S` | 2 | 9.445 | 9.509 |   +64.4 |   +25.6 |
-| `2S` | 2 | 9.995 | 10.051 |   +55.5 |   +16.7 |
-| `3S` | 2 | 10.348 | 10.398 |   +50.7 |   +11.9 |
-| `4S` | 1 | 10.630 | 10.681 |   +51.1 |   +12.3 |
-| `5S` | 1 | 10.880 | 10.922 |   +42.0 |    +3.2 |
-| `6S` | 1 | 11.100 | 11.139 |   +39.2 |    +0.4 |
+| `1D` | 4 | 10.152 | 10.176 |   +24.4 |   -13.6 |
+| `2D` | 4 | 10.448 | 10.481 |   +33.0 |    -5.1 |
+| `3D` | 1 | 10.700 | 10.733 |   +33.2 |    -4.9 |
+| `1F` | 4 | 10.353 | 10.379 |   +25.4 |   -12.7 |
+| `1P` | 4 | 9.886 | 9.920 |   +34.2 |    -3.8 |
+| `2P` | 4 | 10.252 | 10.291 |   +38.1 |    +0.1 |
+| `1S` | 2 | 9.445 | 9.509 |   +64.4 |   +26.4 |
+| `2S` | 2 | 9.995 | 10.051 |   +55.5 |   +17.5 |
+| `3S` | 2 | 10.348 | 10.398 |   +50.7 |   +12.7 |
+| `4S` | 1 | 10.630 | 10.681 |   +51.1 |   +13.0 |
+| `5S` | 1 | 10.880 | 10.922 |   +42.0 |    +3.9 |
+| `6S` | 1 | 11.100 | 11.139 |   +39.2 |    +1.2 |
 
 - radial/orbital spacing errors (this table): RMSE = `15.1 MeV`, mean abs = `12.5 MeV` over `6` available rows
 
@@ -97,12 +97,12 @@ Purpose: decompose the remaining `ccbar`/`bbbar` mismatch into common mass offse
 |---|---:|---:|---:|
 | `1^3S_1 - 1^1S_0` | 60.0 | 43.0 |   -17.0 |
 | `2^3S_1 - 2^1S_0` | 20.0 | 24.9 |    +4.9 |
-| `1^3P_2 - 1^3P_1` | 20.0 | 7.9 |   -12.1 |
-| `1^3P_1 - 1^3P_0` | 30.0 | 14.6 |   -15.4 |
-| `2^3P_2 - 2^3P_1` | 10.0 | 6.3 |    -3.7 |
-| `2^3P_1 - 2^3P_0` | 20.0 | 11.7 |    -8.3 |
-| `1^3D_3 - 1^3D_2` | 10.0 | 3.1 |    -6.9 |
-| `1^3D_2 - 1^3D_1` | 10.0 | 4.5 |    -5.5 |
+| `1^3P_2 - 1^3P_1` | 20.0 | -2.8 |   -22.8 |
+| `1^3P_1 - 1^3P_0` | 30.0 | 41.4 |   +11.4 |
+| `2^3P_2 - 2^3P_1` | 10.0 | -2.3 |   -12.3 |
+| `2^3P_1 - 2^3P_0` | 20.0 | 33.3 |   +13.3 |
+| `1^3D_3 - 1^3D_2` | 10.0 | -0.2 |   -10.2 |
+| `1^3D_2 - 1^3D_1` | 10.0 | 9.6 |    -0.4 |
 
 
 ## Where to go next (strategy)

@@ -372,6 +372,26 @@ end
     end
 end
 
+@testset "tensor proxy keeps Coulomb color factor" begin
+    mktempdir() do d
+        p0 = joinpath(d, "p0.toml")
+        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
+        s0 = replace(s, r"^epsilon_t\s*=.*$"m => "epsilon_t = 0.0")
+        write(p0, s0)
+
+        params0 = load_parameters(p0)
+        mc = params0.masses["c"]
+        _v_p, umat_p, r_p = GIModel.channel_solution(params0, mc, mc, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+        h_p = r_p[2] - r_p[1]
+        u1p = collect(umat_p[:, 1])
+
+        Its = GIModel.radial_expect_udr(u1p, r_p, h_p, (ri, i) -> GIModel.alpha_s_r(ri) / max(ri, 1.0e-8)^3)
+        comp = GIModel.fine_structure_components(params0, mc, mc, "P", 3, 2, u1p, r_p, h_p; k_spin_orbit = 0.0, k_tensor = 1.0)
+        expected = (4.0 / (3.0 * mc * mc)) * Its * GIModel.tensor_triplet_LJ(1, 2, 1)
+        @test comp.tensor ≈ expected rtol = 1e-12 atol = 0.0
+    end
+end
+
 @testset "contact_hyperfine_shift: normalization + spin algebra" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     m = params.masses["c"]
