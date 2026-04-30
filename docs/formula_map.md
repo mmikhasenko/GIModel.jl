@@ -20,11 +20,14 @@ guardrail: when the code is only a diagnostic approximation, say so here.
   - Parameters: `data/parameters.provisional.toml`, copied from Table II
     (`data/table_ii_parameters.csv`). `scripts/verify_table_ii_toml.py` checks
     they still agree on mapped entries. Table II `relativistic_factors`
-    $\epsilon$ values from (A10) are applied as follows (see below):
-    `epsilon_c` multiplies the **contact** hyperfine shift, while
-    `epsilon_t`, `epsilon_so_vector`, and `epsilon_so_scalar` multiply the
-    corresponding **fine-structure** tensor / vector spin–orbit / scalar
-    (Thomas) spin–orbit radial terms.
+    $\epsilon$ values from (A10) are currently applied in the **diagnostic**
+    code as **scalar multipliers** on the corresponding terms:
+    `epsilon_c`, `epsilon_t`, `epsilon_so_vector`, `epsilon_so_scalar` enter as
+    `(1 + epsilon_i)` prefactors on the contact / tensor / vector spin–orbit /
+    scalar (Thomas) spin–orbit contributions. This is **not** yet the paper’s
+    full relativization in Eq. (A10), which replaces simple `1/m` factors by
+    operator factors involving `E_i = sqrt(p^2 + m_i^2)` (and introduces the
+    small $\epsilon_i$ as exponents).
 
 - `src/GIModel/GIModel.jl`: running Coulomb ansatz
   `alpha_s(r) = sum_k alpha_k erf(gamma_k r)`.
@@ -125,8 +128,10 @@ guardrail: when the code is only a diagnostic approximation, say so here.
 
 - `src/GIModel/spin_fine_structure.jl`: first-order color-magnetic + Thomas
   (scalar confinement) spin–orbit and an OGE-style tensor term on the FD radial
-  mesh; unsmeared $\alpha_s(r)/r^3$ proxy for the tensor piece; Table II $\epsilon_t$,
-  $\epsilon_{\rm so(v)}$, $\epsilon_{\rm so(s)}$; global `k_spin_orbit`,
+  mesh; unsmeared $\alpha_s(r)/r^3$ proxy for the tensor piece; Table II
+  $\epsilon_t$, $\epsilon_{\rm so(v)}$, $\epsilon_{\rm so(s)}$ (currently used
+  only as scalar `(1+epsilon)` multipliers, not the full Eq. (A10) operator
+  relativization); global `k_spin_orbit`,
   `k_tensor` in `[fine_structure]`.
   - Paper: spin-dependent structure around Eqs. (3)–(7) (text), and (A10) (Appendix
     A) for the $\epsilon$ factors. Tensor angular factors for triplet
@@ -187,7 +192,8 @@ masses and that detailed smearing is “relegated to Appendix A.”
   `:coulomb_1d` and `:appendix_a_derivative_g` comparison modes so these choices
   can be measured without editing solver internals.
 - Smeared **contact** hyperfine and first-order **fine structure** on the same
-  $u(r)$, with (A10) $\epsilon$ factors and **diagnostic** global $k$ scales.
+  $u(r)$, with Table II $\epsilon$ values currently used as scalar
+  `(1+epsilon)` multipliers and **diagnostic** global $k$ scales.
 
 **What “done” should look like for the spin-independent sector**
 

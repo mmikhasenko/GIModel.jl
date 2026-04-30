@@ -332,6 +332,46 @@ end
     end
 end
 
+@testset "fine-structure ε factors are scalar (1+ε) multipliers" begin
+    mktempdir() do d
+        p0 = joinpath(d, "p0.toml")
+        pt = joinpath(d, "pt.toml")
+        pv = joinpath(d, "pv.toml")
+        ps = joinpath(d, "ps.toml")
+
+        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
+        s0 = replace(s, r"^epsilon_c\s*=.*$"m => "epsilon_c = 0.0")
+        s0 = replace(s0, r"^epsilon_t\s*=.*$"m => "epsilon_t = 0.0")
+        s0 = replace(s0, r"^epsilon_so_vector\s*=.*$"m => "epsilon_so_vector = 0.0")
+        s0 = replace(s0, r"^epsilon_so_scalar\s*=.*$"m => "epsilon_so_scalar = 0.0")
+        write(p0, s0)
+
+        write(pt, replace(s0, r"^epsilon_t\s*=.*$"m => "epsilon_t = 0.5"))
+        write(pv, replace(s0, r"^epsilon_so_vector\s*=.*$"m => "epsilon_so_vector = 0.5"))
+        write(ps, replace(s0, r"^epsilon_so_scalar\s*=.*$"m => "epsilon_so_scalar = 0.5"))
+
+        params0 = load_parameters(p0)
+        mc = params0.masses["c"]
+        _v_p, umat_p, r_p = GIModel.channel_solution(params0, mc, mc, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+        h_p = r_p[2] - r_p[1]
+        u1p = collect(umat_p[:, 1])
+
+        # Use J=2 to avoid any accidental L·S or tensor zeros.
+        comp0 = GIModel.fine_structure_components(params0, mc, mc, "P", 3, 2, u1p, r_p, h_p; k_spin_orbit = 1.0, k_tensor = 1.0)
+        @test comp0.tensor != 0.0
+        @test comp0.spin_orbit_vector != 0.0
+        @test comp0.spin_orbit_thomas != 0.0
+
+        compt = GIModel.fine_structure_components(load_parameters(pt), mc, mc, "P", 3, 2, u1p, r_p, h_p; k_spin_orbit = 1.0, k_tensor = 1.0)
+        compv = GIModel.fine_structure_components(load_parameters(pv), mc, mc, "P", 3, 2, u1p, r_p, h_p; k_spin_orbit = 1.0, k_tensor = 1.0)
+        comps = GIModel.fine_structure_components(load_parameters(ps), mc, mc, "P", 3, 2, u1p, r_p, h_p; k_spin_orbit = 1.0, k_tensor = 1.0)
+
+        @test compt.tensor / comp0.tensor ≈ 1.5 rtol = 1e-12 atol = 0.0
+        @test compv.spin_orbit_vector / comp0.spin_orbit_vector ≈ 1.5 rtol = 1e-12 atol = 0.0
+        @test comps.spin_orbit_thomas / comp0.spin_orbit_thomas ≈ 1.5 rtol = 1e-12 atol = 0.0
+    end
+end
+
 @testset "contact_hyperfine_shift: normalization + spin algebra" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     m = params.masses["c"]
