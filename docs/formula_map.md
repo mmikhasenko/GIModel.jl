@@ -128,7 +128,9 @@ guardrail: when the code is only a diagnostic approximation, say so here.
 
 - `src/GIModel/spin_fine_structure.jl`: first-order color-magnetic + Thomas
   (scalar confinement) spin–orbit and an OGE-style tensor term on the FD radial
-  mesh; unsmeared $\alpha_s(r)/r^3$ proxy for the tensor piece; Table II
+  mesh; unsmeared Coulomb-kernel tensor term derived from $G(r)=-4\alpha_s(r)/(3r)$
+  via $(1/r)\,dG/dr-d^2G/dr^2$ (so running $\alpha_s$ contributes $\alpha_s'(r)$
+  and $\alpha_s''(r)$ pieces); Table II
   $\epsilon_t$, $\epsilon_{\rm so(v)}$, $\epsilon_{\rm so(s)}$ (currently used
   only as scalar `(1+epsilon)` multipliers, not the full Eq. (A10) operator
   relativization); global `k_spin_orbit`,
@@ -143,12 +145,12 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     unsmeared for now because applying the broad contact width to $1/r^3$
     overdamps the P/D splittings; the correct next replacement is the
     derivative of the Appendix A smeared $G(r)$. In the present diagnostic
-    proxy we keep the **Coulomb-limit color factor** implied by
-    $G(r)=-4\alpha_s/(3r)$, so the tensor radial coefficient uses
-    $(4/(3m_1m_2))\langle\alpha_s(r)/r^3\rangle$ times the triplet $S_{12}$
-    angular factor. This proxy **still omits** $\alpha_s'(r)$ / $\alpha_s''(r)$
-    derivative contributions that would appear if one formed the tensor
-    coefficient from $(1/r)\,dG/dr-d^2G/dr^2$ with running $\alpha_s(r)$.
+    step we keep the **Coulomb-limit color factor** implied by
+    $G(r)=-4\alpha_s/(3r)$ and evaluate the full unsmeared running-$\alpha_s$
+    kernel $(1/r)\,dG/dr-d^2G/dr^2$, so the tensor prefactor reduces to
+    $(4/(3m_1m_2))\langle\alpha_s(r)/r^3\rangle$ in the constant-$\alpha_s$
+    limit and includes the corresponding $\alpha_s'(r)$ and $\alpha_s''(r)$
+    contributions for the actual running ansatz.
     Radial expectation values treat
     FD eigenvectors as reduced radial functions $u(r)$ with $\int |u|^2\,dr=1$
     (uniform-mesh proxy $\sum |u_i|^2 h = 1$; no additional $4\pi$ factor).

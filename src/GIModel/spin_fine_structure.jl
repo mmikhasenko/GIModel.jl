@@ -19,6 +19,25 @@ function alpha_s_prime_r(r::Real)
     return s
 end
 
+function alpha_s_second_r(r::Real)
+    r = float(r)
+    s = 0.0
+    for (a, g) in zip(ALPHA_COEFFS, ALPHA_GAMMAS)
+        s += a * g^2 * erf_approx_second(g * r)
+    end
+    return s
+end
+
+function tensor_kernel_coulomb_running(r::Real)
+    # Tensor kernel built from the Coulomb piece G(r) = -4 α_s(r) / (3 r):
+    #   (1/r dG/dr - d²G/dr²) = (4/3) [ α_s''/r - 3 α_s'/r² + 3 α_s/r³ ].
+    ri = max(float(r), 1.0e-9)
+    α = alpha_s_r(ri)
+    αp = alpha_s_prime_r(ri)
+    αpp = alpha_s_second_r(ri)
+    (4.0 / 3.0) * (αpp / ri - 3.0 * αp / ri^2 + 3.0 * α / ri^3)
+end
+
 function dV_coul_central_dr(r::Real, params::GIParameters)
     ri = max(r, 1.0e-9)
     α = alpha_s_r(ri)
@@ -135,19 +154,20 @@ function fine_structure_components(
     # For L>0 the FD radial wave function suppresses the origin. Using the same
     # broad Gaussian width as the S-wave contact term over-damps tensor
     # splittings; the full GI tensor term should come from derivatives of the
-    # smeared G(r), but this unsmeared alpha_s/r^3 proxy is a better diagnostic
-    # until that Appendix A operator is implemented.
-    Its = radial_expect_udr(u, r, h, (ri, i) -> alpha_s_r(ri) / max(ri, 1.0e-8)^3)
+    # smeared G(r). As a diagnostic step toward that target, we keep the tensor
+    # term unsmeared but use the full Coulomb kernel (1/r dG/dr - d²G/dr²),
+    # including the α_s'(r) and α_s''(r) pieces induced by running α_s(r).
+    Itk = radial_expect_udr(u, r, h, (ri, i) -> tensor_kernel_coulomb_running(ri))
     ls = LdotS(Ln, 1, J)
     vec_term = (1.0 + params.epsilon_so_vector) * Ivp
     thomas_term = (1.0 + params.epsilon_so_scalar) * params.b * I1
     spin_orbit_vector = k_spin_orbit * inv2 * ls * (3 * vec_term)
     spin_orbit_thomas = k_spin_orbit * inv2 * ls * (-thomas_term)
     spin_orbit = spin_orbit_vector + spin_orbit_thomas
-    # Coulomb-limit check: for V_G(r) = -4 α_s / (3 r) with constant α_s,
-    #   (1/r dV/dr - d²V/dr²) = 4 α_s / r³
-    # so the tensor prefactor is 4/(3 m1 m2) times ⟨α_s / r³⟩.
-    tensor = (1.0 + params.epsilon_t) * k_tensor * (4.0 / (3.0 * m1 * m2)) * Its * tensor_triplet_LJ(Ln, J, 1)
+    # Coulomb-limit check: for G(r) = -4 α_s / (3 r) with constant α_s,
+    #   (1/r dG/dr - d²G/dr²) = 4 α_s / r³
+    # so the tensor prefactor reduces to 4/(3 m1 m2) times ⟨α_s / r³⟩.
+    tensor = (1.0 + params.epsilon_t) * k_tensor * (1.0 / (3.0 * m1 * m2)) * Itk * tensor_triplet_LJ(Ln, J, 1)
     return (
         spin_orbit_vector = spin_orbit_vector,
         spin_orbit_thomas = spin_orbit_thomas,

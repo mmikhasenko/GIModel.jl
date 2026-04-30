@@ -385,9 +385,9 @@ end
         h_p = r_p[2] - r_p[1]
         u1p = collect(umat_p[:, 1])
 
-        Its = GIModel.radial_expect_udr(u1p, r_p, h_p, (ri, i) -> GIModel.alpha_s_r(ri) / max(ri, 1.0e-8)^3)
+        Itk = GIModel.radial_expect_udr(u1p, r_p, h_p, (ri, i) -> GIModel.tensor_kernel_coulomb_running(ri))
         comp = GIModel.fine_structure_components(params0, mc, mc, "P", 3, 2, u1p, r_p, h_p; k_spin_orbit = 0.0, k_tensor = 1.0)
-        expected = (4.0 / (3.0 * mc * mc)) * Its * GIModel.tensor_triplet_LJ(1, 2, 1)
+        expected = (1.0 / (3.0 * mc * mc)) * Itk * GIModel.tensor_triplet_LJ(1, 2, 1)
         @test comp.tensor ≈ expected rtol = 1e-12 atol = 0.0
     end
 end
@@ -450,12 +450,28 @@ end
     end
 end
 
+@testset "erf_approx second derivative consistency" begin
+    for x in (0.1, 0.4, 1.1, 1.8)
+        δ = 1e-6 * max(1.0, x)
+        num = (GIModel.erf_approx_prime(x + δ) - GIModel.erf_approx_prime(x - δ)) / (2δ)
+        ana = GIModel.erf_approx_second(x)
+        @test ana ≈ num rtol = 2e-5 atol = 1e-9
+        @test GIModel.erf_approx_second(-x) ≈ -ana rtol = 1e-12 atol = 1e-12
+    end
+end
+
 @testset "Coulomb derivative consistency (erf_approx)" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     for r0 in (0.05, 0.2, 1.3)
         δ = 1e-6 * max(1.0, r0)
         num = (GIModel.alpha_s_r(r0 + δ) - GIModel.alpha_s_r(r0 - δ)) / (2δ)
         @test GIModel.alpha_s_prime_r(r0) ≈ num rtol = 1e-6 atol = 1e-10
+    end
+
+    for r0 in (0.05, 0.2, 1.3)
+        δ = 1e-6 * max(1.0, r0)
+        num = (GIModel.alpha_s_prime_r(r0 + δ) - GIModel.alpha_s_prime_r(r0 - δ)) / (2δ)
+        @test GIModel.alpha_s_second_r(r0) ≈ num rtol = 2e-5 atol = 1e-10
     end
 
     V(r) = -(4 / 3) * GIModel.alpha_s_r(r) / r
