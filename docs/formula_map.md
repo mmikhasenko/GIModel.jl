@@ -80,6 +80,10 @@ guardrail: when the code is only a diagnostic approximation, say so here.
   difference-of-Gaussians radial reduction). The quadrature extends the $r$
   mesh by $8/\sigma$ in $r$ (so the tail is $\sim e^{-64}$) to cover the kernel
   support.
+  - Mesh note: the default FD grid from `radial_grid` starts at `r=h` (not
+    `r=0`), so the explicit $R\to 0$ limiting branch inside `smear_3d_radial`
+    is only exercised if a caller provides a mesh including `r=0` (kept as a
+    numerical guardrail for future Appendix A work).
   - Paper: (A7)–(A8) with $\sigma$ from (A9), Table II; PDF p. 36.
   - **Not** the expanded derivative forms (A12)–(A13) that the paper actually uses
   for the spin-independent part in the HO diagonalization, and not equivalent to
@@ -90,6 +94,10 @@ guardrail: when the code is only a diagnostic approximation, say so here.
   until the (A12)–(A13) structure (or a momentum/HO-basis path) is implemented.
   - Code toggle: `GIParameters.appendix_a_smearing` gates `potential_diagonal` →
     `smeared_central_values`.
+  - Regression test: `test/runtests.jl` checks that `smear_3d_radial` preserves a
+    constant function once the mesh is extended by $8/\sigma$ (the same tail
+    coverage used in `smeared_central_values`), so any stray $4\pi$ or kernel
+    prefactor drift becomes a loud failure.
 
 - `src/GIModel/radial_1d_coulomb_smear.jl`: **diagnostic** 1D Gaussian
   renormalization of the pointwise Coulomb piece $G(r)$ on the radial mesh, with

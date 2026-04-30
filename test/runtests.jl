@@ -185,6 +185,27 @@ end
     @test maximum(abs.(c .- 1.0)) < 1e-12
 end
 
+@testset "3D isotropic Gaussian smear: constant vector unchanged (with tail coverage)" begin
+    # For a normalized 3D Gaussian ρ(|R-r|), the convolution should preserve constants.
+    # On a finite radial mesh this is only true once the mesh extends far enough past the
+    # region of interest to include the Gaussian tail. We mimic the production extension
+    # used by `smeared_central_values`: Δr = 8/σ gives exp(-64) tail suppression.
+    σ = 1.0
+    h = 0.05
+    rmax0 = 8.0
+    r = collect(h:h:rmax0)
+    n_tail = Int(ceil(8 / (σ * h)))
+    r_ext = vcat(r, collect(range(rmax0 + h, rmax0 + n_tail * h; step = h)))
+    out = GIModel.smear_3d_radial(ones(length(r_ext)), r_ext, σ)
+    @test maximum(abs.(out[1:length(r)] .- 1.0)) < 2e-3
+
+    # Also exercise the R→0 branch by explicitly including r=0 in the mesh.
+    r0 = collect(0.0:h:rmax0)
+    r0_ext = vcat(r0, collect(range(rmax0 + h, rmax0 + n_tail * h; step = h)))
+    out0 = GIModel.smear_3d_radial(ones(length(r0_ext)), r0_ext, σ)
+    @test abs(out0[1] - 1.0) < 2e-3
+end
+
 @testset "central_potential_values named modes" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     mc = params.masses["c"]
