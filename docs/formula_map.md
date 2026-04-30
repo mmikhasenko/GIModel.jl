@@ -69,6 +69,9 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     `GIModel.delta_sigma_3d(r, σ)` and is regression-tested to satisfy
     $4\pi\int r^2 \delta_\sigma(r)\,dr=1$. The S-wave radial expectation then
     uses $\int |u|^2 \alpha_s(r)\,\delta_\sigma(r)\,dr$ (no extra $4\pi$ factor).
+    Guardrail: `GIModel.physical_u_norm(r, h, u)` validates that the supplied
+    `h` matches a **uniformly spaced** `r` mesh and throws on mismatch, so
+    expectation-value conventions cannot silently drift.
 
 - `src/GIModel/GIModel.jl`: **experimental** 3D isotropic Gaussian smearing
   of pointwise $G(r)$ and $S(r)$ as in the structure of (A7)–(A8) (spherical

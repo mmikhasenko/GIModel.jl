@@ -500,6 +500,14 @@ end
     @test_throws ArgumentError GIModel.radial_expect_udr(u, r, 0.1, (ri, i) -> 1.0)
     @test_throws ArgumentError GIModel.physical_u_norm(r[1:2], -0.1, u)
     @test_throws ArgumentError GIModel.physical_u_norm(r[1:2], NaN, u)
+
+    # Guardrail: expectation values assume a uniform r mesh, and the caller-supplied
+    # spacing `h` must match the actual r[i]-r[i-1].
+    u3 = [1.0, 1.0, 1.0]
+    r_nonuniform = [0.1, 0.2, 0.31]
+    @test_throws ArgumentError GIModel.physical_u_norm(r_nonuniform, 0.1, u3)
+    @test_throws ArgumentError GIModel.radial_expect_udr(u3, r_nonuniform, 0.1, (ri, i) -> 1.0)
+    @test_throws ArgumentError GIModel.physical_u_norm(r, 0.11, u3)
 end
 
 @testset "contact hyperfine: only S-waves" begin

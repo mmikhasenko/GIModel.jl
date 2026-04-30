@@ -61,6 +61,22 @@ end
 function physical_u_norm(r::AbstractVector{<:Real}, h::Real, u::AbstractVector{<:Real})
     length(r) == length(u) || throw(ArgumentError("physical_u_norm: length(r) != length(u)"))
     isfinite(float(h)) && h > 0 || throw(ArgumentError("physical_u_norm: invalid mesh spacing h=$h"))
+    # Convention guardrail: our expectation-value machinery assumes the solver eigenvector is sampled
+    # on a *uniform* r mesh and that callers pass the correct mesh spacing `h`. A mismatch silently
+    # rescales ⟨f(r)⟩ integrals and is a common source of normalization/convention drift.
+    if length(r) >= 2
+        hf = float(h)
+        rprev = float(r[1])
+        isfinite(rprev) || throw(ArgumentError("physical_u_norm: non-finite r[1]=$(r[1])"))
+        for i in 2:length(r)
+            ri = float(r[i])
+            isfinite(ri) || throw(ArgumentError("physical_u_norm: non-finite r[$i]=$(r[i])"))
+            Δ = ri - rprev
+            (Δ > 0 && isapprox(Δ, hf; rtol = 1e-10, atol = 1e-12)) ||
+                throw(ArgumentError("physical_u_norm: non-uniform r mesh or h mismatch at i=$i (Δr=$Δ, h=$hf)"))
+            rprev = ri
+        end
+    end
     s = 0.0
     for i in eachindex(r)
         s += abs2(float(u[i])) * h
