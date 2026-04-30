@@ -482,6 +482,21 @@ end
     end
 end
 
+@testset "OGE tensor kernel matches finite-difference derivatives of G(r)" begin
+    # Tensor kernel is built from the Coulomb piece G(r) = -4 α_s(r)/(3 r) as
+    #   K(r) = (1/r) dG/dr - d²G/dr².
+    # This regression test guards signs/factors in the running-α_s implementation.
+    G(r) = GIModel.coulomb_G_running(r)
+    for r0 in (0.08, 0.15, 0.4, 1.0, 2.0)
+        δ = 1e-5 * max(1.0, r0)
+        d1 = (G(r0 + δ) - G(r0 - δ)) / (2δ)
+        d2 = (G(r0 + δ) - 2G(r0) + G(r0 - δ)) / (δ^2)
+        num = d1 / r0 - d2
+        ana = GIModel.tensor_kernel_coulomb_running(r0)
+        @test ana ≈ num rtol = 2e-4 atol = 1e-7
+    end
+end
+
 @testset "reduced radial u(r) expectation normalization" begin
     h = 0.1
     r = collect(h:h:(3h))

@@ -28,21 +28,40 @@ function alpha_s_second_r(r::Real)
     return s
 end
 
-function tensor_kernel_coulomb_running(r::Real)
-    # Tensor kernel built from the Coulomb piece G(r) = -4 α_s(r) / (3 r):
-    #   (1/r dG/dr - d²G/dr²) = (4/3) [ α_s''/r - 3 α_s'/r² + 3 α_s/r³ ].
+function coulomb_G_running(r::Real)
+    ri = max(float(r), 1.0e-9)
+    -(4.0 / 3.0) * alpha_s_r(ri) / ri
+end
+
+function coulomb_G_prime_running(r::Real)
+    # d/dr [-(4/3) α_s(r) / r] = (4/3) [ α_s(r)/r² - α_s'(r)/r ].
+    ri = max(float(r), 1.0e-9)
+    α = alpha_s_r(ri)
+    αp = alpha_s_prime_r(ri)
+    (4.0 / 3.0) * (α / ri^2 - αp / ri)
+end
+
+function coulomb_G_second_running(r::Real)
+    # d²/dr² [-(4/3) α_s(r) / r] = (4/3) [ 2 α_s'(r)/r² - 2 α_s(r)/r³ - α_s''(r)/r ].
     ri = max(float(r), 1.0e-9)
     α = alpha_s_r(ri)
     αp = alpha_s_prime_r(ri)
     αpp = alpha_s_second_r(ri)
-    (4.0 / 3.0) * (αpp / ri - 3.0 * αp / ri^2 + 3.0 * α / ri^3)
+    (4.0 / 3.0) * (2.0 * αp / ri^2 - 2.0 * α / ri^3 - αpp / ri)
+end
+
+function tensor_kernel_coulomb_running(r::Real)
+    # Tensor kernel built from the Coulomb piece G(r) = -4 α_s(r) / (3 r):
+    #   K(r) = (1/r) dG/dr - d²G/dr².
+    ri = max(float(r), 1.0e-9)
+    (1.0 / ri) * coulomb_G_prime_running(ri) - coulomb_G_second_running(ri)
 end
 
 function dV_coul_central_dr(r::Real, params::GIParameters)
+    # Central derivative for V_G(r) = G(r) = -4 α_s(r) / (3 r).
+    # Kept as a thin wrapper to reduce divergence risk between spin–orbit and tensor kernels.
     ri = max(r, 1.0e-9)
-    α = alpha_s_r(ri)
-    αp = alpha_s_prime_r(ri)
-    return 4.0 * α / (3.0 * ri^2) - 4.0 * αp / (3.0 * ri)
+    return coulomb_G_prime_running(ri)
 end
 
 function tensor_triplet_LJ(L::Int, J::Int, S::Int)

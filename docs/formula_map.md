@@ -168,7 +168,9 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     the Table II width $\sigma$ as having units GeV, with the corresponding
     $r$-space smear length $\ell=1/\sigma$ in GeV$^{-1}$ on the FD mesh.
   - Regression tests in `test/runtests.jl`: triplet tensor/L·S angular sum rules
-    and Coulomb $d\alpha_s/dr$ consistency; `fine_structure_split` checks that
+    and Coulomb $d\alpha_s/dr$ consistency; the OGE tensor kernel
+    $K(r)=(1/r)\,dG/dr-d^2G/dr^2$ is also checked against finite-difference
+    derivatives of $G(r)=-4\alpha_s(r)/(3r)$; `fine_structure_split` checks that
     S-waves and P singlets have zero first-order fine-structure shift and that
     the $1P$ triplet $J=0,1,2$ splittings are not all identical (finite
     $r$-space on the diagnostic mesh). Both fine-structure and smeared-contact
