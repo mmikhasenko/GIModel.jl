@@ -36,7 +36,13 @@ guardrail: when the code is only a diagnostic approximation, say so here.
   - Numerical implementation: `erf_approx` is used (no external dependencies);
     derivatives used by the Coulomb spin–orbit piece (`dV/dr`) are computed via
     the analytic derivative of the same approximation (`erf_approx_prime`) to
-    avoid mixed conventions.
+    avoid mixed conventions. In code, for the Coulomb central piece
+    $V_G(r)=-4\alpha_s(r)/(3r)$ we use
+    $$
+      \frac{dV_G}{dr}=\frac{4\alpha_s(r)}{3r^2}-\frac{4\alpha_s'(r)}{3r},
+    $$
+    implemented as `GIModel.dV_coul_central_dr` and regression-tested against a
+    finite-difference derivative in `test/runtests.jl`.
 
 - `src/GIModel/GIModel.jl`: smeared S-wave contact hyperfine shift.
   - Paper anchor: color hyperfine term around Eq. (4), PDF page 2, and

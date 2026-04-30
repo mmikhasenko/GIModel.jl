@@ -61,6 +61,18 @@ end
     end
 end
 
+@testset "Coulomb central derivative matches finite difference" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+
+    Vg(r) = -4.0 * GIModel.alpha_s_r(r) / (3.0 * r)
+    for r0 in (0.08, 0.15, 0.4, 1.2, 3.0)
+        δ = 1e-6 * max(1.0, r0)
+        num = (Vg(r0 + δ) - Vg(r0 - δ)) / (2δ)
+        ana = GIModel.dV_coul_central_dr(r0, params)
+        @test ana ≈ num rtol = 2e-7 atol = 1e-9
+    end
+end
+
 @testset "central_potential_path (default = pointwise)" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     p = GIModel.central_potential_path(params)
