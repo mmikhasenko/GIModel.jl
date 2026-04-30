@@ -41,7 +41,8 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     $$
       \frac{dV_G}{dr}=\frac{4\alpha_s(r)}{3r^2}-\frac{4\alpha_s'(r)}{3r},
     $$
-    implemented as `GIModel.dV_coul_central_dr` and regression-tested against a
+    implemented as `GIModel.dV_coul_central_dr` in
+    `src/GIModel/spin_fine_structure.jl` and regression-tested against a
     finite-difference derivative in `test/runtests.jl`.
 
 - `src/GIModel/GIModel.jl`: smeared S-wave contact hyperfine shift.
@@ -64,7 +65,7 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     has units GeV, so $r$ is treated as GeV$^{-1}$). In code this kernel is
     `GIModel.delta_sigma_3d(r, σ)` and is regression-tested to satisfy
     $4\pi\int r^2 \delta_\sigma(r)\,dr=1$. The S-wave radial expectation then
-    uses $\int |u|^2 \delta_\sigma(r)\,dr$ (no extra $4\pi$ factor).
+    uses $\int |u|^2 \alpha_s(r)\,\delta_\sigma(r)\,dr$ (no extra $4\pi$ factor).
 
 - `src/GIModel/GIModel.jl`: **experimental** 3D isotropic Gaussian smearing
   of pointwise $G(r)$ and $S(r)$ as in the structure of (A7)–(A8) (spherical

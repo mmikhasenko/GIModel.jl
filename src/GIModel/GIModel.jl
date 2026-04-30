@@ -393,6 +393,18 @@ function delta_sigma_3d(r::Real, σ::Real)
     return σ^3 / (π^(3 / 2)) * exp(-(σ * ri)^2)
 end
 
+"""
+First-order smeared contact hyperfine shift for S-waves.
+
+Convention: the solver eigenvector is treated as the reduced radial wavefunction
+`u(r)` on a uniform mesh with physical normalization `∫|u|² dr = 1`. For an
+S-wave, `ψ(r) = u(r) / r · Y₀₀` and a 3D-normalized regulator `δ_σ(r)` satisfies
+`∫ d³r δ_σ(r) = 1`. Therefore
+
+`⟨α_s(r) δ_σ(r)⟩ = ∫ |u(r)|² α_s(r) δ_σ(r) dr`
+
+with no extra `4π` factor.
+"""
 function contact_hyperfine_shift(params::GIParameters, m1::Real, m2::Real, L::String, multiplicity::Integer, vector::AbstractVector, r::AbstractVector)
     L == "S" || return 0.0
     multiplicity in (1, 3) || return 0.0
