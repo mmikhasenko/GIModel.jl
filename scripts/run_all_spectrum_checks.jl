@@ -35,11 +35,11 @@ for fn in readdir(data_dir)
     report_path = joinpath(report_dir, string(base, "_residuals.md"))
     title = @sprintf("Residuals: %s (GI-style)", base)
     reference = load_reference_spectrum(ref_path)
-    rows = compare_sector(
-        params,
-        reference,
-        flavor;
-        kinetic = :relativistic,
+    computed =
+        compute_sector(params, reference, flavor; kinetic = :relativistic)
+    rows = compare(
+        computed,
+        reference;
         contact_hyperfine = true,
         use_fine_structure = params.fine_structure,
     )

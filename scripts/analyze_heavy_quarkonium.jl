@@ -129,11 +129,11 @@ open(report_path, "w") do io
 
     for (sector, flavor, path) in SECTORS
         reference = load_reference_spectrum(path)
-        rows = compare_sector(
-            params,
-            reference,
-            flavor;
-            kinetic = :relativistic,
+        computed =
+            compute_sector(params, reference, flavor; kinetic = :relativistic)
+        rows = compare(
+            computed,
+            reference;
             contact_hyperfine = true,
             use_fine_structure = params.fine_structure,
         )

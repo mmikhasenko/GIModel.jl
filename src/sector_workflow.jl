@@ -1,5 +1,22 @@
 # Public API (exported from GIModel.jl):
-#   solve_sector, compare_sector, write_residual_report
+#   solve_sector, compute_sector, compare, write_residual_report
+
+struct SectorComputation
+    params::GIParameters
+    m_fallback::Float64
+    channel_cache::Dict{
+        Tuple{Float64,Float64,String},
+        Tuple{Vector{Float64},Matrix{Float64},Vector{Float64}},
+    }
+end
+
+function _reference_masses(params::GIParameters, m_fallback::Float64, s::ReferenceState)
+    try
+        return parse_quark_masses(params, String(s.sector), String(s.quark_content))
+    catch
+        return m_fallback, m_fallback
+    end
+end
 
 function solve_sector(
     params::GIParameters,
@@ -31,7 +48,7 @@ function solve_sector(
     results
 end
 
-function compare_sector(
+function compute_sector(
     params::GIParameters,
     reference::Vector{ReferenceState},
     flavor::String;
@@ -39,23 +56,14 @@ function compare_sector(
     rmax::Real = 24.0,
     kinetic::Symbol = :relativistic,
     eigensolver::Symbol = :full,
-    contact_hyperfine::Bool = true,
-    use_fine_structure::Bool = true,
 )
     m_fallback = params.masses[flavor]
-    function masses_for(s::ReferenceState)
-        try
-            return parse_quark_masses(params, String(s.sector), String(s.quark_content))
-        catch
-            return m_fallback, m_fallback
-        end
-    end
     channel_cache = Dict{
         Tuple{Float64,Float64,String},
         Tuple{Vector{Float64},Matrix{Float64},Vector{Float64}},
     }()
     for state in reference
-        m1, m2 = masses_for(state)
+        m1, m2 = _reference_masses(params, m_fallback, state)
         cache_key = (round(m1, sigdigits = 12), round(m2, sigdigits = 12), state.L)
         if !haskey(channel_cache, cache_key)
             Lval = L_SYMBOLS[state.L]
@@ -72,9 +80,21 @@ function compare_sector(
             )
         end
     end
+    SectorComputation(params, m_fallback, channel_cache)
+end
+
+function compare(
+    computed::SectorComputation,
+    reference::Vector{ReferenceState};
+    contact_hyperfine::Bool = true,
+    use_fine_structure::Bool = true,
+)
+    params = computed.params
+    m_fallback = computed.m_fallback
+    channel_cache = computed.channel_cache
     rows = NamedTuple[]
     for state in reference
-        m1, m2 = masses_for(state)
+        m1, m2 = _reference_masses(params, m_fallback, state)
         cache_key = (round(m1, sigdigits = 12), round(m2, sigdigits = 12), state.L)
         haskey(channel_cache, cache_key) || continue
         values, vectors, r = channel_cache[cache_key]

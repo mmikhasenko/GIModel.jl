@@ -11,11 +11,10 @@ using GIModel
 
 params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
 ref = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_bottomonium.csv"))
-rows = compare_sector(
-    params,
-    ref,
-    "b";
-    kinetic = :relativistic,
+computed = compute_sector(params, ref, "b"; kinetic = :relativistic)
+rows = compare(
+    computed,
+    ref;
     contact_hyperfine = true,
     use_fine_structure = params.fine_structure,
 )

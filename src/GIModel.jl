@@ -40,7 +40,7 @@ include("spin_fine_structure.jl")
 export CentralPotentialPath, central_potential_path
 include("appendix_a_status.jl")
 
-export solve_sector, compare_sector, write_residual_report
+export SectorComputation, solve_sector, compute_sector, compare, write_residual_report
 include("sector_workflow.jl")
 
 end
