@@ -21,9 +21,9 @@ Run these from the repository root:
 
 ```bash
 python3 scripts/validate_seed.py
-julia --project=. test/runtests.jl
-julia --project=. scripts/run_all_spectrum_checks.jl
-julia --project=. scripts/analyze_heavy_quarkonium.jl
+julia test/runtests.jl
+julia scripts/run_all_spectrum_checks.jl
+julia scripts/analyze_heavy_quarkonium.jl
 ```
 
 Expected generated/relevant reports:
@@ -37,7 +37,7 @@ Expected generated/relevant reports:
 ## Current Scorecard
 
 Regenerate the numbers (they will drift when parameters or references change) with
-`julia --project=. scripts/run_all_spectrum_checks.jl`, then read
+`julia scripts/run_all_spectrum_checks.jl`, then read
 `docs/residual_reports/scorecard.md`. Example snapshot (do not treat as a fixed
 tolerance test):
 
@@ -110,8 +110,8 @@ These are not final GI reproduction pieces:
 Please review in this order.
 
 1. Check formulas against the paper.
-   - `src/GIModel/GIModel.jl`
-   - `src/GIModel/spin_fine_structure.jl`
+   - `src/GIModel.jl`
+   - `src/spin_fine_structure.jl`
    - `docs/formula_map.md`
    Verify signs, factors of 2/3/4, color factors, units, and whether the radial
    implementation corresponds to the formula claimed.
@@ -124,7 +124,7 @@ Please review in this order.
    the spin diagnostics follow the same convention (no `4π` factor).
 
 3. Check the heavy-light mass parsing.
-   `src/GIModel/masses_from_content.jl` previously had a bug class where
+   `src/masses_from_content.jl` previously had a bug class where
    `composition_raw` was mistaken for `quark_content`. Confirm this is truly
    fixed and covered.
 
@@ -175,9 +175,9 @@ Stop sector expansion. Fix the formula, add a targeted regression test, and
 regenerate:
 
 ```bash
-julia --project=. test/runtests.jl
-julia --project=. scripts/analyze_heavy_quarkonium.jl
-julia --project=. scripts/run_all_spectrum_checks.jl
+julia test/runtests.jl
+julia scripts/analyze_heavy_quarkonium.jl
+julia scripts/run_all_spectrum_checks.jl
 ```
 
 Do not tune around a formula bug.

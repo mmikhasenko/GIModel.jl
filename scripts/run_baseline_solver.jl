@@ -1,10 +1,12 @@
 #!/usr/bin/env julia
 
+using Pkg
+Pkg.activate(joinpath(@__DIR__, ".."))
+
 using Printf
 
 root = dirname(@__DIR__)
-include(joinpath(root, "src", "GIModel", "GIModel.jl"))
-using .GIModel
+using GIModel
 
 params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
 

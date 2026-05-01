@@ -115,7 +115,7 @@ the active 1.0 path.
 - `LdotS(...)`
 - `tensor_triplet_LJ(...)`
 
-Primary file: `src/GIModel/spin_fine_structure.jl`.
+Primary file: `src/spin_fine_structure.jl`.
 
 ## Formula Panel
 

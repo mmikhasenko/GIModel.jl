@@ -3,9 +3,11 @@
 This file maps implemented local code to the Godfrey-Isgur paper. It is also a
 guardrail: when the code is only a diagnostic approximation, say so here.
 
+Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`](../src/GIModel.jl), with `include`'d helpers in `src/`.
+
 ## Implemented Baseline
 
-- `src/GIModel/GIModel.jl`: semirelativistic kinetic operator
+- `src/GIModel.jl`: semirelativistic kinetic operator
   `sqrt(p^2 + m_1^2) + sqrt(p^2 + m_2^2)`.
   - Paper anchor: Eq. (1b), PDF page 2.
   - Numerical implementation: `radial_grid` (uniform $r$ mesh), `p2_operator`
@@ -13,7 +15,7 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     eigenbasis; see `GIModel.jl` for the discrete stencil and matrix square
     root.
 
-- `src/GIModel/GIModel.jl`: central spin-independent potential
+- `src/GIModel.jl`: central spin-independent potential
   `b r - 4 alpha_s(r) / (3 r) + c`.
   - Paper anchor: nonrelativistic orientation around Eqs. (2)-(3), PDF pages
     2-3.
@@ -29,7 +31,7 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     operator factors involving `E_i = sqrt(p^2 + m_i^2)` (and introduces the
     small $\epsilon_i$ as exponents).
 
-- `src/GIModel/GIModel.jl`: running Coulomb ansatz
+- `src/GIModel.jl`: running Coulomb ansatz
   `alpha_s(r) = sum_k alpha_k erf(gamma_k r)`.
   - Paper anchor: Eq. (12), Eq. (13), and Fig. 2 caption, PDF page 3.
   - Coefficients used from Fig. 2 caption:
@@ -45,10 +47,10 @@ guardrail: when the code is only a diagnostic approximation, say so here.
       \frac{dV_G}{dr}=\frac{4\alpha_s(r)}{3r^2}-\frac{4\alpha_s'(r)}{3r},
     $$
     implemented as `GIModel.dV_coul_central_dr` in
-    `src/GIModel/spin_fine_structure.jl` and regression-tested against a
+    `src/spin_fine_structure.jl` and regression-tested against a
     finite-difference derivative in `test/runtests.jl`.
 
-- `src/GIModel/GIModel.jl`: smeared S-wave contact hyperfine shift.
+- `src/GIModel.jl`: smeared S-wave contact hyperfine shift.
   - Paper anchor: color hyperfine term around Eq. (4), PDF page 2, and
     smearing discussion in Appendix A, PDF pages 36-37.
   - Current status: active GI-style implementation. It uses the Table II
@@ -77,7 +79,7 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     `h` matches a **uniformly spaced** `r` mesh and throws on mismatch, so
     expectation-value conventions cannot silently drift.
 
-- `src/GIModel/GIModel.jl`: **experimental** 3D isotropic Gaussian smearing
+- `src/GIModel.jl`: **experimental** 3D isotropic Gaussian smearing
   of pointwise $G(r)$ and $S(r)$ as in the structure of (A7)–(A8) (spherical
   shell integral with a normalized $\rho(\Delta r)=(\sigma^3/\pi^{3/2})
   e^{-\sigma^2 \Delta r^2}$ kernel; $R>0$ via the standard
@@ -103,7 +105,7 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     coverage used in `smeared_central_values`), so any stray $4\pi$ or kernel
     prefactor drift becomes a loud failure.
 
-- `src/GIModel/radial_1d_coulomb_smear.jl`: **diagnostic** 1D Gaussian
+- `src/radial_1d_coulomb_smear.jl`: **diagnostic** 1D Gaussian
   renormalization of the pointwise Coulomb piece $G(r)$ on the radial mesh, with
   $S(r)=br+c$ kept pointwise.
   - Paper context: shares the Table II $\sigma_0$, $s$ mass-dependent width family
@@ -120,7 +122,7 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     `coulomb_1d_smeared_central_values`. This is an older comparator path below
     the closed-form and derivative modes in dispatcher precedence.
 
-- `src/GIModel/appendix_a_derivative_potential.jl`: **Appendix-A derivative
+- `src/appendix_a_derivative_potential.jl`: **Appendix-A derivative
   proxy** for the Coulomb block on the same FD mesh.
   - Paper context: the Gaussian smearing operator motivates
     $\exp(\nabla^2/(4\sigma^2))G$. The implemented comparator keeps only the
@@ -137,7 +139,7 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     This is now an older comparator path below the closed-form modes, but above
     the raw 3D/1D smearing diagnostics.
 
-- `src/GIModel/GIModel.jl`: **closed-form Appendix-A central candidates**
+- `src/GIModel.jl`: **closed-form Appendix-A central candidates**
   from the expanded web/literature research trail.
   - `:appendix_a_closed_form` evaluates the analytic Gaussian-smearing forms
     used in later GI/MGI implementations:
@@ -156,11 +158,11 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     `appendix_a_momentum_sandwich`, then `appendix_a_closed_form`, then the older
     comparator modes.
 
-- `src/GIModel/masses_from_content.jl`: map `sector` + first `quark_content`
+- `src/masses_from_content.jl`: map `sector` + first `quark_content`
   segment to constituent $(m_1, m_2)$ for `compare_sector` (unequal-mass channels).
   - Paper: Sec. II flavor content; Table II masses.
 
-- `src/GIModel/spin_fine_structure.jl`: first-order color-magnetic + Thomas
+- `src/spin_fine_structure.jl`: first-order color-magnetic + Thomas
   (scalar confinement) spin–orbit and an OGE-style tensor term on the FD radial
   mesh; unsmeared Coulomb-kernel tensor term derived from $G(r)=-4\alpha_s(r)/(3r)$
   via $(1/r)\,dG/dr-d^2G/dr^2$ (so running $\alpha_s$ contributes $\alpha_s'(r)$
@@ -271,7 +273,7 @@ spectrum rows are checked for schema via `scripts/validate_reference_spectra.py`
 
 **Paper navigation for Appendix A:** see `docs/appendix_a_from_paper.md` (equation
 labels and PDF pages). The runtime flag for which central path is active is
-summarized by `GIModel.central_potential_path` in `src/GIModel/appendix_a_status.jl`.
+summarized by `GIModel.central_potential_path` in `src/appendix_a_status.jl`.
 
 ## Not Yet Implemented
 

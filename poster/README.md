@@ -80,11 +80,12 @@ shows the corrections that made version 1.0 work.
 Use these repository anchors when building the visuals:
 
 - Parameters: `data/parameters.provisional.toml`
+- Julia package: **`GIModel`** (`Project.toml` at repo root; module entry `src/GIModel.jl`).
 - Formula audit: `docs/formula_map.md`
 - Research notes: `docs/research_spin_independent_gi.md`
-- Core implementation: `src/GIModel/GIModel.jl`
-- Fine structure implementation: `src/GIModel/spin_fine_structure.jl`
-- Central path status: `src/GIModel/appendix_a_status.jl`
+- Core implementation: `src/GIModel.jl`
+- Fine structure implementation: `src/spin_fine_structure.jl`
+- Central path status: `src/appendix_a_status.jl`
 - Tests: `test/runtests.jl`
 - Scorecard: `docs/residual_reports/scorecard.md`
 - Heavy-quarkonium diagnostics:

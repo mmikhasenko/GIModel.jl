@@ -12,7 +12,7 @@ spin-orbit/tensor tuning.
 
 ## Local state
 
-- Active default path: pointwise `G(r) + S(r)` in `src/GIModel/GIModel.jl`.
+- Active default path: pointwise `G(r) + S(r)` in `src/GIModel.jl`.
 - Experimental paths:
   - `appendix_a_smearing`: direct numerical 3D convolution of both `G` and `S`.
   - `coulomb_1d`: 1D Gaussian on `G` only.

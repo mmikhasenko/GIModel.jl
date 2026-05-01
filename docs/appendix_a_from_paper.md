@@ -20,7 +20,7 @@ for coefficients without checking the scan.
 
 - **(A10)** and **(A11)** – Relativized strengths for spin-dependent
   interactions, tied to the **ε** factors in Table II (already applied in
-  `src/GIModel/` for contact and first-order fine structure where coded).
+  `src/` for contact and first-order fine structure where coded).
 - The **Coulomb** and **confinement** building blocks in coordinate space
   (orientation around Eqs. (11)–(13) in the main text) match our `static_coulomb_G`
   and `static_confinement_S` (see `docs/formula_map.md`).
@@ -39,7 +39,7 @@ for coefficients without checking the scan.
 
 **Repository consequence:** the flag `appendix_a_smearing` enables only the
 **experimental (A7)–(A8) style 3D blur** in `smeared_central_values` (see
-`src/GIModel/GIModel.jl`), which `docs/formula_map.md` states is **not** the
+`src/GIModel.jl`), which `docs/formula_map.md` states is **not** the
 same as (A12)–(A13). The flag `appendix_a_derivative_g` enables a modular
 finite-difference **proxy** for the first derivative-smearing term,
 `G + ∇²G/(4σ²)`, while leaving `S` pointwise. This is useful for comparison and
@@ -58,10 +58,10 @@ integrals with the same smeared $G$.
 
 ## Related code
 
-- `smeared_central_values` / `smear_3d_radial` — `src/GIModel/GIModel.jl`
+- `smeared_central_values` / `smear_3d_radial` — `src/GIModel.jl`
 - `appendix_a_derivative_central_values` —
-  `src/GIModel/appendix_a_derivative_potential.jl`
-- `src/GIModel/appendix_a_status.jl` — explicit status (which path is active)
+  `src/appendix_a_derivative_potential.jl`
+- `src/appendix_a_status.jl` — explicit status (which path is active)
 - `scripts/compare_central_paths.jl` — pointwise, 3D blur, 1D G blur, and
   derivative proxy on one grid
 - `scripts/compare_central_pointwise_vs_a7a8.jl` — pointwise vs (A7)–(A8) blur on

@@ -31,6 +31,8 @@ Use these files to resume work quickly:
   `scripts/compare_central_pointwise_vs_a7a8.jl` (pointwise *V* vs (A7)--(A8) blur;
   not (A12)--(A13)).
 - `docs/conventions.md`: spectroscopic, spin, sector, and basis conventions.
+- `Project.toml`: declares Julia package **GIModel** (module `src/GIModel.jl` and
+  sibling includes in `src/`).
 - `data/table_ii_parameters.csv`: central Table II parameter digitization.
 - `data/parameters.provisional.toml`: provisional solver-facing parameter file
   copied from the Table II digitization.
@@ -72,6 +74,15 @@ Use these files to resume work quickly:
 Intermediate generated paper references exist under `paper/text/` for
 provenance and experiments, but they are not recommended handoff entry points.
 
+## Julia layout
+
+The solver is a Julia package named **GIModel** (see `Project.toml`). The
+module entry point is `src/GIModel.jl`; other files in `src/` are included from
+there. Driver scripts under `scripts/` call `Pkg.activate` on the repository
+root before `using GIModel`, and `test/runtests.jl` does the same. Running
+`julia --project=. …` from the repo root should give the same environment but is
+optional.
+
 ## Central Data Targets
 
 Use the top-level files in `data/` as the working inputs:
@@ -111,7 +122,7 @@ solver and validation scripts should start from the top-level `data/` files.
 2. Run the current local spectrum baseline:
 
    ```bash
-   julia --project=. scripts/run_baseline_solver.jl
+   julia scripts/run_baseline_solver.jl
    ```
 
    This writes:
@@ -129,7 +140,7 @@ solver and validation scripts should start from the top-level `data/` files.
 3. Run all top-level reference spectrum checks:
 
    ```bash
-   julia --project=. scripts/run_all_spectrum_checks.jl
+   julia scripts/run_all_spectrum_checks.jl
    ```
 
    This regenerates sector reports under `docs/residual_reports/` for every
@@ -140,7 +151,7 @@ solver and validation scripts should start from the top-level `data/` files.
 4. Decompose the heavy-quarkonium mismatch:
 
    ```bash
-   julia --project=. scripts/analyze_heavy_quarkonium.jl
+   julia scripts/analyze_heavy_quarkonium.jl
    ```
 
    This writes `docs/residual_reports/heavy_quarkonium_diagnostics.md`, splitting
@@ -150,7 +161,7 @@ solver and validation scripts should start from the top-level `data/` files.
 5. Run Julia tests:
 
    ```bash
-   julia --project=. test/runtests.jl
+   julia test/runtests.jl
    ```
 
 6. Rebuild paper text references if the PDF changes:

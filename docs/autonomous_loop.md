@@ -116,10 +116,10 @@ By default, every dirty successful agent iteration must pass:
 python3 scripts/validate_seed.py
 python3 scripts/verify_table_ii_toml.py
 python3 scripts/validate_reference_spectra.py
-julia --project=. test/runtests.jl
-julia --project=. scripts/compare_central_pointwise_vs_a7a8.jl
-julia --project=. scripts/analyze_heavy_quarkonium.jl
-julia --project=. scripts/run_all_spectrum_checks.jl
+julia test/runtests.jl
+julia scripts/compare_central_pointwise_vs_a7a8.jl
+julia scripts/analyze_heavy_quarkonium.jl
+julia scripts/run_all_spectrum_checks.jl
 ```
 
 The same sequence is in `bash scripts/verify_project.sh` for a one-shot run.
@@ -131,7 +131,7 @@ example:
 python3 scripts/autonomous_loop.py \
   --iterations 1 \
   --verify-command "python3 scripts/validate_seed.py" \
-  --verify-command "julia --project=. test/runtests.jl"
+  --verify-command "julia test/runtests.jl"
 ```
 
 ## Safety Notes

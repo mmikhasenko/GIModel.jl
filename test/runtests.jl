@@ -1,10 +1,12 @@
+using Pkg
+Pkg.activate(dirname(@__DIR__))
+
 using Test
 using FiniteDifferences
 using QuadGK
+using GIModel
 
 root = dirname(@__DIR__)
-include(joinpath(root, "src", "GIModel", "GIModel.jl"))
-using .GIModel
 
 @testset "Table II digitization vs parameters TOML" begin
     script = joinpath(root, "scripts", "verify_table_ii_toml.py")

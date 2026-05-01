@@ -66,9 +66,9 @@ run the full gate before accepting an iteration:
 
 ```bash
 python3 scripts/validate_seed.py
-julia --project=. test/runtests.jl
-julia --project=. scripts/analyze_heavy_quarkonium.jl
-julia --project=. scripts/run_all_spectrum_checks.jl
+julia test/runtests.jl
+julia scripts/analyze_heavy_quarkonium.jl
+julia scripts/run_all_spectrum_checks.jl
 ```
 
 ## Preferred Work Unit

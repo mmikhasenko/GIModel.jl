@@ -33,7 +33,7 @@ implementation.
 `charmonium`, `bottomonium`, `charmed`, `b_flavored`, `strange`, `isovector`,
 `isoscalar`. These are labels for the reference rows and the residual reports;
 the solver’s `compare_sector` matches them to Table II quark flavors via
-`quark_content` and `parse_quark_masses` in `src/GIModel/`.
+`quark_content` and `parse_quark_masses` in `src/masses_from_content.jl`.
 
 - Equal-mass quarkonia: `c cbar`, `b bbar` in the `quark_content` column.
 - Heavy-light: semicolon lists such as `c ubar; c dbar` for charmed, similarly

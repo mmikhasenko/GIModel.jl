@@ -99,8 +99,8 @@ Caption: "Hermitian by construction: the same factor appears on both sides."
 - `central_potential_mode(...)`
 - `central_potential_path(...)`
 
-These are primarily in `src/GIModel/GIModel.jl` and
-`src/GIModel/appendix_a_status.jl`.
+These are primarily in `src/GIModel.jl` and
+`src/appendix_a_status.jl`.
 
 ## Why This Layer Was Necessary
 

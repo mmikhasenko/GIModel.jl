@@ -22,7 +22,7 @@ per-phase checklists below. A “complete” 1985 reproduction through Phase 7 i
 | 1 — PDF / figure extraction | Substantial: `paper/text/*`, `data/raw/digitized_*`, top-level `data/reference_spectrum_*.csv`; not every planned aggregate CSV is filled. |
 | 2 — Clean schema | Staged: `data/clean/README.md`; `masses.csv` / `mixings.csv` TBD after audit. |
 | 3 — Parameters & formula map | In use: `data/parameters.provisional.toml`, `docs/formula_map.md`, `docs/conventions.md`. |
-| 4 — Minimal solver | Implemented under `src/GIModel/`: semirelativistic FD + pointwise central + smeared contact + diagnostic fine structure. Residuals in `docs/residual_reports/`. |
+| 4 — Minimal solver | Implemented as Julia package **GIModel** (`Project.toml`, module `src/GIModel.jl` and included sources in `src/`): semirelativistic FD + pointwise central + smeared contact + diagnostic fine structure. Residuals in `docs/residual_reports/`. |
 | 5+ — Full spin + Appendix A + mixing | **Partial** (see `docs/midterm_review_brief.md`); remaining gaps are documented, not hidden. |
 
 Ongoing work order and safety rules: `docs/autonomous_program.md`.
@@ -107,12 +107,11 @@ godfrey-isgur-reproduction/
     clean/
       masses.csv
       parameters.toml
-      mixings.csv
-      extraction_audit.csv
+    mixings.csv
+    extraction_audit.csv
+  Project.toml
   src/
-    GIModel/
-      Hamiltonian implementation
-      basis / solver code
+    Julia package GIModel: GIModel.jl + included *.jl sources
   test/
     test_extracted_tables.jl
     test_spin_independent.jl

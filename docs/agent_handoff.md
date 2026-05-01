@@ -15,11 +15,13 @@ to continue the Godfrey-Isgur reproduction.
 - First-pass table digitizations live under `data/raw/digitized_tables/`.
 - First-pass figure-label digitizations live under
   `data/raw/digitized_figures/`.
-- A diagnostic Godfrey-Isgur solver lives in `src/GIModel/` (semirelativistic
-  kinetic + central + running Coulomb, contact hyperfine, first-order
-  fine-structure, heavy-quarkonium comparisons). Provisional parameters are in
-  `data/parameters.provisional.toml`. Formula intent and flags are described in
-  `docs/formula_map.md`; sector residuals under `docs/residual_reports/`.
+- A diagnostic Godfrey-Isgur solver lives under `src/` as Julia package
+  **GIModel** (`Project.toml`; module entry `src/GIModel.jl` plus included
+  sources beside it): semirelativistic kinetic + central + running Coulomb,
+  contact hyperfine, first-order fine-structure, heavy-quarkonium comparisons.
+  Provisional parameters are in `data/parameters.provisional.toml`. Formula
+  intent and flags are described in `docs/formula_map.md`; sector residuals under
+  `docs/residual_reports/`.
 - `test/runtests.jl` encodes several convention checks (Coulomb derivative,
   fine-structure angular factors, reduced-radial expectations, smearing
   constant-preservation).
@@ -117,7 +119,7 @@ Start files:
 - `docs/formula_map.md`
 - `docs/conventions.md`
 - `data/parameters.provisional.toml` (provisional Table II–style input)
-- `src/GIModel/`
+- `src/`
 
 First task:
 

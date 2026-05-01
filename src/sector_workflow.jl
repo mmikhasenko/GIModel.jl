@@ -213,7 +213,7 @@ function write_residual_report(
             "GI Table II `b`, `c`, masses, `ε` factors, and Fig. 2 `α_s(r)`;",
             " ",
             central_note,
-            "see `src/GIModel/`.",
+            "see `src/GIModel.jl` and sibling sources under `src/` (Julia package **GIModel**, `Project.toml`).",
         )
         println(io)
         println(io, "| state | reference GeV | baseline GeV | residual MeV | confidence |")

@@ -132,11 +132,11 @@ Create a "read the residuals correctly" panel:
 Show as a reproducibility strip:
 
 ```bash
-julia --project=. test/runtests.jl
-julia --project=. scripts/analyze_heavy_quarkonium.jl
-julia --project=. scripts/run_baseline_solver.jl
-julia --project=. scripts/run_all_spectrum_checks.jl
-julia --project=. scripts/compare_central_paths.jl
+julia test/runtests.jl
+julia scripts/analyze_heavy_quarkonium.jl
+julia scripts/run_baseline_solver.jl
+julia scripts/run_all_spectrum_checks.jl
+julia scripts/compare_central_paths.jl
 ```
 
 Caption: "The posters explain a pipeline that can be rerun."
