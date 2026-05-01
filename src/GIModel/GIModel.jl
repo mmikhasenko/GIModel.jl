@@ -3,6 +3,9 @@ module GIModel
 using LinearAlgebra
 using Printf
 using TOML
+using CSV
+using KrylovKit: eigsolve
+using SpecialFunctions: erf
 
 export GIParameters,
     ReferenceState,
@@ -105,112 +108,44 @@ function load_parameters(path::AbstractString)
     )
 end
 
-function parse_csv_line(line::AbstractString)
-    fields = String[]
-    buf = IOBuffer()
-    inquote = false
-    i = firstindex(line)
-    while i <= lastindex(line)
-        ch = line[i]
-        if ch == '"'
-            if inquote && i < lastindex(line) && line[nextind(line, i)] == '"'
-                print(buf, '"')
-                i = nextind(line, i)
-            else
-                inquote = !inquote
-            end
-        elseif ch == ',' && !inquote
-            push!(fields, String(take!(buf)))
-        else
-            print(buf, ch)
-        end
-        i = nextind(line, i)
-    end
-    push!(fields, String(take!(buf)))
-    fields
-end
-
 function load_reference_spectrum(path::AbstractString)
-    lines = readlines(path)
-    header = parse_csv_line(first(lines))
-    index = Dict(name => i for (i, name) in enumerate(header))
     states = ReferenceState[]
-    for line in Iterators.drop(lines, 1)
-        isempty(strip(line)) && continue
-        row = parse_csv_line(line)
+    for row in CSV.File(path)
         push!(
             states,
             ReferenceState(
-                row[index["sector"]],
-                row[index["quark_content"]],
-                row[index["composition_raw"]],
-                parse(Int, row[index["n"]]),
-                parse(Int, row[index["multiplicity"]]),
-                row[index["L"]],
-                parse(Int, row[index["J"]]),
-                parse(Float64, row[index["mass_GeV"]]),
-                row[index["confidence"]],
+                String(row.sector),
+                String(row.quark_content),
+                String(row.composition_raw),
+                Int(row.n),
+                Int(row.multiplicity),
+                String(row.L),
+                Int(row.J),
+                Float64(row.mass_GeV),
+                String(row.confidence),
             ),
         )
     end
     states
 end
 
-function erf_approx(x::Real)
-    signx = x < 0 ? -1.0 : 1.0
-    z = abs(float(x))
-    t = 1 / (1 + 0.3275911 * z)
-    poly =
-        (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t
-    signx * (1 - poly * exp(-z^2))
+# Godfrey-Isgur parameterizes α_s(r) as a sum of error functions; use the
+# library erf while keeping these thin wrappers to centralize derivative formulas.
+function gi_erf(x::Real)
+    erf(float(x))
 end
 
-function erf_approx_prime(x::Real)
-    z = abs(float(x))
-    p = 0.3275911
-    t = 1 / (1 + p * z)
-    a1 = 0.254829592
-    a2 = -0.284496736
-    a3 = 1.421413741
-    a4 = -1.453152027
-    a5 = 1.061405429
-    q = a1 + t * (a2 + t * (a3 + t * (a4 + t * a5)))
-    qp = a2 + t * (2a3 + t * (3a4 + t * (4a5)))
-    poly = t * q
-    poly_p = q + t * qp
-    dt_dz = -p * t^2
-    expfac = exp(-z^2)
-    expfac * (2z * poly - poly_p * dt_dz)
+function gi_erf_prime(x::Real)
+    z = float(x)
+    2 / sqrt(π) * exp(-z^2)
 end
 
-function erf_approx_second(x::Real)
-    signx = x < 0 ? -1.0 : 1.0
-    z = abs(float(x))
-    z == 0.0 && return 0.0
-    p = 0.3275911
-    t = 1 / (1 + p * z)
-    a1 = 0.254829592
-    a2 = -0.284496736
-    a3 = 1.421413741
-    a4 = -1.453152027
-    a5 = 1.061405429
-    q = a1 + t * (a2 + t * (a3 + t * (a4 + t * a5)))
-    qp = a2 + t * (2a3 + t * (3a4 + t * (4a5)))
-    qpp = 2a3 + t * (6a4 + t * (12a5))
-    poly = t * q
-    poly_p = q + t * qp
-    poly_pp = 2qp + t * qpp
-    dt_dz = -p * t^2
-    d2t_dz2 = 2 * p^2 * t^3
-    expfac = exp(-z^2)
-    second_z =
-        expfac * (
-            2 * (1 - 2 * z^2) * poly + 4 * z * poly_p * dt_dz - poly_pp * dt_dz^2 - poly_p * d2t_dz2
-        )
-    signx * second_z
+function gi_erf_second(x::Real)
+    z = float(x)
+    -4z / sqrt(π) * exp(-z^2)
 end
 
-alpha_s_r(r::Real) = sum(a * erf_approx(g * r) for (a, g) in zip(ALPHA_COEFFS, ALPHA_GAMMAS))
+alpha_s_r(r::Real) = sum(a * gi_erf(g * r) for (a, g) in zip(ALPHA_COEFFS, ALPHA_GAMMAS))
 
 function central_potential(r::Real, params::GIParameters)
     params.b * r - (4 / 3) * alpha_s_r(r) / r + params.c
@@ -294,7 +229,7 @@ function smeared_coulomb_G_closed(params::GIParameters, m1::Real, m2::Real, r::R
     if abs(ri) < 1.0e-8
         return -sum(8 * α * τ / (3 * sqrt(π)) for (α, τ) in zip(ALPHA_COEFFS, τs))
     end
-    -sum(4 * α * erf_approx(τ * ri) / (3 * ri) for (α, τ) in zip(ALPHA_COEFFS, τs))
+    -sum(4 * α * gi_erf(τ * ri) / (3 * ri) for (α, τ) in zip(ALPHA_COEFFS, τs))
 end
 
 function smeared_confinement_S_closed(params::GIParameters, m1::Real, m2::Real, r::Real)
@@ -304,7 +239,7 @@ function smeared_confinement_S_closed(params::GIParameters, m1::Real, m2::Real, 
         return 2 * params.b / (sqrt(π) * σ) + params.c
     end
     z = σ * ri
-    bracket = exp(-z^2) / (sqrt(π) * z) + (1 + 1 / (2 * z^2)) * erf_approx(z)
+    bracket = exp(-z^2) / (sqrt(π) * z) + (1 + 1 / (2 * z^2)) * gi_erf(z)
     params.b * ri * bracket + params.c
 end
 
@@ -393,13 +328,23 @@ function nonrelativistic_hamiltonian(params::GIParameters, m1::Real, m2::Real, L
     SymTridiagonal(diagonal, offdiag), r
 end
 
-function sqrt_kinetic_matrix(p2::SymTridiagonal, m::Real)
-    fact = eigen(p2)
+function sqrt_kinetic_matrix_from_eigen(fact, m::Real)
     fact.vectors * Diagonal(sqrt.(max.(fact.values, 0) .+ m^2)) * fact.vectors'
 end
 
-function sqrt_kinetic_matrix_from_eigen(fact, m::Real)
-    fact.vectors * Diagonal(sqrt.(max.(fact.values, 0) .+ m^2)) * fact.vectors'
+function lowest_eigenpairs(hamiltonian::AbstractMatrix, nlevels::Integer; eigensolver::Symbol = :full)
+    if eigensolver == :full
+        fact = eigen(hamiltonian)
+        return fact.values[1:nlevels], fact.vectors[:, 1:nlevels]
+    elseif eigensolver == :krylov
+        values, vectors, info = eigsolve(hamiltonian, nlevels, :SR; issymmetric = true)
+        length(values) >= nlevels ||
+            error("Krylov eigensolver converged only $(length(values)) values for nlevels=$nlevels: $info")
+        order = sortperm(real.(values))[1:nlevels]
+        return real.(values[order]), hcat(vectors[order]...)
+    else
+        error("unknown eigensolver: $eigensolver")
+    end
 end
 
 function appendix_a_momentum_sandwich_matrix(params::GIParameters, m1::Real, m2::Real, r::AbstractVector, p2_fact)
@@ -436,6 +381,7 @@ function channel_solution(
     ngrid::Integer = 450,
     rmax::Real = 24.0,
     kinetic::Symbol = :relativistic,
+    eigensolver::Symbol = :full,
 )
     hamiltonian, r =
         if kinetic == :relativistic
@@ -445,12 +391,11 @@ function channel_solution(
         else
             error("unknown kinetic mode: $kinetic")
         end
-    fact = eigen(hamiltonian)
-    values = fact.values
+    values, vectors = lowest_eigenpairs(hamiltonian, nlevels; eigensolver = eigensolver)
     if kinetic == :relativistic
-        values[1:nlevels], fact.vectors[:, 1:nlevels], r
+        values, vectors, r
     else
-        values[1:nlevels] .+ (m1 + m2), fact.vectors[:, 1:nlevels], r
+        values .+ (m1 + m2), vectors, r
     end
 end
 
@@ -566,11 +511,22 @@ include("masses_from_content.jl")
 include("spin_fine_structure.jl")
 include("appendix_a_status.jl")
 
-function solve_sector(params::GIParameters, flavor::String; maxn::Integer = 6, ngrid::Integer = 450, rmax::Real = 24.0, kinetic::Symbol = :relativistic)
+function solve_sector(
+    params::GIParameters,
+    flavor::String;
+    maxn::Integer = 6,
+    ngrid::Integer = 450,
+    rmax::Real = 24.0,
+    kinetic::Symbol = :relativistic,
+    eigensolver::Symbol = :full,
+)
     m = params.masses[flavor]
     results = Dict{Tuple{Int, String}, Float64}()
     for (symbol, L) in L_SYMBOLS
-        levels = solve_channel(params, m, m, L; nlevels = maxn, ngrid = ngrid, rmax = rmax, kinetic = kinetic)
+        levels = solve_channel(
+            params, m, m, L;
+            nlevels = maxn, ngrid = ngrid, rmax = rmax, kinetic = kinetic, eigensolver = eigensolver,
+        )
         for n in 1:length(levels)
             results[(n, symbol)] = levels[n]
         end
@@ -585,6 +541,7 @@ function compare_sector(
     ngrid::Integer = 450,
     rmax::Real = 24.0,
     kinetic::Symbol = :relativistic,
+    eigensolver::Symbol = :full,
     contact_hyperfine::Bool = true,
     use_fine_structure::Bool = true,
 )
@@ -604,7 +561,7 @@ function compare_sector(
             Lval = L_SYMBOLS[state.L]
             channel_cache[cache_key] = channel_solution(
                 params, m1, m2, Lval;
-                nlevels = 6, ngrid = ngrid, rmax = rmax, kinetic = kinetic,
+                nlevels = 6, ngrid = ngrid, rmax = rmax, kinetic = kinetic, eigensolver = eigensolver,
             )
         end
     end
@@ -686,16 +643,12 @@ function write_residual_report(
     fine_structure_momentum_sandwich::Bool = false,
     fine_structure_smeared_kernels::Bool = false,
     coulomb_1d_smear::Bool = false,
-    appendix_a_central::Union{Nothing, Bool} = nothing,
     use_fine_structure::Bool = true,
 )
     mkpath(dirname(path))
     open(path, "w") do io
         println(io, "# ", title)
         println(io)
-        if !isnothing(appendix_a_central)
-            appendix_a_smearing = appendix_a_central
-        end
         hyperfine_note =
             if contact_hyperfine && contact_momentum_sandwich
                 "with GI momentum-sandwiched smeared S-wave contact hyperfine"

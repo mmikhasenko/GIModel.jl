@@ -1,4 +1,6 @@
 using Test
+using FiniteDifferences
+using QuadGK
 
 root = dirname(@__DIR__)
 include(joinpath(root, "src", "GIModel", "GIModel.jl"))
@@ -50,6 +52,22 @@ end
     @test bb[(1, "S")] < bb[(2, "S")] < bb[(3, "S")]
     @test cc[(1, "S")] < cc[(1, "P")] < cc[(1, "D")]
     @test bb[(1, "S")] < bb[(1, "P")] < bb[(1, "D")]
+end
+
+@testset "Krylov eigensolver matches full eigensolver" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    m = params.masses["c"]
+    for kinetic in (:relativistic, :nonrelativistic)
+        full, _vec_full, _r_full = channel_solution(
+            params, m, m, 0;
+            nlevels = 3, ngrid = 120, rmax = 16.0, kinetic = kinetic, eigensolver = :full,
+        )
+        krylov, _vec_krylov, _r_krylov = channel_solution(
+            params, m, m, 0;
+            nlevels = 3, ngrid = 120, rmax = 16.0, kinetic = kinetic, eigensolver = :krylov,
+        )
+        @test krylov ≈ full rtol = 1e-10 atol = 1e-10
+    end
 end
 
 @testset "central: Coulomb+confinement = pointwise V" begin
@@ -370,6 +388,30 @@ end
     @test w[div(n, 2)] ≈ 1.0 atol = 0.01
 end
 
+@testset "closed-form Coulomb smearing matches QuadGK convolution" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    m = params.masses["c"]
+    σ = GIModel.contact_smearing_sigma(params, m, m)
+
+    function quadgk_smeared_coulomb(R)
+        total = 0.0
+        for (α, γ) in zip(GIModel.ALPHA_COEFFS, GIModel.ALPHA_GAMMAS)
+            integrand(rp) = begin
+                g = rp == 0 ? -8 * α * γ / (3 * sqrt(π)) : -4 * α * GIModel.gi_erf(γ * rp) / (3 * rp)
+                pre = σ / (sqrt(π) * R)
+                pre * rp * (exp(-(σ * (R - rp))^2) - exp(-(σ * (R + rp))^2)) * g
+            end
+            val, _err = quadgk(integrand, 0.0, Inf; rtol = 1e-9)
+            total += val
+        end
+        total
+    end
+
+    for R in (0.2, 0.8, 2.0)
+        @test GIModel.smeared_coulomb_G_closed(params, m, m, R) ≈ quadgk_smeared_coulomb(R) rtol = 1e-10 atol = 1e-10
+    end
+end
+
 @testset "L·S and spin_dot algebra" begin
     @test GIModel.LdotS(1, 1, 0) ≈ -2.0
     @test GIModel.LdotS(1, 1, 1) ≈ -1.0
@@ -564,24 +606,24 @@ end
     end
 end
 
-@testset "erf_approx basic symmetries" begin
-    @test GIModel.erf_approx(0.0) ≈ 0.0 atol = 1e-7
+@testset "GI erf profile basic symmetries" begin
+    @test GIModel.gi_erf(0.0) ≈ 0.0 atol = 1e-7
     for x in (0.05, 0.3, 0.8, 1.5)
-        @test GIModel.erf_approx(x) + GIModel.erf_approx(-x) ≈ 0.0 atol = 1e-12
+        @test GIModel.gi_erf(x) + GIModel.gi_erf(-x) ≈ 0.0 atol = 1e-12
     end
 end
 
-@testset "erf_approx second derivative consistency" begin
+@testset "GI erf profile second derivative consistency" begin
     for x in (0.1, 0.4, 1.1, 1.8)
         δ = 1e-6 * max(1.0, x)
-        num = (GIModel.erf_approx_prime(x + δ) - GIModel.erf_approx_prime(x - δ)) / (2δ)
-        ana = GIModel.erf_approx_second(x)
+        num = (GIModel.gi_erf_prime(x + δ) - GIModel.gi_erf_prime(x - δ)) / (2δ)
+        ana = GIModel.gi_erf_second(x)
         @test ana ≈ num rtol = 2e-5 atol = 1e-9
-        @test GIModel.erf_approx_second(-x) ≈ -ana rtol = 1e-12 atol = 1e-12
+        @test GIModel.gi_erf_second(-x) ≈ -ana rtol = 1e-12 atol = 1e-12
     end
 end
 
-@testset "Coulomb derivative consistency (erf_approx)" begin
+@testset "Coulomb derivative consistency (GI erf profile)" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     for r0 in (0.05, 0.2, 1.3)
         δ = 1e-6 * max(1.0, r0)
@@ -600,6 +642,24 @@ end
         δ = 1e-6 * max(1.0, r0)
         num = (V(r0 + δ) - V(r0 - δ)) / (2δ)
         @test GIModel.dV_coul_central_dr(r0, params) ≈ num rtol = 1e-6 atol = 1e-10
+    end
+end
+
+@testset "analytic radial derivatives match FiniteDifferences" begin
+    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    m = params.masses["c"]
+    d1 = central_fdm(5, 1)
+    d2 = central_fdm(5, 2)
+
+    for r0 in (0.08, 0.4, 1.4)
+        @test GIModel.alpha_s_prime_r(r0) ≈ d1(GIModel.alpha_s_r, r0) rtol = 1e-10 atol = 1e-10
+        @test GIModel.alpha_s_second_r(r0) ≈ d2(GIModel.alpha_s_r, r0) rtol = 1e-9 atol = 1e-9
+    end
+
+    Gs(r) = GIModel.smeared_coulomb_G_closed(params, m, m, r)
+    for r0 in (0.2, 0.8, 2.0)
+        @test GIModel.smeared_coulomb_G_prime_closed(params, m, m, r0) ≈ d1(Gs, r0) rtol = 1e-9 atol = 1e-9
+        @test GIModel.smeared_coulomb_G_second_closed(params, m, m, r0) ≈ d2(Gs, r0) rtol = 1e-7 atol = 1e-8
     end
 end
 
@@ -722,23 +782,6 @@ end
     @test σ_equal ≈ σ_equal_manual rtol = 0.0 atol = 0.0
 end
 
-@testset "smeared_r_inv uses 1/σ length convention" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    m = params.masses["c"]
-    σ = GIModel.contact_smearing_sigma(params, m, m)
-    ℓ = 1.0 / σ
-
-    @test GIModel.smeared_r_inv(params, m, m, 0.0, 1) ≈ σ atol = 1e-12 rtol = 0.0
-    @test GIModel.smeared_r_inv(params, m, m, 0.0, 2) ≈ σ^2 atol = 1e-12 rtol = 0.0
-    @test GIModel.smeared_r_inv(params, m, m, 0.0, 3) ≈ σ^3 atol = 1e-12 rtol = 0.0
-
-    r0 = 2.3
-    rs2 = r0^2 + ℓ^2
-    @test GIModel.smeared_r_inv(params, m, m, r0, 1) ≈ 1.0 / sqrt(rs2) atol = 0.0 rtol = 1e-12
-    @test GIModel.smeared_r_inv(params, m, m, r0, 2) ≈ 1.0 / rs2 atol = 0.0 rtol = 1e-12
-    @test GIModel.smeared_r_inv(params, m, m, r0, 3) ≈ 1.0 / (rs2 * sqrt(rs2)) atol = 0.0 rtol = 1e-12
-end
-
 @testset "contact hyperfine shift uses u(r) normalization" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     m = params.masses["c"]
@@ -768,30 +811,6 @@ end
     )
     manual = (1.0 + params.epsilon_c) * (32 * pi / (9 * m * m)) * expectation * GIModel.spin_dot(3)
     @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u, r) ≈ manual rtol = 1e-12 atol = 0.0
-end
-
-@testset "write_residual_report keyword alias (appendix_a_central)" begin
-    rows = [
-        (
-            sector = "test",
-            state = "1^1S_0",
-            L = "S",
-            n = 1,
-            J = 0,
-            multiplicity = 1,
-            reference_GeV = 1.0,
-            predicted_GeV = 1.0,
-            residual_MeV = 0.0,
-            confidence = "test-only",
-        ),
-    ]
-    mktemp() do path, io
-        close(io)
-        GIModel.write_residual_report(path, "alias check", rows; appendix_a_central = true)
-        txt = read(path, String)
-        @test occursin("experimental (A7)", txt)
-        @test occursin("3D isotropic smearing", txt)
-    end
 end
 
 @testset "compare_sector returns shift breakdown fields" begin

@@ -36,10 +36,10 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     `alpha_k = (0.25, 0.15, 0.20)` and momentum-space denominators
     `(1, 10, 1000) GeV^2`, giving
     `gamma_k = (1/2, sqrt(10)/2, sqrt(1000)/2) GeV`.
-  - Numerical implementation: `erf_approx` is used (no external dependencies);
+  - Numerical implementation: `gi_erf` delegates to `SpecialFunctions.erf`;
     derivatives used by the Coulomb spin–orbit piece (`dV/dr`) are computed via
-    the analytic derivative of the same approximation (`erf_approx_prime`) to
-    avoid mixed conventions. In code, for the Coulomb central piece
+    the analytic derivative of the same error-function profile (`gi_erf_prime`)
+    to avoid mixed conventions. In code, for the Coulomb central piece
     $V_G(r)=-4\alpha_s(r)/(3r)$ we use
     $$
       \frac{dV_G}{dr}=\frac{4\alpha_s(r)}{3r^2}-\frac{4\alpha_s'(r)}{3r},
@@ -204,9 +204,6 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     confinement / Thomas), and also exposes the underlying radial expectation
     values `I_cm`, `I_tp`, and `I_tk` so reports can separate “radial integral”
     effects from angular/mass prefactors.
-  - Normalization / units guardrail: `smeared_r_inv(...)` (currently unused) treats
-    the Table II width $\sigma$ as having units GeV, with the corresponding
-    $r$-space smear length $\ell=1/\sigma$ in GeV$^{-1}$ on the FD mesh.
   - Regression tests in `test/runtests.jl`: triplet tensor/L·S angular sum rules
     and Coulomb $d\alpha_s/dr$ consistency; the OGE tensor kernel
     $K(r)=(1/r)\,dG/dr-d^2G/dr^2$ is also checked against finite-difference
