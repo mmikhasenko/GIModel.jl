@@ -1,3 +1,5 @@
+# Public API (exported from GIModel.jl): (none — use `GIModel.fn` in tests/scripts)
+
 # 1D radial Gaussian renormalization of the pointwise Coulomb G(r) on a uniform grid.
 # This is a *reduced* smearing: same σ family as the contact (A9), no 3D volume factors.
 # Not a transcription of the full (A12) derivative expansion (paper uses HO basis there).

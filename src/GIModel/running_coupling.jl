@@ -1,3 +1,5 @@
+# Public API (exported from GIModel.jl): (none — use `GIModel.fn` in tests/scripts)
+
 # Godfrey-Isgur parameterizes α_s(r) as a sum of error functions; use the
 # library erf while keeping these thin wrappers to centralize derivative formulas.
 function gi_erf(x::Real)

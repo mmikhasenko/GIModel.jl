@@ -1,3 +1,6 @@
+# Public API (exported from GIModel.jl):
+#   central_potential_mode, central_potential_values
+
 function central_potential_mode(params::GIParameters)::Symbol
     if params.appendix_a_momentum_sandwich
         return :appendix_a_momentum_sandwich
@@ -18,7 +21,7 @@ function central_potential_values(
     m1::Real,
     m2::Real,
     r::AbstractVector;
-    mode::Symbol = central_potential_mode(params),
+    mode::Symbol=central_potential_mode(params),
 )
     if mode == :pointwise
         return [central_potential(ri, params) for ri in r]

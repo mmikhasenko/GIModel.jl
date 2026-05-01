@@ -1,3 +1,5 @@
+# Public API (exported from GIModel.jl): (none — use `GIModel.fn` in tests/scripts)
+
 #
 # 3D isotropic Gaussian smearing of a spherically symmetric radial function V (|r|),
 # Appendix A, Eqs. (A7)–(A8), PDF p. 36. Same σ as contact_smearing_sigma (A9), Table II.

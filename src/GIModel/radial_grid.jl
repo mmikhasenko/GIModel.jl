@@ -1,10 +1,13 @@
+# Public API (exported from GIModel.jl):
+#   reduced_mass
+
 function reduced_mass(m1::Real, m2::Real)
     m1 * m2 / (m1 + m2)
 end
 
 function radial_grid(ngrid::Integer, rmax::Real)
     h = rmax / (ngrid + 1)
-    collect(h:h:(ngrid * h)), h
+    collect(h:h:(ngrid*h)), h
 end
 
 function p2_operator(m::Real, L::Integer, r::AbstractVector, h::Real)

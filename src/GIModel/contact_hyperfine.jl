@@ -1,3 +1,6 @@
+# Public API (exported from GIModel.jl):
+#   spin_dot
+
 function contact_smearing_sigma(params::GIParameters, m1::Real, m2::Real)
     # Appendix A (A9), PDF p. 36–37: universal σ(m1,m2) built from Table II σ0 and s.
     # We keep the paper's symmetric mass combinations explicit:

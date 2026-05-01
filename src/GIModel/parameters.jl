@@ -1,5 +1,8 @@
+# Public API (exported from GIModel.jl):
+#   GIParameters, ReferenceState, load_parameters, load_reference_spectrum
+
 struct GIParameters
-    masses::Dict{String, Float64}
+    masses::Dict{String,Float64}
     b::Float64
     c::Float64
     sigma0::Float64

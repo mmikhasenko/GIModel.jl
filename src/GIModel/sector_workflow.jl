@@ -1,18 +1,21 @@
+# Public API (exported from GIModel.jl):
+#   solve_sector, compare_sector, write_residual_report
+
 function solve_sector(
     params::GIParameters,
     flavor::String;
-    maxn::Integer = 6,
-    ngrid::Integer = 450,
-    rmax::Real = 24.0,
-    kinetic::Symbol = :relativistic,
-    eigensolver::Symbol = :full,
+    maxn::Integer=6,
+    ngrid::Integer=450,
+    rmax::Real=24.0,
+    kinetic::Symbol=:relativistic,
+    eigensolver::Symbol=:full,
 )
     m = params.masses[flavor]
-    results = Dict{Tuple{Int, String}, Float64}()
+    results = Dict{Tuple{Int,String},Float64}()
     for (symbol, L) in L_SYMBOLS
         levels = solve_channel(
             params, m, m, L;
-            nlevels = maxn, ngrid = ngrid, rmax = rmax, kinetic = kinetic, eigensolver = eigensolver,
+            nlevels=maxn, ngrid=ngrid, rmax=rmax, kinetic=kinetic, eigensolver=eigensolver,
         )
         for n in 1:length(levels)
             results[(n, symbol)] = levels[n]
@@ -25,12 +28,12 @@ function compare_sector(
     params::GIParameters,
     reference::Vector{ReferenceState},
     flavor::String;
-    ngrid::Integer = 450,
-    rmax::Real = 24.0,
-    kinetic::Symbol = :relativistic,
-    eigensolver::Symbol = :full,
-    contact_hyperfine::Bool = true,
-    use_fine_structure::Bool = true,
+    ngrid::Integer=450,
+    rmax::Real=24.0,
+    kinetic::Symbol=:relativistic,
+    eigensolver::Symbol=:full,
+    contact_hyperfine::Bool=true,
+    use_fine_structure::Bool=true,
 )
     m_fallback = params.masses[flavor]
     function masses_for(s::ReferenceState)
@@ -40,22 +43,22 @@ function compare_sector(
             return m_fallback, m_fallback
         end
     end
-    channel_cache = Dict{Tuple{Float64, Float64, String}, Tuple{Vector{Float64}, Matrix{Float64}, Vector{Float64}}}()
+    channel_cache = Dict{Tuple{Float64,Float64,String},Tuple{Vector{Float64},Matrix{Float64},Vector{Float64}}}()
     for state in reference
         m1, m2 = masses_for(state)
-        cache_key = (round(m1, sigdigits = 12), round(m2, sigdigits = 12), state.L)
+        cache_key = (round(m1, sigdigits=12), round(m2, sigdigits=12), state.L)
         if !haskey(channel_cache, cache_key)
             Lval = L_SYMBOLS[state.L]
             channel_cache[cache_key] = channel_solution(
                 params, m1, m2, Lval;
-                nlevels = 6, ngrid = ngrid, rmax = rmax, kinetic = kinetic, eigensolver = eigensolver,
+                nlevels=6, ngrid=ngrid, rmax=rmax, kinetic=kinetic, eigensolver=eigensolver,
             )
         end
     end
     rows = NamedTuple[]
     for state in reference
         m1, m2 = masses_for(state)
-        cache_key = (round(m1, sigdigits = 12), round(m2, sigdigits = 12), state.L)
+        cache_key = (round(m1, sigdigits=12), round(m2, sigdigits=12), state.L)
         haskey(channel_cache, cache_key) || continue
         values, vectors, r = channel_cache[cache_key]
         state.n <= length(values) || continue
@@ -75,14 +78,14 @@ function compare_sector(
             comp = fine_structure_components(
                 params, m1, m2, state.L, state.multiplicity, state.J,
                 collect(vectors[:, state.n]), collect(r), h;
-                enabled = true, k_spin_orbit = params.k_spin_orbit, k_tensor = params.k_tensor,
+                enabled=true, k_spin_orbit=params.k_spin_orbit, k_tensor=params.k_tensor,
             )
             spin_orbit_vector_shift = comp.spin_orbit_vector
             spin_orbit_thomas_shift = comp.spin_orbit_thomas
             spin_orbit_shift = comp.spin_orbit
             tensor_shift = comp.tensor
             fine_structure_shift = comp.total
-            fine_structure_mass_convention = isapprox(m1, m2; rtol = 0.0, atol = 0.0) ?
+            fine_structure_mass_convention = isapprox(m1, m2; rtol=0.0, atol=0.0) ?
                                              "equal_mass" :
                                              "unequal_mass_equal_share_LdotS"
         end
@@ -90,26 +93,26 @@ function compare_sector(
         push!(
             rows,
             (
-                sector = state.sector,
-                state = state.composition,
-                L = state.L,
-                n = state.n,
-                J = state.J,
-                multiplicity = state.multiplicity,
-                m1_GeV = m1,
-                m2_GeV = m2,
-                fine_structure_mass_convention = fine_structure_mass_convention,
-                reference_GeV = state.mass_GeV,
-                central_GeV = central,
-                contact_shift_GeV = contact_shift,
-                spin_orbit_vector_shift_GeV = spin_orbit_vector_shift,
-                spin_orbit_thomas_shift_GeV = spin_orbit_thomas_shift,
-                spin_orbit_shift_GeV = spin_orbit_shift,
-                tensor_shift_GeV = tensor_shift,
-                fine_structure_shift_GeV = fine_structure_shift,
-                predicted_GeV = predicted,
-                residual_MeV = 1000 * (predicted - state.mass_GeV),
-                confidence = state.confidence,
+                sector=state.sector,
+                state=state.composition,
+                L=state.L,
+                n=state.n,
+                J=state.J,
+                multiplicity=state.multiplicity,
+                m1_GeV=m1,
+                m2_GeV=m2,
+                fine_structure_mass_convention=fine_structure_mass_convention,
+                reference_GeV=state.mass_GeV,
+                central_GeV=central,
+                contact_shift_GeV=contact_shift,
+                spin_orbit_vector_shift_GeV=spin_orbit_vector_shift,
+                spin_orbit_thomas_shift_GeV=spin_orbit_thomas_shift,
+                spin_orbit_shift_GeV=spin_orbit_shift,
+                tensor_shift_GeV=tensor_shift,
+                fine_structure_shift_GeV=fine_structure_shift,
+                predicted_GeV=predicted,
+                residual_MeV=1000 * (predicted - state.mass_GeV),
+                confidence=state.confidence,
             ),
         )
     end
@@ -120,17 +123,17 @@ function write_residual_report(
     path::AbstractString,
     title::AbstractString,
     rows;
-    kinetic::Symbol = :relativistic,
-    contact_hyperfine::Bool = true,
-    appendix_a_smearing::Bool = false,
-    appendix_a_derivative_g::Bool = false,
-    appendix_a_closed_form::Bool = false,
-    appendix_a_momentum_sandwich::Bool = false,
-    contact_momentum_sandwich::Bool = false,
-    fine_structure_momentum_sandwich::Bool = false,
-    fine_structure_smeared_kernels::Bool = false,
-    coulomb_1d_smear::Bool = false,
-    use_fine_structure::Bool = true,
+    kinetic::Symbol=:relativistic,
+    contact_hyperfine::Bool=true,
+    appendix_a_smearing::Bool=false,
+    appendix_a_derivative_g::Bool=false,
+    appendix_a_closed_form::Bool=false,
+    appendix_a_momentum_sandwich::Bool=false,
+    contact_momentum_sandwich::Bool=false,
+    fine_structure_momentum_sandwich::Bool=false,
+    fine_structure_smeared_kernels::Bool=false,
+    coulomb_1d_smear::Bool=false,
+    use_fine_structure::Bool=true,
 )
     mkpath(dirname(path))
     open(path, "w") do io
@@ -227,7 +230,7 @@ function write_residual_report(
         if use_fine_structure &&
            !isempty(rows) &&
            hasproperty(rows[1], :fine_structure_mass_convention) &&
-           any(!isapprox(row.m1_GeV, row.m2_GeV; rtol = 0.0, atol = 0.0) for row in rows)
+           any(!isapprox(row.m1_GeV, row.m2_GeV; rtol=0.0, atol=0.0) for row in rows)
             println(io)
             println(io, "## Fine-Structure Mass Convention (audit note)")
             println(io)
@@ -247,7 +250,7 @@ function write_residual_report(
             println(io, @sprintf("Mean absolute residual: %.1f MeV.", sum(residuals) / length(residuals)))
             println(io, @sprintf("Max absolute residual: %.1f MeV.", maximum(residuals)))
         end
-        groups = Dict{Tuple{Int, String}, Vector{eltype(rows)}}()
+        groups = Dict{Tuple{Int,String},Vector{eltype(rows)}}()
         for row in rows
             push!(get!(groups, (row.n, row.L), eltype(rows)[]), row)
         end
@@ -258,7 +261,7 @@ function write_residual_report(
         println(io)
         println(io, "| multiplet | states | reference GeV | baseline GeV | residual MeV |")
         println(io, "|---|---:|---:|---:|---:|")
-        for key in sort(collect(keys(groups)); by = x -> (x[2], x[1]))
+        for key in sort(collect(keys(groups)); by=x -> (x[2], x[1]))
             group = groups[key]
             weights = [2 * row.J + 1 for row in group]
             weight_sum = sum(weights)

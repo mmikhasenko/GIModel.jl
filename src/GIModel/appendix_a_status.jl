@@ -1,5 +1,8 @@
 # Spin-independent central potential: which paper path the active parameters use.
 # See `docs/appendix_a_from_paper.md` and `docs/formula_map.md`.
+#
+# Public API (exported from GIModel.jl):
+#   CentralPotentialPath, central_potential_path
 
 struct CentralPotentialPath
     name::String

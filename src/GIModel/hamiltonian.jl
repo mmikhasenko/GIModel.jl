@@ -1,3 +1,5 @@
+# Public API (exported from GIModel.jl): (none — use `GIModel.fn` in tests/scripts)
+
 function nonrelativistic_hamiltonian(params::GIParameters, m1::Real, m2::Real, L::Integer; ngrid::Integer = 900, rmax::Real = 24.0)
     mu = reduced_mass(m1, m2)
     r, h = radial_grid(ngrid, rmax)

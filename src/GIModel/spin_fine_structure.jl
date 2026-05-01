@@ -9,6 +9,9 @@
 #
 # A global scale k_spin_orbit / k_tensor bridges the present FD + semirelativistic path to
 # the large HO-basis results in the original paper; defaults are in parameters.toml.
+#
+# Public API (exported from GIModel.jl):
+#   fine_structure_split, LdotS, tensor_triplet_LJ
 
 function alpha_s_prime_r(r::Real)
     r = float(r)

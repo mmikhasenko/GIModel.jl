@@ -1,3 +1,5 @@
+# Public API (exported from GIModel.jl): (none — use `GIModel.fn` in tests/scripts)
+
 # Appendix-A-oriented finite-difference derivative proxy for the central potential.
 #
 # The paper's final spin-independent implementation uses expanded effective

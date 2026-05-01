@@ -1,4 +1,7 @@
 # Map reference CSV (sector, composition_raw) to (m_quark, m_antiquark) in GeV.
+#
+# Public API (exported from GIModel.jl):
+#   parse_quark_masses
 
 function first_content_segment(composition_raw::AbstractString)
     sc = String(composition_raw)
