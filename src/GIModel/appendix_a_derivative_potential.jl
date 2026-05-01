@@ -21,19 +21,19 @@ function radial_laplacian_values(v::AbstractVector{<:Real}, r::AbstractVector{<:
     rf = collect(float.(r))
     h = rf[2] - rf[1]
     h > 0 || throw(ArgumentError("r grid must be increasing"))
-    for i in 2:(n - 1)
-        isapprox(rf[i + 1] - rf[i], h; rtol = 1e-8, atol = 1e-12) ||
+    for i = 2:(n-1)
+        isapprox(rf[i+1] - rf[i], h; rtol = 1e-8, atol = 1e-12) ||
             throw(ArgumentError("radial_laplacian_values expects a uniform grid"))
     end
     vf = collect(float.(v))
     out = zeros(Float64, n)
-    for i in 2:(n - 1)
-        d1 = (vf[i + 1] - vf[i - 1]) / (2h)
-        d2 = (vf[i + 1] - 2vf[i] + vf[i - 1]) / h^2
+    for i = 2:(n-1)
+        d1 = (vf[i+1] - vf[i-1]) / (2h)
+        d2 = (vf[i+1] - 2vf[i] + vf[i-1]) / h^2
         out[i] = d2 + 2d1 / max(rf[i], 1.0e-12)
     end
     out[1] = out[2]
-    out[n] = out[n - 1]
+    out[n] = out[n-1]
     return out
 end
 

@@ -28,7 +28,9 @@ sectors = [
 for (name, flavor, reference_path, report_path, title) in sectors
     reference = load_reference_spectrum(reference_path)
     rows = compare_sector(
-        params, reference, flavor;
+        params,
+        reference,
+        flavor;
         kinetic = :relativistic,
         contact_hyperfine = true,
         use_fine_structure = params.fine_structure,
@@ -50,5 +52,12 @@ for (name, flavor, reference_path, report_path, title) in sectors
         use_fine_structure = params.fine_structure,
     )
     absres = abs.([row.residual_MeV for row in rows])
-    @printf("%s: rows=%d mean_abs=%.1f MeV max_abs=%.1f MeV -> %s\n", name, length(rows), sum(absres) / length(absres), maximum(absres), report_path)
+    @printf(
+        "%s: rows=%d mean_abs=%.1f MeV max_abs=%.1f MeV -> %s\n",
+        name,
+        length(rows),
+        sum(absres) / length(absres),
+        maximum(absres),
+        report_path
+    )
 end

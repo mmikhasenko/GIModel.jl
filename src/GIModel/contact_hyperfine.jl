@@ -9,7 +9,10 @@ function contact_smearing_sigma(params::GIParameters, m1::Real, m2::Real)
     # so σ^2 = σ0^2 * (1/2 + 1/2 * mass_factor^4) + s^2 * reduced_twice^2.
     mass_factor = 4 * m1 * m2 / (m1 + m2)^2
     reduced_twice = 2 * m1 * m2 / (m1 + m2)
-    sqrt(params.sigma0^2 * (0.5 + 0.5 * mass_factor^4) + params.smearing_s^2 * reduced_twice^2)
+    sqrt(
+        params.sigma0^2 * (0.5 + 0.5 * mass_factor^4) +
+        params.smearing_s^2 * reduced_twice^2,
+    )
 end
 
 function spin_dot(multiplicity::Integer)
@@ -57,7 +60,15 @@ S-wave, `ψ(r) = u(r) / r · Y₀₀` and a 3D-normalized regulator `δ_σ(r)` s
 
 with no extra `4π` factor.
 """
-function contact_hyperfine_shift(params::GIParameters, m1::Real, m2::Real, L::String, multiplicity::Integer, vector::AbstractVector, r::AbstractVector)
+function contact_hyperfine_shift(
+    params::GIParameters,
+    m1::Real,
+    m2::Real,
+    L::String,
+    multiplicity::Integer,
+    vector::AbstractVector,
+    r::AbstractVector,
+)
     L == "S" || return 0.0
     multiplicity in (1, 3) || return 0.0
     length(r) >= 2 || return 0.0
@@ -71,7 +82,9 @@ function contact_hyperfine_shift(params::GIParameters, m1::Real, m2::Real, L::St
             alpha_s_r(ri) * delta_sigma_3d(ri, sigma)
         end,
     )
-    (1.0 + params.epsilon_c) * (32 * π / (9 * m1 * m2)) * expectation *
+    (1.0 + params.epsilon_c) *
+    (32 * π / (9 * m1 * m2)) *
+    expectation *
     spin_dot(multiplicity)
 end
 

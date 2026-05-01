@@ -35,8 +35,11 @@ end
     @test params.fine_structure == true
     @test params.k_spin_orbit > 0.0
 
-    ccbar = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
-    bbbar = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_bottomonium.csv"))
+    ccbar =
+        load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
+    bbbar = load_reference_spectrum(
+        joinpath(root, "data", "reference_spectrum_bottomonium.csv"),
+    )
     @test length(ccbar) == 28
     @test length(bbbar) == 30
     @test ccbar[1].quark_content == "c cbar"
@@ -59,12 +62,26 @@ end
     m = params.masses["c"]
     for kinetic in (:relativistic, :nonrelativistic)
         full, _vec_full, _r_full = channel_solution(
-            params, m, m, 0;
-            nlevels = 3, ngrid = 120, rmax = 16.0, kinetic = kinetic, eigensolver = :full,
+            params,
+            m,
+            m,
+            0;
+            nlevels = 3,
+            ngrid = 120,
+            rmax = 16.0,
+            kinetic = kinetic,
+            eigensolver = :full,
         )
         krylov, _vec_krylov, _r_krylov = channel_solution(
-            params, m, m, 0;
-            nlevels = 3, ngrid = 120, rmax = 16.0, kinetic = kinetic, eigensolver = :krylov,
+            params,
+            m,
+            m,
+            0;
+            nlevels = 3,
+            ngrid = 120,
+            rmax = 16.0,
+            kinetic = kinetic,
+            eigensolver = :krylov,
         )
         @test krylov ≈ full rtol = 1e-10 atol = 1e-10
     end
@@ -100,7 +117,7 @@ end
         n = 4000
         h = rmax / n
         s = 0.0
-        for i in 1:n
+        for i = 1:n
             r = (i - 0.5) * h
             s += 4π * r^2 * GIModel.delta_sigma_3d(r, σ) * h
         end
@@ -146,15 +163,24 @@ end
         p = joinpath(d, "p.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
         @test occursin("appendix_a_smearing = false", s)
-        s2 = replace(s, "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false")
+        s2 = replace(
+            s,
+            "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false",
+        )
         s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
         write(p, s2)
         params = load_parameters(p)
         @test params.appendix_a_smearing == true
         mc = params.masses["c"]
         vals, _v, _r = GIModel.channel_solution(
-            params, mc, mc, 0;
-            nlevels = 2, ngrid = 120, rmax = 12.0, kinetic = :relativistic,
+            params,
+            mc,
+            mc,
+            0;
+            nlevels = 2,
+            ngrid = 120,
+            rmax = 12.0,
+            kinetic = :relativistic,
         )
         @test isfinite(vals[1]) && isfinite(vals[2])
         @test vals[1] < vals[2]
@@ -166,7 +192,10 @@ end
         p = joinpath(d, "p.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
         @test occursin("coulomb_1d_smear = false", s)
-        s2 = replace(s, "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false")
+        s2 = replace(
+            s,
+            "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false",
+        )
         s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
         write(p, s2)
         params = load_parameters(p)
@@ -174,8 +203,14 @@ end
         @test params.appendix_a_smearing == false
         mc = params.masses["c"]
         vals, _v, _r = GIModel.channel_solution(
-            params, mc, mc, 0;
-            nlevels = 2, ngrid = 120, rmax = 12.0, kinetic = :relativistic,
+            params,
+            mc,
+            mc,
+            0;
+            nlevels = 2,
+            ngrid = 120,
+            rmax = 12.0,
+            kinetic = :relativistic,
         )
         @test isfinite(vals[1]) && isfinite(vals[2])
         @test vals[1] < vals[2]
@@ -187,16 +222,28 @@ end
         p = joinpath(d, "p.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
         @test occursin("appendix_a_derivative_g = false", s)
-        s2 = replace(s, "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false")
-        s2 = replace(s2, "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true")
+        s2 = replace(
+            s,
+            "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false",
+        )
+        s2 = replace(
+            s2,
+            "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true",
+        )
         write(p, s2)
         params = load_parameters(p)
         @test params.appendix_a_derivative_g == true
         @test GIModel.central_potential_mode(params) == :appendix_a_derivative_g
         mc = params.masses["c"]
         vals, _v, _r = GIModel.channel_solution(
-            params, mc, mc, 0;
-            nlevels = 2, ngrid = 120, rmax = 12.0, kinetic = :relativistic,
+            params,
+            mc,
+            mc,
+            0;
+            nlevels = 2,
+            ngrid = 120,
+            rmax = 12.0,
+            kinetic = :relativistic,
         )
         @test isfinite(vals[1]) && isfinite(vals[2])
         @test vals[1] < vals[2]
@@ -208,16 +255,26 @@ end
         p = joinpath(d, "p.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
         @test occursin("appendix_a_closed_form = false", s)
-        s2 = replace(s, "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false")
-        s2 = replace(s2, "appendix_a_closed_form = false" => "appendix_a_closed_form = true")
+        s2 = replace(
+            s,
+            "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false",
+        )
+        s2 =
+            replace(s2, "appendix_a_closed_form = false" => "appendix_a_closed_form = true")
         write(p, s2)
         params = load_parameters(p)
         @test params.appendix_a_closed_form == true
         @test GIModel.central_potential_mode(params) == :appendix_a_closed_form
         mc = params.masses["c"]
         vals, _v, _r = GIModel.channel_solution(
-            params, mc, mc, 0;
-            nlevels = 2, ngrid = 120, rmax = 12.0, kinetic = :relativistic,
+            params,
+            mc,
+            mc,
+            0;
+            nlevels = 2,
+            ngrid = 120,
+            rmax = 12.0,
+            kinetic = :relativistic,
         )
         @test isfinite(vals[1]) && isfinite(vals[2])
         @test vals[1] < vals[2]
@@ -235,8 +292,14 @@ end
         @test GIModel.central_potential_mode(params) == :appendix_a_momentum_sandwich
         mc = params.masses["c"]
         vals, _v, _r = GIModel.channel_solution(
-            params, mc, mc, 0;
-            nlevels = 2, ngrid = 80, rmax = 10.0, kinetic = :relativistic,
+            params,
+            mc,
+            mc,
+            0;
+            nlevels = 2,
+            ngrid = 80,
+            rmax = 10.0,
+            kinetic = :relativistic,
         )
         @test isfinite(vals[1]) && isfinite(vals[2])
         @test vals[1] < vals[2]
@@ -246,7 +309,7 @@ end
 @testset "1D Coulomb smear: constant vector unchanged on uniform grid" begin
     h = 0.05
     n = 200
-    r = collect(h:h:(h * n))
+    r = collect(h:h:(h*n))
     c = GIModel.convolve_1d_gaussian_same_length(ones(n), r, h, 0.3)
     @test maximum(abs.(c .- 1.0)) < 1e-12
 end
@@ -280,13 +343,21 @@ end
     @test pointwise ≈ [GIModel.central_potential(ri, params) for ri in r]
     @test GIModel.central_potential_values(params, mc, mc, r; mode = :coulomb_1d) ≈
           GIModel.coulomb_1d_smeared_central_values(params, mc, mc, r)
-    derivative = GIModel.central_potential_values(params, mc, mc, r; mode = :appendix_a_derivative_g)
+    derivative =
+        GIModel.central_potential_values(params, mc, mc, r; mode = :appendix_a_derivative_g)
     @test all(isfinite, derivative)
     @test maximum(abs.(derivative .- pointwise)) > 0.0
-    closed = GIModel.central_potential_values(params, mc, mc, r; mode = :appendix_a_closed_form)
+    closed =
+        GIModel.central_potential_values(params, mc, mc, r; mode = :appendix_a_closed_form)
     @test all(isfinite, closed)
     @test maximum(abs.(closed .- pointwise)) > 0.0
-    sandwich_view = GIModel.central_potential_values(params, mc, mc, r; mode = :appendix_a_momentum_sandwich)
+    sandwich_view = GIModel.central_potential_values(
+        params,
+        mc,
+        mc,
+        r;
+        mode = :appendix_a_momentum_sandwich,
+    )
     @test sandwich_view ≈ closed
     @test GIModel.smeared_coulomb_G_closed(params, mc, mc, 0.0) ≈
           GIModel.smeared_coulomb_G_closed(params, mc, mc, 1.0e-10)
@@ -295,25 +366,37 @@ end
     rcheck = 1.4
     δ = 1.0e-4
     fd_g_prime =
-        (GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck + δ) -
-         GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck - δ)) /
-        (2δ)
+        (
+            GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck + δ) -
+            GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck - δ)
+        ) / (2δ)
     fd_g_second =
-        (GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck + δ) -
-         2 * GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck) +
-         GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck - δ)) /
-        δ^2
+        (
+            GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck + δ) -
+            2 * GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck) +
+            GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck - δ)
+        ) / δ^2
     fd_s_prime =
-        (GIModel.smeared_confinement_S_closed(params, mc, mc, rcheck + δ) -
-         GIModel.smeared_confinement_S_closed(params, mc, mc, rcheck - δ)) /
-        (2δ)
-    @test GIModel.smeared_coulomb_G_prime_closed(params, mc, mc, rcheck) ≈ fd_g_prime rtol = 1e-6
-    @test GIModel.smeared_coulomb_G_second_closed(params, mc, mc, rcheck) ≈ fd_g_second rtol = 1e-5
-    @test GIModel.smeared_confinement_S_prime_closed(params, mc, mc, rcheck) ≈ fd_s_prime rtol = 1e-7
+        (
+            GIModel.smeared_confinement_S_closed(params, mc, mc, rcheck + δ) -
+            GIModel.smeared_confinement_S_closed(params, mc, mc, rcheck - δ)
+        ) / (2δ)
+    @test GIModel.smeared_coulomb_G_prime_closed(params, mc, mc, rcheck) ≈ fd_g_prime rtol =
+        1e-6
+    @test GIModel.smeared_coulomb_G_second_closed(params, mc, mc, rcheck) ≈ fd_g_second rtol =
+        1e-5
+    @test GIModel.smeared_confinement_S_prime_closed(params, mc, mc, rcheck) ≈ fd_s_prime rtol =
+        1e-7
     @test GIModel.tensor_kernel_smeared_coulomb(params, mc, mc, rcheck) ≈
           GIModel.smeared_coulomb_G_prime_closed(params, mc, mc, rcheck) / rcheck -
           GIModel.smeared_coulomb_G_second_closed(params, mc, mc, rcheck)
-    @test_throws ErrorException GIModel.central_potential_values(params, mc, mc, r; mode = :unknown_mode)
+    @test_throws ErrorException GIModel.central_potential_values(
+        params,
+        mc,
+        mc,
+        r;
+        mode = :unknown_mode,
+    )
 end
 
 @testset "appendix_a_momentum_sandwich wins over diagonal central modes" begin
@@ -321,8 +404,12 @@ end
         p = joinpath(d, "p.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
         s2 = s
-        s2 = replace(s2, "appendix_a_closed_form = false" => "appendix_a_closed_form = true")
-        s2 = replace(s2, "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true")
+        s2 =
+            replace(s2, "appendix_a_closed_form = false" => "appendix_a_closed_form = true")
+        s2 = replace(
+            s2,
+            "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true",
+        )
         s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
         s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
         write(p, s2)
@@ -336,7 +423,10 @@ end
     mktempdir() do d
         p = joinpath(d, "p.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
-        s2 = replace(s, "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false")
+        s2 = replace(
+            s,
+            "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false",
+        )
         s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
         s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
         write(p, s2)
@@ -352,8 +442,14 @@ end
     mktempdir() do d
         p = joinpath(d, "p.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
-        s2 = replace(s, "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false")
-        s2 = replace(s2, "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true")
+        s2 = replace(
+            s,
+            "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false",
+        )
+        s2 = replace(
+            s2,
+            "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true",
+        )
         s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
         s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
         write(p, s2)
@@ -369,7 +465,7 @@ end
 @testset "radial_laplacian_values constant is zero" begin
     h = 0.05
     n = 200
-    r = collect(h:h:(h * n))
+    r = collect(h:h:(h*n))
     lap = GIModel.radial_laplacian_values(ones(n), r)
     @test maximum(abs.(lap)) < 1e-12
 end
@@ -377,10 +473,10 @@ end
 @testset "Appendix A 3D smearing (constant preserves norm)" begin
     h = 0.02
     n = 2000
-    r = collect(h:h:(h * n))
+    r = collect(h:h:(h*n))
     σ = 1.0
     n_tail = σ > 0 ? max(0, Int(ceil(8 / (σ * h)))) : 0
-    r_ext = n_tail > 0 ? vcat(r, collect((r[end] + h):h:(r[end] + n_tail * h))) : r
+    r_ext = n_tail > 0 ? vcat(r, collect((r[end]+h):h:(r[end]+n_tail*h))) : r
     w = GIModel.smear_3d_radial(ones(length(r_ext)), r_ext, σ)
     w = w[1:n]
     @test maximum(abs.(w .- 1.0)) < 0.01
@@ -397,7 +493,9 @@ end
         total = 0.0
         for (α, γ) in zip(GIModel.ALPHA_COEFFS, GIModel.ALPHA_GAMMAS)
             integrand(rp) = begin
-                g = rp == 0 ? -8 * α * γ / (3 * sqrt(π)) : -4 * α * GIModel.gi_erf(γ * rp) / (3 * rp)
+                g =
+                    rp == 0 ? -8 * α * γ / (3 * sqrt(π)) :
+                    -4 * α * GIModel.gi_erf(γ * rp) / (3 * rp)
                 pre = σ / (sqrt(π) * R)
                 pre * rp * (exp(-(σ * (R - rp))^2) - exp(-(σ * (R + rp))^2)) * g
             end
@@ -408,7 +506,8 @@ end
     end
 
     for R in (0.2, 0.8, 2.0)
-        @test GIModel.smeared_coulomb_G_closed(params, m, m, R) ≈ quadgk_smeared_coulomb(R) rtol = 1e-10 atol = 1e-10
+        @test GIModel.smeared_coulomb_G_closed(params, m, m, R) ≈ quadgk_smeared_coulomb(R) rtol =
+            1e-10 atol = 1e-10
     end
 end
 
@@ -421,8 +520,8 @@ end
 end
 
 @testset "triplet fine-structure angular factors" begin
-    for L in 1:4
-        js = collect((L - 1):(L + 1))
+    for L = 1:4
+        js = collect((L-1):(L+1))
         weights = [2J + 1 for J in js]
         ldot = [GIModel.LdotS(L, 1, J) for J in js]
         tensor = [GIModel.tensor_triplet_LJ(L, J, 1) for J in js]
@@ -437,56 +536,131 @@ end
 @testset "fine_structure_split: S-wave and P-wave triplet" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     m = params.masses["c"]
-    _, umat, r = GIModel.channel_solution(params, m, m, 0; nlevels = 2, ngrid = 200, rmax = 20.0)
+    _, umat, r =
+        GIModel.channel_solution(params, m, m, 0; nlevels = 2, ngrid = 200, rmax = 20.0)
     h = r[2] - r[1]
     u_s = collect(umat[:, 1])
     @test GIModel.fine_structure_split(
-        params, m, m, "S", 3, 1, u_s, r, h;
-        k_spin_orbit = params.k_spin_orbit, k_tensor = params.k_tensor,
+        params,
+        m,
+        m,
+        "S",
+        3,
+        1,
+        u_s,
+        r,
+        h;
+        k_spin_orbit = params.k_spin_orbit,
+        k_tensor = params.k_tensor,
     ) == 0.0
     @test GIModel.fine_structure_split(
-        params, m, m, "S", 1, 0, u_s, r, h;
-        k_spin_orbit = 1.0, k_tensor = 1.0,
+        params,
+        m,
+        m,
+        "S",
+        1,
+        0,
+        u_s,
+        r,
+        h;
+        k_spin_orbit = 1.0,
+        k_tensor = 1.0,
     ) == 0.0
-    v_p, umat_p, r_p = GIModel.channel_solution(params, m, m, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+    v_p, umat_p, r_p =
+        GIModel.channel_solution(params, m, m, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
     h_p = r_p[2] - r_p[1]
     u1p = collect(umat_p[:, 1])
     δ0 = GIModel.fine_structure_split(
-        params, m, m, "P", 3, 0, u1p, r_p, h_p;
-        k_spin_orbit = 1.0, k_tensor = 1.0,
+        params,
+        m,
+        m,
+        "P",
+        3,
+        0,
+        u1p,
+        r_p,
+        h_p;
+        k_spin_orbit = 1.0,
+        k_tensor = 1.0,
     )
     δ1 = GIModel.fine_structure_split(
-        params, m, m, "P", 3, 1, u1p, r_p, h_p;
-        k_spin_orbit = 1.0, k_tensor = 1.0,
+        params,
+        m,
+        m,
+        "P",
+        3,
+        1,
+        u1p,
+        r_p,
+        h_p;
+        k_spin_orbit = 1.0,
+        k_tensor = 1.0,
     )
     δ2 = GIModel.fine_structure_split(
-        params, m, m, "P", 3, 2, u1p, r_p, h_p;
-        k_spin_orbit = 1.0, k_tensor = 1.0,
+        params,
+        m,
+        m,
+        "P",
+        3,
+        2,
+        u1p,
+        r_p,
+        h_p;
+        k_spin_orbit = 1.0,
+        k_tensor = 1.0,
     )
     @test isfinite(δ0) && isfinite(δ1) && isfinite(δ2)
     @test δ0 != δ1 || δ1 != δ2
     @test GIModel.fine_structure_split(
-        params, m, m, "P", 1, 0, u1p, r_p, h_p;
-        k_spin_orbit = 1.0, k_tensor = 1.0,
+        params,
+        m,
+        m,
+        "P",
+        1,
+        0,
+        u1p,
+        r_p,
+        h_p;
+        k_spin_orbit = 1.0,
+        k_tensor = 1.0,
     ) == 0.0
 end
 
 @testset "fine_structure_components: decomposition sums correctly" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     m = params.masses["c"]
-    _v_p, umat_p, r_p = GIModel.channel_solution(params, m, m, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+    _v_p, umat_p, r_p =
+        GIModel.channel_solution(params, m, m, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
     h_p = r_p[2] - r_p[1]
     u1p = collect(umat_p[:, 1])
     for J in (0, 1, 2)
         comp = GIModel.fine_structure_components(
-            params, m, m, "P", 3, J, u1p, r_p, h_p;
-            k_spin_orbit = 1.0, k_tensor = 1.0,
+            params,
+            m,
+            m,
+            "P",
+            3,
+            J,
+            u1p,
+            r_p,
+            h_p;
+            k_spin_orbit = 1.0,
+            k_tensor = 1.0,
         )
         @test comp.spin_orbit ≈ comp.spin_orbit_vector + comp.spin_orbit_thomas atol = 1e-12
         @test comp.total ≈ comp.spin_orbit + comp.tensor atol = 1e-12
         @test comp.total ≈ GIModel.fine_structure_split(
-            params, m, m, "P", 3, J, u1p, r_p, h_p;
-            k_spin_orbit = 1.0, k_tensor = 1.0,
+            params,
+            m,
+            m,
+            "P",
+            3,
+            J,
+            u1p,
+            r_p,
+            h_p;
+            k_spin_orbit = 1.0,
+            k_tensor = 1.0,
         ) atol = 1e-12
     end
 end
@@ -503,7 +677,10 @@ end
         s0 = replace(s0, r"^epsilon_t\s*=.*$"m => "epsilon_t = 0.0")
         s0 = replace(s0, r"^epsilon_so_vector\s*=.*$"m => "epsilon_so_vector = 0.0")
         s0 = replace(s0, r"^epsilon_so_scalar\s*=.*$"m => "epsilon_so_scalar = 0.0")
-        s0 = replace(s0, "fine_structure_momentum_sandwich = true" => "fine_structure_momentum_sandwich = false")
+        s0 = replace(
+            s0,
+            "fine_structure_momentum_sandwich = true" => "fine_structure_momentum_sandwich = false",
+        )
         write(p0, s0)
 
         write(pt, replace(s0, r"^epsilon_t\s*=.*$"m => "epsilon_t = 0.5"))
@@ -512,23 +689,81 @@ end
 
         params0 = load_parameters(p0)
         mc = params0.masses["c"]
-        _v_p, umat_p, r_p = GIModel.channel_solution(params0, mc, mc, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+        _v_p, umat_p, r_p = GIModel.channel_solution(
+            params0,
+            mc,
+            mc,
+            1;
+            nlevels = 2,
+            ngrid = 200,
+            rmax = 20.0,
+        )
         h_p = r_p[2] - r_p[1]
         u1p = collect(umat_p[:, 1])
 
         # Use J=2 to avoid any accidental L·S or tensor zeros.
-        comp0 = GIModel.fine_structure_components(params0, mc, mc, "P", 3, 2, u1p, r_p, h_p; k_spin_orbit = 1.0, k_tensor = 1.0)
+        comp0 = GIModel.fine_structure_components(
+            params0,
+            mc,
+            mc,
+            "P",
+            3,
+            2,
+            u1p,
+            r_p,
+            h_p;
+            k_spin_orbit = 1.0,
+            k_tensor = 1.0,
+        )
         @test comp0.tensor != 0.0
         @test comp0.spin_orbit_vector != 0.0
         @test comp0.spin_orbit_thomas != 0.0
 
-        compt = GIModel.fine_structure_components(load_parameters(pt), mc, mc, "P", 3, 2, u1p, r_p, h_p; k_spin_orbit = 1.0, k_tensor = 1.0)
-        compv = GIModel.fine_structure_components(load_parameters(pv), mc, mc, "P", 3, 2, u1p, r_p, h_p; k_spin_orbit = 1.0, k_tensor = 1.0)
-        comps = GIModel.fine_structure_components(load_parameters(ps), mc, mc, "P", 3, 2, u1p, r_p, h_p; k_spin_orbit = 1.0, k_tensor = 1.0)
+        compt = GIModel.fine_structure_components(
+            load_parameters(pt),
+            mc,
+            mc,
+            "P",
+            3,
+            2,
+            u1p,
+            r_p,
+            h_p;
+            k_spin_orbit = 1.0,
+            k_tensor = 1.0,
+        )
+        compv = GIModel.fine_structure_components(
+            load_parameters(pv),
+            mc,
+            mc,
+            "P",
+            3,
+            2,
+            u1p,
+            r_p,
+            h_p;
+            k_spin_orbit = 1.0,
+            k_tensor = 1.0,
+        )
+        comps = GIModel.fine_structure_components(
+            load_parameters(ps),
+            mc,
+            mc,
+            "P",
+            3,
+            2,
+            u1p,
+            r_p,
+            h_p;
+            k_spin_orbit = 1.0,
+            k_tensor = 1.0,
+        )
 
         @test compt.tensor / comp0.tensor ≈ 1.5 rtol = 1e-12 atol = 0.0
-        @test compv.spin_orbit_vector / comp0.spin_orbit_vector ≈ 1.5 rtol = 1e-12 atol = 0.0
-        @test comps.spin_orbit_thomas / comp0.spin_orbit_thomas ≈ 1.5 rtol = 1e-12 atol = 0.0
+        @test compv.spin_orbit_vector / comp0.spin_orbit_vector ≈ 1.5 rtol = 1e-12 atol =
+            0.0
+        @test comps.spin_orbit_thomas / comp0.spin_orbit_thomas ≈ 1.5 rtol = 1e-12 atol =
+            0.0
     end
 end
 
@@ -537,18 +772,49 @@ end
         p0 = joinpath(d, "p0.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
         s0 = replace(s, r"^epsilon_t\s*=.*$"m => "epsilon_t = 0.0")
-        s0 = replace(s0, "fine_structure_momentum_sandwich = true" => "fine_structure_momentum_sandwich = false")
-        s0 = replace(s0, "fine_structure_smeared_kernels = true" => "fine_structure_smeared_kernels = false")
+        s0 = replace(
+            s0,
+            "fine_structure_momentum_sandwich = true" => "fine_structure_momentum_sandwich = false",
+        )
+        s0 = replace(
+            s0,
+            "fine_structure_smeared_kernels = true" => "fine_structure_smeared_kernels = false",
+        )
         write(p0, s0)
 
         params0 = load_parameters(p0)
         mc = params0.masses["c"]
-        _v_p, umat_p, r_p = GIModel.channel_solution(params0, mc, mc, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+        _v_p, umat_p, r_p = GIModel.channel_solution(
+            params0,
+            mc,
+            mc,
+            1;
+            nlevels = 2,
+            ngrid = 200,
+            rmax = 20.0,
+        )
         h_p = r_p[2] - r_p[1]
         u1p = collect(umat_p[:, 1])
 
-        Itk = GIModel.radial_expect_udr(u1p, r_p, h_p, (ri, i) -> GIModel.tensor_kernel_coulomb_running(ri))
-        comp = GIModel.fine_structure_components(params0, mc, mc, "P", 3, 2, u1p, r_p, h_p; k_spin_orbit = 0.0, k_tensor = 1.0)
+        Itk = GIModel.radial_expect_udr(
+            u1p,
+            r_p,
+            h_p,
+            (ri, i) -> GIModel.tensor_kernel_coulomb_running(ri),
+        )
+        comp = GIModel.fine_structure_components(
+            params0,
+            mc,
+            mc,
+            "P",
+            3,
+            2,
+            u1p,
+            r_p,
+            h_p;
+            k_spin_orbit = 0.0,
+            k_tensor = 1.0,
+        )
         @test comp.I_tk ≈ Itk rtol = 1e-12 atol = 0.0
         expected = (1.0 / (3.0 * mc * mc)) * Itk * GIModel.tensor_triplet_LJ(1, 2, 1)
         @test comp.tensor ≈ expected rtol = 1e-12 atol = 0.0
@@ -558,7 +824,8 @@ end
 @testset "contact_hyperfine_shift: normalization + spin algebra" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     m = params.masses["c"]
-    _vals, umat, r = GIModel.channel_solution(params, m, m, 0; nlevels = 2, ngrid = 200, rmax = 20.0)
+    _vals, umat, r =
+        GIModel.channel_solution(params, m, m, 0; nlevels = 2, ngrid = 200, rmax = 20.0)
     u1s = collect(umat[:, 1])
 
     δ_triplet = GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u1s, r)
@@ -577,21 +844,49 @@ end
 @testset "fine structure uses u(r) normalization (scale invariant)" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     m = params.masses["c"]
-    _v_p, umat_p, r_p = GIModel.channel_solution(params, m, m, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+    _v_p, umat_p, r_p =
+        GIModel.channel_solution(params, m, m, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
     h_p = r_p[2] - r_p[1]
     u1p = collect(umat_p[:, 1])
     for J in (0, 1, 2)
         base = GIModel.fine_structure_components(
-            params, m, m, "P", 3, J, u1p, r_p, h_p;
-            k_spin_orbit = 1.0, k_tensor = 1.0,
+            params,
+            m,
+            m,
+            "P",
+            3,
+            J,
+            u1p,
+            r_p,
+            h_p;
+            k_spin_orbit = 1.0,
+            k_tensor = 1.0,
         )
         scaled_hi = GIModel.fine_structure_components(
-            params, m, m, "P", 3, J, 3.0 .* u1p, r_p, h_p;
-            k_spin_orbit = 1.0, k_tensor = 1.0,
+            params,
+            m,
+            m,
+            "P",
+            3,
+            J,
+            3.0 .* u1p,
+            r_p,
+            h_p;
+            k_spin_orbit = 1.0,
+            k_tensor = 1.0,
         )
         scaled_lo = GIModel.fine_structure_components(
-            params, m, m, "P", 3, J, 0.2 .* u1p, r_p, h_p;
-            k_spin_orbit = 1.0, k_tensor = 1.0,
+            params,
+            m,
+            m,
+            "P",
+            3,
+            J,
+            0.2 .* u1p,
+            r_p,
+            h_p;
+            k_spin_orbit = 1.0,
+            k_tensor = 1.0,
         )
         @test scaled_hi.total ≈ base.total rtol = 1e-12 atol = 0.0
         @test scaled_lo.total ≈ base.total rtol = 1e-12 atol = 0.0
@@ -652,14 +947,18 @@ end
     d2 = central_fdm(5, 2)
 
     for r0 in (0.08, 0.4, 1.4)
-        @test GIModel.alpha_s_prime_r(r0) ≈ d1(GIModel.alpha_s_r, r0) rtol = 1e-10 atol = 1e-10
-        @test GIModel.alpha_s_second_r(r0) ≈ d2(GIModel.alpha_s_r, r0) rtol = 1e-9 atol = 1e-9
+        @test GIModel.alpha_s_prime_r(r0) ≈ d1(GIModel.alpha_s_r, r0) rtol = 1e-10 atol =
+            1e-10
+        @test GIModel.alpha_s_second_r(r0) ≈ d2(GIModel.alpha_s_r, r0) rtol = 1e-9 atol =
+            1e-9
     end
 
     Gs(r) = GIModel.smeared_coulomb_G_closed(params, m, m, r)
     for r0 in (0.2, 0.8, 2.0)
-        @test GIModel.smeared_coulomb_G_prime_closed(params, m, m, r0) ≈ d1(Gs, r0) rtol = 1e-9 atol = 1e-9
-        @test GIModel.smeared_coulomb_G_second_closed(params, m, m, r0) ≈ d2(Gs, r0) rtol = 1e-7 atol = 1e-8
+        @test GIModel.smeared_coulomb_G_prime_closed(params, m, m, r0) ≈ d1(Gs, r0) rtol =
+            1e-9 atol = 1e-9
+        @test GIModel.smeared_coulomb_G_second_closed(params, m, m, r0) ≈ d2(Gs, r0) rtol =
+            1e-7 atol = 1e-8
     end
 end
 
@@ -667,47 +966,77 @@ end
     mktempdir() do d
         p = joinpath(d, "p.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
-        s0 = replace(s, "fine_structure_momentum_sandwich = true" => "fine_structure_momentum_sandwich = false")
-        s0 = replace(s0, "fine_structure_smeared_kernels = true" => "fine_structure_smeared_kernels = false")
+        s0 = replace(
+            s,
+            "fine_structure_momentum_sandwich = true" => "fine_structure_momentum_sandwich = false",
+        )
+        s0 = replace(
+            s0,
+            "fine_structure_smeared_kernels = true" => "fine_structure_smeared_kernels = false",
+        )
         write(p, s0)
         params = load_parameters(p)
-    h = 0.02
-    r = collect(0.10:h:4.00)
-    u = exp.(-r)
+        h = 0.02
+        r = collect(0.10:h:4.00)
+        u = exp.(-r)
 
-    I_cm = GIModel.radial_expect_udr(u, r, h, (ri, i) -> begin
-        r0 = max(ri, 1.0e-8)
-        (4.0 / 3.0) * GIModel.alpha_s_r(r0) / r0^3
-    end)
-    I_deriv = GIModel.radial_expect_udr(u, r, h, (ri, i) -> begin
-        r0 = max(ri, 1.0e-8)
-        (1.0 / r0) * GIModel.dV_coul_central_dr(r0, params)
-    end)
-    # With running α_s(r)=∑ α_k erf(γ_k r), α_s'(r)>0 so these must differ:
-    #   (4/3) α_s(r)/r^3  - (1/r) d/dr[-4α_s(r)/(3r)] = (4/3) α_s'(r)/r^2  > 0.
-    @test I_cm > I_deriv
-    @test abs(I_cm - I_deriv) > 1e-6
+        I_cm = GIModel.radial_expect_udr(
+            u,
+            r,
+            h,
+            (ri, i) -> begin
+                r0 = max(ri, 1.0e-8)
+                (4.0 / 3.0) * GIModel.alpha_s_r(r0) / r0^3
+            end,
+        )
+        I_deriv = GIModel.radial_expect_udr(
+            u,
+            r,
+            h,
+            (ri, i) -> begin
+                r0 = max(ri, 1.0e-8)
+                (1.0 / r0) * GIModel.dV_coul_central_dr(r0, params)
+            end,
+        )
+        # With running α_s(r)=∑ α_k erf(γ_k r), α_s'(r)>0 so these must differ:
+        #   (4/3) α_s(r)/r^3  - (1/r) d/dr[-4α_s(r)/(3r)] = (4/3) α_s'(r)/r^2  > 0.
+        @test I_cm > I_deriv
+        @test abs(I_cm - I_deriv) > 1e-6
 
-    # Guardrail: fine_structure_components must use I_cm (Eq. (6)), not I_deriv.
-    m = params.masses["c"]
-    comp = GIModel.fine_structure_components(
-        params, m, m, "P", 3, 2, collect(u), collect(r), h;
-        k_spin_orbit = 1.0, k_tensor = 0.0,
-    )
-    @test comp.I_cm ≈ I_cm rtol = 1e-12 atol = 0.0
-    inv2_cm = 0.5 * (1.0 / m^2 + 1.0 / m^2 + 2.0 / (m * m))
-    ls = GIModel.LdotS(1, 1, 2)
-    expected_vec = inv2_cm * ls * (1.0 + params.epsilon_so_vector) * I_cm
-    @test comp.spin_orbit_vector ≈ expected_vec rtol = 1e-12 atol = 0.0
+        # Guardrail: fine_structure_components must use I_cm (Eq. (6)), not I_deriv.
+        m = params.masses["c"]
+        comp = GIModel.fine_structure_components(
+            params,
+            m,
+            m,
+            "P",
+            3,
+            2,
+            collect(u),
+            collect(r),
+            h;
+            k_spin_orbit = 1.0,
+            k_tensor = 0.0,
+        )
+        @test comp.I_cm ≈ I_cm rtol = 1e-12 atol = 0.0
+        inv2_cm = 0.5 * (1.0 / m^2 + 1.0 / m^2 + 2.0 / (m * m))
+        ls = GIModel.LdotS(1, 1, 2)
+        expected_vec = inv2_cm * ls * (1.0 + params.epsilon_so_vector) * I_cm
+        @test comp.spin_orbit_vector ≈ expected_vec rtol = 1e-12 atol = 0.0
 
-    I_tp = GIModel.radial_expect_udr(u, r, h, (ri, i) -> begin
-        r0 = max(ri, 1.0e-8)
-        (1.0 / (2.0 * r0)) * (params.b + GIModel.dV_coul_central_dr(r0, params))
-    end)
-    @test comp.I_tp ≈ I_tp rtol = 1e-12 atol = 0.0
-    inv2_tp = 0.5 * (1.0 / m^2 + 1.0 / m^2)
-    expected_tp = (-inv2_tp) * ls * (1.0 + params.epsilon_so_scalar) * I_tp
-    @test comp.spin_orbit_thomas ≈ expected_tp rtol = 1e-12 atol = 0.0
+        I_tp = GIModel.radial_expect_udr(
+            u,
+            r,
+            h,
+            (ri, i) -> begin
+                r0 = max(ri, 1.0e-8)
+                (1.0 / (2.0 * r0)) * (params.b + GIModel.dV_coul_central_dr(r0, params))
+            end,
+        )
+        @test comp.I_tp ≈ I_tp rtol = 1e-12 atol = 0.0
+        inv2_tp = 0.5 * (1.0 / m^2 + 1.0 / m^2)
+        expected_tp = (-inv2_tp) * ls * (1.0 + params.epsilon_so_scalar) * I_tp
+        @test comp.spin_orbit_thomas ≈ expected_tp rtol = 1e-12 atol = 0.0
     end
 end
 
@@ -750,7 +1079,12 @@ end
     u3 = [1.0, 1.0, 1.0]
     r_nonuniform = [0.1, 0.2, 0.31]
     @test_throws ArgumentError GIModel.physical_u_norm(r_nonuniform, 0.1, u3)
-    @test_throws ArgumentError GIModel.radial_expect_udr(u3, r_nonuniform, 0.1, (ri, i) -> 1.0)
+    @test_throws ArgumentError GIModel.radial_expect_udr(
+        u3,
+        r_nonuniform,
+        0.1,
+        (ri, i) -> 1.0,
+    )
     @test_throws ArgumentError GIModel.physical_u_norm(r, 0.11, u3)
 end
 
@@ -773,7 +1107,10 @@ end
 
     mass_factor = 4 * m1 * m2 / (m1 + m2)^2
     reduced_twice = 2 * m1 * m2 / (m1 + m2)
-    σ_manual = sqrt(params.sigma0^2 * (0.5 + 0.5 * mass_factor^4) + params.smearing_s^2 * reduced_twice^2)
+    σ_manual = sqrt(
+        params.sigma0^2 * (0.5 + 0.5 * mass_factor^4) +
+        params.smearing_s^2 * reduced_twice^2,
+    )
     @test σ ≈ σ_manual rtol = 0.0 atol = 0.0
 
     m = params.masses["c"]
@@ -789,8 +1126,10 @@ end
     u = exp.(-2.0 .* r)
     base = GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u, r)
     @test base != 0.0
-    @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, 3.0 .* u, r) ≈ base rtol = 1e-12 atol = 0.0
-    @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, 0.2 .* u, r) ≈ base rtol = 1e-12 atol = 0.0
+    @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, 3.0 .* u, r) ≈ base rtol =
+        1e-12 atol = 0.0
+    @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, 0.2 .* u, r) ≈ base rtol =
+        1e-12 atol = 0.0
 end
 
 @testset "contact hyperfine matches radial_expect_udr convention" begin
@@ -809,16 +1148,28 @@ end
             GIModel.alpha_s_r(ri) * delta_sigma
         end,
     )
-    manual = (1.0 + params.epsilon_c) * (32 * pi / (9 * m * m)) * expectation * GIModel.spin_dot(3)
-    @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u, r) ≈ manual rtol = 1e-12 atol = 0.0
+    manual =
+        (1.0 + params.epsilon_c) *
+        (32 * pi / (9 * m * m)) *
+        expectation *
+        GIModel.spin_dot(3)
+    @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u, r) ≈ manual rtol = 1e-12 atol =
+        0.0
 end
 
 @testset "compare_sector returns shift breakdown fields" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    reference = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
+    reference =
+        load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
     rows = compare_sector(
-        params, reference[1:1], "c";
-        ngrid = 120, rmax = 12.0, kinetic = :relativistic, contact_hyperfine = true, use_fine_structure = true,
+        params,
+        reference[1:1],
+        "c";
+        ngrid = 120,
+        rmax = 12.0,
+        kinetic = :relativistic,
+        contact_hyperfine = true,
+        use_fine_structure = true,
     )
     @test length(rows) == 1
     row = rows[1]
@@ -831,7 +1182,11 @@ end
     @test hasproperty(row, :m2_GeV)
     @test hasproperty(row, :fine_structure_mass_convention)
     @test isfinite(row.m1_GeV) && isfinite(row.m2_GeV)
-    @test row.fine_structure_mass_convention in ("equal_mass", "unequal_mass_equal_share_LdotS", "disabled")
-    @test row.fine_structure_shift_GeV ≈ row.spin_orbit_shift_GeV + row.tensor_shift_GeV atol = 1e-12
-    @test row.predicted_GeV ≈ row.central_GeV + row.contact_shift_GeV + row.fine_structure_shift_GeV atol = 1e-12
+    @test row.fine_structure_mass_convention in
+          ("equal_mass", "unequal_mass_equal_share_LdotS", "disabled")
+    @test row.fine_structure_shift_GeV ≈ row.spin_orbit_shift_GeV + row.tensor_shift_GeV atol =
+        1e-12
+    @test row.predicted_GeV ≈
+          row.central_GeV + row.contact_shift_GeV + row.fine_structure_shift_GeV atol =
+        1e-12
 end

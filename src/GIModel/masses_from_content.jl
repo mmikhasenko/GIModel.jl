@@ -67,7 +67,8 @@ function parse_quark_masses(
         # First segment: e.g. "b ubar", "c sbar", "-c dbar", "-u sbar", "b cbar"
         seg = first_content_segment(composition_raw)
         parts = [String(s) for s in eachsplit(seg, isspace) if !isempty(s) && s != "—"]
-        length(parts) < 2 && error("need 2+ tokens in first segment of `$composition_raw` (sector $sector)")
+        length(parts) < 2 &&
+            error("need 2+ tokens in first segment of `$composition_raw` (sector $sector)")
         m1 = mass_one_quark_token(params, String(parts[1]))
         m2 = mass_anti_token(params, String(parts[2]), sector)
         return m1, m2

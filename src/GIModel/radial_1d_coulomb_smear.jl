@@ -14,11 +14,11 @@ function convolve_1d_gaussian_same_length(
     n == 0 && return v
     σf = max(float(σ), 1.0e-9)
     out = similar(v)
-    for i in 1:n
+    for i = 1:n
         ri = r[i]
         s = 0.0
         wsum = 0.0
-        for j in 1:n
+        for j = 1:n
             # Match Appendix A smearing convention ρ ∝ exp(-σ^2 Δr^2), where σ has units GeV
             # (inverse length) and r is in GeV^-1.
             w = exp(-(σf * (ri - r[j]))^2)

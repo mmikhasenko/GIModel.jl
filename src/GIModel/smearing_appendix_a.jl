@@ -33,7 +33,12 @@ function smear_3d_radial(v::AbstractVector{<:Real}, r::AbstractVector{<:Real}, �
                 # Angle-integrated convolution of a 3D isotropic Gaussian:
                 # f̃(R) = (σ / (√π R)) ∫ dr' r' [e^{-σ^2 (R-r')^2} - e^{-σ^2 (R+r')^2}] f(r')
                 pre = σf / (sqrt(π) * R)
-                s += w[j] * pre * rp * (exp(-(σf * (R - rp))^2) - exp(-(σf * (R + rp))^2)) * v[j]
+                s +=
+                    w[j] *
+                    pre *
+                    rp *
+                    (exp(-(σf * (R - rp))^2) - exp(-(σf * (R + rp))^2)) *
+                    v[j]
             end
         end
         out[i] = s
@@ -46,7 +51,12 @@ end
 # is numerically uncontrolled on a fixed radial line when $\sigma$ is O(1): the 3D
 # convolution weights the large-$r$ region by volume and can remove the $1/r$ well.
 # Enable only for research; production defaults keep `appendix_a_smearing = false`.
-function smeared_central_values(params::GIParameters, m1::Real, m2::Real, r::AbstractVector{<:Real})
+function smeared_central_values(
+    params::GIParameters,
+    m1::Real,
+    m2::Real,
+    r::AbstractVector{<:Real},
+)
     σ = contact_smearing_sigma(params, m1, m2)
     n = length(r)
     n < 2 && return [central_potential(ri, params) for ri in r]
@@ -54,7 +64,8 @@ function smeared_central_values(params::GIParameters, m1::Real, m2::Real, r::Abs
     rmax0 = r[end]
     # Kernel tail: exp(-(σ Δr)^2) at Δr = 8/σ gives exp(-64), effectively zero.
     n_tail = σ > 0 ? max(0, Int(ceil(8 / (σ * h)))) : 0
-    r_ext = n_tail > 0 ? vcat(r, collect(range(rmax0 + h, rmax0 + n_tail * h; step = h))) : r
+    r_ext =
+        n_tail > 0 ? vcat(r, collect(range(rmax0 + h, rmax0 + n_tail * h; step = h))) : r
     g0 = [static_coulomb_G(ri, params) for ri in r_ext]
     s0 = [static_confinement_S(ri, params) for ri in r_ext]
     vsum = smear_3d_radial(g0, r_ext, σ) .+ smear_3d_radial(s0, r_ext, σ)
@@ -82,7 +93,12 @@ function smeared_confinement_S_closed(params::GIParameters, m1::Real, m2::Real, 
     params.b * ri * bracket + params.c
 end
 
-function appendix_a_closed_central_values(params::GIParameters, m1::Real, m2::Real, r::AbstractVector{<:Real})
+function appendix_a_closed_central_values(
+    params::GIParameters,
+    m1::Real,
+    m2::Real,
+    r::AbstractVector{<:Real},
+)
     [
         smeared_coulomb_G_closed(params, m1, m2, ri) +
         smeared_confinement_S_closed(params, m1, m2, ri) for ri in r

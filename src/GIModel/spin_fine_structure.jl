@@ -93,7 +93,12 @@ function tensor_kernel_smeared_coulomb(params::GIParameters, m1::Real, m2::Real,
     smeared_coulomb_G_second_closed(params, m1, m2, ri)
 end
 
-function smeared_confinement_S_prime_closed(params::GIParameters, m1::Real, m2::Real, r::Real)
+function smeared_confinement_S_prime_closed(
+    params::GIParameters,
+    m1::Real,
+    m2::Real,
+    r::Real,
+)
     ri = float(r)
     abs(ri) < 1.0e-7 && return 0.0
     σ = max(contact_smearing_sigma(params, m1, m2), 1.0e-12)
@@ -101,11 +106,8 @@ function smeared_confinement_S_prime_closed(params::GIParameters, m1::Real, m2::
     expz = exp(-z^2)
     h = ri + 1 / (2 * σ^2 * ri)
     hp = 1 - 1 / (2 * σ^2 * ri^2)
-    params.b * (
-        (-2 * σ * ri / sqrt(π)) * expz +
-        hp * gi_erf(z) +
-        h * (2 * σ / sqrt(π)) * expz
-    )
+    params.b *
+    ((-2 * σ * ri / sqrt(π)) * expz + hp * gi_erf(z) + h * (2 * σ / sqrt(π)) * expz)
 end
 
 function dV_coul_central_dr(r::Real, params::GIParameters)
@@ -129,8 +131,10 @@ function LdotS(L::Int, S::Int, J::Int)
 end
 
 function physical_u_norm(r::AbstractVector{<:Real}, h::Real, u::AbstractVector{<:Real})
-    length(r) == length(u) || throw(ArgumentError("physical_u_norm: length(r) != length(u)"))
-    isfinite(float(h)) && h > 0 || throw(ArgumentError("physical_u_norm: invalid mesh spacing h=$h"))
+    length(r) == length(u) ||
+        throw(ArgumentError("physical_u_norm: length(r) != length(u)"))
+    isfinite(float(h)) && h > 0 ||
+        throw(ArgumentError("physical_u_norm: invalid mesh spacing h=$h"))
     # Convention guardrail: our expectation-value machinery assumes the solver eigenvector is sampled
     # on a *uniform* r mesh and that callers pass the correct mesh spacing `h`. A mismatch silently
     # rescales ⟨f(r)⟩ integrals and is a common source of normalization/convention drift.
@@ -138,12 +142,16 @@ function physical_u_norm(r::AbstractVector{<:Real}, h::Real, u::AbstractVector{<
         hf = float(h)
         rprev = float(r[1])
         isfinite(rprev) || throw(ArgumentError("physical_u_norm: non-finite r[1]=$(r[1])"))
-        for i in 2:length(r)
+        for i = 2:length(r)
             ri = float(r[i])
-            isfinite(ri) || throw(ArgumentError("physical_u_norm: non-finite r[$i]=$(r[i])"))
+            isfinite(ri) ||
+                throw(ArgumentError("physical_u_norm: non-finite r[$i]=$(r[i])"))
             Δ = ri - rprev
-            (Δ > 0 && isapprox(Δ, hf; rtol = 1e-10, atol = 1e-12)) ||
-                throw(ArgumentError("physical_u_norm: non-uniform r mesh or h mismatch at i=$i (Δr=$Δ, h=$hf)"))
+            (Δ > 0 && isapprox(Δ, hf; rtol = 1e-10, atol = 1e-12)) || throw(
+                ArgumentError(
+                    "physical_u_norm: non-uniform r mesh or h mismatch at i=$i (Δr=$Δ, h=$hf)",
+                ),
+            )
             rprev = ri
         end
     end
@@ -161,7 +169,8 @@ function radial_expect_udr(
     h::Real,
     f::F,
 ) where {F<:Function}
-    length(r) == length(u) || throw(ArgumentError("radial_expect_udr: length(r) != length(u)"))
+    length(r) == length(u) ||
+        throw(ArgumentError("radial_expect_udr: length(r) != length(u)"))
     n = physical_u_norm(r, h, u)
     n == 0.0 && return 0.0
     s = 0.0
@@ -183,7 +192,8 @@ function radial_expect_momentum_sandwich(
     epsilon::Real,
     f::F,
 ) where {F<:Function}
-    length(r) == length(u) || throw(ArgumentError("radial_expect_momentum_sandwich: length(r) != length(u)"))
+    length(r) == length(u) ||
+        throw(ArgumentError("radial_expect_momentum_sandwich: length(r) != length(u)"))
     length(r) >= 2 || return 0.0
     # Reuse the same uniform-mesh convention guard as the diagonal expectation path.
     physical_u_norm(r, h, u)
@@ -255,37 +265,48 @@ function fine_structure_components(
         params.fine_structure_momentum_sandwich ?
         radial_expect_momentum_sandwich(params, m1, m2, Ln, u, r, h, epsilon, f) :
         radial_expect_udr(u, r, h, f)
-    Icm = expect_kernel(params.epsilon_so_vector, (ri, i) -> begin
-        r0 = max(ri, 1.0e-8)
-        if params.fine_structure_smeared_kernels
-            (1.0 / r0) * smeared_coulomb_G_prime_closed(params, m1, m2, r0)
-        else
-            (4.0 / 3.0) * alpha_s_r(r0) / r0^3
-        end
-    end)
-    Itp = expect_kernel(params.epsilon_so_scalar, (ri, i) -> begin
-        r0 = max(ri, 1.0e-8)
-        if params.fine_structure_smeared_kernels
-            (1.0 / (2.0 * r0)) * (
-                smeared_confinement_S_prime_closed(params, m1, m2, r0) +
-                smeared_coulomb_G_prime_closed(params, m1, m2, r0)
-            )
-        else
-            (1.0 / (2.0 * r0)) * (params.b + dV_coul_central_dr(r0, params))
-        end
-    end)
+    Icm = expect_kernel(
+        params.epsilon_so_vector,
+        (ri, i) -> begin
+            r0 = max(ri, 1.0e-8)
+            if params.fine_structure_smeared_kernels
+                (1.0 / r0) * smeared_coulomb_G_prime_closed(params, m1, m2, r0)
+            else
+                (4.0 / 3.0) * alpha_s_r(r0) / r0^3
+            end
+        end,
+    )
+    Itp = expect_kernel(
+        params.epsilon_so_scalar,
+        (ri, i) -> begin
+            r0 = max(ri, 1.0e-8)
+            if params.fine_structure_smeared_kernels
+                (1.0 / (2.0 * r0)) * (
+                    smeared_confinement_S_prime_closed(params, m1, m2, r0) +
+                    smeared_coulomb_G_prime_closed(params, m1, m2, r0)
+                )
+            else
+                (1.0 / (2.0 * r0)) * (params.b + dV_coul_central_dr(r0, params))
+            end
+        end,
+    )
     # The active research path uses the smeared Coulomb tensor kernel from
     # derivatives of G~(r). The legacy branch keeps the pointwise running-Coulomb
     # kernel, including the α_s'(r) and α_s''(r) pieces.
     Itk = expect_kernel(
         params.epsilon_t,
-        (ri, i) -> params.fine_structure_smeared_kernels ?
-                   tensor_kernel_smeared_coulomb(params, m1, m2, ri) :
-                   tensor_kernel_coulomb_running(ri),
+        (ri, i) ->
+            params.fine_structure_smeared_kernels ?
+            tensor_kernel_smeared_coulomb(params, m1, m2, ri) :
+            tensor_kernel_coulomb_running(ri),
     )
     ls = LdotS(Ln, 1, J)
-    vec_term = params.fine_structure_momentum_sandwich ? Icm : (1.0 + params.epsilon_so_vector) * Icm
-    thomas_term = params.fine_structure_momentum_sandwich ? Itp : (1.0 + params.epsilon_so_scalar) * Itp
+    vec_term =
+        params.fine_structure_momentum_sandwich ? Icm :
+        (1.0 + params.epsilon_so_vector) * Icm
+    thomas_term =
+        params.fine_structure_momentum_sandwich ? Itp :
+        (1.0 + params.epsilon_so_scalar) * Itp
     spin_orbit_vector = k_spin_orbit * inv2_cm * ls * vec_term
     spin_orbit_thomas = k_spin_orbit * (-inv2_tp) * ls * thomas_term
     spin_orbit = spin_orbit_vector + spin_orbit_thomas
@@ -293,7 +314,12 @@ function fine_structure_components(
     #   (1/r dG/dr - d²G/dr²) = 4 α_s / r³
     # so the tensor prefactor reduces to 4/(3 m1 m2) times ⟨α_s / r³⟩.
     tensor_scale = params.fine_structure_momentum_sandwich ? 1.0 : (1.0 + params.epsilon_t)
-    tensor = tensor_scale * k_tensor * (1.0 / (3.0 * m1 * m2)) * Itk * tensor_triplet_LJ(Ln, J, 1)
+    tensor =
+        tensor_scale *
+        k_tensor *
+        (1.0 / (3.0 * m1 * m2)) *
+        Itk *
+        tensor_triplet_LJ(Ln, J, 1)
     return (
         I_cm = Icm,
         I_tp = Itp,

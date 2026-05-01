@@ -21,7 +21,7 @@ function central_potential_values(
     m1::Real,
     m2::Real,
     r::AbstractVector;
-    mode::Symbol=central_potential_mode(params),
+    mode::Symbol = central_potential_mode(params),
 )
     if mode == :pointwise
         return [central_potential(ri, params) for ri in r]

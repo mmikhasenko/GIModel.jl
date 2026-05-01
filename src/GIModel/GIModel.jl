@@ -9,10 +9,7 @@ using SpecialFunctions: erf
 
 include("constants.jl")
 
-export GIParameters,
-    ReferenceState,
-    load_parameters,
-    load_reference_spectrum
+export GIParameters, ReferenceState, load_parameters, load_reference_spectrum
 include("parameters.jl")
 
 include("running_coupling.jl")
@@ -23,8 +20,7 @@ include("appendix_a_derivative_potential.jl")
 export reduced_mass
 include("radial_grid.jl")
 
-export central_potential_mode,
-    central_potential_values
+export central_potential_mode, central_potential_values
 include("central_potential_dispatch.jl")
 
 include("hamiltonian.jl")
@@ -38,18 +34,13 @@ include("contact_hyperfine.jl")
 export parse_quark_masses
 include("masses_from_content.jl")
 
-export fine_structure_split,
-    LdotS,
-    tensor_triplet_LJ
+export fine_structure_split, LdotS, tensor_triplet_LJ
 include("spin_fine_structure.jl")
 
-export CentralPotentialPath,
-    central_potential_path
+export CentralPotentialPath, central_potential_path
 include("appendix_a_status.jl")
 
-export solve_sector,
-    compare_sector,
-    write_residual_report
+export solve_sector, compare_sector, write_residual_report
 include("sector_workflow.jl")
 
 end
