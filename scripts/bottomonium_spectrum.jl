@@ -4,7 +4,7 @@
 using Pkg
 Pkg.activate(joinpath(@__DIR__, ".."))
 
-using Printf
+using DataFrames
 
 root = dirname(@__DIR__)
 using GIModel
@@ -19,16 +19,17 @@ rows = compare(
     use_fine_structure = params.fine_structure,
 )
 
+df = DataFrame(rows)
+df = transform(
+    df,
+    [:n, :multiplicity, :L, :J] =>
+        ByRow((n, mult, L, J) -> string(n, '^', mult, L, '_', J)) => :state,
+    :predicted_GeV => ByRow(x -> round(x; digits = 3)) => :model_GeV,
+    :reference_GeV => ByRow(x -> round(x; digits = 3)) => :ref_GeV,
+    :residual_MeV => ByRow(x -> round(x; digits = 1)) => :delta_MeV,
+)
+df = select(df, :state, :model_GeV, :ref_GeV, :delta_MeV)
+
 println("Bottomonium (predicted masses, GeV)\n")
-@printf("%-12s  %10s  %10s  %11s\n", "state", "model", "ref", "Δ MeV")
-@printf("%s\n", repeat("-", 48))
-for row in rows
-    lab = @sprintf("%d^%d%s_%d", row.n, row.multiplicity, row.L, row.J)
-    @printf(
-        "%-12s  %10.3f  %10.3f  %+10.1f\n",
-        lab,
-        row.predicted_GeV,
-        row.reference_GeV,
-        row.residual_MeV,
-    )
-end
+show(stdout, df; allrows = true, show_row_number = false)
+println()
