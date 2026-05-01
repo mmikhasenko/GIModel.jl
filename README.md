@@ -64,7 +64,7 @@ Use these files to resume work quickly:
 - `scripts/verify_table_ii_toml.py`: ensures `data/parameters.provisional.toml`
   matches `data/table_ii_parameters.csv` for Table II–mapped entries.
 - `scripts/validate_reference_spectra.py`: every `data/reference_spectrum_*.csv`
-  has the columns `compare_sector` / `load_reference_spectrum` need.
+  has the columns required by `load_reference_spectrum` (used with `compute_sector` / `compare`).
 - `scripts/verify_project.sh`: one-shot full gate (Python prechecks + Julia tests
   + analysis + all spectrum checks); use before committing substantive changes.
 - `scripts/build_paper_prose.py`: rebuilds the prose-only paper reference.

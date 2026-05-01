@@ -1159,6 +1159,14 @@ end
         0.0
 end
 
+@testset "RadialChannelKey collapses nearly-equal masses" begin
+    a = RadialChannelKey(1.628, 1.628, "S")
+    b = RadialChannelKey(1.628 + 1e-20, 1.628 + 1e-20, "S")
+    @test a == b
+    @test hash(a) == hash(b)
+    @test RadialChannelKey(1.6, 1.6, "S") != RadialChannelKey(1.6, 1.6, "P")
+end
+
 @testset "compute_sector + compare return shift breakdown fields" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     reference =

@@ -56,8 +56,10 @@ But the 1.0 reproduction path uses the relativistic kinetic operator.
 - `radial_grid(...)` creates a uniform radial mesh.
 - `p2_operator(...)` builds the radial momentum-squared operator.
 - `relativistic_hamiltonian(...)` builds the active heavy-quarkonium Hamiltonian.
-- `solve_sector(...)` computes eigenvalues/eigenvectors.
-- `compare_sector(...)` maps eigenstates to reference rows and adds spin shifts.
+- `solve_sector(...)` tabulates equal-mass eigenvalues per `(n, L)` for one flavor.
+- `compute_sector(...)` caches spin-independent radial solves per `RadialChannelKey`
+  `(m₁, m₂, L)` from the reference list; `compare(...)` maps levels to reference rows
+  and adds contact / fine-structure shifts.
 
 ## Important Convention
 

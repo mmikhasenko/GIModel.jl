@@ -1,13 +1,64 @@
 # Public API (exported from GIModel.jl):
 #   solve_sector, compute_sector, compare, write_residual_report
+#   RadialChannelKey, ChannelRadialSolution, SectorComputation
 
+"""
+    RadialChannelKey(m1_GeV, m2_GeV, L_label)
+
+Dict key for one **spin-independent radial channel**: constituent quark masses (GeV) and
+orbital label (`S`, `P`, …), same convention as `ReferenceState.L`. Masses are rounded
+to 12 significant figures so distinct finite-difference solves that would share the same
+physics collapse to one cache entry.
+"""
+struct RadialChannelKey
+    m1_GeV::Float64
+    m2_GeV::Float64
+    L_label::String
+    function RadialChannelKey(m1::Real, m2::Real, L_label::AbstractString)
+        new(
+            round(Float64(m1); sigdigits = 12),
+            round(Float64(m2); sigdigits = 12),
+            String(L_label),
+        )
+    end
+end
+
+"""
+    ChannelRadialSolution(eigenvalues_GeV, eigenvectors, r)
+
+Output of one `channel_solution` call, stored in `SectorComputation.channel_cache`:
+
+  - `eigenvalues_GeV`: lowest radial eigenvalues (GeV) of the central Hamiltonian on the mesh.
+  - `eigenvectors`: columns are reduced radial functions ``u_n(r)`` for each level.
+  - `r`: uniform interior radial grid (same spacing as in the FD builder).
+"""
+struct ChannelRadialSolution
+    eigenvalues_GeV::Vector{Float64}
+    eigenvectors::Matrix{Float64}
+    r::Vector{Float64}
+end
+
+"""
+    SectorComputation(params, m_fallback, channel_cache)
+
+Heavy lifting from `compute_sector`: precomputed radial FD solves per distinct channel.
+
+# Fields
+
+  - `params`: `GIParameters` used to build each central Hamiltonian.
+  - `m_fallback`: mass (GeV) used when `parse_quark_masses` fails for a row
+    (typically `params.masses[flavor]` for the `flavor` passed to `compute_sector`).
+  - `channel_cache`: map `RadialChannelKey` → `ChannelRadialSolution`.
+
+`channel_cache` **deduplicates** work: every reference state with the same rounded
+`(m₁, m₂, L)` shares one eigenproblem. `compare` then picks radial level `n`,
+applies contact hyperfine and fine-structure corrections, and forms residuals — that part
+depends on `J`, multiplicity, etc., and is not stored here.
+"""
 struct SectorComputation
     params::GIParameters
     m_fallback::Float64
-    channel_cache::Dict{
-        Tuple{Float64,Float64,String},
-        Tuple{Vector{Float64},Matrix{Float64},Vector{Float64}},
-    }
+    channel_cache::Dict{RadialChannelKey,ChannelRadialSolution}
 end
 
 function _reference_masses(params::GIParameters, m_fallback::Float64, s::ReferenceState)
@@ -58,16 +109,13 @@ function compute_sector(
     eigensolver::Symbol = :full,
 )
     m_fallback = params.masses[flavor]
-    channel_cache = Dict{
-        Tuple{Float64,Float64,String},
-        Tuple{Vector{Float64},Matrix{Float64},Vector{Float64}},
-    }()
+    channel_cache = Dict{RadialChannelKey,ChannelRadialSolution}()
     for state in reference
         m1, m2 = _reference_masses(params, m_fallback, state)
-        cache_key = (round(m1, sigdigits = 12), round(m2, sigdigits = 12), state.L)
-        if !haskey(channel_cache, cache_key)
+        key = RadialChannelKey(m1, m2, state.L)
+        if !haskey(channel_cache, key)
             Lval = L_SYMBOLS[state.L]
-            channel_cache[cache_key] = channel_solution(
+            ev, vecs, r = channel_solution(
                 params,
                 m1,
                 m2,
@@ -78,6 +126,7 @@ function compute_sector(
                 kinetic = kinetic,
                 eigensolver = eigensolver,
             )
+            channel_cache[key] = ChannelRadialSolution(ev, vecs, r)
         end
     end
     SectorComputation(params, m_fallback, channel_cache)
@@ -95,12 +144,15 @@ function compare(
     rows = NamedTuple[]
     for state in reference
         m1, m2 = _reference_masses(params, m_fallback, state)
-        cache_key = (round(m1, sigdigits = 12), round(m2, sigdigits = 12), state.L)
-        haskey(channel_cache, cache_key) || continue
-        values, vectors, r = channel_cache[cache_key]
-        state.n <= length(values) || continue
+        key = RadialChannelKey(m1, m2, state.L)
+        haskey(channel_cache, key) || continue
+        sol = channel_cache[key]
+        ev = sol.eigenvalues_GeV
+        vectors = sol.eigenvectors
+        r = sol.r
+        state.n <= length(ev) || continue
         h = r[2] - r[1]
-        central = values[state.n]
+        central = ev[state.n]
         contact_shift = 0.0
         spin_orbit_vector_shift = 0.0
         spin_orbit_thomas_shift = 0.0

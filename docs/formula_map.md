@@ -159,8 +159,16 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     comparator modes.
 
 - `src/masses_from_content.jl`: map `sector` + first `quark_content`
-  segment to constituent $(m_1, m_2)$ for `compare_sector` (unequal-mass channels).
+  segment to constituent $(m_1, m_2)$ used when building `RadialChannelKey`
+  channels in `compute_sector` (unequal-mass rows).
   - Paper: Sec. II flavor content; Table II masses.
+
+- `src/sector_workflow.jl`: reference-spectrum batch driver. `compute_sector`
+  runs `channel_solution` once per distinct `RadialChannelKey` and stores
+  eigenpairs in `SectorComputation.channel_cache`; `compare` selects radial
+  level `n`, applies smeared contact hyperfine and first-order fine structure,
+  and forms residual rows. Scripts use `write_residual_report` to emit
+  `docs/residual_reports/*.md`.
 
 - `src/spin_fine_structure.jl`: first-order color-magnetic + Thomas
   (scalar confinement) spin–orbit and an OGE-style tensor term on the FD radial

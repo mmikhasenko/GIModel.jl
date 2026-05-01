@@ -32,8 +32,12 @@ implementation.
 `data/reference_spectrum_*.csv` use a `sector` string per file, for example:
 `charmonium`, `bottomonium`, `charmed`, `b_flavored`, `strange`, `isovector`,
 `isoscalar`. These are labels for the reference rows and the residual reports;
-the solver’s `compare_sector` matches them to Table II quark flavors via
-`quark_content` and `parse_quark_masses` in `src/masses_from_content.jl`.
+`compute_sector` and `compare` in `src/sector_workflow.jl` map each row to
+Table II quark masses by parsing `quark_content` with `parse_quark_masses` in
+`src/masses_from_content.jl`. The resulting constituent $(m_1, m_2)$ (plus
+orbital letter `L`) define a `RadialChannelKey`; identical keys share one cached
+radial finite-difference solve before `compare` attaches level $n$, hyperfine,
+and fine-structure shifts.
 
 - Equal-mass quarkonia: `c cbar`, `b bbar` in the `quark_content` column.
 - Heavy-light: semicolon lists such as `c ubar; c dbar` for charmed, similarly

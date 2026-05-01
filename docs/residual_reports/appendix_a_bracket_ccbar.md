@@ -7,16 +7,16 @@ This compares **the same** Table II + mesh: only `appendix_a_smearing` toggles
 `smeared_central_values` (not the paper’s (A12)–(A13) derivative expansion).
 
 - Equal-mass **ccbar**, `radial_grid(ngrid=300, rmax=20.0)`
-- Mesh L2 mean diff `||V_\mathrm{smear}-V_\mathrm{pt}||_2/\sqrt{n}` ≈ `0.177` GeV
-- Mesh mean |diff| ≈ `0.020` GeV; max |diff| ≈ `2.693` GeV near `r ≈ 0.07` GeV⁻¹
+- Mesh L2 mean diff `||V_\mathrm{smear}-V_\mathrm{pt}||_2/\sqrt{n}` ≈ `0.000` GeV
+- Mesh mean |diff| ≈ `0.000` GeV; max |diff| ≈ `0.000` GeV near `r ≈ 0.07` GeV⁻¹
 
-Active path (off): `pointwise_fd` — Semirelativistic kinetic + this V is the main diagnostic baseline until (A12) is implemented.
-Active path (on):  `experimental_3d_convl_a7a8` — Can remove small-r binding; default is `appendix_a_smearing = false` in `parameters.provisional.toml`.
+Active path (off): `appendix_a_momentum_sandwich` — Research implementation of the spin-independent GI central operator informed by later GI/MGI references; takes precedence over diagonal comparator modes.
+Active path (on):  `appendix_a_momentum_sandwich` — Research implementation of the spin-independent GI central operator informed by later GI/MGI references; takes precedence over diagonal comparator modes.
 
 | r [GeV⁻¹] | V_point [GeV] | V_A7A8blur [GeV] | diff |
 |---:|---:|---:|---:|
-| 0.07 | -4.2467 | -1.5535 | 2.6932 |
-| 4.98 | 0.4835 | 0.4854 | 0.0019 |
-| 9.97 | 1.4608 | 1.4617 | 0.0009 |
-| 14.95 | 2.3845 | 2.3851 | 0.0006 |
-| 19.93 | 3.2949 | 3.2954 | 0.0005 |
+| 0.07 | -1.5920 | -1.5920 | 0.0000 |
+| 4.98 | 0.4854 | 0.4854 | 0.0000 |
+| 9.97 | 1.4617 | 1.4617 | 0.0000 |
+| 14.95 | 2.3851 | 2.3851 | 0.0000 |
+| 19.93 | 3.2954 | 3.2954 | 0.0000 |

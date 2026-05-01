@@ -19,7 +19,9 @@ to continue the Godfrey-Isgur reproduction.
   **GIModel** (`Project.toml`; module entry `src/GIModel.jl` plus included
   sources beside it): semirelativistic kinetic + central + running Coulomb,
   contact hyperfine, first-order fine-structure, heavy-quarkonium comparisons.
-  Provisional parameters are in `data/parameters.provisional.toml`. Formula
+  Reference CSVs are matched through `compute_sector` / `compare` in
+  `src/sector_workflow.jl` (cached radial solves per `RadialChannelKey`). Provisional
+  parameters are in `data/parameters.provisional.toml`. Formula
   intent and flags are described in `docs/formula_map.md`; sector residuals under
   `docs/residual_reports/`.
 - `test/runtests.jl` encodes several convention checks (Coulomb derivative,
