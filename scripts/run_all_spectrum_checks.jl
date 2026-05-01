@@ -45,6 +45,11 @@ for fn in readdir(data_dir)
         contact_hyperfine = true,
         appendix_a_smearing = params.appendix_a_smearing,
         appendix_a_derivative_g = params.appendix_a_derivative_g,
+        appendix_a_closed_form = params.appendix_a_closed_form,
+        appendix_a_momentum_sandwich = params.appendix_a_momentum_sandwich,
+        contact_momentum_sandwich = params.contact_momentum_sandwich,
+        fine_structure_momentum_sandwich = params.fine_structure_momentum_sandwich,
+        fine_structure_smeared_kernels = params.fine_structure_smeared_kernels,
         coulomb_1d_smear = params.coulomb_1d_smear,
         use_fine_structure = params.fine_structure,
     )

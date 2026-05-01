@@ -14,6 +14,8 @@ r, _h = GIModel.radial_grid(ngrid, rmax)
 
 paths = [
     (:pointwise, "pointwise V"),
+    (:appendix_a_closed_form, "closed-form GI G~+S~"),
+    (:appendix_a_momentum_sandwich, "diagonal view of GI G~+S~ (matrix sandwich in Hamiltonian)"),
     (:appendix_a_3d_a7a8, "3D A7-A8 blur of G+S"),
     (:coulomb_1d, "1D Gaussian G only"),
     (:appendix_a_derivative_g, "derivative proxy G + lap(G)/(4sigma^2)"),
@@ -56,15 +58,16 @@ open(out, "w") do io
     println(io)
     println(io, "## Samples")
     println(io)
-    println(io, "| r GeV^-1 | pointwise | A7-A8 3D | 1D G | derivative G |")
-    println(io, "|---:|---:|---:|---:|---:|")
+    println(io, "| r GeV^-1 | pointwise | closed-form | A7-A8 3D | 1D G | derivative G |")
+    println(io, "|---:|---:|---:|---:|---:|---:|")
     for i in (1, div(ngrid, 10), div(ngrid, 4), div(ngrid, 2), 3 * div(ngrid, 4), ngrid)
         println(
             io,
             @sprintf(
-                "| %.3f | %.5f | %.5f | %.5f | %.5f |",
+                "| %.3f | %.5f | %.5f | %.5f | %.5f | %.5f |",
                 r[i],
                 values[:pointwise][i],
+                values[:appendix_a_closed_form][i],
                 values[:appendix_a_3d_a7a8][i],
                 values[:coulomb_1d][i],
                 values[:appendix_a_derivative_g][i],

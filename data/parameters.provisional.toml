@@ -25,6 +25,15 @@ appendix_a_smearing = false
 # pointwise. This is a modular Appendix-A proxy, not a full audited (A12)-(A13)
 # transcription. If enabled it takes precedence over the two diagnostic smears below.
 appendix_a_derivative_g = false
+# Research: closed-form Gaussian-smearing of GI G(r) and S(r), using the
+# externally cross-checked τ_k and smeared-linear formulas. This is diagonal only:
+# it omits the central Coulomb momentum sandwich G' = A(p) G~ A(p).
+appendix_a_closed_form = false
+# Active reproduction path: full spin-independent central GI candidate on the existing FD basis:
+# closed-form G~, S~, plus the nonlocal Coulomb momentum sandwich
+# A(p) G~ A(p), A(p)=sqrt(1+p^2/(E1E2)). If enabled, this takes precedence over
+# the diagonal comparison modes below.
+appendix_a_momentum_sandwich = true
 # Research: 1D Gaussian of G(r) on the mesh only; S(r) pointwise. Same σ as (A9). Not (A12)–(A13).
 # If `appendix_a_derivative_g` or `appendix_a_smearing` is true, this is ignored in `potential_diagonal`.
 coulomb_1d_smear = false
@@ -38,6 +47,18 @@ epsilon_c = -0.168
 epsilon_t = 0.025
 epsilon_so_vector = -0.035
 epsilon_so_scalar = 0.0
+# Active research path for the contact term: apply the GI momentum-dependent
+# factor as a Hermitian sandwich around the smeared contact operator.
+contact_momentum_sandwich = true
+# Active research path for tensor and spin-orbit radial kernels: apply the same
+# GI-style Hermitian momentum-factor sandwich to first-order fine-structure
+# expectations. The angular algebra is still the existing equal-mass diagnostic
+# convention; unequal-mass mixing is a later step.
+fine_structure_momentum_sandwich = true
+# Active research path for fine-structure radial kernels: use derivatives of the
+# closed-form smeared Coulomb G~ and smeared confinement S~ where the GI spin
+# operators require dG/dr, d²G/dr², or d(G+S)/dr.
+fine_structure_smeared_kernels = true
 
 [fine_structure]
 # Vector + Thomas (scalar) spin–orbit and OGE-tensor, first order on the FD

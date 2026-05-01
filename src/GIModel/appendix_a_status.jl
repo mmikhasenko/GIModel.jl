@@ -10,6 +10,20 @@ end
 """Return a short description of which Appendix A construction is in effect for `params`."""
 function central_potential_path(params::GIParameters)::CentralPotentialPath
     mode = central_potential_mode(params)
+    if mode == :appendix_a_momentum_sandwich
+        return CentralPotentialPath(
+            "appendix_a_momentum_sandwich",
+            "Closed-form smeared G̃(r), S̃(r), plus central Coulomb momentum sandwich G' = A(p)G̃A(p) on the FD p² eigenbasis",
+            "Research implementation of the spin-independent GI central operator informed by later GI/MGI references; takes precedence over diagonal comparator modes.",
+        )
+    end
+    if mode == :appendix_a_closed_form
+        return CentralPotentialPath(
+            "appendix_a_closed_form",
+            "Closed-form Gaussian-smeared G̃(r) and S̃(r) using τ_k and smeared-linear formulas; no G' momentum sandwich",
+            "Diagonal bracket path. Use to isolate smearing effects before enabling `appendix_a_momentum_sandwich`.",
+        )
+    end
     if mode == :appendix_a_derivative_g
         return CentralPotentialPath(
             "appendix_a_derivative_g",

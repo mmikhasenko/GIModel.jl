@@ -51,10 +51,14 @@ guardrail: when the code is only a diagnostic approximation, say so here.
 - `src/GIModel/GIModel.jl`: smeared S-wave contact hyperfine shift.
   - Paper anchor: color hyperfine term around Eq. (4), PDF page 2, and
     smearing discussion in Appendix A, PDF pages 36-37.
-  - Current status: first diagnostic implementation. It uses the Table II
+  - Current status: active GI-style implementation. It uses the Table II
     `sigma0` and `s` smearing parameters with the standard GI mass-dependent
-    Gaussian width form. The full momentum-dependent relativization factors
-    are not yet included.
+    Gaussian width form, and applies the contact momentum factor as a Hermitian
+    sandwich around the smeared contact kernel:
+    $B_c(p)V_c(r)B_c(p)$ with
+    $B_c=(m_1m_2/E_1E_2)^{1/4+\epsilon_c/2}$. The legacy diagonal
+    `(1+epsilon_c)` implementation remains available as
+    `contact_hyperfine_shift`.
   - Smearing width: Appendix A (A9) is implemented as
     $$
       \sigma^2(m_1,m_2)=\sigma_0^2\left(\tfrac12+\tfrac12\left(\frac{4m_1m_2}{(m_1+m_2)^2}\right)^4\right)
@@ -113,8 +117,8 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     mesh-local proxy used to bracket “pointwise” vs “smeared” sensitivity in
     heavy-quarkonium diagnostics.
   - Code toggle: `GIParameters.coulomb_1d_smear` gates `potential_diagonal` →
-    `coulomb_1d_smeared_central_values`. Precedence: `appendix_a_derivative_g`,
-    then `appendix_a_smearing`, then `coulomb_1d_smear`.
+    `coulomb_1d_smeared_central_values`. This is an older comparator path below
+    the closed-form and derivative modes in dispatcher precedence.
 
 - `src/GIModel/appendix_a_derivative_potential.jl`: **Appendix-A derivative
   proxy** for the Coulomb block on the same FD mesh.
@@ -130,8 +134,27 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     `contact_smearing_sigma`.
   - Code toggle: `GIParameters.appendix_a_derivative_g` gates
     `potential_diagonal` through the named dispatcher `central_potential_values`.
-    Precedence is `appendix_a_derivative_g`, then `appendix_a_smearing`, then
-    `coulomb_1d_smear`, then `pointwise`.
+    This is now an older comparator path below the closed-form modes, but above
+    the raw 3D/1D smearing diagnostics.
+
+- `src/GIModel/GIModel.jl`: **closed-form Appendix-A central candidates**
+  from the expanded web/literature research trail.
+  - `:appendix_a_closed_form` evaluates the analytic Gaussian-smearing forms
+    used in later GI/MGI implementations:
+    $\tilde G(r)=-\sum_k 4\alpha_k\,\mathrm{erf}(\tau_k r)/(3r)$ with
+    $\tau_k^{-2}=\sigma^{-2}+\gamma_k^{-2}$, and the corresponding closed-form
+    smeared linear $\tilde S(r)$.
+  - `:appendix_a_momentum_sandwich` uses the same $\tilde G,\tilde S$ but builds
+    the central Coulomb factor as a matrix on the existing FD $p^2$ eigenbasis:
+    $G'=A(p)\tilde G(r)A(p)$ with
+    $A(p)=\sqrt{1+p^2/(E_1E_2)}$ and $E_i=\sqrt{p^2+m_i^2}$.
+  - This is the first implementation path that follows the cross-source
+    consensus from later GI/MGI papers. It is still an FD-basis analogue rather
+    than the original HO-basis code.
+  - Code toggles: `GIParameters.appendix_a_closed_form` and
+    `GIParameters.appendix_a_momentum_sandwich`. Precedence is now
+    `appendix_a_momentum_sandwich`, then `appendix_a_closed_form`, then the older
+    comparator modes.
 
 - `src/GIModel/masses_from_content.jl`: map `sector` + first `quark_content`
   segment to constituent $(m_1, m_2)$ for `compare_sector` (unequal-mass channels).
@@ -142,9 +165,9 @@ guardrail: when the code is only a diagnostic approximation, say so here.
   mesh; unsmeared Coulomb-kernel tensor term derived from $G(r)=-4\alpha_s(r)/(3r)$
   via $(1/r)\,dG/dr-d^2G/dr^2$ (so running $\alpha_s$ contributes $\alpha_s'(r)$
   and $\alpha_s''(r)$ pieces); Table II
-  $\epsilon_t$, $\epsilon_{\rm so(v)}$, $\epsilon_{\rm so(s)}$ (currently used
-  only as scalar `(1+epsilon)` multipliers, not the full Eq. (A10) operator
-  relativization); global `k_spin_orbit`,
+  $\epsilon_t$, $\epsilon_{\rm so(v)}$, $\epsilon_{\rm so(s)}$ are now applied
+  as GI-style Hermitian momentum-factor sandwiches around the tensor, vector
+  spin–orbit, and scalar Thomas radial kernels; global `k_spin_orbit`,
   `k_tensor` in `[fine_structure]`.
   - Paper: spin-dependent structure around Eqs. (3)–(7) (text), and (A10) (Appendix
     A) for the $\epsilon$ factors. Tensor angular factors for triplet
@@ -159,11 +182,12 @@ guardrail: when the code is only a diagnostic approximation, say so here.
     both symmetric and antisymmetric spin–orbit structures; the current
     diagnostic code keeps only the symmetric contraction into total $L\!\cdot\!S$
     (exact in the equal-mass validation sectors `ccbar`/`bbbar`).
-    The tensor radial term is deliberately
-    unsmeared for now because applying the broad contact width to $1/r^3$
-    overdamps the P/D splittings; the correct next replacement is the
-    derivative of the Appendix A smeared $G(r)$. In the present diagnostic
-    step we keep the **Coulomb-limit color factor** implied by
+    The tensor radial kernel is still built from the derivative of the pointwise
+    running-Coulomb $G(r)$ rather than derivatives of $\tilde G(r)$; the momentum
+    sandwich supplies the dominant GI relativization. The next more exact
+    replacement is to derive tensor/spin-orbit kernels from the Appendix-A
+    smeared $\tilde G(r)$. In the present step we keep the **Coulomb-limit color
+    factor** implied by
     $G(r)=-4\alpha_s/(3r)$ and evaluate the full unsmeared running-$\alpha_s$
     kernel $(1/r)\,dG/dr-d^2G/dr^2$, so the tensor prefactor reduces to
     $(4/(3m_1m_2))\langle\alpha_s(r)/r^3\rangle$ in the constant-$\alpha_s$
@@ -222,8 +246,12 @@ masses and that detailed smearing is “relegated to Appendix A.”
   `:coulomb_1d` and `:appendix_a_derivative_g` comparison modes so these choices
   can be measured without editing solver internals.
 - Smeared **contact** hyperfine and first-order **fine structure** on the same
-  $u(r)$, with Table II $\epsilon$ values currently used as scalar
-  `(1+epsilon)` multipliers and **diagnostic** global $k$ scales.
+  $u(r)$. With `contact_momentum_sandwich=true` and
+  `fine_structure_momentum_sandwich=true`, the Table II $\epsilon$ values enter
+  as GI-style momentum-factor sandwiches around the radial operators. With
+  `fine_structure_smeared_kernels=true`, the vector spin-orbit and OGE tensor
+  kernels use derivatives of the closed-form smeared Coulomb $\tilde G(r)$, and
+  the Thomas term uses derivatives of $\tilde G(r)+\tilde S(r)$.
 
 **What “done” should look like for the spin-independent sector**
 
@@ -234,9 +262,11 @@ masses and that detailed smearing is “relegated to Appendix A.”
   Fig. 6 / Fig. 8. Until then, the **common mass offset** seen in
   `heavy_quarkonium_diagnostics.md` is expected to be dominated by this gap, not
   by retuning `k_spin_orbit` / `k_tensor`.
-- Spin-dependent operators should eventually use the **same** smeared $G(r)$ and
-  confinement $S(r)$ as the central sector (the paper ties this together in
-  Appendix A and in the discussion of (A10)–(A13)).
+- The equal-mass spin-dependent operators now use the same closed-form smeared
+  $G(r)$ and confinement $S(r)$ derivatives as the active central path. The
+  remaining spin-side gaps are unequal-mass antisymmetric spin-orbit terms,
+  same-`J` tensor mixing, and comparison against the paper's perturbative
+  ordering in the HO basis.
 
 **Reference row lock-in:** Table II inputs are checked against
 `data/table_ii_parameters.csv` via `scripts/verify_table_ii_toml.py`. Reference
@@ -252,11 +282,8 @@ summarized by `GIModel.central_potential_path` in `src/GIModel/appendix_a_status
   HO-basis smearing, replacing the separate experimental (A7)–(A8) convolution
   and the first-term `appendix_a_derivative_g` proxy when those comparison modes
   are enabled.
-- Full $E_i/m_i$ or $(p^2{+}m_i^2)^{1/2}$ momentum dependence in the spin
-  couplings (paper’s relativization beyond constant $\epsilon$).
-- Momentum-dependent relativization factors for the contact and tensor
-  *operators* (beyond the $\epsilon$ factors already applied in the
-  `fine_structure` block).
+- Exact paper-order validation of the momentum-factor sandwiches in the spin
+  couplings against the original HO-basis perturbation workflow.
 - Unequal-mass antisymmetric spin–orbit and tensor off-diagonal mixing
   (perturbative in the text).
 - Isoscalar annihilation and explicit $n\bar n$—$s\bar s$ large mixings

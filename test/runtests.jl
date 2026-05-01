@@ -90,13 +90,15 @@ end
     end
 end
 
-@testset "central_potential_path (default = pointwise)" begin
+@testset "central_potential_path (default = GI momentum sandwich)" begin
     params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
     p = GIModel.central_potential_path(params)
-    @test p.name == "pointwise_fd"
-    @test GIModel.central_potential_mode(params) == :pointwise
+    @test p.name == "appendix_a_momentum_sandwich"
+    @test GIModel.central_potential_mode(params) == :appendix_a_momentum_sandwich
     @test params.appendix_a_smearing == false
     @test params.appendix_a_derivative_g == false
+    @test params.appendix_a_closed_form == false
+    @test params.appendix_a_momentum_sandwich == true
     @test params.coulomb_1d_smear == false
 end
 
@@ -126,7 +128,9 @@ end
         p = joinpath(d, "p.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
         @test occursin("appendix_a_smearing = false", s)
-        write(p, replace(s, "appendix_a_smearing = false" => "appendix_a_smearing = true"))
+        s2 = replace(s, "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false")
+        s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
+        write(p, s2)
         params = load_parameters(p)
         @test params.appendix_a_smearing == true
         mc = params.masses["c"]
@@ -144,7 +148,9 @@ end
         p = joinpath(d, "p.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
         @test occursin("coulomb_1d_smear = false", s)
-        write(p, replace(s, "coulomb_1d_smear = false" => "coulomb_1d_smear = true"))
+        s2 = replace(s, "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false")
+        s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
+        write(p, s2)
         params = load_parameters(p)
         @test params.coulomb_1d_smear == true
         @test params.appendix_a_smearing == false
@@ -163,7 +169,9 @@ end
         p = joinpath(d, "p.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
         @test occursin("appendix_a_derivative_g = false", s)
-        write(p, replace(s, "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true"))
+        s2 = replace(s, "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false")
+        s2 = replace(s2, "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true")
+        write(p, s2)
         params = load_parameters(p)
         @test params.appendix_a_derivative_g == true
         @test GIModel.central_potential_mode(params) == :appendix_a_derivative_g
@@ -171,6 +179,46 @@ end
         vals, _v, _r = GIModel.channel_solution(
             params, mc, mc, 0;
             nlevels = 2, ngrid = 120, rmax = 12.0, kinetic = :relativistic,
+        )
+        @test isfinite(vals[1]) && isfinite(vals[2])
+        @test vals[1] < vals[2]
+    end
+end
+
+@testset "appendix_a_closed_form code path (finite S-wave energy)" begin
+    mktempdir() do d
+        p = joinpath(d, "p.toml")
+        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
+        @test occursin("appendix_a_closed_form = false", s)
+        s2 = replace(s, "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false")
+        s2 = replace(s2, "appendix_a_closed_form = false" => "appendix_a_closed_form = true")
+        write(p, s2)
+        params = load_parameters(p)
+        @test params.appendix_a_closed_form == true
+        @test GIModel.central_potential_mode(params) == :appendix_a_closed_form
+        mc = params.masses["c"]
+        vals, _v, _r = GIModel.channel_solution(
+            params, mc, mc, 0;
+            nlevels = 2, ngrid = 120, rmax = 12.0, kinetic = :relativistic,
+        )
+        @test isfinite(vals[1]) && isfinite(vals[2])
+        @test vals[1] < vals[2]
+    end
+end
+
+@testset "appendix_a_momentum_sandwich code path (finite S-wave energy)" begin
+    mktempdir() do d
+        p = joinpath(d, "p.toml")
+        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
+        @test occursin("appendix_a_momentum_sandwich = true", s)
+        write(p, s)
+        params = load_parameters(p)
+        @test params.appendix_a_momentum_sandwich == true
+        @test GIModel.central_potential_mode(params) == :appendix_a_momentum_sandwich
+        mc = params.masses["c"]
+        vals, _v, _r = GIModel.channel_solution(
+            params, mc, mc, 0;
+            nlevels = 2, ngrid = 80, rmax = 10.0, kinetic = :relativistic,
         )
         @test isfinite(vals[1]) && isfinite(vals[2])
         @test vals[1] < vals[2]
@@ -217,14 +265,61 @@ end
     derivative = GIModel.central_potential_values(params, mc, mc, r; mode = :appendix_a_derivative_g)
     @test all(isfinite, derivative)
     @test maximum(abs.(derivative .- pointwise)) > 0.0
+    closed = GIModel.central_potential_values(params, mc, mc, r; mode = :appendix_a_closed_form)
+    @test all(isfinite, closed)
+    @test maximum(abs.(closed .- pointwise)) > 0.0
+    sandwich_view = GIModel.central_potential_values(params, mc, mc, r; mode = :appendix_a_momentum_sandwich)
+    @test sandwich_view ≈ closed
+    @test GIModel.smeared_coulomb_G_closed(params, mc, mc, 0.0) ≈
+          GIModel.smeared_coulomb_G_closed(params, mc, mc, 1.0e-10)
+    @test GIModel.smeared_confinement_S_closed(params, mc, mc, 0.0) ≈
+          GIModel.smeared_confinement_S_closed(params, mc, mc, 1.0e-10)
+    rcheck = 1.4
+    δ = 1.0e-4
+    fd_g_prime =
+        (GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck + δ) -
+         GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck - δ)) /
+        (2δ)
+    fd_g_second =
+        (GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck + δ) -
+         2 * GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck) +
+         GIModel.smeared_coulomb_G_closed(params, mc, mc, rcheck - δ)) /
+        δ^2
+    fd_s_prime =
+        (GIModel.smeared_confinement_S_closed(params, mc, mc, rcheck + δ) -
+         GIModel.smeared_confinement_S_closed(params, mc, mc, rcheck - δ)) /
+        (2δ)
+    @test GIModel.smeared_coulomb_G_prime_closed(params, mc, mc, rcheck) ≈ fd_g_prime rtol = 1e-6
+    @test GIModel.smeared_coulomb_G_second_closed(params, mc, mc, rcheck) ≈ fd_g_second rtol = 1e-5
+    @test GIModel.smeared_confinement_S_prime_closed(params, mc, mc, rcheck) ≈ fd_s_prime rtol = 1e-7
+    @test GIModel.tensor_kernel_smeared_coulomb(params, mc, mc, rcheck) ≈
+          GIModel.smeared_coulomb_G_prime_closed(params, mc, mc, rcheck) / rcheck -
+          GIModel.smeared_coulomb_G_second_closed(params, mc, mc, rcheck)
     @test_throws ErrorException GIModel.central_potential_values(params, mc, mc, r; mode = :unknown_mode)
+end
+
+@testset "appendix_a_momentum_sandwich wins over diagonal central modes" begin
+    mktempdir() do d
+        p = joinpath(d, "p.toml")
+        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
+        s2 = s
+        s2 = replace(s2, "appendix_a_closed_form = false" => "appendix_a_closed_form = true")
+        s2 = replace(s2, "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true")
+        s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
+        s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
+        write(p, s2)
+        params = load_parameters(p)
+        path = GIModel.central_potential_path(params)
+        @test path.name == "appendix_a_momentum_sandwich"
+    end
 end
 
 @testset "appendix_a_smearing wins over coulomb_1d in central_potential_path" begin
     mktempdir() do d
         p = joinpath(d, "p.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
-        s2 = replace(s, "appendix_a_smearing = false" => "appendix_a_smearing = true")
+        s2 = replace(s, "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false")
+        s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
         s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
         write(p, s2)
         params = load_parameters(p)
@@ -239,7 +334,8 @@ end
     mktempdir() do d
         p = joinpath(d, "p.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
-        s2 = replace(s, "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true")
+        s2 = replace(s, "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false")
+        s2 = replace(s2, "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true")
         s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
         s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
         write(p, s2)
@@ -353,7 +449,7 @@ end
     end
 end
 
-@testset "fine-structure ε factors are scalar (1+ε) multipliers" begin
+@testset "legacy fine-structure ε factors are scalar (1+ε) multipliers" begin
     mktempdir() do d
         p0 = joinpath(d, "p0.toml")
         pt = joinpath(d, "pt.toml")
@@ -365,6 +461,7 @@ end
         s0 = replace(s0, r"^epsilon_t\s*=.*$"m => "epsilon_t = 0.0")
         s0 = replace(s0, r"^epsilon_so_vector\s*=.*$"m => "epsilon_so_vector = 0.0")
         s0 = replace(s0, r"^epsilon_so_scalar\s*=.*$"m => "epsilon_so_scalar = 0.0")
+        s0 = replace(s0, "fine_structure_momentum_sandwich = true" => "fine_structure_momentum_sandwich = false")
         write(p0, s0)
 
         write(pt, replace(s0, r"^epsilon_t\s*=.*$"m => "epsilon_t = 0.5"))
@@ -398,6 +495,8 @@ end
         p0 = joinpath(d, "p0.toml")
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
         s0 = replace(s, r"^epsilon_t\s*=.*$"m => "epsilon_t = 0.0")
+        s0 = replace(s0, "fine_structure_momentum_sandwich = true" => "fine_structure_momentum_sandwich = false")
+        s0 = replace(s0, "fine_structure_smeared_kernels = true" => "fine_structure_smeared_kernels = false")
         write(p0, s0)
 
         params0 = load_parameters(p0)
@@ -505,7 +604,13 @@ end
 end
 
 @testset "spin–orbit convention: Eq. (6) uses α_s/r^3 (no α_s')" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    mktempdir() do d
+        p = joinpath(d, "p.toml")
+        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
+        s0 = replace(s, "fine_structure_momentum_sandwich = true" => "fine_structure_momentum_sandwich = false")
+        s0 = replace(s0, "fine_structure_smeared_kernels = true" => "fine_structure_smeared_kernels = false")
+        write(p, s0)
+        params = load_parameters(p)
     h = 0.02
     r = collect(0.10:h:4.00)
     u = exp.(-r)
@@ -543,6 +648,7 @@ end
     inv2_tp = 0.5 * (1.0 / m^2 + 1.0 / m^2)
     expected_tp = (-inv2_tp) * ls * (1.0 + params.epsilon_so_scalar) * I_tp
     @test comp.spin_orbit_thomas ≈ expected_tp rtol = 1e-12 atol = 0.0
+    end
 end
 
 @testset "OGE tensor kernel matches finite-difference derivatives of G(r)" begin

@@ -35,10 +35,15 @@ struct GIParameters
     smearing_s::Float64
     appendix_a_smearing::Bool
     appendix_a_derivative_g::Bool
+    appendix_a_closed_form::Bool
+    appendix_a_momentum_sandwich::Bool
+    contact_momentum_sandwich::Bool
     epsilon_c::Float64
     epsilon_t::Float64
     epsilon_so_vector::Float64
     epsilon_so_scalar::Float64
+    fine_structure_momentum_sandwich::Bool
+    fine_structure_smeared_kernels::Bool
     fine_structure::Bool
     k_spin_orbit::Float64
     k_tensor::Float64
@@ -84,10 +89,15 @@ function load_parameters(path::AbstractString)
         raw["relativistic_smearing"]["s"],
         get(raw["potential"], "appendix_a_smearing", false),
         get(raw["potential"], "appendix_a_derivative_g", false),
+        get(raw["potential"], "appendix_a_closed_form", false),
+        get(raw["potential"], "appendix_a_momentum_sandwich", false),
+        get(raw["relativistic_factors"], "contact_momentum_sandwich", false),
         float(eps_c),
         float(eps_t),
         float(eps_v),
         float(eps_s),
+        get(raw["relativistic_factors"], "fine_structure_momentum_sandwich", false),
+        get(raw["relativistic_factors"], "fine_structure_smeared_kernels", false),
         fine_on,
         float(k_so),
         float(k_tn),
@@ -277,6 +287,34 @@ function smeared_central_values(params::GIParameters, m1::Real, m2::Real, r::Abs
     return vsum[1:n]
 end
 
+function smeared_coulomb_G_closed(params::GIParameters, m1::Real, m2::Real, r::Real)
+    ri = float(r)
+    σ = max(contact_smearing_sigma(params, m1, m2), 1.0e-12)
+    τs = map(γ -> 1 / sqrt(1 / σ^2 + 1 / γ^2), ALPHA_GAMMAS)
+    if abs(ri) < 1.0e-8
+        return -sum(8 * α * τ / (3 * sqrt(π)) for (α, τ) in zip(ALPHA_COEFFS, τs))
+    end
+    -sum(4 * α * erf_approx(τ * ri) / (3 * ri) for (α, τ) in zip(ALPHA_COEFFS, τs))
+end
+
+function smeared_confinement_S_closed(params::GIParameters, m1::Real, m2::Real, r::Real)
+    ri = float(r)
+    σ = max(contact_smearing_sigma(params, m1, m2), 1.0e-12)
+    if abs(ri) < 1.0e-8
+        return 2 * params.b / (sqrt(π) * σ) + params.c
+    end
+    z = σ * ri
+    bracket = exp(-z^2) / (sqrt(π) * z) + (1 + 1 / (2 * z^2)) * erf_approx(z)
+    params.b * ri * bracket + params.c
+end
+
+function appendix_a_closed_central_values(params::GIParameters, m1::Real, m2::Real, r::AbstractVector{<:Real})
+    [
+        smeared_coulomb_G_closed(params, m1, m2, ri) +
+        smeared_confinement_S_closed(params, m1, m2, ri) for ri in r
+    ]
+end
+
 include("radial_1d_coulomb_smear.jl")
 include("appendix_a_derivative_potential.jl")
 
@@ -300,7 +338,11 @@ function p2_operator(m::Real, L::Integer, r::AbstractVector, h::Real)
 end
 
 function central_potential_mode(params::GIParameters)::Symbol
-    if params.appendix_a_derivative_g
+    if params.appendix_a_momentum_sandwich
+        return :appendix_a_momentum_sandwich
+    elseif params.appendix_a_closed_form
+        return :appendix_a_closed_form
+    elseif params.appendix_a_derivative_g
         return :appendix_a_derivative_g
     elseif params.appendix_a_smearing
         return :appendix_a_3d_a7a8
@@ -325,6 +367,10 @@ function central_potential_values(
         return coulomb_1d_smeared_central_values(params, m1, m2, r)
     elseif mode == :appendix_a_derivative_g
         return appendix_a_derivative_central_values(params, m1, m2, r)
+    elseif mode == :appendix_a_closed_form
+        return appendix_a_closed_central_values(params, m1, m2, r)
+    elseif mode == :appendix_a_momentum_sandwich
+        return appendix_a_closed_central_values(params, m1, m2, r)
     else
         error("unknown central potential mode: $mode")
     end
@@ -352,11 +398,33 @@ function sqrt_kinetic_matrix(p2::SymTridiagonal, m::Real)
     fact.vectors * Diagonal(sqrt.(max.(fact.values, 0) .+ m^2)) * fact.vectors'
 end
 
+function sqrt_kinetic_matrix_from_eigen(fact, m::Real)
+    fact.vectors * Diagonal(sqrt.(max.(fact.values, 0) .+ m^2)) * fact.vectors'
+end
+
+function appendix_a_momentum_sandwich_matrix(params::GIParameters, m1::Real, m2::Real, r::AbstractVector, p2_fact)
+    λ = max.(p2_fact.values, 0)
+    e1 = sqrt.(λ .+ m1^2)
+    e2 = sqrt.(λ .+ m2^2)
+    a_diag = sqrt.(1 .+ λ ./ (e1 .* e2))
+    A = p2_fact.vectors * Diagonal(a_diag) * p2_fact.vectors'
+    gdiag = Diagonal([smeared_coulomb_G_closed(params, m1, m2, ri) for ri in r])
+    sdiag = Diagonal([smeared_confinement_S_closed(params, m1, m2, ri) for ri in r])
+    Symmetric(A * gdiag * A + sdiag)
+end
+
 function relativistic_hamiltonian(params::GIParameters, m1::Real, m2::Real, L::Integer; ngrid::Integer = 450, rmax::Real = 24.0)
     r, h = radial_grid(ngrid, rmax)
     p2 = p2_operator(m1, L, r, h)
-    kinetic = sqrt_kinetic_matrix(p2, m1) + sqrt_kinetic_matrix(p2, m2)
-    Symmetric(kinetic + Diagonal(potential_diagonal(params, m1, m2, r))), r
+    p2_fact = eigen(p2)
+    kinetic = sqrt_kinetic_matrix_from_eigen(p2_fact, m1) + sqrt_kinetic_matrix_from_eigen(p2_fact, m2)
+    potential =
+        if central_potential_mode(params) == :appendix_a_momentum_sandwich
+            appendix_a_momentum_sandwich_matrix(params, m1, m2, r, p2_fact)
+        else
+            Diagonal(potential_diagonal(params, m1, m2, r))
+        end
+    Symmetric(kinetic + potential), r
 end
 
 function channel_solution(
@@ -420,6 +488,21 @@ function delta_sigma_3d(r::Real, σ::Real)
     return σ^3 / (π^(3 / 2)) * exp(-(σ * ri)^2)
 end
 
+function momentum_relativization_matrix(m1::Real, m2::Real, exponent::Real, p2_fact)
+    λ = max.(p2_fact.values, 0)
+    e1 = sqrt.(λ .+ m1^2)
+    e2 = sqrt.(λ .+ m2^2)
+    diag = (m1 * m2 ./ (e1 .* e2)) .^ exponent
+    p2_fact.vectors * Diagonal(diag) * p2_fact.vectors'
+end
+
+function euclidean_expectation(vector::AbstractVector, operator::AbstractMatrix)
+    v = collect(float.(vector))
+    norm2 = sum(abs2, v)
+    norm2 <= 0.0 && return 0.0
+    dot(v, operator * v) / norm2
+end
+
 """
 First-order smeared contact hyperfine shift for S-waves.
 
@@ -448,6 +531,35 @@ function contact_hyperfine_shift(params::GIParameters, m1::Real, m2::Real, L::St
     )
     (1.0 + params.epsilon_c) * (32 * π / (9 * m1 * m2)) * expectation *
     spin_dot(multiplicity)
+end
+
+function contact_hyperfine_shift_momentum_sandwich(
+    params::GIParameters,
+    m1::Real,
+    m2::Real,
+    L::String,
+    multiplicity::Integer,
+    vector::AbstractVector,
+    r::AbstractVector,
+)
+    L == "S" || return 0.0
+    multiplicity in (1, 3) || return 0.0
+    length(r) >= 2 || return 0.0
+    h = r[2] - r[1]
+    p2_fact = eigen(p2_operator(m1, 0, r, h))
+    side_exponent = 0.25 + 0.5 * params.epsilon_c
+    B = momentum_relativization_matrix(m1, m2, side_exponent, p2_fact)
+    sigma = contact_smearing_sigma(params, m1, m2)
+    kernel = Diagonal([alpha_s_r(ri) * delta_sigma_3d(ri, sigma) for ri in r])
+    expectation = euclidean_expectation(vector, Symmetric(B * kernel * B))
+    (32 * π / (9 * m1 * m2)) * expectation * spin_dot(multiplicity)
+end
+
+function contact_hyperfine_shift_active(params::GIParameters, args...)
+    if params.contact_momentum_sandwich
+        return contact_hyperfine_shift_momentum_sandwich(params, args...)
+    end
+    return contact_hyperfine_shift(params, args...)
 end
 
 include("masses_from_content.jl")
@@ -513,7 +625,7 @@ function compare_sector(
         fine_structure_shift = 0.0
         fine_structure_mass_convention = "disabled"
         if contact_hyperfine
-            contact_shift = contact_hyperfine_shift(params, m1, m2, state.L, state.multiplicity, vectors[:, state.n], r)
+            contact_shift = contact_hyperfine_shift_active(params, m1, m2, state.L, state.multiplicity, vectors[:, state.n], r)
         end
         if use_fine_structure && params.fine_structure
             comp = fine_structure_components(
@@ -568,6 +680,11 @@ function write_residual_report(
     contact_hyperfine::Bool = true,
     appendix_a_smearing::Bool = false,
     appendix_a_derivative_g::Bool = false,
+    appendix_a_closed_form::Bool = false,
+    appendix_a_momentum_sandwich::Bool = false,
+    contact_momentum_sandwich::Bool = false,
+    fine_structure_momentum_sandwich::Bool = false,
+    fine_structure_smeared_kernels::Bool = false,
     coulomb_1d_smear::Bool = false,
     appendix_a_central::Union{Nothing, Bool} = nothing,
     use_fine_structure::Bool = true,
@@ -579,9 +696,31 @@ function write_residual_report(
         if !isnothing(appendix_a_central)
             appendix_a_smearing = appendix_a_central
         end
-        hyperfine_note = contact_hyperfine ? "with smeared S-wave contact hyperfine" : "without S-wave contact hyperfine"
-        fs_note = use_fine_structure ? " first-order L·S (vector+Thomas) and OGE-tensor; " : " no first-order L·S/tensor; "
-        central_note = if appendix_a_derivative_g
+        hyperfine_note =
+            if contact_hyperfine && contact_momentum_sandwich
+                "with GI momentum-sandwiched smeared S-wave contact hyperfine"
+            elseif contact_hyperfine
+                "with smeared S-wave contact hyperfine"
+            else
+                "without S-wave contact hyperfine"
+            end
+        fs_note =
+            if use_fine_structure && fine_structure_momentum_sandwich && fine_structure_smeared_kernels
+                " first-order L·S (vector+Thomas) and OGE-tensor with GI momentum-factor sandwiches and smeared-G/S derivative kernels; "
+            elseif use_fine_structure && fine_structure_momentum_sandwich
+                " first-order L·S (vector+Thomas) and OGE-tensor with GI momentum-factor sandwiches; "
+            elseif use_fine_structure && fine_structure_smeared_kernels
+                " first-order L·S (vector+Thomas) and OGE-tensor with smeared-G/S derivative kernels; "
+            elseif use_fine_structure
+                " first-order L·S (vector+Thomas) and OGE-tensor; "
+            else
+                " no first-order L·S/tensor; "
+            end
+        central_note = if appendix_a_momentum_sandwich
+            "closed-form GI G̃(r), S̃(r), plus central Coulomb momentum sandwich `A(p)G̃A(p)` on the FD p² eigenbasis, "
+        elseif appendix_a_closed_form
+            "closed-form Gaussian-smeared GI G̃(r) and S̃(r), without the central Coulomb momentum sandwich, "
+        elseif appendix_a_derivative_g
             "Appendix-A derivative proxy for G(r), `G + ∇²G/(4σ²)`, with pointwise S(r); not the full audited (A12)–(A13) expansion, "
         elseif appendix_a_smearing
             "experimental (A7)–(A8)-style 3D isotropic smearing of pointwise Coulomb G and confinement S (Table II σ₀, s), "
@@ -688,7 +827,11 @@ function write_residual_report(
             println(io, @sprintf("| `%d%s` | %d | %.3f | %.3f | %+7.1f |", key[1], key[2], length(group), ref, pred, 1000 * (pred - ref)))
         end
         println(io)
-        println(io, "This is a diagnostic baseline, not the final GI Hamiltonian. Large residuals are expected until the full smeared potential, tensor/spin-orbit terms, and mixing are added.")
+        if appendix_a_momentum_sandwich
+            println(io, "The spin-independent central path is the current GI reproduction candidate. Remaining heavy-quarkonium residuals should be read mainly as spin-dependent/operator-ordering and extraction-audit targets.")
+        else
+            println(io, "This is a diagnostic baseline, not the final GI Hamiltonian. Large residuals are expected until the full smeared potential, tensor/spin-orbit terms, and mixing are added.")
+        end
     end
 end
 
