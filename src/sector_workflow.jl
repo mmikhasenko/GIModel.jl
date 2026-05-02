@@ -1,27 +1,29 @@
 # Public API (exported from GIModel.jl):
 #   solve_sector, compute_sector, compare, write_residual_report
-#   RadialChannelKey, ChannelRadialSolution, SectorComputation
+#   RadialChannelKey (ConstituentMasses + L_label), ChannelRadialSolution,
+#   SectorComputation, RadialWaveOnUniformMesh(solution, radial_level)
 
 """
+    RadialChannelKey(masses, L_label)
     RadialChannelKey(m1_GeV, m2_GeV, L_label)
 
-Dict key for one **spin-independent radial channel**: constituent quark masses (GeV) and
-orbital label (`S`, `P`, …), same convention as `ReferenceState.L`. Masses are rounded
-to 12 significant figures so distinct finite-difference solves that would share the same
-physics collapse to one cache entry.
+Dict key for one **spin-independent radial channel**: [`ConstituentMasses`](@ref) and orbital
+label (`S`, `P`, …), same convention as `ReferenceState.L`. Mass rounding lives in
+[`ConstituentMasses`](@ref) so distinct finite-difference solves that share the same physics
+collapse to one cache entry.
+
+The three-argument form builds [`ConstituentMasses`](@ref)`(m1_GeV, m2_GeV)` for convenience.
 """
 struct RadialChannelKey
-    m1_GeV::Float64
-    m2_GeV::Float64
+    masses::ConstituentMasses
     L_label::String
-    function RadialChannelKey(m1::Real, m2::Real, L_label::AbstractString)
-        new(
-            round(Float64(m1); sigdigits = 12),
-            round(Float64(m2); sigdigits = 12),
-            String(L_label),
-        )
+    function RadialChannelKey(masses::ConstituentMasses, L_label::AbstractString)
+        new(masses, String(L_label))
     end
 end
+
+RadialChannelKey(m1::Real, m2::Real, L_label::AbstractString) =
+    RadialChannelKey(ConstituentMasses(m1, m2), L_label)
 
 """
     ChannelRadialSolution(eigenvalues_GeV, eigenvectors, r)
@@ -31,6 +33,10 @@ Output of one `channel_solution` call, stored in `SectorComputation.channel_cach
   - `eigenvalues_GeV`: lowest radial eigenvalues (GeV) of the central Hamiltonian on the mesh.
   - `eigenvectors`: columns are reduced radial functions ``u_n(r)`` for each level.
   - `r`: uniform interior radial grid (same spacing as in the FD builder).
+
+Spin-dependent expectations ([`fine_structure_components`](@ref), contact hyperfine) need a
+**single level** ``u_n`` on this mesh — see [`RadialWaveOnUniformMesh`](@ref)`(solution, n)` below,
+which wraps column `n` with the correct spacing `h`.
 """
 struct ChannelRadialSolution
     eigenvalues_GeV::Vector{Float64}
@@ -39,52 +45,93 @@ struct ChannelRadialSolution
 end
 
 """
-    SectorComputation(params, m_fallback, channel_cache)
+    RadialWaveOnUniformMesh(solution::ChannelRadialSolution, radial_level::Integer)
 
-Heavy lifting from `compute_sector`: precomputed radial FD solves per distinct channel.
+Build [`RadialWaveOnUniformMesh`](@ref) for eigenvector column `radial_level` of `solution`
+(shared mesh `solution.r`, spacing ``h = r_2 - r_1``). Use this in `compare` / tooling when
+you already hold cached [`ChannelRadialSolution`](@ref) data instead of raw `(u, r)` vectors.
+"""
+function RadialWaveOnUniformMesh(sol::ChannelRadialSolution, radial_level::Integer)
+    radial_level >= 1 ||
+        throw(ArgumentError("radial_level must be ≥ 1, got $radial_level"))
+    radial_level <= size(sol.eigenvectors, 2) ||
+        throw(ArgumentError(
+            "radial_level=$radial_level exceeds number of stored eigenvectors $(size(sol.eigenvectors, 2))",
+        ))
+    length(sol.r) >= 2 ||
+        throw(ArgumentError("ChannelRadialSolution.r must have length ≥ 2"))
+    ucol = view(sol.eigenvectors, :, radial_level)
+    return RadialWaveOnUniformMesh(ucol, sol.r)
+end
 
-# Fields
+"""
+    SectorComputation(params, channel_cache)
 
-  - `params`: `GIParameters` used to build each central Hamiltonian.
-  - `m_fallback`: mass (GeV) used when `parse_quark_masses` fails for a row
-    (typically `params.masses[flavor]` for the `flavor` passed to `compute_sector`).
+Heavy lifting from [`compute_sector`](@ref): precomputed radial FD solves per distinct channel.
+
+  - `params`: [`GIParameters`](@ref) used to build each central Hamiltonian.
   - `channel_cache`: map `RadialChannelKey` → `ChannelRadialSolution`.
 
-`channel_cache` **deduplicates** work: every reference state with the same rounded
-`(m₁, m₂, L)` shares one eigenproblem. `compare` then picks radial level `n`,
-applies contact hyperfine and fine-structure corrections, and forms residuals — that part
-depends on `J`, multiplicity, etc., and is not stored here.
+[`compare`](@ref) expects the same [`ReferenceStateWithMasses`](@ref) rows used to build the cache.
 """
 struct SectorComputation
     params::GIParameters
-    m_fallback::Float64
     channel_cache::Dict{RadialChannelKey,ChannelRadialSolution}
 end
 
-function _reference_masses(params::GIParameters, m_fallback::Float64, s::ReferenceState)
-    try
-        return parse_quark_masses(params, String(s.sector), String(s.quark_content))
-    catch
-        return m_fallback, m_fallback
+function compute_sector(
+    params::GIParameters,
+    annotated::Vector{ReferenceStateWithMasses};
+    ngrid::Integer = 450,
+    rmax::Real = 24.0,
+    kinetic::Symbol = :relativistic,
+    eigensolver::Symbol = :full,
+)
+    channel_cache = Dict{RadialChannelKey,ChannelRadialSolution}()
+    for row in annotated
+        masses = row.constituent_masses
+        state = row.state
+        key = RadialChannelKey(masses, state.L)
+        if !haskey(channel_cache, key)
+            Lval = L_SYMBOLS[state.L]
+            ev, vecs, r = channel_solution(
+                params,
+                masses,
+                Lval;
+                nlevels = 6,
+                ngrid = ngrid,
+                rmax = rmax,
+                kinetic = kinetic,
+                eigensolver = eigensolver,
+            )
+            channel_cache[key] = ChannelRadialSolution(ev, vecs, r)
+        end
     end
+    return SectorComputation(params, channel_cache)
 end
 
+"""
+    solve_sector(params, equal_mass_GeV; …)
+
+Equal-mass diagnostic sweep over every orbital letter in `L_SYMBOLS`, using `equal_mass_GeV`
+for both constituents (same reduced dynamics as charmonium/bottomonium with that mass).
+"""
 function solve_sector(
     params::GIParameters,
-    flavor::String;
+    equal_mass_GeV::Real;
     maxn::Integer = 6,
     ngrid::Integer = 450,
     rmax::Real = 24.0,
     kinetic::Symbol = :relativistic,
     eigensolver::Symbol = :full,
 )
-    m = params.masses[flavor]
+    m = Float64(equal_mass_GeV)
+    mm = ConstituentMasses(m, m)
     results = Dict{Tuple{Int,String},Float64}()
     for (symbol, L) in L_SYMBOLS
         levels = solve_channel(
             params,
-            m,
-            m,
+            mm,
             L;
             nlevels = maxn,
             ngrid = ngrid,
@@ -96,62 +143,26 @@ function solve_sector(
             results[(n, symbol)] = levels[n]
         end
     end
-    results
-end
-
-function compute_sector(
-    params::GIParameters,
-    reference::Vector{ReferenceState},
-    flavor::String;
-    ngrid::Integer = 450,
-    rmax::Real = 24.0,
-    kinetic::Symbol = :relativistic,
-    eigensolver::Symbol = :full,
-)
-    m_fallback = params.masses[flavor]
-    channel_cache = Dict{RadialChannelKey,ChannelRadialSolution}()
-    for state in reference
-        m1, m2 = _reference_masses(params, m_fallback, state)
-        key = RadialChannelKey(m1, m2, state.L)
-        if !haskey(channel_cache, key)
-            Lval = L_SYMBOLS[state.L]
-            ev, vecs, r = channel_solution(
-                params,
-                m1,
-                m2,
-                Lval;
-                nlevels = 6,
-                ngrid = ngrid,
-                rmax = rmax,
-                kinetic = kinetic,
-                eigensolver = eigensolver,
-            )
-            channel_cache[key] = ChannelRadialSolution(ev, vecs, r)
-        end
-    end
-    SectorComputation(params, m_fallback, channel_cache)
+    return results
 end
 
 function compare(
     computed::SectorComputation,
-    reference::Vector{ReferenceState};
+    annotated::Vector{ReferenceStateWithMasses};
     contact_hyperfine::Bool = true,
     use_fine_structure::Bool = true,
 )
     params = computed.params
-    m_fallback = computed.m_fallback
     channel_cache = computed.channel_cache
     rows = NamedTuple[]
-    for state in reference
-        m1, m2 = _reference_masses(params, m_fallback, state)
-        key = RadialChannelKey(m1, m2, state.L)
+    for row in annotated
+        state = row.state
+        masses = row.constituent_masses
+        key = RadialChannelKey(masses, state.L)
         haskey(channel_cache, key) || continue
         sol = channel_cache[key]
         ev = sol.eigenvalues_GeV
-        vectors = sol.eigenvectors
-        r = sol.r
         state.n <= length(ev) || continue
-        h = r[2] - r[1]
         central = ev[state.n]
         contact_shift = 0.0
         spin_orbit_vector_shift = 0.0
@@ -160,28 +171,17 @@ function compare(
         tensor_shift = 0.0
         fine_structure_shift = 0.0
         fine_structure_mass_convention = "disabled"
+        multiplet = FineStructureMultiplet(state)
+        wave = RadialWaveOnUniformMesh(sol, state.n)
         if contact_hyperfine
-            contact_shift = contact_hyperfine_shift_active(
-                params,
-                m1,
-                m2,
-                state.L,
-                state.multiplicity,
-                vectors[:, state.n],
-                r,
-            )
+            contact_shift = contact_hyperfine_shift_active(params, masses, multiplet, wave)
         end
         if use_fine_structure && params.fine_structure
             comp = fine_structure_components(
                 params,
-                m1,
-                m2,
-                state.L,
-                state.multiplicity,
-                state.J,
-                collect(vectors[:, state.n]),
-                collect(r),
-                h;
+                masses,
+                multiplet,
+                wave;
                 enabled = true,
                 k_spin_orbit = params.k_spin_orbit,
                 k_tensor = params.k_tensor,
@@ -192,8 +192,8 @@ function compare(
             tensor_shift = comp.tensor
             fine_structure_shift = comp.total
             fine_structure_mass_convention =
-                isapprox(m1, m2; rtol = 0.0, atol = 0.0) ? "equal_mass" :
-                "unequal_mass_equal_share_LdotS"
+                isapprox(masses.m1_GeV, masses.m2_GeV; rtol = 0.0, atol = 0.0) ?
+                "equal_mass" : "unequal_mass_equal_share_LdotS"
         end
         predicted = central + contact_shift + fine_structure_shift
         push!(
@@ -205,8 +205,8 @@ function compare(
                 n = state.n,
                 J = state.J,
                 multiplicity = state.multiplicity,
-                m1_GeV = m1,
-                m2_GeV = m2,
+                m1_GeV = masses.m1_GeV,
+                m2_GeV = masses.m2_GeV,
                 fine_structure_mass_convention = fine_structure_mass_convention,
                 reference_GeV = state.mass_GeV,
                 central_GeV = central,
@@ -222,7 +222,7 @@ function compare(
             ),
         )
     end
-    rows
+    return rows
 end
 
 function write_residual_report(

@@ -17,7 +17,8 @@ that exposes which missing terms matter next.
 
 ## Current Working Commands
 
-Run these from the repository root:
+Run these from the repository root (spectrum scripts use **`load_parameters_and_quark_masses`** and
+**`attach_constituent_masses`** before **`compute_sector`**; see **`docs/code_architecture.md`**):
 
 ```bash
 python3 scripts/validate_seed.py

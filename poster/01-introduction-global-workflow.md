@@ -91,8 +91,9 @@ made heavy-quarkonium reproduction work.
 
 ## Code Anchors
 
-- `data/parameters.provisional.toml`: active switches and paper parameters.
-- `src/GIModel.jl`: model loading, Hamiltonian, central operator,
+- `data/parameters.provisional.toml`: active switches, Table II masses (`[masses]`), and paper parameters;
+  load with `load_parameters_and_quark_masses` (see `docs/code_architecture.md`).
+- `src/GIModel.jl`: module includes (types/setup/numerics), Hamiltonian, central operator,
   comparison reports.
 - `src/spin_fine_structure.jl`: tensor and spin-orbit implementation.
 - `docs/residual_reports/scorecard.md`: final sector-level performance.

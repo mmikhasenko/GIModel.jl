@@ -3,8 +3,7 @@
 
 function channel_solution(
     params::GIParameters,
-    m1::Real,
-    m2::Real,
+    masses::ConstituentMasses,
     L::Integer;
     nlevels::Integer = 6,
     ngrid::Integer = 450,
@@ -13,9 +12,9 @@ function channel_solution(
     eigensolver::Symbol = :full,
 )
     hamiltonian, r = if kinetic == :relativistic
-        relativistic_hamiltonian(params, m1, m2, L; ngrid = ngrid, rmax = rmax)
+        relativistic_hamiltonian(params, masses, L; ngrid = ngrid, rmax = rmax)
     elseif kinetic == :nonrelativistic
-        nonrelativistic_hamiltonian(params, m1, m2, L; ngrid = ngrid, rmax = rmax)
+        nonrelativistic_hamiltonian(params, masses, L; ngrid = ngrid, rmax = rmax)
     else
         error("unknown kinetic mode: $kinetic")
     end
@@ -23,7 +22,7 @@ function channel_solution(
     if kinetic == :relativistic
         values, vectors, r
     else
-        values .+ (m1 + m2), vectors, r
+        values .+ (masses.m1_GeV + masses.m2_GeV), vectors, r
     end
 end
 

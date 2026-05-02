@@ -8,7 +8,10 @@ using Printf
 root = dirname(@__DIR__)
 using GIModel
 
-params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+# Parameters + quark table → reference CSV → attach_constituent_masses → compute_sector / compare → markdown reports.
+
+params_path = joinpath(root, "data", "parameters.provisional.toml")
+params, mq = load_parameters_and_quark_masses(params_path)
 
 sectors = [
     (
@@ -29,10 +32,11 @@ sectors = [
 
 for (name, flavor, reference_path, report_path, title) in sectors
     reference = load_reference_spectrum(reference_path)
-    computed = compute_sector(params, reference, flavor; kinetic = :relativistic)
+    annotated = attach_constituent_masses(mq, reference, mq[flavor])
+    computed = compute_sector(params, annotated; kinetic = :relativistic)
     rows = compare(
         computed,
-        reference;
+        annotated;
         contact_hyperfine = true,
         use_fine_structure = params.fine_structure,
     )

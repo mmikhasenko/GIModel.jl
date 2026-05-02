@@ -9,6 +9,8 @@ using Printf
 root = dirname(@__DIR__)
 using GIModel
 
+# Temporary toggled TOML copies vary only `appendix_a_smearing`; ccbar masses from loaded `[masses]`.
+
 tbase = joinpath(root, "data", "parameters.provisional.toml")
 mktempdir() do d
     pfalse = joinpath(d, "off.toml")
@@ -17,14 +19,14 @@ mktempdir() do d
     @assert occursin("appendix_a_smearing = false", s)
     write(pfalse, s)
     write(ptrue, replace(s, "appendix_a_smearing = false" => "appendix_a_smearing = true"))
-    params0 = load_parameters(pfalse)
-    params1 = load_parameters(ptrue)
-    m1 = m2 = params0.masses["c"]
+    params0, mq0 = load_parameters_and_quark_masses(pfalse)
+    params1, _ = load_parameters_and_quark_masses(ptrue)
+    masses_cc = ConstituentMasses(mq0["c"], mq0["c"])
     ngrid = 300
     rmax = 20.0
     r, _h = GIModel.radial_grid(ngrid, rmax)
-    v0 = GIModel.potential_diagonal(params0, m1, m2, r)
-    v1 = GIModel.potential_diagonal(params1, m1, m2, r)
+    v0 = GIModel.potential_diagonal(params0, masses_cc, r)
+    v1 = GIModel.potential_diagonal(params1, masses_cc, r)
     δ = v1 .- v0
     n = length(δ)
     l2 = sqrt(sum(abs2, δ) / n)
@@ -82,6 +84,6 @@ mktempdir() do d
         for i in (1, div(n, 4), div(n, 2), 3 * div(n, 4), n)
             println(io, @sprintf("| %.2f | %.4f | %.4f | %.4f |", r[i], v0[i], v1[i], δ[i]))
         end
-        println("wrote $out")
     end
+    println("wrote $out")
 end

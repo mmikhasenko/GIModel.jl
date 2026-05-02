@@ -1,8 +1,8 @@
-# Public API (exported from GIModel.jl):
-#   GIParameters, ReferenceState, load_parameters, load_reference_spectrum
+# GI Hamiltonian / smearing / fine-structure switches from the parameters TOML.
+#
+# Public API (exported from GIModel.jl): GIParameters, load_parameters
 
 struct GIParameters
-    masses::Dict{String,Float64}
     b::Float64
     c::Float64
     sigma0::Float64
@@ -24,28 +24,7 @@ struct GIParameters
     coulomb_1d_smear::Bool
 end
 
-struct ReferenceState
-    sector::String
-    quark_content::String
-    composition::String
-    n::Int
-    multiplicity::Int
-    L::String
-    J::Int
-    mass_GeV::Float64
-    confidence::String
-end
-
-function load_parameters(path::AbstractString)
-    raw = TOML.parsefile(path)
-    masses = Dict(
-        "u" => raw["masses"]["m_ud_avg_MeV"] / 1000,
-        "d" => raw["masses"]["m_ud_avg_MeV"] / 1000,
-        "q" => raw["masses"]["m_ud_avg_MeV"] / 1000,
-        "s" => raw["masses"]["m_s_MeV"] / 1000,
-        "c" => raw["masses"]["m_c_MeV"] / 1000,
-        "b" => raw["masses"]["m_b_MeV"] / 1000,
-    )
+function gi_parameters_from_raw(raw)::GIParameters
     rf = get(raw, "relativistic_factors", nothing)
     eps_c = isnothing(rf) ? 0.0 : get(rf, "epsilon_c", 0.0)
     eps_t = isnothing(rf) ? 0.0 : get(rf, "epsilon_t", 0.0)
@@ -55,8 +34,7 @@ function load_parameters(path::AbstractString)
     fine_on = isnothing(fs) ? true : get(fs, "enabled", true)
     k_so = isnothing(fs) ? 0.5 : get(fs, "k_spin_orbit", 0.5)
     k_tn = isnothing(fs) ? 0.4 : get(fs, "k_tensor", 0.4)
-    GIParameters(
-        masses,
+    return GIParameters(
         raw["potential"]["b_GeV2"],
         raw["potential"]["c_MeV"] / 1000,
         raw["relativistic_smearing"]["sigma0_GeV"],
@@ -79,23 +57,6 @@ function load_parameters(path::AbstractString)
     )
 end
 
-function load_reference_spectrum(path::AbstractString)
-    states = ReferenceState[]
-    for row in CSV.File(path)
-        push!(
-            states,
-            ReferenceState(
-                String(row.sector),
-                String(row.quark_content),
-                String(row.composition_raw),
-                Int(row.n),
-                Int(row.multiplicity),
-                String(row.L),
-                Int(row.J),
-                Float64(row.mass_GeV),
-                String(row.confidence),
-            ),
-        )
-    end
-    states
+function load_parameters(path::AbstractString)
+    return gi_parameters_from_raw(TOML.parsefile(path))
 end

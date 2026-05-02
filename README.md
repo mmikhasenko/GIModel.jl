@@ -31,6 +31,8 @@ Use these files to resume work quickly:
   `scripts/compare_central_pointwise_vs_a7a8.jl` (pointwise *V* vs (A7)--(A8) blur;
   not (A12)--(A13)).
 - `docs/conventions.md`: spectroscopic, spin, sector, and basis conventions.
+- `docs/code_architecture.md`: current GIModel types and call graph (`GIParameters`,
+  `QuarkMassTable`, `ConstituentMasses`, `ReferenceStateWithMasses`, sector workflow).
 - `Project.toml`: declares Julia package **GIModel** (module `src/GIModel.jl` and
   sibling includes in `src/`).
 - `data/table_ii_parameters.csv`: central Table II parameter digitization.
@@ -78,8 +80,12 @@ provenance and experiments, but they are not recommended handoff entry points.
 
 The solver is a Julia package named **GIModel** (see `Project.toml`). The
 module entry point is `src/GIModel.jl`; other files in `src/` are included from
-there. Driver scripts under `scripts/` call `Pkg.activate` on the repository
-root before `using GIModel`, and `test/runtests.jl` does the same. Running
+there (constants/types, then setup/bookkeeping, then numerics—see
+`docs/code_architecture.md`). Driver scripts under `scripts/` call `Pkg.activate`
+on the repository root before `using GIModel`, and `test/runtests.jl` does the
+same. Typical workflow:
+`load_parameters_and_quark_masses` → `load_reference_spectrum` →
+`attach_constituent_masses` → `compute_sector` / `compare`. Running
 `julia --project=. …` from the repo root should give the same environment but is
 optional.
 
@@ -144,8 +150,8 @@ solver and validation scripts should start from the top-level `data/` files.
    ```
 
    This regenerates sector reports under `docs/residual_reports/` for every
-   `data/reference_spectrum_*.csv` file. Heavy-light sectors use the
-   `quark_content` column to choose unequal constituent masses. It also writes
+   `data/reference_spectrum_*.csv` file.    Heavy-light sectors use the `quark_content` column plus the loaded flavor table
+   (`attach_constituent_masses`) to build **`ConstituentMasses`** per row. It also writes
    `docs/residual_reports/scorecard.md` as the compact progress dashboard.
 
 4. Decompose the heavy-quarkonium mismatch:

@@ -11,6 +11,9 @@ using DataFrames
 root = dirname(@__DIR__)
 using GIModel
 
+# Workflow: parameters + flavor table → reference CSV rows → constituent masses per row
+# (`attach_constituent_masses`) → `compute_sector` / `compare` on `ReferenceStateWithMasses`.
+
 """
 Spectroscopic label J^PC from orbital L, spin multiplicity (1 singlet / 3 triplet), and total J.
 Uses P = (-1)^(L+1) and C = (-1)^(L+S) for a fermion–antifermion pair.
@@ -59,15 +62,35 @@ function rounded_rect_polygon(
     return pts
 end
 
-params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-ref = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_bottomonium.csv"))
-computed = compute_sector(params, ref, "b"; kinetic = :relativistic)
+params_path = joinpath(root, "data", "parameters.provisional.toml")
+reference_path = joinpath(root, "data", "reference_spectrum_bottomonium.csv")
+
+params, mq = load_parameters_and_quark_masses(params_path)
+reference = load_reference_spectrum(reference_path)
+annotated =
+    attach_constituent_masses(mq, reference, mq["b"])
+computed = compute_sector(
+    params,
+    annotated;
+    kinetic = :relativistic,
+)
 rows = compare(
     computed,
-    ref;
+    annotated;
     contact_hyperfine = true,
     use_fine_structure = params.fine_structure,
 )
+
+println(
+    "Bottomonium spectrum: ",
+    length(reference),
+    " reference rows → ",
+    length(rows),
+    " comparison rows (",
+    length(computed.channel_cache),
+    " distinct radial channels cached).",
+)
+
 
 plot_path = joinpath(@__DIR__, "bottomonium_spectrum_ref_vs_model.png")
 let rows = rows, path = plot_path
@@ -100,19 +123,19 @@ let rows = rows, path = plot_path
         key = (rows[i].n, rows[i].L)
         push!(get!(sectors, key, Int[]), i)
     end
-    sector_list = sort!(collect(keys(sectors)); by = kl -> (kl[2], kl[1]))
+    sector_list = sort!(collect(keys(sectors)); by=kl -> (kl[2], kl[1]))
     palette = Makie.wong_colors()
 
-    fig = Figure(size = (1000, 720))
+    fig = Figure(size=(1000, 720))
     ax = Axis(
         fig[1, 1];
-        xlabel = "JPC",
-        ylabel = "Mass (GeV)",
-        title = "Bottomonium: reference vs GI model (Fig. 8 states)",
-        xticks = (1:length(FIG8_BOTTOMONIUM_JPC), FIG8_BOTTOMONIUM_JPC),
-        xticklabelrotation = deg2rad(40),
-        yminorticksvisible = true,
-        yminorgridvisible = true,
+        xlabel="JPC",
+        ylabel="Mass (GeV)",
+        title="Bottomonium: reference vs GI model (Fig. 8 states)",
+        xticks=(1:length(FIG8_BOTTOMONIUM_JPC), FIG8_BOTTOMONIUM_JPC),
+        xticklabelrotation=deg2rad(40),
+        yminorticksvisible=true,
+        yminorgridvisible=true,
     )
     ylims!(ax, 9.15, 11.32)
 
@@ -135,20 +158,20 @@ let rows = rows, path = plot_path
         poly!(
             ax,
             poly;
-            color = (base, fill_alpha),
-            strokecolor = (base, 0.62),
-            strokewidth = 0.5,
-            shading = NoShading,
+            color=(base, fill_alpha),
+            strokecolor=(base, 0.62),
+            strokewidth=0.5,
+            shading=NoShading,
         )
         n_radial, Lorb = key
         text!(
             ax,
             xmax,
             ymin;
-            text = string(n_radial, Lorb),
-            align = (:center, :center),
-            fontsize = 15,
-            color = :black,
+            text=string(n_radial, Lorb),
+            align=(:center, :center),
+            fontsize=15,
+            color=:black,
         )
     end
 
@@ -157,31 +180,31 @@ let rows = rows, path = plot_path
             ax,
             [xs_center[i] - δ, xs_center[i] + δ],
             [y_ref[i], y_pred[i]];
-            color = (:gray42, 0.45),
-            linewidth = 0.85,
+            color=(:gray42, 0.45),
+            linewidth=0.85,
         )
     end
     scatter!(
         ax,
         xs_center .- δ,
         y_ref;
-        label = "reference",
-        markersize = 10,
-        color = (:steelblue4, 0.9),
-        strokewidth = 0.5,
-        strokecolor = :white,
+        label="reference",
+        markersize=10,
+        color=(:steelblue4, 0.9),
+        strokewidth=0.5,
+        strokecolor=:white,
     )
     scatter!(
         ax,
         xs_center .+ δ,
         y_pred;
-        label = "computed",
-        markersize = 10,
-        color = (:darkorange, 0.95),
-        strokewidth = 0.5,
-        strokecolor = :white,
+        label="computed",
+        markersize=10,
+        color=(:darkorange, 0.95),
+        strokewidth=0.5,
+        strokecolor=:white,
     )
-    axislegend(ax; position = :rt)
+    axislegend(ax; position=:rt)
     save(path, fig)
 end
 println("\nWrote spectrum plot: ", plot_path)
@@ -191,12 +214,12 @@ df = transform(
     df,
     [:n, :multiplicity, :L, :J] =>
         ByRow((n, mult, L, J) -> string(n, '^', mult, L, '_', J)) => :state,
-    :predicted_GeV => ByRow(x -> round(x; digits = 3)) => :model_GeV,
-    :reference_GeV => ByRow(x -> round(x; digits = 3)) => :ref_GeV,
-    :residual_MeV => ByRow(x -> round(x; digits = 1)) => :delta_MeV,
+    :predicted_GeV => ByRow(x -> round(x; digits=3)) => :model_GeV,
+    :reference_GeV => ByRow(x -> round(x; digits=3)) => :ref_GeV,
+    :residual_MeV => ByRow(x -> round(x; digits=1)) => :delta_MeV,
 )
 df = select(df, :state, :model_GeV, :ref_GeV, :delta_MeV)
 
 println("Bottomonium (predicted masses, GeV)\n")
-show(stdout, df; allrows = true, show_row_number = false)
+show(stdout, df; allrows=true, show_row_number=false)
 println()

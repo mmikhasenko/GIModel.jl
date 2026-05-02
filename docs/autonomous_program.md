@@ -17,7 +17,8 @@ Work in this order unless the code state makes a later item an obvious
 prerequisite:
 
 1. Formula and convention audit.
-   - Keep `docs/formula_map.md` synchronized with active code.
+   - Keep `docs/formula_map.md` and `docs/code_architecture.md` synchronized with active code
+     (especially after API changes to parameters vs masses or sector workflows).
    - Check signs, factors, color factors, units, and radial implementation.
    - Add targeted regression tests for any formula that is fixed or clarified.
 

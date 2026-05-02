@@ -19,11 +19,13 @@ to continue the Godfrey-Isgur reproduction.
   **GIModel** (`Project.toml`; module entry `src/GIModel.jl` plus included
   sources beside it): semirelativistic kinetic + central + running Coulomb,
   contact hyperfine, first-order fine-structure, heavy-quarkonium comparisons.
-  Reference CSVs are matched through `compute_sector` / `compare` in
-  `src/sector_workflow.jl` (cached radial solves per `RadialChannelKey`). Provisional
-  parameters are in `data/parameters.provisional.toml`. Formula
-  intent and flags are described in `docs/formula_map.md`; sector residuals under
-  `docs/residual_reports/`.
+  Inputs split **`GIParameters`** (switches and potential constants) from **`QuarkMassTable`**
+  (`[masses]` in TOML); scripts call **`load_parameters_and_quark_masses`**, then
+  **`attach_constituent_masses`** → **`Vector{ReferenceStateWithMasses}`** before
+  **`compute_sector`** / **`compare`** in **`src/sector_workflow.jl`** (cached radial solves per
+  **`RadialChannelKey`** = **`ConstituentMasses`** + `L`). See **`docs/code_architecture.md`**.
+  Provisional parameters are in **`data/parameters.provisional.toml`**. Formula intent and flags are
+  in **`docs/formula_map.md`**; sector residuals under **`docs/residual_reports/`**.
 - `test/runtests.jl` encodes several convention checks (Coulomb derivative,
   fine-structure angular factors, reduced-radial expectations, smearing
   constant-preservation).
@@ -41,8 +43,9 @@ to continue the Godfrey-Isgur reproduction.
 1. Read `README.md`.
 2. Read `docs/orchestrator_task.md`.
 3. Read `docs/paper_navigation.md`.
-4. Use `paper/text/godfrey_isgur_1985_prose.md` for prose search.
-5. Use `paper/Godfrey-Isgur-1985.pdf` as the authority for every equation,
+4. Read `docs/code_architecture.md` before changing `src/` or residual scripts (parameters vs masses vs sector rows).
+5. Use `paper/text/godfrey_isgur_1985_prose.md` for prose search.
+6. Use `paper/Godfrey-Isgur-1985.pdf` as the authority for every equation,
    symbol, table value, and state label.
 
 ## Recommended Subagent Split
@@ -118,6 +121,7 @@ Owns solver code after parameter/formula extraction is stable.
 
 Start files:
 
+- `docs/code_architecture.md`
 - `docs/formula_map.md`
 - `docs/conventions.md`
 - `data/parameters.provisional.toml` (provisional Table II–style input)

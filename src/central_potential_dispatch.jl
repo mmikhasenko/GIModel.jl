@@ -40,6 +40,19 @@ function central_potential_values(
     end
 end
 
+function central_potential_values(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    r::AbstractVector;
+    kwargs...,
+)
+    return central_potential_values(params, masses.m1_GeV, masses.m2_GeV, r; kwargs...)
+end
+
 function potential_diagonal(params::GIParameters, m1::Real, m2::Real, r::AbstractVector)
     return central_potential_values(params, m1, m2, r)
+end
+
+function potential_diagonal(params::GIParameters, masses::ConstituentMasses, r::AbstractVector)
+    return potential_diagonal(params, masses.m1_GeV, masses.m2_GeV, r)
 end

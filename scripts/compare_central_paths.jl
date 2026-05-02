@@ -8,8 +8,11 @@ using Printf
 root = dirname(@__DIR__)
 using GIModel
 
-params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-m1 = m2 = params.masses["c"]
+# Equal-mass ccbar on one mesh; compare spin-independent central implementations (`central_potential_values`).
+
+params_path = joinpath(root, "data", "parameters.provisional.toml")
+params, mq = load_parameters_and_quark_masses(params_path)
+masses_cc = ConstituentMasses(mq["c"], mq["c"])
 ngrid = 300
 rmax = 20.0
 r, _h = GIModel.radial_grid(ngrid, rmax)
@@ -27,7 +30,8 @@ paths = [
 ]
 
 values = Dict(
-    mode => GIModel.central_potential_values(params, m1, m2, r; mode = mode) for
+    mode =>
+        GIModel.central_potential_values(params, masses_cc, r; mode = mode) for
     (mode, _label) in paths
 )
 base = values[:pointwise]

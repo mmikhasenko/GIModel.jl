@@ -50,6 +50,8 @@ GI smearing depends on the quark masses. The code uses:
 sigma = sigma(m1, m2; sigma0, s)
 ```
 
+Radial Hamiltonians take these as **`ConstituentMasses(m1, m2)`** (`src/model_objects.jl`), including unequal-mass rows after **`attach_constituent_masses`**.
+
 Physical role:
 
 - heavier quarks smear differently than lighter quarks;

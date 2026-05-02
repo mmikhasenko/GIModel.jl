@@ -10,7 +10,10 @@ using Printf
 root = dirname(@__DIR__)
 using GIModel
 
-params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+# Batch residual reports: each reference CSV gets mq[flavor] fallback mass when attaching rows.
+
+params_path = joinpath(root, "data", "parameters.provisional.toml")
+params, mq = load_parameters_and_quark_masses(params_path)
 data_dir = joinpath(root, "data")
 report_dir = joinpath(root, "docs", "residual_reports")
 mkpath(report_dir)
@@ -35,10 +38,11 @@ for fn in readdir(data_dir)
     report_path = joinpath(report_dir, string(base, "_residuals.md"))
     title = @sprintf("Residuals: %s (GI-style)", base)
     reference = load_reference_spectrum(ref_path)
-    computed = compute_sector(params, reference, flavor; kinetic = :relativistic)
+    annotated = attach_constituent_masses(mq, reference, mq[flavor])
+    computed = compute_sector(params, annotated; kinetic = :relativistic)
     rows = compare(
         computed,
-        reference;
+        annotated;
         contact_hyperfine = true,
         use_fine_structure = params.fine_structure,
     )

@@ -7,17 +7,40 @@ using CSV
 using KrylovKit: eigsolve
 using SpecialFunctions: erf
 
+# =============================================================================
+# Constants and core layout types (shared by setup bookkeeping and numerics)
+# =============================================================================
+
 include("constants.jl")
 
-export GIParameters, ReferenceState, load_parameters, load_reference_spectrum
+export ConstituentMasses, reduced_mass, FineStructureMultiplet, RadialWaveOnUniformMesh
+include("model_objects.jl")
+
+# =============================================================================
+# Setup / bookkeeping: TOML tables, reference CSV rows, attaching masses to rows
+# =============================================================================
+
+export GIParameters, load_parameters
 include("parameters.jl")
+
+export QuarkMassTable, load_quark_masses, load_parameters_and_quark_masses
+include("quark_mass_table.jl")
+
+export ReferenceState, ReferenceStateWithMasses, load_reference_spectrum
+include("reference_spectrum.jl")
+
+export parse_quark_masses, resolve_constituent_masses, attach_constituent_masses
+include("masses_from_content.jl")
+
+# =============================================================================
+# Numerics: potentials, Hamiltonian, radial solves, spin-dependent corrections
+# =============================================================================
 
 include("running_coupling.jl")
 include("smearing_appendix_a.jl")
 include("radial_1d_coulomb_smear.jl")
 include("appendix_a_derivative_potential.jl")
 
-export reduced_mass
 include("radial_grid.jl")
 
 export central_potential_mode, central_potential_values
@@ -31,10 +54,7 @@ include("channel_solver.jl")
 export spin_dot
 include("contact_hyperfine.jl")
 
-export parse_quark_masses
-include("masses_from_content.jl")
-
-export fine_structure_split, LdotS, tensor_triplet_LJ
+export fine_structure_split, fine_structure_components, LdotS, tensor_triplet_LJ
 include("spin_fine_structure.jl")
 
 export CentralPotentialPath, central_potential_path

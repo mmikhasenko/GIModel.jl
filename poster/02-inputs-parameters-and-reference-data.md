@@ -40,15 +40,24 @@ operator physics.
 
 Code anchor: `data/parameters.provisional.toml`
 
-The active 1.0 model reads:
+The active 1.0 model reads one file with **two conceptual layers** (see also `docs/code_architecture.md`):
 
-- quark masses;
+- **`GIParameters`** — from `[potential]`, `[relativistic_smearing]`, `[relativistic_factors]`,
+  `[fine_structure]`, etc.: linear confinement `b` and `c`, Coulomb running inputs, Appendix-A
+  central-path switches, contact/fine-structure momentum switches, diagnostic spin scales. Loaded with
+  **`load_parameters`** or together with masses via **`load_parameters_and_quark_masses`**.
+- **`QuarkMassTable`** — from **`[masses]`** (Table II MeV fields → GeV in code): `u`/`d`/`s`/`c`/`b`
+  keys used when **`attach_constituent_masses`** resolves each reference row’s **`quark_content`**.
+
+Together they supply:
+
 - linear confinement parameters `b` and `c`;
 - relativistic smearing parameters `sigma0` and `s`;
 - Coulomb running parameters from the model implementation;
 - Appendix-A central path switches;
 - contact and fine-structure momentum switches;
-- diagnostic global spin scales.
+- diagnostic global spin scales;
+- flavor masses for **`ConstituentMasses`** on each reference row (after **`attach_constituent_masses`**).
 
 ### Reference Spectra
 
@@ -65,7 +74,7 @@ Code anchors:
 Every row must identify:
 
 - sector;
-- quark content;
+- quark content (`quark_content`; parsed into **`ConstituentMasses`** when rows are attached—see **`docs/code_architecture.md`**);
 - radial quantum number `n`;
 - spin multiplicity;
 - orbital label `L`;
@@ -78,6 +87,7 @@ Every row must identify:
 Documentation anchors:
 
 - `docs/formula_map.md`
+- `docs/code_architecture.md`
 - `docs/research_spin_independent_gi.md`
 - `docs/appendix_a_from_paper.md`
 

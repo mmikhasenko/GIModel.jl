@@ -12,13 +12,13 @@ The derivative path is a finite-difference Appendix-A proxy, not a completed aud
 | `appendix_a_momentum_sandwich` | diagonal view of GI G~+S~ (matrix sandwich in Hamiltonian) | 0.01948 | 0.17371 | 2.65466 | 0.066 |
 | `appendix_a_3d_a7a8` | 3D A7-A8 blur of G+S | 0.02000 | 0.17701 | 2.69318 | 0.066 |
 | `coulomb_1d` | 1D Gaussian G only | 0.01239 | 0.11071 | 1.80064 | 0.066 |
-| `appendix_a_derivative_g` | derivative proxy G + lap(G)/(4sigma^2) | 0.01187 | 0.13087 | 1.60097 | 0.133 |
+| `appendix_a_derivative_g` | derivative proxy G + lap(G)/(4sigma^2) | 0.01187 | 0.13087 | 1.60098 | 0.133 |
 
 ## Samples
 
 | r GeV^-1 | pointwise | closed-form | A7-A8 3D | 1D G | derivative G |
 |---:|---:|---:|---:|---:|---:|
-| 0.066 | -4.24668 | -1.59202 | -1.55350 | -2.44604 | -2.64571 |
+| 0.066 | -4.24668 | -1.59202 | -1.55350 | -2.44604 | -2.64570 |
 | 1.993 | -0.26899 | -0.26339 | -0.26339 | -0.27220 | -0.26808 |
 | 4.983 | 0.48351 | 0.48539 | 0.48539 | 0.48317 | 0.48351 |
 | 9.967 | 1.46075 | 1.46169 | 1.46169 | 1.46071 | 1.46075 |

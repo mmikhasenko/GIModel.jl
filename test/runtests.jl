@@ -1,5 +1,5 @@
-using Pkg
-Pkg.activate(dirname(@__DIR__))
+# Invoked by `Pkg.test()` with the package environment already active.
+# To run manually: `julia --project=. test/runtests.jl` from the repo root.
 
 using Test
 using FiniteDifferences
@@ -23,9 +23,9 @@ end
 end
 
 @testset "reference loading" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    @test params.masses["c"] ≈ 1.628
-    @test params.masses["b"] ≈ 4.977
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    @test mq["c"] ≈ 1.628
+    @test mq["b"] ≈ 4.977
     @test params.b ≈ 0.18
     @test params.appendix_a_smearing == false
     @test params.appendix_a_derivative_g == false
@@ -49,9 +49,9 @@ end
 end
 
 @testset "baseline solver shape" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    cc = solve_sector(params, "c"; maxn = 4, ngrid = 250, rmax = 20.0)
-    bb = solve_sector(params, "b"; maxn = 4, ngrid = 250, rmax = 16.0)
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    cc = solve_sector(params, mq["c"]; maxn = 4, ngrid = 250, rmax = 20.0)
+    bb = solve_sector(params, mq["b"]; maxn = 4, ngrid = 250, rmax = 16.0)
 
     @test cc[(1, "S")] < cc[(2, "S")] < cc[(3, "S")]
     @test bb[(1, "S")] < bb[(2, "S")] < bb[(3, "S")]
@@ -60,13 +60,12 @@ end
 end
 
 @testset "Krylov eigensolver matches full eigensolver" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    m = params.masses["c"]
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m = mq["c"]
     for kinetic in (:relativistic, :nonrelativistic)
         full, _vec_full, _r_full = channel_solution(
             params,
-            m,
-            m,
+            ConstituentMasses(m, m),
             0;
             nlevels = 3,
             ngrid = 120,
@@ -76,8 +75,7 @@ end
         )
         krylov, _vec_krylov, _r_krylov = channel_solution(
             params,
-            m,
-            m,
+            ConstituentMasses(m, m),
             0;
             nlevels = 3,
             ngrid = 120,
@@ -90,7 +88,7 @@ end
 end
 
 @testset "central: Coulomb+confinement = pointwise V" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     for r0 in (0.15, 0.4, 1.2, 3.0)
         a = GIModel.central_potential(r0, params)
         b = GIModel.static_coulomb_G(r0, params) + GIModel.static_confinement_S(r0, params)
@@ -99,7 +97,7 @@ end
 end
 
 @testset "Coulomb central derivative matches finite difference" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
 
     Vg(r) = -4.0 * GIModel.alpha_s_r(r) / (3.0 * r)
     for r0 in (0.08, 0.15, 0.4, 1.2, 3.0)
@@ -128,7 +126,7 @@ end
 end
 
 @testset "central_potential_path (default = GI momentum sandwich)" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     p = GIModel.central_potential_path(params)
     @test p.name == "appendix_a_momentum_sandwich"
     @test GIModel.central_potential_mode(params) == :appendix_a_momentum_sandwich
@@ -140,24 +138,24 @@ end
 end
 
 @testset "reduced_mass" begin
-    @test reduced_mass(1.5, 0.3) ≈ (1.5 * 0.3) / (1.5 + 0.3)
-    @test reduced_mass(2.0, 2.0) ≈ 1.0
+    @test reduced_mass(ConstituentMasses(1.5, 0.3)) ≈ (1.5 * 0.3) / (1.5 + 0.3)
+    @test reduced_mass(ConstituentMasses(2.0, 2.0)) ≈ 1.0
 end
 
 @testset "quark mass resolution" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    m1, m2 = parse_quark_masses(params, "ccbar", "ignore")
-    @test m1 ≈ m2 ≈ params.masses["c"]
-    m1, m2 = parse_quark_masses(params, "charmonium", "c cbar")
-    @test m1 ≈ m2 ≈ params.masses["c"]
-    m1, m2 = parse_quark_masses(params, "charmed", "-c dbar; c ubar")
-    @test m1 ≈ params.masses["c"] && m2 ≈ params.masses["d"]
-    m1, m2 = parse_quark_masses(params, "charmed_strange", "c sbar")
-    @test m1 ≈ params.masses["c"] && m2 ≈ params.masses["s"]
-    m1, m2 = parse_quark_masses(params, "bottom_light", "b ubar; -b dbar")
-    @test m1 ≈ params.masses["b"] && m2 ≈ params.masses["u"]
-    m1, m2 = parse_quark_masses(params, "isoscalar", "ignore")
-    @test m1 ≈ m2 ≈ 0.5 * (params.masses["u"] + params.masses["d"])
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m1, m2 = parse_quark_masses(mq, "ccbar", "ignore")
+    @test m1 ≈ m2 ≈ mq["c"]
+    m1, m2 = parse_quark_masses(mq, "charmonium", "c cbar")
+    @test m1 ≈ m2 ≈ mq["c"]
+    m1, m2 = parse_quark_masses(mq, "charmed", "-c dbar; c ubar")
+    @test m1 ≈ mq["c"] && m2 ≈ mq["d"]
+    m1, m2 = parse_quark_masses(mq, "charmed_strange", "c sbar")
+    @test m1 ≈ mq["c"] && m2 ≈ mq["s"]
+    m1, m2 = parse_quark_masses(mq, "bottom_light", "b ubar; -b dbar")
+    @test m1 ≈ mq["b"] && m2 ≈ mq["u"]
+    m1, m2 = parse_quark_masses(mq, "isoscalar", "ignore")
+    @test m1 ≈ m2 ≈ 0.5 * (mq["u"] + mq["d"])
 end
 
 @testset "appendix_a_smearing code path (finite S-wave energy)" begin
@@ -171,13 +169,12 @@ end
         )
         s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
         write(p, s2)
-        params = load_parameters(p)
+        params, mq = load_parameters_and_quark_masses(p)
         @test params.appendix_a_smearing == true
-        mc = params.masses["c"]
+        mc = mq["c"]
         vals, _v, _r = GIModel.channel_solution(
             params,
-            mc,
-            mc,
+            ConstituentMasses(mc, mc),
             0;
             nlevels = 2,
             ngrid = 120,
@@ -200,14 +197,13 @@ end
         )
         s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
         write(p, s2)
-        params = load_parameters(p)
+        params, mq = load_parameters_and_quark_masses(p)
         @test params.coulomb_1d_smear == true
         @test params.appendix_a_smearing == false
-        mc = params.masses["c"]
+        mc = mq["c"]
         vals, _v, _r = GIModel.channel_solution(
             params,
-            mc,
-            mc,
+            ConstituentMasses(mc, mc),
             0;
             nlevels = 2,
             ngrid = 120,
@@ -233,14 +229,13 @@ end
             "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true",
         )
         write(p, s2)
-        params = load_parameters(p)
+        params, mq = load_parameters_and_quark_masses(p)
         @test params.appendix_a_derivative_g == true
         @test GIModel.central_potential_mode(params) == :appendix_a_derivative_g
-        mc = params.masses["c"]
+        mc = mq["c"]
         vals, _v, _r = GIModel.channel_solution(
             params,
-            mc,
-            mc,
+            ConstituentMasses(mc, mc),
             0;
             nlevels = 2,
             ngrid = 120,
@@ -264,14 +259,13 @@ end
         s2 =
             replace(s2, "appendix_a_closed_form = false" => "appendix_a_closed_form = true")
         write(p, s2)
-        params = load_parameters(p)
+        params, mq = load_parameters_and_quark_masses(p)
         @test params.appendix_a_closed_form == true
         @test GIModel.central_potential_mode(params) == :appendix_a_closed_form
-        mc = params.masses["c"]
+        mc = mq["c"]
         vals, _v, _r = GIModel.channel_solution(
             params,
-            mc,
-            mc,
+            ConstituentMasses(mc, mc),
             0;
             nlevels = 2,
             ngrid = 120,
@@ -289,14 +283,13 @@ end
         s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
         @test occursin("appendix_a_momentum_sandwich = true", s)
         write(p, s)
-        params = load_parameters(p)
+        params, mq = load_parameters_and_quark_masses(p)
         @test params.appendix_a_momentum_sandwich == true
         @test GIModel.central_potential_mode(params) == :appendix_a_momentum_sandwich
-        mc = params.masses["c"]
+        mc = mq["c"]
         vals, _v, _r = GIModel.channel_solution(
             params,
-            mc,
-            mc,
+            ConstituentMasses(mc, mc),
             0;
             nlevels = 2,
             ngrid = 80,
@@ -338,8 +331,8 @@ end
 end
 
 @testset "central_potential_values named modes" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    mc = params.masses["c"]
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    mc = mq["c"]
     r, _h = GIModel.radial_grid(80, 8.0)
     pointwise = GIModel.central_potential_values(params, mc, mc, r; mode = :pointwise)
     @test pointwise ≈ [GIModel.central_potential(ri, params) for ri in r]
@@ -415,7 +408,7 @@ end
         s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
         s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
         write(p, s2)
-        params = load_parameters(p)
+        params, mq = load_parameters_and_quark_masses(p)
         path = GIModel.central_potential_path(params)
         @test path.name == "appendix_a_momentum_sandwich"
     end
@@ -432,7 +425,7 @@ end
         s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
         s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
         write(p, s2)
-        params = load_parameters(p)
+        params, mq = load_parameters_and_quark_masses(p)
         @test params.appendix_a_smearing == true
         @test params.coulomb_1d_smear == true
         path = GIModel.central_potential_path(params)
@@ -455,7 +448,7 @@ end
         s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
         s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
         write(p, s2)
-        params = load_parameters(p)
+        params, mq = load_parameters_and_quark_masses(p)
         @test params.appendix_a_derivative_g == true
         @test params.appendix_a_smearing == true
         @test params.coulomb_1d_smear == true
@@ -487,8 +480,8 @@ end
 end
 
 @testset "closed-form Coulomb smearing matches QuadGK convolution" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    m = params.masses["c"]
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m = mq["c"]
     σ = GIModel.contact_smearing_sigma(params, m, m)
 
     function quadgk_smeared_coulomb(R)
@@ -536,10 +529,10 @@ end
 end
 
 @testset "fine_structure_split: S-wave and P-wave triplet" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    m = params.masses["c"]
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m = mq["c"]
     _, umat, r =
-        GIModel.channel_solution(params, m, m, 0; nlevels = 2, ngrid = 200, rmax = 20.0)
+        GIModel.channel_solution(params, ConstituentMasses(m, m), 0; nlevels = 2, ngrid = 200, rmax = 20.0)
     h = r[2] - r[1]
     u_s = collect(umat[:, 1])
     @test GIModel.fine_structure_split(
@@ -569,7 +562,7 @@ end
         k_tensor = 1.0,
     ) == 0.0
     v_p, umat_p, r_p =
-        GIModel.channel_solution(params, m, m, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+        GIModel.channel_solution(params, ConstituentMasses(m, m), 1; nlevels = 2, ngrid = 200, rmax = 20.0)
     h_p = r_p[2] - r_p[1]
     u1p = collect(umat_p[:, 1])
     δ0 = GIModel.fine_structure_split(
@@ -629,10 +622,10 @@ end
 end
 
 @testset "fine_structure_components: decomposition sums correctly" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    m = params.masses["c"]
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m = mq["c"]
     _v_p, umat_p, r_p =
-        GIModel.channel_solution(params, m, m, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+        GIModel.channel_solution(params, ConstituentMasses(m, m), 1; nlevels = 2, ngrid = 200, rmax = 20.0)
     h_p = r_p[2] - r_p[1]
     u1p = collect(umat_p[:, 1])
     for J in (0, 1, 2)
@@ -689,12 +682,11 @@ end
         write(pv, replace(s0, r"^epsilon_so_vector\s*=.*$"m => "epsilon_so_vector = 0.5"))
         write(ps, replace(s0, r"^epsilon_so_scalar\s*=.*$"m => "epsilon_so_scalar = 0.5"))
 
-        params0 = load_parameters(p0)
-        mc = params0.masses["c"]
+        params0, mq0 = load_parameters_and_quark_masses(p0)
+        mc = mq0["c"]
         _v_p, umat_p, r_p = GIModel.channel_solution(
             params0,
-            mc,
-            mc,
+            ConstituentMasses(mc, mc),
             1;
             nlevels = 2,
             ngrid = 200,
@@ -784,12 +776,11 @@ end
         )
         write(p0, s0)
 
-        params0 = load_parameters(p0)
-        mc = params0.masses["c"]
+        params0, mq0 = load_parameters_and_quark_masses(p0)
+        mc = mq0["c"]
         _v_p, umat_p, r_p = GIModel.channel_solution(
             params0,
-            mc,
-            mc,
+            ConstituentMasses(mc, mc),
             1;
             nlevels = 2,
             ngrid = 200,
@@ -824,10 +815,10 @@ end
 end
 
 @testset "contact_hyperfine_shift: normalization + spin algebra" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    m = params.masses["c"]
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m = mq["c"]
     _vals, umat, r =
-        GIModel.channel_solution(params, m, m, 0; nlevels = 2, ngrid = 200, rmax = 20.0)
+        GIModel.channel_solution(params, ConstituentMasses(m, m), 0; nlevels = 2, ngrid = 200, rmax = 20.0)
     u1s = collect(umat[:, 1])
 
     δ_triplet = GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u1s, r)
@@ -844,10 +835,10 @@ end
 end
 
 @testset "fine structure uses u(r) normalization (scale invariant)" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    m = params.masses["c"]
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m = mq["c"]
     _v_p, umat_p, r_p =
-        GIModel.channel_solution(params, m, m, 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+        GIModel.channel_solution(params, ConstituentMasses(m, m), 1; nlevels = 2, ngrid = 200, rmax = 20.0)
     h_p = r_p[2] - r_p[1]
     u1p = collect(umat_p[:, 1])
     for J in (0, 1, 2)
@@ -921,7 +912,7 @@ end
 end
 
 @testset "Coulomb derivative consistency (GI erf profile)" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     for r0 in (0.05, 0.2, 1.3)
         δ = 1e-6 * max(1.0, r0)
         num = (GIModel.alpha_s_r(r0 + δ) - GIModel.alpha_s_r(r0 - δ)) / (2δ)
@@ -943,8 +934,8 @@ end
 end
 
 @testset "analytic radial derivatives match FiniteDifferences" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    m = params.masses["c"]
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m = mq["c"]
     d1 = central_fdm(5, 1)
     d2 = central_fdm(5, 2)
 
@@ -977,7 +968,7 @@ end
             "fine_structure_smeared_kernels = true" => "fine_structure_smeared_kernels = false",
         )
         write(p, s0)
-        params = load_parameters(p)
+        params, mq = load_parameters_and_quark_masses(p)
         h = 0.02
         r = collect(0.10:h:4.00)
         u = exp.(-r)
@@ -1006,7 +997,7 @@ end
         @test abs(I_cm - I_deriv) > 1e-6
 
         # Guardrail: fine_structure_components must use I_cm (Eq. (6)), not I_deriv.
-        m = params.masses["c"]
+        m = mq["c"]
         comp = GIModel.fine_structure_components(
             params,
             m,
@@ -1091,8 +1082,8 @@ end
 end
 
 @testset "contact hyperfine: only S-waves" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    m = params.masses["c"]
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m = mq["c"]
     r = collect(0.05:0.05:1.0)
     u = exp.(-2.0 .* r)
     @test GIModel.contact_hyperfine_shift(params, m, m, "P", 3, u, r) == 0.0
@@ -1100,8 +1091,8 @@ end
 end
 
 @testset "contact smearing σ implements Appendix A (A9)" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    m1, m2 = params.masses["c"], params.masses["b"]
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m1, m2 = mq["c"], mq["b"]
 
     σ = GIModel.contact_smearing_sigma(params, m1, m2)
     σ_swapped = GIModel.contact_smearing_sigma(params, m2, m1)
@@ -1115,15 +1106,15 @@ end
     )
     @test σ ≈ σ_manual rtol = 0.0 atol = 0.0
 
-    m = params.masses["c"]
+    m = mq["c"]
     σ_equal = GIModel.contact_smearing_sigma(params, m, m)
     σ_equal_manual = sqrt(params.sigma0^2 + params.smearing_s^2 * m^2)
     @test σ_equal ≈ σ_equal_manual rtol = 0.0 atol = 0.0
 end
 
 @testset "contact hyperfine shift uses u(r) normalization" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    m = params.masses["c"]
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m = mq["c"]
     r = collect(0.05:0.05:1.0)
     u = exp.(-2.0 .* r)
     base = GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u, r)
@@ -1135,8 +1126,8 @@ end
 end
 
 @testset "contact hyperfine matches radial_expect_udr convention" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    m = params.masses["c"]
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m = mq["c"]
     r = collect(0.05:0.05:1.0)
     h = r[2] - r[1]
     u = exp.(-2.0 .* r)
@@ -1165,16 +1156,56 @@ end
     @test a == b
     @test hash(a) == hash(b)
     @test RadialChannelKey(1.6, 1.6, "S") != RadialChannelKey(1.6, 1.6, "P")
+    masses = GIModel.ConstituentMasses(1.6, 1.6)
+    @test RadialChannelKey(masses, "S") == RadialChannelKey(1.6, 1.6, "S")
+end
+
+@testset "RadialWaveOnUniformMesh agrees with ChannelRadialSolution column" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m = mq["c"]
+    ev, vecs, r =
+        GIModel.channel_solution(params, ConstituentMasses(m, m), 1; nlevels = 2, ngrid = 120, rmax = 16.0)
+    sol = GIModel.ChannelRadialSolution(ev, vecs, r)
+    wave = GIModel.RadialWaveOnUniformMesh(sol, 1)
+    h = r[2] - r[1]
+    @test wave.u ≈ vecs[:, 1]
+    @test wave.r ≈ r
+    @test wave.h ≈ h
+    mult = GIModel.FineStructureMultiplet("P", 3, 2)
+    masses = GIModel.ConstituentMasses(m, m)
+    c1 = GIModel.fine_structure_components(
+        params,
+        masses,
+        mult,
+        wave;
+        k_spin_orbit = 1.0,
+        k_tensor = 1.0,
+    )
+    c2 = GIModel.fine_structure_components(
+        params,
+        m,
+        m,
+        "P",
+        3,
+        2,
+        collect(vecs[:, 1]),
+        r,
+        h;
+        k_spin_orbit = 1.0,
+        k_tensor = 1.0,
+    )
+    @test c1.total ≈ c2.total rtol = 1e-12 atol = 0.0
 end
 
 @testset "compute_sector + compare return shift breakdown fields" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     reference =
         load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
     sub = reference[1:1]
+    ann = attach_constituent_masses(mq, sub, mq["c"])
     computed =
-        compute_sector(params, sub, "c"; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
-    rows = compare(computed, sub; contact_hyperfine = true, use_fine_structure = true)
+        compute_sector(params, ann; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
+    rows = compare(computed, ann; contact_hyperfine = true, use_fine_structure = true)
     @test length(rows) == 1
     row = rows[1]
     @test hasproperty(row, :central_GeV)
@@ -1195,57 +1226,76 @@ end
         1e-12
 end
 
+@testset "ReferenceStateWithMasses stable across compute_sector" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    reference =
+        load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
+    sub = reference[1:min(4, length(reference))]
+    ann = attach_constituent_masses(mq, sub, mq["c"])
+    computed = compute_sector(params, ann; ngrid = 100, rmax = 10.0, kinetic = :relativistic)
+    rows_ann =
+        compare(computed, ann; contact_hyperfine = true, use_fine_structure = true)
+
+    computed_ann2 =
+        compute_sector(params, ann; ngrid = 100, rmax = 10.0, kinetic = :relativistic)
+    rows_ann2 =
+        compare(computed_ann2, ann; contact_hyperfine = true, use_fine_structure = true)
+    @test length(rows_ann2) == length(rows_ann)
+    for i in eachindex(rows_ann)
+        @test rows_ann[i].predicted_GeV ≈ rows_ann2[i].predicted_GeV rtol = 0.0 atol = 1e-14
+        @test rows_ann[i].central_GeV ≈ rows_ann2[i].central_GeV rtol = 0.0 atol = 1e-14
+    end
+end
+
 @testset "compute_sector: empty reference" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-    empty_ref = ReferenceState[]
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    empty_ann = ReferenceStateWithMasses[]
     computed = compute_sector(
         params,
-        empty_ref,
-        "c";
+        empty_ann;
         ngrid = 80,
         rmax = 8.0,
         kinetic = :relativistic,
     )
     @test isempty(computed.channel_cache)
-    @test isempty(compare(computed, empty_ref))
+    @test isempty(compare(computed, empty_ann))
 end
 
 @testset "compare reuses SectorComputation (stable + superset cache)" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     reference =
         load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
     prefix = reference[1:min(4, length(reference))]
     isempty(prefix) && error("charmonium reference unexpectedly empty")
+    prefix_ann = attach_constituent_masses(mq, prefix, mq["c"])
     computed = compute_sector(
         params,
-        prefix,
-        "c";
+        prefix_ann;
         ngrid = 100,
         rmax = 10.0,
         kinetic = :relativistic,
     )
-    r1 = compare(computed, prefix; contact_hyperfine = true, use_fine_structure = true)
-    r2 = compare(computed, prefix; contact_hyperfine = true, use_fine_structure = true)
-    @test length(r1) == length(prefix)
-    @test length(r2) == length(prefix)
+    r1 = compare(computed, prefix_ann; contact_hyperfine = true, use_fine_structure = true)
+    r2 = compare(computed, prefix_ann; contact_hyperfine = true, use_fine_structure = true)
+    @test length(r1) == length(prefix_ann)
+    @test length(r2) == length(prefix_ann)
     for i = 1:length(r1)
         @test r1[i].predicted_GeV ≈ r2[i].predicted_GeV rtol = 0.0 atol = 1e-15
         @test r1[i].residual_MeV ≈ r2[i].residual_MeV rtol = 0.0 atol = 1e-12
     end
 
-    short = prefix[1:min(2, length(prefix))]
+    short_ann = prefix_ann[1:min(2, length(prefix_ann))]
     from_superset =
-        compare(computed, short; contact_hyperfine = true, use_fine_structure = true)
+        compare(computed, short_ann; contact_hyperfine = true, use_fine_structure = true)
     computed_short = compute_sector(
         params,
-        short,
-        "c";
+        short_ann;
         ngrid = 100,
         rmax = 10.0,
         kinetic = :relativistic,
     )
     direct =
-        compare(computed_short, short; contact_hyperfine = true, use_fine_structure = true)
+        compare(computed_short, short_ann; contact_hyperfine = true, use_fine_structure = true)
     @test length(from_superset) == length(direct)
     for i = 1:length(direct)
         @test from_superset[i].predicted_GeV ≈ direct[i].predicted_GeV rtol = 1e-12 atol =
@@ -1255,14 +1305,15 @@ end
 end
 
 @testset "compare(contact_hyperfine=false) drops contact shift for covered states" begin
-    params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     reference =
         load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
     sub = reference[1:1]
+    ann = attach_constituent_masses(mq, sub, mq["c"])
     computed =
-        compute_sector(params, sub, "c"; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
-    with_hf = compare(computed, sub; contact_hyperfine = true, use_fine_structure = false)
-    no_hf = compare(computed, sub; contact_hyperfine = false, use_fine_structure = false)
+        compute_sector(params, ann; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
+    with_hf = compare(computed, ann; contact_hyperfine = true, use_fine_structure = false)
+    no_hf = compare(computed, ann; contact_hyperfine = false, use_fine_structure = false)
     @test length(with_hf) == 1 && length(no_hf) == 1
     @test no_hf[1].contact_shift_GeV ≈ 0.0 atol = 1e-15
     @test with_hf[1].central_GeV ≈ no_hf[1].central_GeV rtol = 1e-12 atol = 0.0

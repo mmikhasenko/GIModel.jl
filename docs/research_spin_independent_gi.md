@@ -264,7 +264,7 @@ Add a new named central mode, e.g. `:appendix_a_closed_form`, with:
 
 - `smeared_coulomb_G_closed(params, m1, m2, r)`;
 - `smeared_confinement_S_closed(params, m1, m2, r)`;
-- careful `r -> 0` limits.
+- careful `r -> 0` limits (mass dependence aligns with **`ConstituentMasses`** in the active Hamiltonian; see **`docs/code_architecture.md`**).
 
 Small-r limits:
 

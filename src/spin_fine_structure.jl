@@ -11,7 +11,7 @@
 # the large HO-basis results in the original paper; defaults are in parameters.toml.
 #
 # Public API (exported from GIModel.jl):
-#   fine_structure_split, LdotS, tensor_triplet_LJ
+#   fine_structure_components, fine_structure_split, LdotS, tensor_triplet_LJ
 
 function alpha_s_prime_r(r::Real)
     r = float(r)
@@ -60,6 +60,9 @@ function tensor_kernel_coulomb_running(r::Real)
     (1.0 / ri) * coulomb_G_prime_running(ri) - coulomb_G_second_running(ri)
 end
 
+smeared_coulomb_G_prime_closed(params::GIParameters, m::ConstituentMasses, r::Real) =
+    smeared_coulomb_G_prime_closed(params, m.m1_GeV, m.m2_GeV, r)
+
 function smeared_coulomb_G_prime_closed(params::GIParameters, m1::Real, m2::Real, r::Real)
     ri = max(float(r), 1.0e-7)
     σ = max(contact_smearing_sigma(params, m1, m2), 1.0e-12)
@@ -72,6 +75,9 @@ function smeared_coulomb_G_prime_closed(params::GIParameters, m1::Real, m2::Real
     end
     return s
 end
+
+smeared_coulomb_G_second_closed(params::GIParameters, m::ConstituentMasses, r::Real) =
+    smeared_coulomb_G_second_closed(params, m.m1_GeV, m.m2_GeV, r)
 
 function smeared_coulomb_G_second_closed(params::GIParameters, m1::Real, m2::Real, r::Real)
     ri = max(float(r), 1.0e-7)
@@ -87,11 +93,17 @@ function smeared_coulomb_G_second_closed(params::GIParameters, m1::Real, m2::Rea
     return s
 end
 
+tensor_kernel_smeared_coulomb(params::GIParameters, m::ConstituentMasses, r::Real) =
+    tensor_kernel_smeared_coulomb(params, m.m1_GeV, m.m2_GeV, r)
+
 function tensor_kernel_smeared_coulomb(params::GIParameters, m1::Real, m2::Real, r::Real)
     ri = max(float(r), 1.0e-7)
     (1.0 / ri) * smeared_coulomb_G_prime_closed(params, m1, m2, ri) -
     smeared_coulomb_G_second_closed(params, m1, m2, ri)
 end
+
+smeared_confinement_S_prime_closed(params::GIParameters, m::ConstituentMasses, r::Real) =
+    smeared_confinement_S_prime_closed(params, m.m1_GeV, m.m2_GeV, r)
 
 function smeared_confinement_S_prime_closed(
     params::GIParameters,
@@ -183,8 +195,7 @@ end
 
 function radial_expect_momentum_sandwich(
     params::GIParameters,
-    m1::Real,
-    m2::Real,
+    masses::ConstituentMasses,
     L::Integer,
     u::AbstractVector{<:Real},
     r::AbstractVector{<:Real},
@@ -192,6 +203,8 @@ function radial_expect_momentum_sandwich(
     epsilon::Real,
     f::F,
 ) where {F<:Function}
+    m1 = masses.m1_GeV
+    m2 = masses.m2_GeV
     length(r) == length(u) ||
         throw(ArgumentError("radial_expect_momentum_sandwich: length(r) != length(u)"))
     length(r) >= 2 || return 0.0
@@ -206,18 +219,21 @@ end
 
 function fine_structure_components(
     params::GIParameters,
-    m1::Real,
-    m2::Real,
-    Ls::String,
-    multiplicity::Int,
-    J::Int,
-    u::Vector{Float64},
-    r::Vector{Float64},
-    h::Real;
+    masses::ConstituentMasses,
+    multiplet::FineStructureMultiplet,
+    radial::RadialWaveOnUniformMesh;
     enabled::Bool = true,
     k_spin_orbit::Real = 1.0,
     k_tensor::Real = 1.0,
 )
+    Ls = multiplet.L_label
+    multiplicity = multiplet.multiplicity
+    J = multiplet.J
+    u = radial.u
+    r = radial.r
+    h = radial.h
+    m1 = masses.m1_GeV
+    m2 = masses.m2_GeV
     !enabled && return (
         I_cm = 0.0,
         I_tp = 0.0,
@@ -263,14 +279,14 @@ function fine_structure_components(
     inv2_cm = 0.5 * (1.0 / m1^2 + 1.0 / m2^2 + 2.0 / (m1 * m2))
     expect_kernel(epsilon, f) =
         params.fine_structure_momentum_sandwich ?
-        radial_expect_momentum_sandwich(params, m1, m2, Ln, u, r, h, epsilon, f) :
+        radial_expect_momentum_sandwich(params, masses, Ln, u, r, h, epsilon, f) :
         radial_expect_udr(u, r, h, f)
     Icm = expect_kernel(
         params.epsilon_so_vector,
         (ri, i) -> begin
             r0 = max(ri, 1.0e-8)
             if params.fine_structure_smeared_kernels
-                (1.0 / r0) * smeared_coulomb_G_prime_closed(params, m1, m2, r0)
+                (1.0 / r0) * smeared_coulomb_G_prime_closed(params, masses, r0)
             else
                 (4.0 / 3.0) * alpha_s_r(r0) / r0^3
             end
@@ -282,8 +298,8 @@ function fine_structure_components(
             r0 = max(ri, 1.0e-8)
             if params.fine_structure_smeared_kernels
                 (1.0 / (2.0 * r0)) * (
-                    smeared_confinement_S_prime_closed(params, m1, m2, r0) +
-                    smeared_coulomb_G_prime_closed(params, m1, m2, r0)
+                    smeared_confinement_S_prime_closed(params, masses, r0) +
+                    smeared_coulomb_G_prime_closed(params, masses, r0)
                 )
             else
                 (1.0 / (2.0 * r0)) * (params.b + dV_coul_central_dr(r0, params))
@@ -297,7 +313,7 @@ function fine_structure_components(
         params.epsilon_t,
         (ri, i) ->
             params.fine_structure_smeared_kernels ?
-            tensor_kernel_smeared_coulomb(params, m1, m2, ri) :
+            tensor_kernel_smeared_coulomb(params, masses, ri) :
             tensor_kernel_coulomb_running(ri),
     )
     ls = LdotS(Ln, 1, J)
@@ -334,30 +350,106 @@ end
 
 function fine_structure_split(
     params::GIParameters,
-    m1::Real,
-    m2::Real,
-    Ls::String,
-    multiplicity::Int,
-    J::Int,
-    u::Vector{Float64},
-    r::Vector{Float64},
+    masses::ConstituentMasses,
+    multiplet::FineStructureMultiplet,
+    radial::RadialWaveOnUniformMesh;
+    enabled::Bool = true,
+    k_spin_orbit::Real = 1.0,
+    k_tensor::Real = 1.0,
+)
+    return fine_structure_components(
+        params,
+        masses,
+        multiplet,
+        radial;
+        enabled = enabled,
+        k_spin_orbit = k_spin_orbit,
+        k_tensor = k_tensor,
+    ).total
+end
+
+function fine_structure_components(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    Ls::AbstractString,
+    multiplicity::Integer,
+    J::Integer,
+    u::AbstractVector{<:Real},
+    r::AbstractVector{<:Real},
     h::Real;
     enabled::Bool = true,
     k_spin_orbit::Real = 1.0,
     k_tensor::Real = 1.0,
 )
-    fine_structure_components(
+    return fine_structure_components(
         params,
-        m1,
-        m2,
+        masses,
+        FineStructureMultiplet(Ls, multiplicity, J),
+        RadialWaveOnUniformMesh(u, r, h);
+        enabled = enabled,
+        k_spin_orbit = k_spin_orbit,
+        k_tensor = k_tensor,
+    )
+end
+
+"""Convenience: same as [`fine_structure_components`](@ref)`(params, ConstituentMasses(m1, m2), ...)`."""
+function fine_structure_components(
+    params::GIParameters,
+    m1::Real,
+    m2::Real,
+    Ls::AbstractString,
+    multiplicity::Integer,
+    J::Integer,
+    u::AbstractVector{<:Real},
+    r::AbstractVector{<:Real},
+    h::Real;
+    kwargs...,
+)
+    return fine_structure_components(params, ConstituentMasses(m1, m2), Ls, multiplicity, J, u, r, h; kwargs...)
+end
+
+function fine_structure_split(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    Ls::AbstractString,
+    multiplicity::Integer,
+    J::Integer,
+    u::AbstractVector{<:Real},
+    r::AbstractVector{<:Real},
+    h::Real;
+    kwargs...,
+)
+    return fine_structure_split(
+        params,
+        masses,
+        FineStructureMultiplet(Ls, multiplicity, J),
+        RadialWaveOnUniformMesh(u, r, h);
+        kwargs...,
+    )
+end
+
+"""Convenience: same as [`fine_structure_split`](@ref)`(params, ConstituentMasses(m1, m2), ...)`."""
+function fine_structure_split(
+    params::GIParameters,
+    m1::Real,
+    m2::Real,
+    Ls::AbstractString,
+    multiplicity::Integer,
+    J::Integer,
+    u::AbstractVector{<:Real},
+    r::AbstractVector{<:Real},
+    h::Real;
+    kwargs...,
+)
+    return fine_structure_split(
+        params,
+        ConstituentMasses(m1, m2),
         Ls,
         multiplicity,
         J,
         u,
         r,
         h;
-        enabled = enabled,
-        k_spin_orbit = k_spin_orbit,
-        k_tensor = k_tensor,
-    ).total
+        kwargs...,
+    )
 end

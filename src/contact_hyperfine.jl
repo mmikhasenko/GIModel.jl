@@ -1,6 +1,9 @@
 # Public API (exported from GIModel.jl):
 #   spin_dot
 
+contact_smearing_sigma(params::GIParameters, m::ConstituentMasses) =
+    contact_smearing_sigma(params, m.m1_GeV, m.m2_GeV)
+
 function contact_smearing_sigma(params::GIParameters, m1::Real, m2::Real)
     # Appendix A (A9), PDF p. 36–37: universal σ(m1,m2) built from Table II σ0 and s.
     # We keep the paper's symmetric mass combinations explicit:
@@ -19,6 +22,8 @@ function spin_dot(multiplicity::Integer)
     S = (multiplicity - 1) / 2
     0.5 * (S * (S + 1) - 1.5)
 end
+
+spin_dot(multiplet::FineStructureMultiplet) = spin_dot(multiplet.multiplicity)
 
 """
 3D normalized Gaussian regulator for a contact delta, with σ in GeV and r in GeV⁻¹.
@@ -48,31 +53,20 @@ function euclidean_expectation(vector::AbstractVector, operator::AbstractMatrix)
     dot(v, operator * v) / norm2
 end
 
-"""
-First-order smeared contact hyperfine shift for S-waves.
-
-Convention: the solver eigenvector is treated as the reduced radial wavefunction
-`u(r)` on a uniform mesh with physical normalization `∫|u|² dr = 1`. For an
-S-wave, `ψ(r) = u(r) / r · Y₀₀` and a 3D-normalized regulator `δ_σ(r)` satisfies
-`∫ d³r δ_σ(r) = 1`. Therefore
-
-`⟨α_s(r) δ_σ(r)⟩ = ∫ |u(r)|² α_s(r) δ_σ(r) dr`
-
-with no extra `4π` factor.
-"""
-function contact_hyperfine_shift(
+function _contact_hyperfine_shift_diagonal(
     params::GIParameters,
-    m1::Real,
-    m2::Real,
-    L::String,
+    masses::ConstituentMasses,
+    L::AbstractString,
     multiplicity::Integer,
     vector::AbstractVector,
     r::AbstractVector,
 )
+    m1 = masses.m1_GeV
+    m2 = masses.m2_GeV
     L == "S" || return 0.0
     multiplicity in (1, 3) || return 0.0
     length(r) >= 2 || return 0.0
-    sigma = contact_smearing_sigma(params, m1, m2)
+    sigma = contact_smearing_sigma(params, masses)
     h = r[2] - r[1]
     expectation = radial_expect_udr(
         vector,
@@ -88,15 +82,16 @@ function contact_hyperfine_shift(
     spin_dot(multiplicity)
 end
 
-function contact_hyperfine_shift_momentum_sandwich(
+function _contact_hyperfine_shift_momentum_sandwich_diagonal(
     params::GIParameters,
-    m1::Real,
-    m2::Real,
-    L::String,
+    masses::ConstituentMasses,
+    L::AbstractString,
     multiplicity::Integer,
     vector::AbstractVector,
     r::AbstractVector,
 )
+    m1 = masses.m1_GeV
+    m2 = masses.m2_GeV
     L == "S" || return 0.0
     multiplicity in (1, 3) || return 0.0
     length(r) >= 2 || return 0.0
@@ -104,15 +99,128 @@ function contact_hyperfine_shift_momentum_sandwich(
     p2_fact = eigen(p2_operator(m1, 0, r, h))
     side_exponent = 0.25 + 0.5 * params.epsilon_c
     B = momentum_relativization_matrix(m1, m2, side_exponent, p2_fact)
-    sigma = contact_smearing_sigma(params, m1, m2)
+    sigma = contact_smearing_sigma(params, masses)
     kernel = Diagonal([alpha_s_r(ri) * delta_sigma_3d(ri, sigma) for ri in r])
     expectation = euclidean_expectation(vector, Symmetric(B * kernel * B))
     (32 * π / (9 * m1 * m2)) * expectation * spin_dot(multiplicity)
 end
 
-function contact_hyperfine_shift_active(params::GIParameters, args...)
+"""
+First-order smeared contact hyperfine shift for S-waves.
+
+Convention: the solver eigenvector is treated as the reduced radial wavefunction
+`u(r)` on a uniform mesh with physical normalization `∫|u|² dr = 1`. For an
+S-wave, `ψ(r) = u(r) / r · Y₀₀` and a 3D-normalized regulator `δ_σ(r)` satisfies
+`∫ d³r δ_σ(r) = 1`. Therefore
+
+`⟨α_s(r) δ_σ(r)⟩ = ∫ |u(r)|² α_s(r) δ_σ(r) dr`
+
+with no extra `4π` factor.
+
+Uses only [`FineStructureMultiplet`](@ref).`L_label` and `.multiplicity`; `.J` is unused (same multiplet object as fine-structure).
+"""
+function contact_hyperfine_shift(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    multiplet::FineStructureMultiplet,
+    wave::RadialWaveOnUniformMesh,
+)
+    return _contact_hyperfine_shift_diagonal(
+        params,
+        masses,
+        multiplet.L_label,
+        multiplet.multiplicity,
+        wave.u,
+        wave.r,
+    )
+end
+
+"""Convenience: same as [`contact_hyperfine_shift`](@ref)`(params, ConstituentMasses(m1, m2), ...)`."""
+function contact_hyperfine_shift(
+    params::GIParameters,
+    m1::Real,
+    m2::Real,
+    L::AbstractString,
+    multiplicity::Integer,
+    vector::AbstractVector,
+    r::AbstractVector,
+)
+    return _contact_hyperfine_shift_diagonal(
+        params,
+        ConstituentMasses(m1, m2),
+        L,
+        multiplicity,
+        vector,
+        r,
+    )
+end
+
+function contact_hyperfine_shift_momentum_sandwich(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    multiplet::FineStructureMultiplet,
+    wave::RadialWaveOnUniformMesh,
+)
+    return _contact_hyperfine_shift_momentum_sandwich_diagonal(
+        params,
+        masses,
+        multiplet.L_label,
+        multiplet.multiplicity,
+        wave.u,
+        wave.r,
+    )
+end
+
+function contact_hyperfine_shift_momentum_sandwich(
+    params::GIParameters,
+    m1::Real,
+    m2::Real,
+    L::AbstractString,
+    multiplicity::Integer,
+    vector::AbstractVector,
+    r::AbstractVector,
+)
+    return _contact_hyperfine_shift_momentum_sandwich_diagonal(
+        params,
+        ConstituentMasses(m1, m2),
+        L,
+        multiplicity,
+        vector,
+        r,
+    )
+end
+
+function contact_hyperfine_shift_active(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    multiplet::FineStructureMultiplet,
+    wave::RadialWaveOnUniformMesh,
+)
     if params.contact_momentum_sandwich
-        return contact_hyperfine_shift_momentum_sandwich(params, args...)
+        return contact_hyperfine_shift_momentum_sandwich(params, masses, multiplet, wave)
     end
-    return contact_hyperfine_shift(params, args...)
+    return contact_hyperfine_shift(params, masses, multiplet, wave)
+end
+
+function contact_hyperfine_shift_active(
+    params::GIParameters,
+    m1::Real,
+    m2::Real,
+    L::AbstractString,
+    multiplicity::Integer,
+    vector::AbstractVector,
+    r::AbstractVector,
+)
+    mm = ConstituentMasses(m1, m2)
+    if params.contact_momentum_sandwich
+        return _contact_hyperfine_shift_momentum_sandwich_diagonal(
+            params,
+            mm,
+            L,
+            multiplicity,
+            vector,
+            r,
+        )
+    end
+    return _contact_hyperfine_shift_diagonal(params, mm, L, multiplicity, vector, r)
 end

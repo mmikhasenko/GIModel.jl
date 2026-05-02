@@ -1,9 +1,4 @@
-# Public API (exported from GIModel.jl):
-#   reduced_mass
-
-function reduced_mass(m1::Real, m2::Real)
-    m1 * m2 / (m1 + m2)
-end
+# Public API (exported from GIModel.jl): (none)
 
 function radial_grid(ngrid::Integer, rmax::Real)
     h = rmax / (ngrid + 1)

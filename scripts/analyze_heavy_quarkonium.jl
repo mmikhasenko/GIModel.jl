@@ -8,7 +8,10 @@ using Printf
 root = dirname(@__DIR__)
 using GIModel
 
-params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+# Heavy-heavy diagnostics: same attach → compute_sector → compare pipeline per spectrum file.
+
+params_path = joinpath(root, "data", "parameters.provisional.toml")
+params, mq = load_parameters_and_quark_masses(params_path)
 report_path = joinpath(root, "docs", "residual_reports", "heavy_quarkonium_diagnostics.md")
 mkpath(dirname(report_path))
 
@@ -129,10 +132,11 @@ open(report_path, "w") do io
 
     for (sector, flavor, path) in SECTORS
         reference = load_reference_spectrum(path)
-        computed = compute_sector(params, reference, flavor; kinetic = :relativistic)
+        annotated = attach_constituent_masses(mq, reference, mq[flavor])
+        computed = compute_sector(params, annotated; kinetic = :relativistic)
         rows = compare(
             computed,
-            reference;
+            annotated;
             contact_hyperfine = true,
             use_fine_structure = params.fine_structure,
         )

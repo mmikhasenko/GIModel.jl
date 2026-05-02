@@ -2,17 +2,16 @@
 
 function nonrelativistic_hamiltonian(
     params::GIParameters,
-    m1::Real,
-    m2::Real,
+    masses::ConstituentMasses,
     L::Integer;
     ngrid::Integer = 900,
     rmax::Real = 24.0,
 )
-    mu = reduced_mass(m1, m2)
+    mu = reduced_mass(masses)
     r, h = radial_grid(ngrid, rmax)
     diagonal = similar(r)
     offdiag = fill(-1 / (2 * mu * h^2), ngrid - 1)
-    vdiag = potential_diagonal(params, m1, m2, r)
+    vdiag = potential_diagonal(params, masses.m1_GeV, masses.m2_GeV, r)
     for i in eachindex(r)
         ri = r[i]
         diagonal[i] = 1 / (mu * h^2) + L * (L + 1) / (2 * mu * ri^2) + vdiag[i]
@@ -46,11 +45,12 @@ end
 
 function appendix_a_momentum_sandwich_matrix(
     params::GIParameters,
-    m1::Real,
-    m2::Real,
+    masses::ConstituentMasses,
     r::AbstractVector,
     p2_fact,
 )
+    m1 = masses.m1_GeV
+    m2 = masses.m2_GeV
     λ = max.(p2_fact.values, 0)
     e1 = sqrt.(λ .+ m1^2)
     e2 = sqrt.(λ .+ m2^2)
@@ -63,12 +63,13 @@ end
 
 function relativistic_hamiltonian(
     params::GIParameters,
-    m1::Real,
-    m2::Real,
+    masses::ConstituentMasses,
     L::Integer;
     ngrid::Integer = 450,
     rmax::Real = 24.0,
 )
+    m1 = masses.m1_GeV
+    m2 = masses.m2_GeV
     r, h = radial_grid(ngrid, rmax)
     p2 = p2_operator(m1, L, r, h)
     p2_fact = eigen(p2)
@@ -76,7 +77,7 @@ function relativistic_hamiltonian(
         sqrt_kinetic_matrix_from_eigen(p2_fact, m1) +
         sqrt_kinetic_matrix_from_eigen(p2_fact, m2)
     potential = if central_potential_mode(params) == :appendix_a_momentum_sandwich
-        appendix_a_momentum_sandwich_matrix(params, m1, m2, r, p2_fact)
+        appendix_a_momentum_sandwich_matrix(params, masses, r, p2_fact)
     else
         Diagonal(potential_diagonal(params, m1, m2, r))
     end
