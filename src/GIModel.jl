@@ -48,7 +48,12 @@ include("channel_solver.jl")
 export spin_dot
 include("contact_hyperfine.jl")
 
-export fine_structure_split, fine_structure_components, LdotS, tensor_triplet_LJ
+export fine_structure_split,
+    fine_structure_components,
+    spin_orbit_mixing_components,
+    same_j_mixing,
+    LdotS,
+    tensor_triplet_LJ
 include("spin_fine_structure.jl")
 
 export CentralPotentialPath, central_potential_path

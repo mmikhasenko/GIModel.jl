@@ -661,6 +661,64 @@ end
     end
 end
 
+@testset "same-J spin-orbit mixing diagnostics" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    mc = mq["c"]
+    mb = mq["b"]
+
+    _vals_cc, umat_cc, r_cc = GIModel.channel_solution(
+        params,
+        ConstituentMasses(mc, mc),
+        1;
+        nlevels = 1,
+        ngrid = 200,
+        rmax = 20.0,
+    )
+    radial_cc = RadialWaveOnUniformMesh(umat_cc[:, 1], r_cc)
+    off_cc = GIModel.spin_orbit_mixing_components(
+        params,
+        ConstituentMasses(mc, mc),
+        "P",
+        radial_cc;
+        k_spin_orbit = params.k_spin_orbit,
+    )
+    @test off_cc.total == 0.0
+    mix_cc = GIModel.same_j_mixing(3.5, 3.6, off_cc.total)
+    @test mix_cc.masses ≈ [3.5, 3.6]
+    @test mix_cc.theta_deg ≈ 0.0 atol = 1e-12
+
+    vals_bc, umat_bc, r_bc = GIModel.channel_solution(
+        params,
+        ConstituentMasses(mb, mc),
+        1;
+        nlevels = 1,
+        ngrid = 200,
+        rmax = 24.0,
+    )
+    radial_bc = RadialWaveOnUniformMesh(umat_bc[:, 1], r_bc)
+    off_bc = GIModel.spin_orbit_mixing_components(
+        params,
+        ConstituentMasses(mb, mc),
+        "P",
+        radial_bc;
+        k_spin_orbit = params.k_spin_orbit,
+    )
+    @test isfinite(off_bc.total)
+    @test off_bc.total != 0.0
+
+    triplet_shift = GIModel.fine_structure_split(
+        params,
+        ConstituentMasses(mb, mc),
+        FineStructureMultiplet("P", 3, 1),
+        radial_bc;
+        k_spin_orbit = params.k_spin_orbit,
+        k_tensor = params.k_tensor,
+    )
+    mix_bc = GIModel.same_j_mixing(vals_bc[1], vals_bc[1] + triplet_shift, off_bc.total)
+    @test isfinite(mix_bc.theta_deg)
+    @test minimum(mix_bc.masses) < vals_bc[1] < maximum(mix_bc.masses)
+end
+
 @testset "legacy fine-structure ε factors are scalar (1+ε) multipliers" begin
     mktempdir() do d
         p0 = joinpath(d, "p0.toml")

@@ -235,6 +235,14 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     target `ccbar`/`bbbar`), but is only diagnostic for unequal-mass channels
     until the paper’s antisymmetric spin–orbit term and same-`J` mixing
     machinery are implemented.
+  - Diagnostic same-`J` mixing hook: `spin_orbit_mixing_components(...)` now
+    computes the antisymmetric spin–orbit off-diagonal matrix element for
+    `^1L_L`/`^3L_L`, and `same_j_mixing(...)` diagonalizes the resulting `2x2`
+    mass matrix. This is deliberately reported as a convention-sensitive
+    diagnostic layer rather than folded into `compare` by default; equal-mass
+    channels are regression-tested to give zero off-diagonal mixing, and the
+    heavy-quarkonium diagnostic report prints the `1P` result for `ccbar`,
+    `bbbar`, and the Fig. 9 `bcbar` panel.
 
 ## Appendix A: paper method vs this codebase (completion target)
 

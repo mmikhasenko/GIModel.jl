@@ -16,8 +16,24 @@ report_path = joinpath(root, "docs", "residual_reports", "heavy_quarkonium_diagn
 mkpath(dirname(report_path))
 
 const SECTORS = [
-    ("charmonium", "c", joinpath(root, "data", "reference_spectrum_charmonium.csv")),
-    ("bottomonium", "b", joinpath(root, "data", "reference_spectrum_bottomonium.csv")),
+    (
+        "charmonium",
+        "c",
+        joinpath(root, "data", "reference_spectrum_charmonium.csv"),
+        state -> true,
+    ),
+    (
+        "bottomonium",
+        "b",
+        joinpath(root, "data", "reference_spectrum_bottomonium.csv"),
+        state -> true,
+    ),
+    (
+        "bcbar",
+        "b",
+        joinpath(root, "data", "reference_spectrum_b_flavored.csv"),
+        state -> state.sector == "bottom_charm",
+    ),
 ]
 
 function row_label(row)
@@ -116,6 +132,44 @@ function emit_split_table(io, title, rows)
     println(io)
 end
 
+function same_j_pwave_mixing_diagnostic(params, masses; ngrid = 450, rmax = 24.0)
+    vals, vecs, r = channel_solution(
+        params,
+        masses,
+        1;
+        nlevels = 1,
+        ngrid = ngrid,
+        rmax = rmax,
+        kinetic = :relativistic,
+    )
+    radial = RadialWaveOnUniformMesh(vecs[:, 1], r)
+    offdiag = spin_orbit_mixing_components(
+        params,
+        masses,
+        "P",
+        radial;
+        k_spin_orbit = params.k_spin_orbit,
+    )
+    triplet_shift = fine_structure_split(
+        params,
+        masses,
+        FineStructureMultiplet("P", 3, 1),
+        radial;
+        k_spin_orbit = params.k_spin_orbit,
+        k_tensor = params.k_tensor,
+    )
+    mix = same_j_mixing(vals[1], vals[1] + triplet_shift, offdiag.total)
+    return (
+        singlet = vals[1],
+        triplet = vals[1] + triplet_shift,
+        offdiag = offdiag.total,
+        low = mix.masses[1],
+        high = mix.masses[2],
+        theta = mix.theta_deg,
+        theta_complement = mix.theta_deg > 0 ? mix.theta_deg - 90 : mix.theta_deg + 90,
+    )
+end
+
 open(report_path, "w") do io
     println(io, "# Heavy Quarkonium Diagnostics")
     println(io)
@@ -123,15 +177,15 @@ open(report_path, "w") do io
     println(io)
     println(
         io,
-        "Purpose: check whether the active GI central path reproduces `ccbar`/`bbbar`, then separate any remaining mismatch into spin-averaged centers, radial/orbital spacings, and spin splittings.",
+        "Purpose: check whether the active GI central path reproduces `ccbar`/`bbbar` and the Fig. 9 `bcbar` panel, then separate any remaining mismatch into spin-averaged centers, radial/orbital spacings, and spin splittings.",
     )
     println(io)
     active = central_potential_path(params)
     println(io, "Active central path: `", active.name, "` — ", active.paper_refs)
     println(io)
 
-    for (sector, flavor, path) in SECTORS
-        reference = load_reference_spectrum(path)
+    for (sector, flavor, path, keep_state) in SECTORS
+        reference = filter(keep_state, load_reference_spectrum(path))
         annotated = attach_constituent_masses(mq, reference, mq[flavor])
         computed = compute_sector(params, annotated; kinetic = :relativistic)
         rows = compare(
@@ -234,6 +288,37 @@ open(report_path, "w") do io
                 split_row(rows, "1^3D_2", "1^3D_1"),
             ],
         )
+
+        masses = annotated[1].constituent_masses
+        mix = same_j_pwave_mixing_diagnostic(params, masses)
+        println(io, "### Same-J 1P Mixing Diagnostic")
+        println(io)
+        println(
+            io,
+            "Diagnostic FD-basis `(^1P_1, ^3P_1)` matrix, using the antisymmetric spin-orbit term. Angle convention: `low = cos(theta) ^1P_1 + sin(theta) ^3P_1`; the complementary angle is shown because the paper's label/sign convention may choose the orthogonal state.",
+        )
+        println(io)
+        println(
+            io,
+            "| m1 GeV | m2 GeV | ^1P1 diag GeV | ^3P1 diag GeV | offdiag MeV | low GeV | high GeV | theta deg | complement deg |",
+        )
+        println(io, "|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+        println(
+            io,
+            @sprintf(
+                "| %.3f | %.3f | %.3f | %.3f | %+7.2f | %.3f | %.3f | %+6.1f | %+6.1f |",
+                masses.m1_GeV,
+                masses.m2_GeV,
+                mix.singlet,
+                mix.triplet,
+                1000 * mix.offdiag,
+                mix.low,
+                mix.high,
+                mix.theta,
+                mix.theta_complement,
+            ),
+        )
+        println(io)
     end
 
     println(io)

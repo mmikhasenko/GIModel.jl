@@ -11,7 +11,8 @@
 # the large HO-basis results in the original paper; defaults are in parameters.toml.
 #
 # Public API (exported from GIModel.jl):
-#   fine_structure_components, fine_structure_split, LdotS, tensor_triplet_LJ
+#   fine_structure_components, fine_structure_split, spin_orbit_mixing_components,
+#   same_j_mixing, LdotS, tensor_triplet_LJ
 
 function alpha_s_prime_r(r::Real)
     r = float(r)
@@ -345,6 +346,120 @@ function fine_structure_components(
         spin_orbit = spin_orbit,
         tensor = tensor,
         total = spin_orbit + tensor,
+    )
+end
+
+function spin_orbit_radial_integrals(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L::Integer,
+    u::AbstractVector{<:Real},
+    r::AbstractVector{<:Real},
+    h::Real,
+)
+    expect_kernel(epsilon, f) =
+        params.fine_structure_momentum_sandwich ?
+        radial_expect_momentum_sandwich(params, masses, L, u, r, h, epsilon, f) :
+        radial_expect_udr(u, r, h, f)
+    Icm = expect_kernel(
+        params.epsilon_so_vector,
+        (ri, i) -> begin
+            r0 = max(ri, 1.0e-8)
+            if params.fine_structure_smeared_kernels
+                (1.0 / r0) * smeared_coulomb_G_prime_closed(params, masses, r0)
+            else
+                (4.0 / 3.0) * alpha_s_r(r0) / r0^3
+            end
+        end,
+    )
+    Itp = expect_kernel(
+        params.epsilon_so_scalar,
+        (ri, i) -> begin
+            r0 = max(ri, 1.0e-8)
+            if params.fine_structure_smeared_kernels
+                (1.0 / (2.0 * r0)) * (
+                    smeared_confinement_S_prime_closed(params, masses, r0) +
+                    smeared_coulomb_G_prime_closed(params, masses, r0)
+                )
+            else
+                (1.0 / (2.0 * r0)) * (params.b + dV_coul_central_dr(r0, params))
+            end
+        end,
+    )
+    vec_term =
+        params.fine_structure_momentum_sandwich ? Icm :
+        (1.0 + params.epsilon_so_vector) * Icm
+    thomas_term =
+        params.fine_structure_momentum_sandwich ? Itp :
+        (1.0 + params.epsilon_so_scalar) * Itp
+    return (I_cm = Icm, I_tp = Itp, vec_term = vec_term, thomas_term = thomas_term)
+end
+
+"""
+    spin_orbit_mixing_components(params, masses, L_label, radial; ...)
+
+Diagnostic antisymmetric spin-orbit matrix element for the same-`J` basis
+`|n ^1L_L>` / `|n ^3L_L>`. The angular convention is
+`<^1L_L| L·(S1-S2) |^3L_L> = sqrt(L(L+1))`; the sign of the reported mixing
+angle is therefore tied to the basis ordering used in [`same_j_mixing`](@ref).
+"""
+function spin_orbit_mixing_components(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L_label::AbstractString,
+    radial::RadialWaveOnUniformMesh;
+    enabled::Bool = true,
+    k_spin_orbit::Real = 1.0,
+)
+    L = L_SYMBOLS[String(L_label)]
+    if !enabled || L == 0
+        return (
+            I_cm = 0.0,
+            I_tp = 0.0,
+            vector = 0.0,
+            thomas = 0.0,
+            total = 0.0,
+            angular = 0.0,
+        )
+    end
+    m1 = float(masses.m1_GeV)
+    m2 = float(masses.m2_GeV)
+    radial_terms = spin_orbit_radial_integrals(params, masses, L, radial.u, radial.r, radial.h)
+    angular = sqrt(L * (L + 1.0))
+    inv2_asym = 0.5 * (1.0 / m1^2 - 1.0 / m2^2)
+    vector = k_spin_orbit * inv2_asym * angular * radial_terms.vec_term
+    thomas = k_spin_orbit * (-inv2_asym) * angular * radial_terms.thomas_term
+    return (
+        I_cm = radial_terms.I_cm,
+        I_tp = radial_terms.I_tp,
+        vector = vector,
+        thomas = thomas,
+        total = vector + thomas,
+        angular = angular,
+    )
+end
+
+"""
+    same_j_mixing(singlet_mass, triplet_mass, offdiag)
+
+Diagonalize the `(^1L_L, ^3L_L)` same-`J` mass matrix. The returned angle
+uses the Fig. 9 convention
+`low = cos(theta) * singlet + sin(theta) * triplet`.
+"""
+function same_j_mixing(singlet_mass::Real, triplet_mass::Real, offdiag::Real)
+    matrix = Symmetric([float(singlet_mass) float(offdiag); float(offdiag) float(triplet_mass)])
+    fact = eigen(matrix)
+    low_vec = fact.vectors[:, 1]
+    if low_vec[1] < 0
+        low_vec = -low_vec
+    end
+    theta = atan(low_vec[2], low_vec[1])
+    return (
+        matrix = Matrix(matrix),
+        masses = fact.values,
+        vectors = fact.vectors,
+        theta_rad = theta,
+        theta_deg = theta * 180 / π,
     )
 end
 
