@@ -1,7 +1,8 @@
-# Map reference CSV (sector, composition_raw) to (m_quark, m_antiquark) in GeV.
+# Map (sector string, quark_content string) to constituent (m₁, m₂) in GeV;
+# batch attach for CSV [`ReferenceState`](@ref) rows.
 #
-# Public API (exported from GIModel.jl):
-#   parse_quark_masses, resolve_constituent_masses, attach_constituent_masses
+# Public API (exported from GIModel.jl): parse_quark_masses, resolve_constituent_masses,
+# attach_constituent_masses
 
 function first_content_segment(composition_raw::AbstractString)
     sc = String(composition_raw)
@@ -76,32 +77,36 @@ function parse_quark_masses(
 end
 
 """
-    resolve_constituent_masses(quark_masses, state::ReferenceState, fallback_mass)
+    resolve_constituent_masses(quark_masses, sector, quark_content, fallback_mass)
 
-Return [`ConstituentMasses`](@ref) using [`parse_quark_masses`](@ref) on the row's sector and
-quark content. On failure (unknown sector, malformed content), return equal masses
-`(fallback_mass, fallback_mass)`.
+Return [`ConstituentMasses`](@ref) using [`parse_quark_masses`](@ref). On failure (unknown sector,
+malformed content), return equal masses `(fallback_mass, fallback_mass)`.
 
-See also [`attach_constituent_masses`](@ref).
+`sector` and `quark_content` are plain strings (e.g. `String(state.sector)` and
+`String(state.quark_content)` from a [`ReferenceState`](@ref)).
+See [`attach_constituent_masses`](@ref) for batching CSV rows.
 """
 function resolve_constituent_masses(
     quark_masses::QuarkMassTable,
-    s::ReferenceState,
+    sector::AbstractString,
+    quark_content::AbstractString,
     fallback_mass::Real,
 )
     try
-        m1, m2 = parse_quark_masses(quark_masses, String(s.sector), String(s.quark_content))
+        m1, m2 = parse_quark_masses(quark_masses, String(sector), String(quark_content))
         return ConstituentMasses(m1, m2)
     catch
-        return ConstituentMasses(fallback_mass, fallback_mass)
+        fm = float(fallback_mass)
+        return ConstituentMasses(fm, fm)
     end
 end
 
 """
     attach_constituent_masses(quark_masses, states::Vector{ReferenceState}, fallback_mass)
 
-Resolve [`ConstituentMasses`](@ref) **once** per row for [`compute_sector`](@ref) /
-[`compare`](@ref). Use `fallback_mass` when parsing fails for a row.
+Resolve [`ConstituentMasses`](@ref) **once** per row via [`resolve_constituent_masses`](@ref),
+passing `String(s.sector)` and `String(s.quark_content)` for each [`ReferenceState`](@ref) `s`.
+Use `fallback_mass` when parsing fails for a row.
 
 `quark_masses` comes from [`load_quark_masses`](@ref) / [`load_parameters_and_quark_masses`](@ref).
 """
@@ -112,6 +117,10 @@ function attach_constituent_masses(
 )
     mf = float(fallback_mass)
     return ReferenceStateWithMasses[
-        ReferenceStateWithMasses(s, resolve_constituent_masses(quark_masses, s, mf)) for s in states
+        ReferenceStateWithMasses(
+            s,
+            resolve_constituent_masses(quark_masses, String(s.sector), String(s.quark_content), mf),
+        )
+        for s in states
     ]
 end

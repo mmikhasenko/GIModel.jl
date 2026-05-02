@@ -17,7 +17,7 @@ export ConstituentMasses, reduced_mass, FineStructureMultiplet, RadialWaveOnUnif
 include("model_objects.jl")
 
 # =============================================================================
-# Setup / bookkeeping: TOML tables, reference CSV rows, attaching masses to rows
+# Setup / bookkeeping: TOML parameters and flavor mass table
 # =============================================================================
 
 export GIParameters, load_parameters
@@ -25,12 +25,6 @@ include("parameters.jl")
 
 export QuarkMassTable, load_quark_masses, load_parameters_and_quark_masses
 include("quark_mass_table.jl")
-
-export ReferenceState, ReferenceStateWithMasses, load_reference_spectrum
-include("reference_spectrum.jl")
-
-export parse_quark_masses, resolve_constituent_masses, attach_constituent_masses
-include("masses_from_content.jl")
 
 # =============================================================================
 # Numerics: potentials, Hamiltonian, radial solves, spin-dependent corrections
@@ -60,13 +54,21 @@ include("spin_fine_structure.jl")
 export CentralPotentialPath, central_potential_path
 include("appendix_a_status.jl")
 
-export RadialChannelKey,
-    ChannelRadialSolution,
-    SectorComputation,
-    solve_sector,
-    compute_sector,
-    compare,
-    write_residual_report
-include("sector_workflow.jl")
+export RadialChannelKey, ChannelRadialSolution, SectorComputation, solve_sector
+include("sector_solver.jl")
+
+# =============================================================================
+# IO: reference catalog types, CSV loader, string→mass resolution, attach
+# Sector batch solves, comparison vs reference rows, residual markdown
+# =============================================================================
+
+export compute_sector, compare, write_residual_report
+include("sector_comparison.jl")
+
+export ReferenceState, ReferenceStateWithMasses, load_reference_spectrum
+include("reference_state.jl")
+
+export parse_quark_masses, resolve_constituent_masses, attach_constituent_masses
+include("masses_from_content.jl")
 
 end

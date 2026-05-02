@@ -57,10 +57,11 @@ But the 1.0 reproduction path uses the relativistic kinetic operator.
 - `p2_operator(...)` builds the radial momentum-squared operator.
 - `relativistic_hamiltonian(...)` builds the active heavy-quarkonium Hamiltonian.
 - `solve_sector(...)` tabulates equal-mass eigenvalues per `(n, L)` for one flavor.
-- `compute_sector(params, annotated)` caches spin-independent radial solves per `RadialChannelKey`
-  (`ConstituentMasses` + orbital letter `L`) built from **`ReferenceStateWithMasses`** rows;
-  `compare(computed, annotated)` uses the same rows, maps levels to reference labels, and adds contact /
-  fine-structure shifts. Pipeline: `docs/code_architecture.md`.
+- `compute_sector(...)` (**`src/sector_comparison.jl`**) caches spin-independent radial solves per `RadialChannelKey`
+  (`ConstituentMasses` + orbital letter `L`) built from **`ReferenceStateWithMasses`** rows.
+- `compare(computed, annotated)` (**`src/sector_comparison.jl`**) uses the same rows, maps levels to reference labels,
+  applies contact / fine-structure shifts, and returns residual **`NamedTuple`** rows; **`write_residual_report`**
+  is markdown-only on those rows. See **`docs/code_architecture.md`**.
 
 ## Important Convention
 

@@ -47,7 +47,8 @@ The active 1.0 model reads one file with **two conceptual layers** (see also `do
   central-path switches, contact/fine-structure momentum switches, diagnostic spin scales. Loaded with
   **`load_parameters`** or together with masses via **`load_parameters_and_quark_masses`**.
 - **`QuarkMassTable`** — from **`[masses]`** (Table II MeV fields → GeV in code): `u`/`d`/`s`/`c`/`b`
-  keys used when **`attach_constituent_masses`** resolves each reference row’s **`quark_content`**.
+  keys used when **`resolve_constituent_masses`** (**`masses_from_content.jl`**) resolves masses from sector +
+  content strings; **`attach_constituent_masses`** (**`masses_from_content.jl`**) applies that per CSV row.
 
 Together they supply:
 

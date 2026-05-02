@@ -159,18 +159,18 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     `appendix_a_momentum_sandwich`, then `appendix_a_closed_form`, then the older
     comparator modes.
 
-- `src/masses_from_content.jl`: map `sector` + first `quark_content`
-  segment to constituent $(m_1, m_2)$ (wrapped as **`ConstituentMasses`**) when attaching masses to
-  **`ReferenceState`** rows via **`attach_constituent_masses`**; unequal-mass rows then participate in
-  **`RadialChannelKey`** grouping inside **`compute_sector`**.
+- `src/reference_state.jl`: **`ReferenceState`**, **`ReferenceStateWithMasses`** (+ **`FineStructureMultiplet`** overloads from CSV rows),
+  **`load_reference_spectrum`** (CSV IO).
+  Loaded with IO **after** **`sector_comparison.jl`** in **`GIModel.jl`**; **`compute_sector`** / **`compare`** duck-type annotated rows as **`AbstractVector`** with `.constituent_masses` and `.state`.
+- `src/masses_from_content.jl`: **`parse_quark_masses`**, **`resolve_constituent_masses`**, **`attach_constituent_masses`** — map string `sector` +
+  `quark_content` to **`ConstituentMasses`**; **`attach_constituent_masses`** pairs **[ReferenceState](@ref)** rows from CSV with masses via **`resolve_constituent_masses`**.
   - Paper: Sec. II flavor content; Table II masses.
 
-- `src/sector_workflow.jl`: reference-spectrum batch driver. **`compute_sector(params,
-  annotated::Vector{ReferenceStateWithMasses})`** runs **`channel_solution(params, masses::ConstituentMasses, L)`**
-  once per distinct **`RadialChannelKey`** (**`ConstituentMasses` + orbital letter**) and stores
-  eigenpairs in **`SectorComputation.channel_cache`**; **`compare`** uses the same annotated rows,
-  selects radial level `n`, applies smeared contact hyperfine and first-order fine structure, and
-  forms residual rows. Scripts use **`write_residual_report`** to emit **`docs/residual_reports/*.md`**.
+- `src/sector_solver.jl`: **`RadialChannelKey`**, **`ChannelRadialSolution`**, **`SectorComputation`**, **`solve_sector`**.
+- `src/sector_comparison.jl`: **`compute_sector`** batches **`channel_solution`** calls per distinct
+  **`RadialChannelKey`** and fills **`SectorComputation.channel_cache`**; **`compare`** maps reference rows to
+  cached channels and builds residual **`NamedTuple`** rows; **`write_residual_report`** emits markdown under
+  **`docs/residual_reports/`**.
   Structural overview: **`docs/code_architecture.md`**.
 
 - `src/spin_fine_structure.jl`: first-order color-magnetic + Thomas

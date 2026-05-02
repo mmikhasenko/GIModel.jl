@@ -27,7 +27,7 @@ DEFAULT_VERIFY = [
     "python3 scripts/validate_seed.py",
     "python3 scripts/verify_table_ii_toml.py",
     "python3 scripts/validate_reference_spectra.py",
-    "julia test/runtests.jl",
+    "julia --project=. test/runtests.jl",
     "julia scripts/compare_central_pointwise_vs_a7a8.jl",
     "julia scripts/analyze_heavy_quarkonium.jl",
     "julia scripts/run_all_spectrum_checks.jl",

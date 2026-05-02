@@ -80,7 +80,8 @@ provenance and experiments, but they are not recommended handoff entry points.
 
 The solver is a Julia package named **GIModel** (see `Project.toml`). The
 module entry point is `src/GIModel.jl`; other files in `src/` are included from
-there (constants/types, then setup/bookkeeping, then numerics—see
+there (constants/types in **`model_objects.jl`**, then TOML parameters + flavor table, Hamiltonian numerics,
+**`sector_solver`** / **`sector_comparison`**, then IO: **`reference_state.jl`** (catalog structs + **`load_reference_spectrum`**), **`masses_from_content`**—see
 `docs/code_architecture.md`). Driver scripts under `scripts/` call `Pkg.activate`
 on the repository root before `using GIModel`, and `test/runtests.jl` does the
 same. Typical workflow:
@@ -150,7 +151,8 @@ solver and validation scripts should start from the top-level `data/` files.
    ```
 
    This regenerates sector reports under `docs/residual_reports/` for every
-   `data/reference_spectrum_*.csv` file.    Heavy-light sectors use the `quark_content` column plus the loaded flavor table
+   `data/reference_spectrum_*.csv` file.
+   Heavy-light sectors use the `quark_content` column plus the loaded flavor table
    (`attach_constituent_masses`) to build **`ConstituentMasses`** per row. It also writes
    `docs/residual_reports/scorecard.md` as the compact progress dashboard.
 
@@ -167,7 +169,7 @@ solver and validation scripts should start from the top-level `data/` files.
 5. Run Julia tests:
 
    ```bash
-   julia test/runtests.jl
+   julia --project=. test/runtests.jl
    ```
 
 6. Rebuild paper text references if the PDF changes:

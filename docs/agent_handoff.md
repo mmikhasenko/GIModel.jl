@@ -22,7 +22,7 @@ to continue the Godfrey-Isgur reproduction.
   Inputs split **`GIParameters`** (switches and potential constants) from **`QuarkMassTable`**
   (`[masses]` in TOML); scripts call **`load_parameters_and_quark_masses`**, then
   **`attach_constituent_masses`** → **`Vector{ReferenceStateWithMasses}`** before
-  **`compute_sector`** / **`compare`** in **`src/sector_workflow.jl`** (cached radial solves per
+  **`compute_sector`** / **`compare`** (**`src/sector_comparison.jl`**; cached radial solves per
   **`RadialChannelKey`** = **`ConstituentMasses`** + `L`). See **`docs/code_architecture.md`**.
   Provisional parameters are in **`data/parameters.provisional.toml`**. Formula intent and flags are
   in **`docs/formula_map.md`**; sector residuals under **`docs/residual_reports/`**.

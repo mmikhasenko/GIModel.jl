@@ -22,7 +22,7 @@ Run these from the repository root (spectrum scripts use **`load_parameters_and_
 
 ```bash
 python3 scripts/validate_seed.py
-julia test/runtests.jl
+julia --project=. test/runtests.jl
 julia scripts/run_all_spectrum_checks.jl
 julia scripts/analyze_heavy_quarkonium.jl
 ```
@@ -176,7 +176,7 @@ Stop sector expansion. Fix the formula, add a targeted regression test, and
 regenerate:
 
 ```bash
-julia test/runtests.jl
+julia --project=. test/runtests.jl
 julia scripts/analyze_heavy_quarkonium.jl
 julia scripts/run_all_spectrum_checks.jl
 ```

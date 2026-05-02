@@ -1,5 +1,5 @@
 # Core layout types: constituent masses, spin multiplet labels, radial FD samples.
-# Experimental/catalog rows live in reference_spectrum.jl (included after this file).
+# Experimental/catalog row types live in reference_state.jl (included with IO at end of GIModel.jl).
 
 """
     ConstituentMasses(m1_GeV, m2_GeV)
@@ -40,7 +40,7 @@ Spectroscopic spin/orbital labels shared by spin-dependent corrections:
   - [`fine_structure_components`](@ref) uses `L_label`, `multiplicity`, and `J`.
   - [`contact_hyperfine_shift`](@ref) uses only `L_label` and `multiplicity` (`J` is ignored).
 
-Overload `FineStructureMultiplet(::ReferenceState)` lives in `reference_spectrum.jl`.
+Overload `FineStructureMultiplet(::ReferenceState)` lives in `reference_state.jl`.
 """
 struct FineStructureMultiplet
     L_label::String
@@ -67,7 +67,7 @@ and [`physical_u_norm`](@ref) rely on. It is **one radial eigenlevel** on the me
 full multi-level output of [`channel_solution`](@ref).
 
 For the cached workflow object [`ChannelRadialSolution`](@ref), use the constructor
-`RadialWaveOnUniformMesh(solution, radial_level)` defined in `sector_workflow.jl`: it takes
+`RadialWaveOnUniformMesh(solution, radial_level)` defined in `sector_solver.jl`: it takes
 column `radial_level` of `solution.eigenvectors` together with `solution.r`.
 
 The explicit `h` argument must agree with the uniform spacing implied by `r` (guardrail).

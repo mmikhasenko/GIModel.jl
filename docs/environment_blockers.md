@@ -15,16 +15,15 @@ still accepts an iteration only after the standard project gate passes.
 - Impact for nested agents: direct `julia` commands may fail unless the agent
   uses a writable depot or the resolved Julia binary.
 - Impact for accepted project progress: the outer loop has successfully run:
-  - `julia test/runtests.jl`
+  - `julia --project=. test/runtests.jl`
   - `julia scripts/analyze_heavy_quarkonium.jl`
   - `julia scripts/run_all_spectrum_checks.jl`
 
 ### Suggested remediation
 
 - Prefer the standard verification commands from a normal shell (from the repo
-  root): e.g. `julia test/runtests.jl` or `julia scripts/run_all_spectrum_checks.jl`.
-  These entry points activate the project via `Pkg.activate` before loading
-  `GIModel`. You may also use `julia --project=. …`; it should be equivalent.
+  root). Driver scripts call `Pkg.activate` on the repo; **`test/runtests.jl` does not**—run it as
+  `julia --project=. test/runtests.jl` (as in `scripts/verify_project.sh`) or via `julia --project=. -e 'using Pkg; Pkg.test()'`.
 - If running inside a restricted nested agent sandbox, set writable
   `JULIAUP_DEPOT_PATH`/`JULIA_DEPOT_PATH`, or invoke the resolved Julia binary
   from the local juliaup installation.

@@ -10,9 +10,10 @@ implementation.
 Solver switches (**`GIParameters`**) and flavor masses (**`QuarkMassTable`**) come from the same
 TOML file but different tables: see **`load_parameters`**, **`load_quark_masses`**, and the
 usual combined **`load_parameters_and_quark_masses`** in `src/quark_mass_table.jl`. Masses are
-**not** fields on **`GIParameters`**. Reference CSV rows start as **`ReferenceState`**;
-**`attach_constituent_masses`** produces **`ReferenceStateWithMasses`** for **`compute_sector`** /
-**`compare`**. Full call graph: **`docs/code_architecture.md`**.
+**not** fields on **`GIParameters`**. **`ReferenceState`** / **`ReferenceStateWithMasses`** are defined in
+**`reference_state.jl`** (first IO include in **`GIModel.jl`**), including **`load_reference_spectrum`**. Reference CSV rows become **`ReferenceState`** via that loader; **`attach_constituent_masses`** (**`masses_from_content.jl`**) produces **`ReferenceStateWithMasses`** for **`compute_sector`** /
+**`compare`**, calling **`resolve_constituent_masses`** (**`masses_from_content.jl`**) with sector/content strings.
+Full call graph: **`docs/code_architecture.md`**.
 
 - Energies and masses are in GeV internally.
 - Distances are in GeV^-1.
@@ -40,14 +41,14 @@ usual combined **`load_parameters_and_quark_masses`** in `src/quark_mass_table.j
 
 `data/reference_spectrum_*.csv` use a `sector` string per file, for example:
 `charmonium`, `bottomonium`, `charmed`, `b_flavored`, `strange`, `isovector`,
-`isoscalar`. These are labels for the reference rows and the residual reports;
-`compute_sector` and `compare` in `src/sector_workflow.jl` map each row to
-Table II quark masses by parsing `quark_content` with `parse_quark_masses` in
-`src/masses_from_content.jl`. The resulting constituent masses are wrapped as
-`ConstituentMasses(m1, m2)` (12-digit rounding) and combined with orbital letter
-`L` in a `RadialChannelKey`; identical keys share one cached radial
-finite-difference solve before `compare` attaches level `n`, hyperfine, and
-fine-structure shifts using `RadialWaveOnUniformMesh` for one column of the
+`isoscalar`. These are labels for the reference rows and the residual reports.
+**`attach_constituent_masses`** (**`masses_from_content.jl`**) wraps each **`ReferenceState`** using **`resolve_constituent_masses`**
+(**`masses_from_content.jl`**) with `parse_quark_masses`, passing `String(state.sector)` and `String(state.quark_content)`.
+Then **`compute_sector`** and **`compare`** (**`sector_comparison.jl`**; radial cache types in **`sector_solver.jl`**) map each annotated row to
+Table II masses via the attached **`ConstituentMasses(m1, m2)`** (12-digit rounding) and orbital letter
+`L` in a **`RadialChannelKey`**; identical keys share one cached radial
+finite-difference solve before **`compare`** attaches level `n`, hyperfine, and
+fine-structure shifts using **`RadialWaveOnUniformMesh`** for one column of the
 cached eigenvectors.
 
 - Equal-mass quarkonia: `c cbar`, `b bbar` in the `quark_content` column.

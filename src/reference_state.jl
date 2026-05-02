@@ -1,12 +1,13 @@
-# Experimental / catalog rows and comparison-side wrappers (CSV → structs).
-# Not part of the spin-independent Hamiltonian or channel solver core.
+# Experimental/catalog row types for reference spectra + CSV loader (`reference_spectrum_*.csv`).
+#
+# Public API (exported from GIModel.jl): ReferenceState, ReferenceStateWithMasses, load_reference_spectrum
 
 """
     ReferenceState
 
 One row from a reference spectrum CSV (`sector`, `quark_content`, radial/spin labels,
-experimental `mass_GeV`, etc.). Used with [`load_reference_spectrum`](@ref), then optionally
-[`attach_constituent_masses`](@ref), before [`compute_sector`](@ref) / [`compare`](@ref).
+experimental `mass_GeV`, etc.). Loaded via [`load_reference_spectrum`](@ref),
+then optionally [`attach_constituent_masses`](@ref) (`masses_from_content.jl`), before [`compute_sector`](@ref) / [`compare`](@ref).
 """
 struct ReferenceState
     sector::String
@@ -25,8 +26,8 @@ end
 
 Reference CSV row plus [`ConstituentMasses`](@ref) resolved **once** at setup.
 
-Use [`attach_constituent_masses`](@ref) / [`resolve_constituent_masses`](@ref) with a
-[`QuarkMassTable`](@ref); pass the vector to [`compute_sector`](@ref) / [`compare`](@ref).
+Use [`attach_constituent_masses`](@ref), which calls [`resolve_constituent_masses`](@ref)
+with the row's sector and quark-content strings; pass the vector to [`compute_sector`](@ref) / [`compare`](@ref).
 
 For scans with arbitrary masses, construct manually:
 `ReferenceStateWithMasses(state, ConstituentMasses(m1, m2))`.
@@ -47,6 +48,13 @@ FineStructureMultiplet(state::ReferenceState) =
 
 FineStructureMultiplet(row::ReferenceStateWithMasses) = FineStructureMultiplet(row.state)
 
+"""
+    load_reference_spectrum(path::AbstractString) -> Vector{ReferenceState}
+
+Read a GI-style reference spectrum CSV. Required columns match scripts validating under `data/`.
+
+See [`ReferenceState`](@ref); combine rows with masses via [`attach_constituent_masses`](@ref).
+"""
 function load_reference_spectrum(path::AbstractString)
     states = ReferenceState[]
     for row in CSV.File(path)

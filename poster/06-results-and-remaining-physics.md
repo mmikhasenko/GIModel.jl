@@ -132,7 +132,7 @@ Create a "read the residuals correctly" panel:
 Show as a reproducibility strip:
 
 ```bash
-julia test/runtests.jl
+julia --project=. test/runtests.jl
 julia scripts/analyze_heavy_quarkonium.jl
 julia scripts/run_baseline_solver.jl
 julia scripts/run_all_spectrum_checks.jl

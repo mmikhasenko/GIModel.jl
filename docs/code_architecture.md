@@ -10,13 +10,22 @@ mental model where masses lived inside `GIParameters` or were passed only as raw
 
 Includes are grouped intentionally:
 
-1. **Constants and core types** — `constants.jl`, `model_objects.jl` (`ConstituentMasses`,
-   `RadialWaveOnUniformMesh`, fine-structure helpers, etc.).
-2. **Setup / bookkeeping** — TOML → `GIParameters` (`parameters.jl`), `[masses]` →
-   `QuarkMassTable` (`quark_mass_table.jl`), reference CSV rows (`reference_spectrum.jl`),
-   parsing `quark_content` and attaching masses (`masses_from_content.jl`).
-3. **Numerics** — potentials, Hamiltonian, `channel_solution`, contact / fine structure,
-   `sector_workflow.jl`.
+1. **Constants and core types** — `constants.jl`, `model_objects.jl`.
+2. **Parameter bookkeeping** — TOML → `GIParameters` (`parameters.jl`), `[masses]` →
+   `QuarkMassTable` (`quark_mass_table.jl`).
+3. **Numerics** — potentials through Appendix-A status (`running_coupling.jl` … `appendix_a_status.jl`),
+   Hamiltonian, `channel_solution`, contact / fine structure.
+4. **Sector cache types + diagnostic sweep** — **`sector_solver.jl`** (`RadialChannelKey`,
+   **`ChannelRadialSolution`**, **`SectorComputation`**, **`solve_sector`**).
+5. **Sector batch solves + comparison + reports** — **`sector_comparison.jl`**
+   (**`compute_sector`**, **`compare`**, **`write_residual_report`**).
+6. **IO (last includes)** — **`reference_state.jl`** (**`ReferenceState`**, **`ReferenceStateWithMasses`**,
+   **`load_reference_spectrum`**),
+   **`masses_from_content.jl`** (**`parse_quark_masses`**, **`resolve_constituent_masses`**, **`attach_constituent_masses`**).
+
+**`compute_sector`** / **`compare`** take **`AbstractVector`** rows with `.constituent_masses` and `.state`
+(typically **`ReferenceStateWithMasses`** from **`attach_constituent_masses`**), so **`sector_comparison.jl`**
+can load before reference structs are defined; CSV reading and string→mass helpers stay grouped here at the end.
 
 ## Loading inputs
 
@@ -33,22 +42,21 @@ Quark masses are defined under **`[masses]`** in `data/parameters.provisional.to
 
 ## Reference rows vs rows with masses
 
-1. **`load_reference_spectrum(csv)`** → `Vector{ReferenceState}` (labels, `n`, `L`, `J`,
+1. **`load_reference_spectrum(csv)`** (**`reference_state.jl`**) → `Vector{ReferenceState}` (labels, `n`, `L`, `J`,
    reference mass, `quark_content`, etc.—no masses yet).
-2. **`attach_constituent_masses(mq, reference_states, fallback_mass_GeV)`** →
-   **`Vector{ReferenceStateWithMasses}`**, using `parse_quark_masses` /
-   `resolve_constituent_masses` from `quark_content` and the flavor table `mq`.
-   Equal-mass quarkonia scripts typically pass `mq["c"]` or `mq["b"]` as the fallback
+2. **`attach_constituent_masses`** (**`masses_from_content.jl`**) → **`Vector{ReferenceStateWithMasses}`**,
+   calling **`resolve_constituent_masses`** (**`masses_from_content.jl`**) with `String(state.sector)` and
+   `String(state.quark_content)` per row. Equal-mass quarkonia scripts typically pass `mq["c"]` or `mq["b"]` as the fallback
    when the CSV row already pins both flavors.
 
-## Sector workflow (`src/sector_workflow.jl`)
+## Sector workflow (`src/sector_solver.jl`, `src/sector_comparison.jl`)
 
-- **`compute_sector(params, annotated::Vector{ReferenceStateWithMasses}; …)`** builds one
-  finite-difference radial solve per distinct **`RadialChannelKey`**:
-  **`ConstituentMasses` + orbital letter `L`** (rounded masses define cache identity).
-- **`compare(computed::SectorComputation, annotated::Vector{ReferenceStateWithMasses}; …)`**
-  maps each reference row to the cached channel, picks radial level `n`, and adds contact /
-  fine-structure shifts.
+- **`compute_sector`** (**`sector_comparison.jl`**) builds one finite-difference radial solve per distinct
+  **`RadialChannelKey`**: **`ConstituentMasses` + orbital letter `L`** (rounded masses define cache identity).
+- **`compare`** (**`sector_comparison.jl`**) maps each reference row to the cached channel, picks radial
+  level `n`, and adds contact / fine-structure shifts.
+- **`write_residual_report`** (**`sector_comparison.jl`**) turns **`compare`** output into markdown; script
+  callers pass booleans that mirror the active **`GIParameters`** path for the prose header.
 
 So batch drivers never pass “sector name” or flavor enums into `compute_sector`; all mass
 information is already on each **`ReferenceStateWithMasses`**.
