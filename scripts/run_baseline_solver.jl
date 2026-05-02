@@ -29,8 +29,7 @@ sectors = [
 
 for (name, flavor, reference_path, report_path, title) in sectors
     reference = load_reference_spectrum(reference_path)
-    computed =
-        compute_sector(params, reference, flavor; kinetic = :relativistic)
+    computed = compute_sector(params, reference, flavor; kinetic = :relativistic)
     rows = compare(
         computed,
         reference;

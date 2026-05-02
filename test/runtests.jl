@@ -1172,20 +1172,9 @@ end
     reference =
         load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
     sub = reference[1:1]
-    computed = compute_sector(
-        params,
-        sub,
-        "c";
-        ngrid = 120,
-        rmax = 12.0,
-        kinetic = :relativistic,
-    )
-    rows = compare(
-        computed,
-        sub;
-        contact_hyperfine = true,
-        use_fine_structure = true,
-    )
+    computed =
+        compute_sector(params, sub, "c"; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
+    rows = compare(computed, sub; contact_hyperfine = true, use_fine_structure = true)
     @test length(rows) == 1
     row = rows[1]
     @test hasproperty(row, :central_GeV)
@@ -1245,7 +1234,8 @@ end
     end
 
     short = prefix[1:min(2, length(prefix))]
-    from_superset = compare(computed, short; contact_hyperfine = true, use_fine_structure = true)
+    from_superset =
+        compare(computed, short; contact_hyperfine = true, use_fine_structure = true)
     computed_short = compute_sector(
         params,
         short,
@@ -1254,10 +1244,12 @@ end
         rmax = 10.0,
         kinetic = :relativistic,
     )
-    direct = compare(computed_short, short; contact_hyperfine = true, use_fine_structure = true)
+    direct =
+        compare(computed_short, short; contact_hyperfine = true, use_fine_structure = true)
     @test length(from_superset) == length(direct)
     for i = 1:length(direct)
-        @test from_superset[i].predicted_GeV ≈ direct[i].predicted_GeV rtol = 1e-12 atol = 0.0
+        @test from_superset[i].predicted_GeV ≈ direct[i].predicted_GeV rtol = 1e-12 atol =
+            0.0
         @test from_superset[i].central_GeV ≈ direct[i].central_GeV rtol = 1e-12 atol = 0.0
     end
 end
@@ -1267,18 +1259,10 @@ end
     reference =
         load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
     sub = reference[1:1]
-    computed = compute_sector(
-        params,
-        sub,
-        "c";
-        ngrid = 120,
-        rmax = 12.0,
-        kinetic = :relativistic,
-    )
-    with_hf =
-        compare(computed, sub; contact_hyperfine = true, use_fine_structure = false)
-    no_hf =
-        compare(computed, sub; contact_hyperfine = false, use_fine_structure = false)
+    computed =
+        compute_sector(params, sub, "c"; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
+    with_hf = compare(computed, sub; contact_hyperfine = true, use_fine_structure = false)
+    no_hf = compare(computed, sub; contact_hyperfine = false, use_fine_structure = false)
     @test length(with_hf) == 1 && length(no_hf) == 1
     @test no_hf[1].contact_shift_GeV ≈ 0.0 atol = 1e-15
     @test with_hf[1].central_GeV ≈ no_hf[1].central_GeV rtol = 1e-12 atol = 0.0

@@ -25,20 +25,8 @@ function spectroscopic_jpc(L::AbstractString, multiplicity::Int, J::Int)
 end
 
 # Matches scripts/plot_spectrum_digitizations.py CONFIG["08"]["order"] (GI Fig. 8 bottomonium ladder).
-const FIG8_BOTTOMONIUM_JPC = [
-    "0-+",
-    "1--",
-    "1+-",
-    "0++",
-    "1++",
-    "2++",
-    "2-+",
-    "2--",
-    "3--",
-    "3+-",
-    "3++",
-    "4++",
-]
+const FIG8_BOTTOMONIUM_JPC =
+    ["0-+", "1--", "1+-", "0++", "1++", "2++", "2-+", "2--", "3--", "3+-", "3++", "4++"]
 
 """Closed polygon for an axis-aligned rectangle with circular corners (CCW, data coordinates)."""
 function rounded_rect_polygon(
@@ -52,7 +40,7 @@ function rounded_rect_polygon(
     n = 14
     pts = Point2f[]
     function quad_arc(cx::Float64, cy::Float64, θ0::Float64, θ1::Float64)
-        for i in 1:(n-1)
+        for i = 1:(n-1)
             θ = θ0 + (θ1 - θ0) * i / n
             push!(pts, Point2f(cx + r * cos(θ), cy + r * sin(θ)))
         end
@@ -71,18 +59,29 @@ function rounded_rect_polygon(
     return pts
 end
 
-"""Ladder plot: horizontal J^PC columns like Fig. 8; reference vs computed masses."""
-function plot_bottomonium_ref_vs_model(rows; path::AbstractString)
+params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
+ref = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_bottomonium.csv"))
+computed = compute_sector(params, ref, "b"; kinetic = :relativistic)
+rows = compare(
+    computed,
+    ref;
+    contact_hyperfine = true,
+    use_fine_structure = params.fine_structure,
+)
+
+plot_path = joinpath(@__DIR__, "bottomonium_spectrum_ref_vs_model.png")
+let rows = rows, path = plot_path
     n = length(rows)
     xs_center = zeros(Float64, n)
     y_ref = zeros(Float64, n)
     y_pred = zeros(Float64, n)
-    @inbounds for i in 1:n
+    @inbounds for i = 1:n
         row = rows[i]
         jpc = spectroscopic_jpc(row.L, row.multiplicity, row.J)
         col = findfirst(==(jpc), FIG8_BOTTOMONIUM_JPC)
-        col === nothing &&
-            error("state row $(i): reconstructed JPC=$(repr(jpc)) not in Fig. 8 column list")
+        col === nothing && error(
+            "state row $(i): reconstructed JPC=$(repr(jpc)) not in Fig. 8 column list",
+        )
         xs_center[i] = Float64(col)
         y_ref[i] = row.reference_GeV
         y_pred[i] = row.predicted_GeV
@@ -97,23 +96,23 @@ function plot_bottomonium_ref_vs_model(rows; path::AbstractString)
     fill_alpha = 0.26
 
     sectors = Dict{Tuple{Int,String},Vector{Int}}()
-    for i in 1:n
+    for i = 1:n
         key = (rows[i].n, rows[i].L)
         push!(get!(sectors, key, Int[]), i)
     end
-    sector_list = sort!(collect(keys(sectors)); by=kl -> (kl[2], kl[1]))
+    sector_list = sort!(collect(keys(sectors)); by = kl -> (kl[2], kl[1]))
     palette = Makie.wong_colors()
 
-    fig = Figure(size=(1000, 720))
+    fig = Figure(size = (1000, 720))
     ax = Axis(
         fig[1, 1];
-        xlabel="JPC",
-        ylabel="Mass (GeV)",
-        title="Bottomonium: reference vs GI model (Fig. 8 states)",
-        xticks=(1:length(FIG8_BOTTOMONIUM_JPC), FIG8_BOTTOMONIUM_JPC),
-        xticklabelrotation=deg2rad(40),
-        yminorticksvisible=true,
-        yminorgridvisible=true,
+        xlabel = "JPC",
+        ylabel = "Mass (GeV)",
+        title = "Bottomonium: reference vs GI model (Fig. 8 states)",
+        xticks = (1:length(FIG8_BOTTOMONIUM_JPC), FIG8_BOTTOMONIUM_JPC),
+        xticklabelrotation = deg2rad(40),
+        yminorticksvisible = true,
+        yminorgridvisible = true,
     )
     ylims!(ax, 9.15, 11.32)
 
@@ -136,69 +135,55 @@ function plot_bottomonium_ref_vs_model(rows; path::AbstractString)
         poly!(
             ax,
             poly;
-            color=(base, fill_alpha),
-            strokecolor=(base, 0.62),
-            strokewidth=0.5,
-            shading=NoShading,
+            color = (base, fill_alpha),
+            strokecolor = (base, 0.62),
+            strokewidth = 0.5,
+            shading = NoShading,
         )
         n_radial, Lorb = key
         text!(
             ax,
             xmax,
             ymin;
-            text=string(n_radial, Lorb),
-            align=(:center, :center),
-            fontsize=15,
-            color=:black,
+            text = string(n_radial, Lorb),
+            align = (:center, :center),
+            fontsize = 15,
+            color = :black,
         )
     end
 
-    for i in 1:n
+    for i = 1:n
         lines!(
             ax,
             [xs_center[i] - δ, xs_center[i] + δ],
             [y_ref[i], y_pred[i]];
-            color=(:gray42, 0.45),
-            linewidth=0.85,
+            color = (:gray42, 0.45),
+            linewidth = 0.85,
         )
     end
     scatter!(
         ax,
         xs_center .- δ,
         y_ref;
-        label="reference",
-        markersize=10,
-        color=(:steelblue4, 0.9),
-        strokewidth=0.5,
-        strokecolor=:white,
+        label = "reference",
+        markersize = 10,
+        color = (:steelblue4, 0.9),
+        strokewidth = 0.5,
+        strokecolor = :white,
     )
     scatter!(
         ax,
         xs_center .+ δ,
         y_pred;
-        label="computed",
-        markersize=10,
-        color=(:darkorange, 0.95),
-        strokewidth=0.5,
-        strokecolor=:white,
+        label = "computed",
+        markersize = 10,
+        color = (:darkorange, 0.95),
+        strokewidth = 0.5,
+        strokecolor = :white,
     )
-    axislegend(ax; position=:rt)
+    axislegend(ax; position = :rt)
     save(path, fig)
-    return fig
 end
-
-params = load_parameters(joinpath(root, "data", "parameters.provisional.toml"))
-ref = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_bottomonium.csv"))
-computed = compute_sector(params, ref, "b"; kinetic=:relativistic)
-rows = compare(
-    computed,
-    ref;
-    contact_hyperfine=true,
-    use_fine_structure=params.fine_structure,
-)
-
-plot_path = joinpath(@__DIR__, "bottomonium_spectrum_ref_vs_model.png")
-plot_bottomonium_ref_vs_model(rows; path=plot_path)
 println("\nWrote spectrum plot: ", plot_path)
 
 df = DataFrame(rows)
@@ -206,12 +191,12 @@ df = transform(
     df,
     [:n, :multiplicity, :L, :J] =>
         ByRow((n, mult, L, J) -> string(n, '^', mult, L, '_', J)) => :state,
-    :predicted_GeV => ByRow(x -> round(x; digits=3)) => :model_GeV,
-    :reference_GeV => ByRow(x -> round(x; digits=3)) => :ref_GeV,
-    :residual_MeV => ByRow(x -> round(x; digits=1)) => :delta_MeV,
+    :predicted_GeV => ByRow(x -> round(x; digits = 3)) => :model_GeV,
+    :reference_GeV => ByRow(x -> round(x; digits = 3)) => :ref_GeV,
+    :residual_MeV => ByRow(x -> round(x; digits = 1)) => :delta_MeV,
 )
 df = select(df, :state, :model_GeV, :ref_GeV, :delta_MeV)
 
 println("Bottomonium (predicted masses, GeV)\n")
-show(stdout, df; allrows=true, show_row_number=false)
+show(stdout, df; allrows = true, show_row_number = false)
 println()
