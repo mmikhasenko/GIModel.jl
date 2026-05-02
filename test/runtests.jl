@@ -4,6 +4,7 @@
 using Test
 using FiniteDifferences
 using QuadGK
+using SpecialFunctions: erf
 using GIModel
 
 root = dirname(@__DIR__)
@@ -490,7 +491,7 @@ end
             integrand(rp) = begin
                 g =
                     rp == 0 ? -8 * α * γ / (3 * sqrt(π)) :
-                    -4 * α * GIModel.gi_erf(γ * rp) / (3 * rp)
+                    -4 * α * erf(γ * rp) / (3 * rp)
                 pre = σ / (sqrt(π) * R)
                 pre * rp * (exp(-(σ * (R - rp))^2) - exp(-(σ * (R + rp))^2)) * g
             end
@@ -895,19 +896,19 @@ end
 end
 
 @testset "GI erf profile basic symmetries" begin
-    @test GIModel.gi_erf(0.0) ≈ 0.0 atol = 1e-7
+    @test erf(0.0) ≈ 0.0 atol = 1e-7
     for x in (0.05, 0.3, 0.8, 1.5)
-        @test GIModel.gi_erf(x) + GIModel.gi_erf(-x) ≈ 0.0 atol = 1e-12
+        @test erf(x) + erf(-x) ≈ 0.0 atol = 1e-12
     end
 end
 
 @testset "GI erf profile second derivative consistency" begin
     for x in (0.1, 0.4, 1.1, 1.8)
         δ = 1e-6 * max(1.0, x)
-        num = (GIModel.gi_erf_prime(x + δ) - GIModel.gi_erf_prime(x - δ)) / (2δ)
-        ana = GIModel.gi_erf_second(x)
+        num = (GIModel.erf_prime(x + δ) - GIModel.erf_prime(x - δ)) / (2δ)
+        ana = GIModel.erf_second(x)
         @test ana ≈ num rtol = 2e-5 atol = 1e-9
-        @test GIModel.gi_erf_second(-x) ≈ -ana rtol = 1e-12 atol = 1e-12
+        @test GIModel.erf_second(-x) ≈ -ana rtol = 1e-12 atol = 1e-12
     end
 end
 

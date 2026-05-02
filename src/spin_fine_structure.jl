@@ -17,7 +17,7 @@ function alpha_s_prime_r(r::Real)
     r = float(r)
     s = 0.0
     for (a, g) in zip(ALPHA_COEFFS, ALPHA_GAMMAS)
-        s += a * g * gi_erf_prime(g * r)
+        s += a * g * erf_prime(g * r)
     end
     return s
 end
@@ -26,7 +26,7 @@ function alpha_s_second_r(r::Real)
     r = float(r)
     s = 0.0
     for (a, g) in zip(ALPHA_COEFFS, ALPHA_GAMMAS)
-        s += a * g^2 * gi_erf_second(g * r)
+        s += a * g^2 * erf_second(g * r)
     end
     return s
 end
@@ -69,7 +69,7 @@ function smeared_coulomb_G_prime_closed(params::GIParameters, m1::Real, m2::Real
     s = 0.0
     for (α, γ) in zip(ALPHA_COEFFS, ALPHA_GAMMAS)
         τ = 1 / sqrt(1 / σ^2 + 1 / γ^2)
-        e = gi_erf(τ * ri)
+        e = erf(τ * ri)
         ep = 2 * τ / sqrt(π) * exp(-(τ * ri)^2)
         s += -(4 * α / 3) * (ep / ri - e / ri^2)
     end
@@ -85,7 +85,7 @@ function smeared_coulomb_G_second_closed(params::GIParameters, m1::Real, m2::Rea
     s = 0.0
     for (α, γ) in zip(ALPHA_COEFFS, ALPHA_GAMMAS)
         τ = 1 / sqrt(1 / σ^2 + 1 / γ^2)
-        e = gi_erf(τ * ri)
+        e = erf(τ * ri)
         ep = 2 * τ / sqrt(π) * exp(-(τ * ri)^2)
         fpp = -2 * τ^2 * ep - 2 * ep / ri^2 + 2 * e / ri^3
         s += -(4 * α / 3) * fpp
@@ -119,7 +119,7 @@ function smeared_confinement_S_prime_closed(
     h = ri + 1 / (2 * σ^2 * ri)
     hp = 1 - 1 / (2 * σ^2 * ri^2)
     params.b *
-    ((-2 * σ * ri / sqrt(π)) * expz + hp * gi_erf(z) + h * (2 * σ / sqrt(π)) * expz)
+    ((-2 * σ * ri / sqrt(π)) * expz + hp * erf(z) + h * (2 * σ / sqrt(π)) * expz)
 end
 
 function dV_coul_central_dr(r::Real, params::GIParameters)

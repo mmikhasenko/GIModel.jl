@@ -38,9 +38,10 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     `alpha_k = (0.25, 0.15, 0.20)` and momentum-space denominators
     `(1, 10, 1000) GeV^2`, giving
     `gamma_k = (1/2, sqrt(10)/2, sqrt(1000)/2) GeV`.
-  - Numerical implementation: `gi_erf` delegates to `SpecialFunctions.erf`;
-    derivatives used by the Coulomb spin–orbit piece (`dV/dr`) are computed via
-    the analytic derivative of the same error-function profile (`gi_erf_prime`)
+  - Numerical implementation: `SpecialFunctions.erf` in `alpha_s_r`
+    (`src/running_coupling.jl`); derivatives used by the Coulomb spin–orbit
+    piece (`dV/dr`) are computed via the analytic derivative of the same profile
+    (`erf_prime`)
     to avoid mixed conventions. In code, for the Coulomb central piece
     $V_G(r)=-4\alpha_s(r)/(3r)$ we use
     $$

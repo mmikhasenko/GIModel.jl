@@ -79,7 +79,7 @@ function smeared_coulomb_G_closed(params::GIParameters, m1::Real, m2::Real, r::R
     if abs(ri) < 1.0e-8
         return -sum(8 * α * τ / (3 * sqrt(π)) for (α, τ) in zip(ALPHA_COEFFS, τs))
     end
-    -sum(4 * α * gi_erf(τ * ri) / (3 * ri) for (α, τ) in zip(ALPHA_COEFFS, τs))
+    -sum(4 * α * erf(τ * ri) / (3 * ri) for (α, τ) in zip(ALPHA_COEFFS, τs))
 end
 
 function smeared_confinement_S_closed(params::GIParameters, m1::Real, m2::Real, r::Real)
@@ -89,7 +89,7 @@ function smeared_confinement_S_closed(params::GIParameters, m1::Real, m2::Real, 
         return 2 * params.b / (sqrt(π) * σ) + params.c
     end
     z = σ * ri
-    bracket = exp(-z^2) / (sqrt(π) * z) + (1 + 1 / (2 * z^2)) * gi_erf(z)
+    bracket = exp(-z^2) / (sqrt(π) * z) + (1 + 1 / (2 * z^2)) * erf(z)
     params.b * ri * bracket + params.c
 end
 
