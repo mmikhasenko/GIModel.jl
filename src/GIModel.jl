@@ -48,6 +48,9 @@ include("channel_solver.jl")
 export spin_dot
 include("contact_hyperfine.jl")
 
+export BasisState, MixingBlock, MixingResult, diagonalize_mixing_block
+include("state_mixing.jl")
+
 export fine_structure_split,
     fine_structure_components,
     spin_orbit_mixing_components,

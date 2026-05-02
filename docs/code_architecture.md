@@ -15,11 +15,14 @@ Includes are grouped intentionally:
    `QuarkMassTable` (`quark_mass_table.jl`).
 3. **Numerics** — potentials through Appendix-A status (`running_coupling.jl` … `appendix_a_status.jl`),
    Hamiltonian, `channel_solution`, contact / fine structure.
-4. **Sector cache types + diagnostic sweep** — **`sector_solver.jl`** (`RadialChannelKey`,
+4. **State mixing layer** — **`state_mixing.jl`** (`BasisState`, `MixingBlock`,
+   `MixingResult`, `diagonalize_mixing_block`) owns generic mass-matrix
+   bookkeeping for same-`J`, tensor, flavor, or radial mixing blocks.
+5. **Sector cache types + diagnostic sweep** — **`sector_solver.jl`** (`RadialChannelKey`,
    **`ChannelRadialSolution`**, **`SectorComputation`**, **`solve_sector`**).
-5. **Sector batch solves + comparison + reports** — **`sector_comparison.jl`**
+6. **Sector batch solves + comparison + reports** — **`sector_comparison.jl`**
    (**`compute_sector`**, **`compare`**, **`write_residual_report`**).
-6. **IO (last includes)** — **`reference_state.jl`** (**`ReferenceState`**, **`ReferenceStateWithMasses`**,
+7. **IO (last includes)** — **`reference_state.jl`** (**`ReferenceState`**, **`ReferenceStateWithMasses`**,
    **`load_reference_spectrum`**),
    **`masses_from_content.jl`** (**`parse_quark_masses`**, **`resolve_constituent_masses`**, **`attach_constituent_masses`**).
 
@@ -60,6 +63,23 @@ Quark masses are defined under **`[masses]`** in `data/parameters.provisional.to
 
 So batch drivers never pass “sector name” or flavor enums into `compute_sector`; all mass
 information is already on each **`ReferenceStateWithMasses`**.
+
+## Mixing layer (`src/state_mixing.jl`)
+
+Mixing is intentionally above the pure radial/basis-state calculations. A
+**`MixingBlock`** stores a list of **`BasisState`** labels and an arbitrary-size
+Hermitian mass matrix in GeV; **`diagonalize_mixing_block`** returns sorted
+eigenmasses and eigenvectors with stable phases for reports. This keeps
+mechanism-specific matrix construction separate from the linear algebra:
+
+- unequal-mass antisymmetric spin-orbit can build `^1L_L`/`^3L_L` blocks;
+- tensor interactions can later build same-`J`, different-`L` blocks such as
+  `^3S_1`/`^3D_1`;
+- isoscalar or radial mixings can use the same block/eigenstate reporting path.
+
+The current `same_j_mixing` helper in `spin_fine_structure.jl` is a two-state
+convenience wrapper around this generic layer; `compare` still reports pure
+basis-state diagnostics unless a script explicitly adds a mixing section.
 
 ## Radial and central-potential API
 

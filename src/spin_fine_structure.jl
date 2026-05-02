@@ -447,17 +447,26 @@ uses the Fig. 9 convention
 `low = cos(theta) * singlet + sin(theta) * triplet`.
 """
 function same_j_mixing(singlet_mass::Real, triplet_mass::Real, offdiag::Real)
-    matrix = Symmetric([float(singlet_mass) float(offdiag); float(offdiag) float(triplet_mass)])
-    fact = eigen(matrix)
-    low_vec = fact.vectors[:, 1]
+    block = MixingBlock(
+        "same-J ^1L_L/^3L_L",
+        [
+            BasisState(1, "L", 1, 0; label = "^1L_L"),
+            BasisState(1, "L", 3, 0; label = "^3L_L"),
+        ],
+        [float(singlet_mass) float(offdiag); float(offdiag) float(triplet_mass)];
+        mechanism = "antisymmetric_spin_orbit",
+    )
+    result = diagonalize_mixing_block(block)
+    low_vec = result.vectors[:, 1]
     if low_vec[1] < 0
         low_vec = -low_vec
     end
     theta = atan(low_vec[2], low_vec[1])
     return (
-        matrix = Matrix(matrix),
-        masses = fact.values,
-        vectors = fact.vectors,
+        block = block,
+        matrix = block.matrix,
+        masses = result.masses,
+        vectors = result.vectors,
         theta_rad = theta,
         theta_deg = theta * 180 / π,
     )

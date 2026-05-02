@@ -666,6 +666,27 @@ end
     mc = mq["c"]
     mb = mq["b"]
 
+    generic_block = GIModel.MixingBlock(
+        "three-state smoke test",
+        [
+            GIModel.BasisState(1, "S", 3, 1),
+            GIModel.BasisState(1, "D", 3, 1),
+            GIModel.BasisState(2, "S", 3, 1),
+        ],
+        [3.0 0.01 0.0; 0.01 3.2 0.02; 0.0 0.02 3.6];
+        mechanism = "test_mixing",
+    )
+    generic = GIModel.diagonalize_mixing_block(generic_block)
+    @test length(generic.masses) == 3
+    @test issorted(generic.masses)
+    @test generic.vectors' * generic.vectors ≈ [i == j ? 1.0 : 0.0 for i = 1:3, j = 1:3] atol =
+        1e-12
+    @test_throws ArgumentError GIModel.MixingBlock(
+        "bad asymmetric block",
+        [GIModel.BasisState(1, "S", 3, 1), GIModel.BasisState(1, "D", 3, 1)],
+        [1.0 0.2; 0.1 2.0],
+    )
+
     _vals_cc, umat_cc, r_cc = GIModel.channel_solution(
         params,
         ConstituentMasses(mc, mc),
@@ -686,6 +707,8 @@ end
     mix_cc = GIModel.same_j_mixing(3.5, 3.6, off_cc.total)
     @test mix_cc.masses ≈ [3.5, 3.6]
     @test mix_cc.theta_deg ≈ 0.0 atol = 1e-12
+    @test mix_cc.block isa GIModel.MixingBlock
+    @test mix_cc.block.mechanism == "antisymmetric_spin_orbit"
 
     vals_bc, umat_bc, r_bc = GIModel.channel_solution(
         params,
