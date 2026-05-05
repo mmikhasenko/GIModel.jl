@@ -62,6 +62,13 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     $B_c=(m_1m_2/E_1E_2)^{1/2+\epsilon_c}$. The legacy diagonal
     `(1+epsilon_c)` implementation remains available as
     `contact_hyperfine_shift`.
+  - Ordering convention: in the finite-difference path, `compare` now follows
+    the paper's first diagonalization more closely for S waves by diagonalizing
+    the central S-wave Hamiltonian plus the contact operator in fixed
+    multiplicity sectors. The reported `contact_shift_GeV` is therefore the
+    nonperturbative level displacement relative to the spin-independent central
+    level. Non-S waves and non-FD basis diagnostics keep the perturbative
+    expectation path.
   - Smearing width: Appendix A (A9) is implemented as
     $$
       \sigma^2(m_1,m_2)=\sigma_0^2\left(\tfrac12+\tfrac12\left(\frac{4m_1m_2}{(m_1+m_2)^2}\right)^4\right)

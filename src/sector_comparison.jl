@@ -53,6 +53,7 @@ function compare(
     params = computed.params
     channel_cache = computed.channel_cache
     rows = NamedTuple[]
+    contact_level_cache = Dict{Tuple{RadialChannelKey,Int},Vector{Float64}}()
     for row in annotated
         state = row.state
         masses = row.constituent_masses
@@ -72,7 +73,22 @@ function compare(
         multiplet = FineStructureMultiplet(state)
         wave = RadialWaveOnUniformMesh(sol, state.n)
         if contact_hyperfine
-            contact_shift = contact_hyperfine_shift_active(params, masses, multiplet, wave)
+            contact_cache_key = (key, state.multiplicity)
+            levels = get!(contact_level_cache, contact_cache_key) do
+                contact_hyperfine_nonperturbative_levels(
+                    params,
+                    masses,
+                    state.L,
+                    state.multiplicity,
+                    sol.r,
+                    length(ev),
+                )
+            end
+            if !isempty(levels) && state.n <= length(levels)
+                contact_shift = levels[state.n] - central
+            else
+                contact_shift = contact_hyperfine_shift_active(params, masses, multiplet, wave)
+            end
         end
         if use_fine_structure && params.fine_structure
             comp = fine_structure_components(

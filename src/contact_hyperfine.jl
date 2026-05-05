@@ -60,6 +60,29 @@ function euclidean_expectation(vector::AbstractVector, operator::AbstractMatrix)
     dot(v, operator * v) / norm2
 end
 
+function contact_hyperfine_operator(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L::AbstractString,
+    multiplicity::Integer,
+    r::AbstractVector,
+)
+    m1 = masses.m1_GeV
+    m2 = masses.m2_GeV
+    n = length(r)
+    if L != "S" || !(multiplicity in (1, 3)) || n < 2
+        return Symmetric(zeros(Float64, n, n))
+    end
+    h = r[2] - r[1]
+    p2_fact = eigen(p2_operator(params, m1, 0, r, h))
+    side_exponent = gi_spin_dependent_side_exponent(params.epsilon_c)
+    B = momentum_relativization_matrix(m1, m2, side_exponent, p2_fact)
+    sigma = contact_smearing_sigma(params, masses)
+    kernel = Diagonal([alpha_s_r(ri) * delta_sigma_3d(ri, sigma) for ri in r])
+    strength = (32 * π / (9 * m1 * m2)) * spin_dot(multiplicity)
+    return Symmetric(strength * (B * kernel * B))
+end
+
 function _contact_hyperfine_shift_diagonal(
     params::GIParameters,
     masses::ConstituentMasses,
@@ -97,19 +120,44 @@ function _contact_hyperfine_shift_momentum_sandwich_diagonal(
     vector::AbstractVector,
     r::AbstractVector,
 )
-    m1 = masses.m1_GeV
-    m2 = masses.m2_GeV
     L == "S" || return 0.0
     multiplicity in (1, 3) || return 0.0
     length(r) >= 2 || return 0.0
+    operator = contact_hyperfine_operator(params, masses, L, multiplicity, r)
+    euclidean_expectation(vector, operator)
+end
+
+function contact_hyperfine_nonperturbative_levels(
+    params::GIParameters{FiniteDifferenceBasis},
+    masses::ConstituentMasses,
+    L::AbstractString,
+    multiplicity::Integer,
+    r::AbstractVector,
+    nlevels::Integer,
+)
+    if !params.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
+        return Float64[]
+    end
     h = r[2] - r[1]
-    p2_fact = eigen(p2_operator(params, m1, 0, r, h))
-    side_exponent = gi_spin_dependent_side_exponent(params.epsilon_c)
-    B = momentum_relativization_matrix(m1, m2, side_exponent, p2_fact)
-    sigma = contact_smearing_sigma(params, masses)
-    kernel = Diagonal([alpha_s_r(ri) * delta_sigma_3d(ri, sigma) for ri in r])
-    expectation = euclidean_expectation(vector, Symmetric(B * kernel * B))
-    (32 * π / (9 * m1 * m2)) * expectation * spin_dot(multiplicity)
+    rmax = h * (length(r) + 1)
+    hamiltonian, rebuilt_r =
+        relativistic_hamiltonian(params, masses, 0; ngrid = length(r), rmax = rmax)
+    length(rebuilt_r) == length(r) || error("rebuilt S-wave grid changed length")
+    operator = contact_hyperfine_operator(params, masses, L, multiplicity, rebuilt_r)
+    levels, _vectors =
+        lowest_eigenpairs(Symmetric(Matrix(hamiltonian) + Matrix(operator)), nlevels)
+    return levels
+end
+
+function contact_hyperfine_nonperturbative_levels(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L::AbstractString,
+    multiplicity::Integer,
+    r::AbstractVector,
+    nlevels::Integer,
+)
+    return Float64[]
 end
 
 """

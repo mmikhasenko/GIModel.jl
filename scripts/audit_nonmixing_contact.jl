@@ -229,6 +229,10 @@ open(joinpath(report_dir, "contact_hyperfine_audit.md"), "w") do io
         io,
         "- GI evaluated the nonlocal `f(p) V(r) f(p)` operators in a large harmonic-oscillator basis; this repo currently evaluates the same idea on the finite-difference `p^2` eigenbasis, now selected through `GIParameters{Basis}` dispatch.",
     )
+    println(
+        io,
+        "- The first GI diagonalization is already in fixed `L,S,J` sectors, so the contact term is part of the S-wave radial problem rather than only a first-order correction on a spin-independent wavefunction. This matters most in the pion/kaon-sized light pseudoscalar splittings.",
+    )
     println(io)
     println(io, "## Sector-Level Contact Stress")
     println(io)
@@ -285,7 +289,7 @@ open(joinpath(report_dir, "contact_hyperfine_audit.md"), "w") do io
     )
     println(
         io,
-        "After enforcing the Appendix-A side exponent, the active momentum sandwich strongly suppresses the diagonal contact term and collapses most open-flavor S-wave residuals. The remaining stress is concentrated in the light pseudoscalar ground states (`1^1S_0` isovector/strange), where the model may also be feeling chiral physics and any remaining contact-kernel ordering error most sharply.",
+        "After enforcing the Appendix-A side exponent and diagonalizing the finite-difference S-wave contact operator nonperturbatively, the light pseudoscalar ground-state mismatch changes from the dominant failure to a bounded residual (`isovector 1^1S_0` and `strange 1^1S_0` are now tens, not hundreds, of MeV). The remaining edge is consistent with the paper's warning that pseudoscalar channels are unusually sensitive to relativistic smearing and annihilation/chiral dynamics.",
     )
 end
 

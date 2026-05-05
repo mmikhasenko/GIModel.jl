@@ -208,3 +208,25 @@ without refitting parameters. The remaining stress is mostly the light
 pseudoscalar ground states (`isovector 1^1S_0`, `strange 1^1S_0`), so the next
 audit should focus on chiral/annihilation limitations and any remaining
 contact-kernel ordering details rather than central-potential tuning.
+
+## 2026-05-05 Contact Ordering Checkpoint
+
+The next contact audit found that the remaining light-pseudoscalar edge was not
+best addressed by retuning smearing or the published `epsilon_c`. The stronger
+paper clue is ordering: GI's first diagonalization is already in fixed
+`L,S,J` sectors, so S-wave contact hyperfine participates in the radial
+eigenproblem before the later mixing/annihilation stages.
+
+Implemented a finite-difference S-wave nonperturbative contact path in
+`compare`: the active `contact_shift_GeV` is now the difference between the
+central S-wave level and the level from diagonalizing `H_central + H_contact`
+for the requested multiplicity. The perturbative expectation remains available
+for non-S waves, non-FD basis diagnostics, and the legacy diagonal-contact
+comparison.
+
+Result after regenerating `scripts/audit_nonmixing_contact.jl`: isovector max
+non-mixed residual fell from `133.4 MeV` to `55.0 MeV`, strange max from
+`61.7 MeV` to `43.0 MeV`. Heavy sectors remain at the few-to-tens of MeV level,
+with some expected tradeoff in charm-light singlet ground states. The remaining
+edge now looks like the paper's known pseudoscalar/chiral-annihilation
+sensitivity, not a broad contact blow-up.

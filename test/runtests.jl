@@ -1513,3 +1513,21 @@ end
     @test with_hf[1].predicted_GeV - no_hf[1].predicted_GeV ≈ with_hf[1].contact_shift_GeV atol =
         1e-12
 end
+
+@testset "finite-difference S waves diagonalize contact hyperfine" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    reference =
+        load_reference_spectrum(joinpath(root, "data", "reference_spectrum_isovector.csv"))
+    ann = attach_constituent_masses(mq, reference[1:1], mq["q"])
+    computed =
+        compute_sector(params, ann; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
+    row = compare(computed, ann; contact_hyperfine = true, use_fine_structure = false)[1]
+    sol = only(values(computed.channel_cache))
+    wave = GIModel.RadialWaveOnUniformMesh(sol, 1)
+    multiplet = GIModel.FineStructureMultiplet("S", 1, 0)
+    first_order =
+        sol.eigenvalues_GeV[1] +
+        GIModel.contact_hyperfine_shift_active(params, ann[1].constituent_masses, multiplet, wave)
+    @test row.predicted_GeV < first_order
+    @test abs(row.residual_MeV) < abs(1000 * (first_order - ann[1].state.mass_GeV))
+end
