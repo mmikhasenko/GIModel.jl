@@ -268,5 +268,30 @@ pseudoscalar masses are close enough that an explicit radial/flavor
 annihilation block explains the isoscalar pseudoscalar spectrum. The current
 implementation exposes this as an opt-in `compare(...;
 isoscalar_pseudoscalar_annihilation=:calibrated_p1, strange_mass_GeV=mq["s"])`
-path. It is calibrated to the digitized GI masses; the full mass-dependent P2
-pole prescription is still a later target.
+path. This path is a calibrated diagnostic/control only: it is not the literal
+GI P1 formula from Eq. (18a), and it is not the mass-dependent P2 pole
+prescription from Eq. (18b). It should remain available under an explicit
+diagnostic model name, but it should not be treated as a paper implementation.
+
+## 2026-05-05 Next-Agent Formula-Audit Gate
+
+Before coding paper P1/P2, do one more OCR-backed audit of the main formulas.
+The readable paper text has been improved around Eqs. (18a) and (18b), but the
+older OCR still contains many damaged equations elsewhere. A single bad
+exponent, mass argument, normalization, or wavefunction factor would easily
+produce a wrong "paper" implementation.
+
+Recommended next-agent order:
+
+1. Re-audit the formula map against the improved OCR/source images before
+   changing code.
+2. Mark each relevant formula as exact, approximate, missing, or suspect.
+3. Only then add dispatch-controlled annihilation models in parameters, with
+   separate explicit choices for no annihilation, the current calibrated
+   diagnostic, paper P1, and paper P2.
+
+The audit should cover at least the Hamiltonian terms, running `alpha_s`,
+smearing/momentum factors, contact hyperfine ordering, Eq. (16)/(17)
+annihilation normalization and wavefunction factor, Eq. (18a)/(18b)
+pseudoscalar replacements, Appendix A relativization formulas, and Table II/III
+parameter values/units.

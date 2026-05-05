@@ -316,5 +316,29 @@ summarized by `GIModel.central_potential_path` in `src/appendix_a_status.jl`.
   `docs/residual_reports/pseudoscalar_annihilation_audit.md` shows that a
   positive rank-one radial/flavor annihilation update maps the current unmixed
   `[1n, 1s, 2n, 2s]` masses onto the GI isoscalar pseudoscalar masses, with
-  Table-III/P1-like eigenvectors. The calibrated P1-style path is implemented
-  as an opt-in `compare` keyword; full mass-dependent P2 poles remain open.
+  Table-III/P1-like eigenvectors. This is a calibrated diagnostic/control, not
+  the literal paper P1 implementation. Paper P1 must still implement Eq. (16)
+  with the Eq. (18a) replacement, including the stated `A_eta p` exponential and
+  perturbative `alpha_s` product. Paper P2 must still implement Eq. (18b) as a
+  mass-dependent pole problem, with non-orthogonal poles expected by the paper.
+
+## Formula-Audit Gate Before P1/P2 Coding
+
+The next implementation pass should wait for an OCR-backed audit of the main
+formulas. Treat `paper/text/godfrey_isgur_1985_readable.md` and the improved OCR
+as the source-of-truth checkpoint, then update this map with one status per
+formula: exact, approximate, missing, or suspect.
+
+Minimum audit list:
+
+- Hamiltonian pieces and sign/normalization conventions.
+- Running `alpha_s` form and units.
+- Smearing and Appendix A momentum-dependent `m/E` factors.
+- Contact hyperfine ordering and any nonperturbative treatment of S waves.
+- Eq. (16)/(17) annihilation normalization and wavefunction factor.
+- Eq. (18a)/(18b) pseudoscalar replacements and parameter values.
+- Table II/III parameters, units, and model labels.
+
+Only after that audit should dispatch-controlled model choices be added for
+`NoAnnihilation`, the existing calibrated diagnostic, literal paper P1, and
+literal paper P2.
