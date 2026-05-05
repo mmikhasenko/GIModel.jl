@@ -212,7 +212,7 @@ function radial_expect_momentum_sandwich(
     # Reuse the same uniform-mesh convention guard as the diagonal expectation path.
     physical_u_norm(r, h, u)
     p2_fact = eigen(p2_operator(params, m1, L, r, h))
-    side_exponent = 0.25 + 0.5 * epsilon
+    side_exponent = gi_spin_dependent_side_exponent(epsilon)
     B = momentum_relativization_matrix(m1, m2, side_exponent, p2_fact)
     kernel = Diagonal([f(float(ri), i) for (i, ri) in enumerate(r)])
     return euclidean_expectation(u, Symmetric(B * kernel * B))

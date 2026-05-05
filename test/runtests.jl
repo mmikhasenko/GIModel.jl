@@ -3,6 +3,7 @@
 
 using Test
 using FiniteDifferences
+using LinearAlgebra
 using QuadGK
 using SpecialFunctions: erf
 using GIModel
@@ -1262,6 +1263,17 @@ end
         GIModel.spin_dot(3)
     @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u, r) ≈ manual rtol = 1e-12 atol =
         0.0
+end
+
+@testset "A10 spin-dependent momentum exponent gives energy denominators" begin
+    @test GIModel.gi_spin_dependent_side_exponent(0.0) ≈ 0.5
+    @test GIModel.gi_spin_dependent_side_exponent(-0.168) ≈ 0.332
+
+    p2_fact = eigen(Diagonal([0.0, 3.0]))
+    B = GIModel.momentum_relativization_matrix(0.22, 0.22, GIModel.gi_spin_dependent_side_exponent(0.0), p2_fact)
+    λ = 3.0
+    E = sqrt(λ + 0.22^2)
+    @test B[2, 2]^2 / 0.22^2 ≈ 1 / E^2 rtol = 1e-12
 end
 
 @testset "RadialChannelKey collapses nearly-equal masses" begin

@@ -46,6 +46,13 @@ function momentum_relativization_matrix(m1::Real, m2::Real, exponent::Real, p2_f
     p2_fact.vectors * Diagonal(diag) * p2_fact.vectors'
 end
 
+"""
+Appendix A (A10) places `(m1*m2/(E1*E2))^(1/2 + epsilon_i)` on each side of a
+spin-dependent potential. With `epsilon_i = 0`, the two-sided product turns the
+nonrelativistic `1/(m1*m2)` strength into `1/(E1*E2)`.
+"""
+gi_spin_dependent_side_exponent(epsilon::Real) = 0.5 + float(epsilon)
+
 function euclidean_expectation(vector::AbstractVector, operator::AbstractMatrix)
     v = collect(float.(vector))
     norm2 = sum(abs2, v)
@@ -97,7 +104,7 @@ function _contact_hyperfine_shift_momentum_sandwich_diagonal(
     length(r) >= 2 || return 0.0
     h = r[2] - r[1]
     p2_fact = eigen(p2_operator(params, m1, 0, r, h))
-    side_exponent = 0.25 + 0.5 * params.epsilon_c
+    side_exponent = gi_spin_dependent_side_exponent(params.epsilon_c)
     B = momentum_relativization_matrix(m1, m2, side_exponent, p2_fact)
     sigma = contact_smearing_sigma(params, masses)
     kernel = Diagonal([alpha_s_r(ri) * delta_sigma_3d(ri, sigma) for ri in r])

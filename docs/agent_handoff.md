@@ -186,3 +186,25 @@ script; Figures 4-9 are regenerated with
 - Intermediate Markdown files in `paper/text/` other than
   `godfrey_isgur_1985_prose.md`.
 - Any sector marked complete without residuals and discrepancy classification.
+
+## 2026-05-05 Hyperfine Checkpoint
+
+The contact-hyperfine mismatch audit found a concrete Appendix-A convention bug:
+the spin-dependent momentum sandwich side exponent was implemented as
+`1/4 + epsilon_i/2`, but the paper's energy-denominator limit requires
+`1/2 + epsilon_i` on each side. With `epsilon_i = 0`, the two-sided sandwich now
+turns the nonrelativistic `1/(m1*m2)` strength into `1/(E1*E2)`.
+
+Implemented in `src/contact_hyperfine.jl` via
+`gi_spin_dependent_side_exponent`, reused by `src/spin_fine_structure.jl`, and
+guarded by a regression test in `test/runtests.jl`. Regenerated:
+
+- `docs/residual_reports/nonmixing_scorecard.md`
+- `docs/residual_reports/contact_hyperfine_audit.md`
+- `docs/residual_reports/basis_nonmixing_comparison.md`
+
+Result: open-flavor and light-sector non-mixed residuals improved sharply
+without refitting parameters. The remaining stress is mostly the light
+pseudoscalar ground states (`isovector 1^1S_0`, `strange 1^1S_0`), so the next
+audit should focus on chiral/annihilation limitations and any remaining
+contact-kernel ordering details rather than central-potential tuning.

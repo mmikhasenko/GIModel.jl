@@ -219,6 +219,10 @@ open(joinpath(report_dir, "contact_hyperfine_audit.md"), "w") do io
     )
     println(
         io,
+        "- This requires a side exponent `1/2 + epsilon_i` in the Hermitian sandwich. A smaller side exponent only partially replaces `1/(m1 m2)` by `1/(E1 E2)` and leaves light-quark contact terms too large.",
+    )
+    println(
+        io,
         "- The smearing width in (A9) is flavor dependent and was designed so light-quark systems do not inherit an unchecked `1/(m1 m2)` contact singularity.",
     )
     println(
@@ -281,7 +285,7 @@ open(joinpath(report_dir, "contact_hyperfine_audit.md"), "w") do io
     )
     println(
         io,
-        "The active momentum sandwich suppresses the diagonal contact term, but the light-sector residuals remain much larger than heavy-quarkonium residuals. The next audit target is therefore the exact GI operator ordering and basis dependence of the contact sandwich, not another fit of the central potential.",
+        "After enforcing the Appendix-A side exponent, the active momentum sandwich strongly suppresses the diagonal contact term and collapses most open-flavor S-wave residuals. The remaining stress is concentrated in the light pseudoscalar ground states (`1^1S_0` isovector/strange), where the model may also be feeling chiral physics and any remaining contact-kernel ordering error most sharply.",
     )
 end
 

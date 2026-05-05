@@ -59,7 +59,7 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     Gaussian width form, and applies the contact momentum factor as a Hermitian
     sandwich around the smeared contact kernel:
     $B_c(p)V_c(r)B_c(p)$ with
-    $B_c=(m_1m_2/E_1E_2)^{1/4+\epsilon_c/2}$. The legacy diagonal
+    $B_c=(m_1m_2/E_1E_2)^{1/2+\epsilon_c}$. The legacy diagonal
     `(1+epsilon_c)` implementation remains available as
     `contact_hyperfine_shift`.
   - Smearing width: Appendix A (A9) is implemented as
