@@ -312,4 +312,9 @@ summarized by `GIModel.central_potential_path` in `src/appendix_a_status.jl`.
 - Unequal-mass antisymmetric spin–orbit and tensor off-diagonal mixing
   (perturbative in the text).
 - Isoscalar annihilation and explicit $n\bar n$—$s\bar s$ large mixings
-  (Table III).
+  (Table III). The current debug target is the pseudoscalar `^1S_0` block:
+  `docs/residual_reports/pseudoscalar_annihilation_audit.md` shows that a
+  positive rank-one radial/flavor annihilation update maps the current unmixed
+  `[1n, 1s, 2n, 2s]` masses onto the GI isoscalar pseudoscalar masses, with
+  Table-III/P1-like eigenvectors. The calibrated P1-style path is implemented
+  as an opt-in `compare` keyword; full mass-dependent P2 poles remain open.

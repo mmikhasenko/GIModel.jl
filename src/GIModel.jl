@@ -52,6 +52,9 @@ include("contact_hyperfine.jl")
 export BasisState, MixingBlock, MixingResult, diagonalize_mixing_block
 include("state_mixing.jl")
 
+export isoscalar_pseudoscalar_annihilation_solution
+include("pseudoscalar_annihilation.jl")
+
 export fine_structure_split,
     fine_structure_components,
     spin_orbit_mixing_components,
@@ -71,11 +74,11 @@ include("sector_solver.jl")
 # Sector batch solves, comparison vs reference rows, residual markdown
 # =============================================================================
 
-export compute_sector, compare, mixing_prone_state, nonmixing_deviation_summary, write_residual_report
-include("sector_comparison.jl")
-
 export ReferenceState, ReferenceStateWithMasses, load_reference_spectrum
 include("reference_state.jl")
+
+export compute_sector, compare, mixing_prone_state, nonmixing_deviation_summary, write_residual_report
+include("sector_comparison.jl")
 
 export parse_quark_masses, resolve_constituent_masses, attach_constituent_masses
 include("masses_from_content.jl")

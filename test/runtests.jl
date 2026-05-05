@@ -1339,6 +1339,8 @@ end
     @test hasproperty(row, :spin_orbit_shift_GeV)
     @test hasproperty(row, :tensor_shift_GeV)
     @test hasproperty(row, :fine_structure_shift_GeV)
+    @test hasproperty(row, :annihilation_shift_GeV)
+    @test hasproperty(row, :annihilation_scheme)
     @test hasproperty(row, :m1_GeV)
     @test hasproperty(row, :m2_GeV)
     @test hasproperty(row, :fine_structure_mass_convention)
@@ -1348,7 +1350,8 @@ end
     @test row.fine_structure_shift_GeV ≈ row.spin_orbit_shift_GeV + row.tensor_shift_GeV atol =
         1e-12
     @test row.predicted_GeV ≈
-          row.central_GeV + row.contact_shift_GeV + row.fine_structure_shift_GeV atol =
+          row.central_GeV + row.contact_shift_GeV + row.fine_structure_shift_GeV +
+          row.annihilation_shift_GeV atol =
         1e-12
 end
 
@@ -1530,4 +1533,34 @@ end
         GIModel.contact_hyperfine_shift_active(params, ann[1].constituent_masses, multiplet, wave)
     @test row.predicted_GeV < first_order
     @test abs(row.residual_MeV) < abs(1000 * (first_order - ann[1].state.mass_GeV))
+end
+
+@testset "isoscalar pseudoscalar annihilation block is opt-in" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    reference =
+        load_reference_spectrum(joinpath(root, "data", "reference_spectrum_isoscalar.csv"))
+    sub = reference[1:4]
+    ann = attach_constituent_masses(mq, sub, mq["q"])
+    computed =
+        compute_sector(params, ann; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
+    plain = compare(computed, ann; contact_hyperfine = true, use_fine_structure = false)
+    mixed = compare(
+        computed,
+        ann;
+        contact_hyperfine = true,
+        use_fine_structure = false,
+        isoscalar_pseudoscalar_annihilation = :calibrated_p1,
+        strange_mass_GeV = mq["s"],
+    )
+    @test maximum(abs(row.residual_MeV) for row in plain) > 0.3e3
+    @test maximum(abs(row.residual_MeV) for row in mixed) < 1e-8
+    @test all(row.annihilation_scheme == "calibrated_p1" for row in mixed)
+    @test any(abs(row.annihilation_shift_GeV) > 0.1 for row in mixed)
+
+    solution = GIModel.isoscalar_pseudoscalar_annihilation_solution(
+        [0.095, 0.630, 1.279, 1.565];
+        targets = [row.mass_GeV for row in sub],
+    )
+    @test all(solution.weights_GeV .>= 0.0)
+    @test solution.block.mechanism == "rank_one_calibrated_pseudoscalar_annihilation"
 end

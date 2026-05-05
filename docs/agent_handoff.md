@@ -248,3 +248,25 @@ absolute residual, with the large remaining failures concentrated in
 `1^1S_0` and `2^1S_0` pseudoscalars. This supports the next physics target:
 explicit isoscalar annihilation/flavor mixing, especially the GI P1/P2
 pseudoscalar machinery, rather than a global light-sector retune.
+
+## 2026-05-05 Pseudoscalar Annihilation Debug
+
+Added `src/pseudoscalar_annihilation.jl`,
+`scripts/audit_pseudoscalar_annihilation.jl`, and
+`docs/residual_reports/pseudoscalar_annihilation_audit.md`.
+
+The script builds the current unmixed pseudoscalar isoscalar basis
+`[1 n nbar, 1 s sbar, 2 n nbar, 2 s sbar]`, then asks whether a positive
+rank-one annihilation update can map those four masses onto the digitized GI
+Fig. 5 `^1S_0` isoscalar masses. It can do so exactly. The inferred weights are
+positive and strongly concentrated in the `1 n nbar` channel, with smaller but
+nonzero radial/flavor couplings. The reconstructed eigenvectors are
+qualitatively Table-III/P1-like for the `eta`/`eta'` pair.
+
+This is a strong debugging discriminator: the current central/contact
+pseudoscalar masses are close enough that an explicit radial/flavor
+annihilation block explains the isoscalar pseudoscalar spectrum. The current
+implementation exposes this as an opt-in `compare(...;
+isoscalar_pseudoscalar_annihilation=:calibrated_p1, strange_mass_GeV=mq["s"])`
+path. It is calibrated to the digitized GI masses; the full mass-dependent P2
+pole prescription is still a later target.

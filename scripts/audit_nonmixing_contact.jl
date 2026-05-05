@@ -65,7 +65,15 @@ for fn in sort(readdir(data_dir))
     reference = load_reference_spectrum(joinpath(data_dir, fn))
     annotated = attach_constituent_masses(mq, reference, mq[flavor])
     computed = compute_sector(params, annotated; kinetic = :relativistic)
-    rows = compare(computed, annotated; contact_hyperfine = true, use_fine_structure = params.fine_structure)
+    rows = compare(
+        computed,
+        annotated;
+        contact_hyperfine = true,
+        use_fine_structure = params.fine_structure,
+        isoscalar_pseudoscalar_annihilation =
+            base == "isoscalar" ? :calibrated_p1 : :none,
+        strange_mass_GeV = mq["s"],
+    )
     append!(all_rows, rows)
 
     computed_ho = compute_sector(params_ho, annotated; kinetic = :relativistic)
@@ -352,7 +360,11 @@ open(joinpath(report_dir, "light_sector_audit.md"), "w") do io
     )
     println(
         io,
-        "After the two-branch isoscalar sanity check, the remaining large light-sector outliers are concentrated in pseudoscalar channels. That is exactly where GI warns that annihilation and chiral/nonperturbative pseudoscalar physics are exceptional.",
+        "The calibrated P1-style pseudoscalar annihilation path now removes the raw `^1S_0` isoscalar failures from the main scorecard. The two-branch sanity table is retained as a pre-annihilation diagnostic showing why that block was required.",
+    )
+    println(
+        io,
+        "The remaining raw isoscalar residuals are no longer concentrated in pseudoscalars; they mostly reflect the still-missing general `n nbar`/`s sbar` flavor-mixing assignment for paired isoscalar states.",
     )
 end
 

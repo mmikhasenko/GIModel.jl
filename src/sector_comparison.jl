@@ -4,6 +4,122 @@
 # Public API (exported from GIModel.jl): compute_sector, compare,
 #   mixing_prone_state, nonmixing_deviation_summary, write_residual_report
 
+function _same_grid_rmax(r::AbstractVector{<:Real})
+    length(r) >= 2 || throw(ArgumentError("need at least two radial grid points"))
+    h = r[2] - r[1]
+    return h * (length(r) + 1)
+end
+
+function _s_wave_singlet_predictions_on_grid(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    template::ChannelRadialSolution,
+    nlevels::Integer;
+    contact_hyperfine::Bool,
+)
+    ev, vecs, r = channel_solution(
+        params,
+        masses,
+        0;
+        nlevels = nlevels,
+        ngrid = length(template.r),
+        rmax = _same_grid_rmax(template.r),
+        kinetic = :relativistic,
+    )
+    predictions = collect(Float64, ev)
+    if contact_hyperfine
+        levels = contact_hyperfine_nonperturbative_levels(
+            params,
+            masses,
+            "S",
+            1,
+            r,
+            nlevels,
+        )
+        if !isempty(levels)
+            predictions = levels
+        else
+            radial_solution = ChannelRadialSolution(ev, vecs, r)
+            for n in 1:nlevels
+                wave = RadialWaveOnUniformMesh(radial_solution, n)
+                predictions[n] += contact_hyperfine_shift_active(
+                    params,
+                    masses,
+                    FineStructureMultiplet("S", 1, 0),
+                    wave,
+                )
+            end
+        end
+    end
+    return predictions
+end
+
+function _apply_isoscalar_pseudoscalar_annihilation(
+    rows::Vector,
+    computed::SectorComputation;
+    contact_hyperfine::Bool,
+    scheme::Symbol,
+    strange_mass_GeV,
+)
+    scheme == :none && return rows
+    scheme in (:calibrated_p1, :p1) ||
+        throw(ArgumentError("unsupported isoscalar pseudoscalar annihilation scheme `$scheme`"))
+    isnothing(strange_mass_GeV) &&
+        throw(ArgumentError("strange_mass_GeV is required for isoscalar pseudoscalar annihilation"))
+    matches = [
+        (i, row) for (i, row) in pairs(rows) if
+        row.sector == "isoscalar" &&
+        row.L == "S" &&
+        row.multiplicity == 1 &&
+        row.J == 0 &&
+        row.n in (1, 2)
+    ]
+    length(matches) == 4 || return rows
+
+    q_by_n = Dict{Int,Float64}()
+    for (_, row) in matches
+        q_by_n[row.n] = row.predicted_GeV
+    end
+    haskey(q_by_n, 1) && haskey(q_by_n, 2) || return rows
+
+    template = nothing
+    for (key, sol) in computed.channel_cache
+        if key.L_label == "S"
+            template = sol
+            break
+        end
+    end
+    isnothing(template) && return rows
+    strange_masses = ConstituentMasses(strange_mass_GeV, strange_mass_GeV)
+    ss = _s_wave_singlet_predictions_on_grid(
+        computed.params,
+        strange_masses,
+        template,
+        2;
+        contact_hyperfine = contact_hyperfine,
+    )
+    diagonal = [q_by_n[1], ss[1], q_by_n[2], ss[2]]
+    targets = sort([row.reference_GeV for (_, row) in matches])
+    solution = isoscalar_pseudoscalar_annihilation_solution(diagonal; targets = targets)
+
+    out = copy(rows)
+    ordered_matches = sort(matches; by = item -> item[2].reference_GeV)
+    for (level, (i, row)) in enumerate(ordered_matches)
+        predicted = solution.masses[level]
+        annihilation_shift = predicted - row.predicted_GeV
+        out[i] = merge(
+            row,
+            (
+                annihilation_shift_GeV = annihilation_shift,
+                annihilation_scheme = String(scheme),
+                predicted_GeV = predicted,
+                residual_MeV = 1000 * (predicted - row.reference_GeV),
+            ),
+        )
+    end
+    return out
+end
+
 """
     compute_sector(params, annotated::AbstractVector; …)
 
@@ -49,6 +165,8 @@ function compare(
     annotated::AbstractVector;
     contact_hyperfine::Bool = true,
     use_fine_structure::Bool = true,
+    isoscalar_pseudoscalar_annihilation::Symbol = :none,
+    strange_mass_GeV = nothing,
 )
     params = computed.params
     channel_cache = computed.channel_cache
@@ -109,7 +227,9 @@ function compare(
                 isapprox(masses.m1_GeV, masses.m2_GeV; rtol = 0.0, atol = 0.0) ?
                 "equal_mass" : "unequal_mass_equal_share_LdotS"
         end
-        predicted = central + contact_shift + fine_structure_shift
+        annihilation_shift = 0.0
+        annihilation_scheme = "none"
+        predicted = central + contact_shift + fine_structure_shift + annihilation_shift
         push!(
             rows,
             (
@@ -130,13 +250,21 @@ function compare(
                 spin_orbit_shift_GeV = spin_orbit_shift,
                 tensor_shift_GeV = tensor_shift,
                 fine_structure_shift_GeV = fine_structure_shift,
+                annihilation_shift_GeV = annihilation_shift,
+                annihilation_scheme = annihilation_scheme,
                 predicted_GeV = predicted,
                 residual_MeV = 1000 * (predicted - state.mass_GeV),
                 confidence = state.confidence,
             ),
         )
     end
-    return rows
+    return _apply_isoscalar_pseudoscalar_annihilation(
+        rows,
+        computed;
+        contact_hyperfine = contact_hyperfine,
+        scheme = isoscalar_pseudoscalar_annihilation,
+        strange_mass_GeV = strange_mass_GeV,
+    )
 end
 
 function _row_sector(row)
@@ -310,16 +438,19 @@ function write_residual_report(
             println(io)
             println(
                 io,
-                "| state | central GeV | contact MeV | L·S(vec) MeV | L·S(Thomas) MeV | L·S total MeV | tensor MeV | total shift MeV | predicted GeV |",
+                "| state | central GeV | contact MeV | L·S(vec) MeV | L·S(Thomas) MeV | L·S total MeV | tensor MeV | annihilation MeV | total shift MeV | predicted GeV |",
             )
-            println(io, "|---|---:|---:|---:|---:|---:|---:|---:|---:|")
+            println(io, "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
             for row in rows
                 label = @sprintf("%d^%d%s_%d", row.n, row.multiplicity, row.L, row.J)
-                total_shift = row.contact_shift_GeV + row.fine_structure_shift_GeV
+                annihilation_shift =
+                    hasproperty(row, :annihilation_shift_GeV) ? row.annihilation_shift_GeV : 0.0
+                total_shift =
+                    row.contact_shift_GeV + row.fine_structure_shift_GeV + annihilation_shift
                 println(
                     io,
                     @sprintf(
-                        "| `%s` | %.3f | %+7.1f | %+7.1f | %+7.1f | %+7.1f | %+7.1f | %+7.1f | %.3f |",
+                        "| `%s` | %.3f | %+7.1f | %+7.1f | %+7.1f | %+7.1f | %+7.1f | %+7.1f | %+7.1f | %.3f |",
                         label,
                         row.central_GeV,
                         1000 * row.contact_shift_GeV,
@@ -327,6 +458,7 @@ function write_residual_report(
                         1000 * row.spin_orbit_thomas_shift_GeV,
                         1000 * row.spin_orbit_shift_GeV,
                         1000 * row.tensor_shift_GeV,
+                        1000 * annihilation_shift,
                         1000 * total_shift,
                         row.predicted_GeV,
                     ),

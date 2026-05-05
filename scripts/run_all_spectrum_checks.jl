@@ -45,6 +45,9 @@ for fn in readdir(data_dir)
         annotated;
         contact_hyperfine = true,
         use_fine_structure = params.fine_structure,
+        isoscalar_pseudoscalar_annihilation =
+            base == "isoscalar" ? :calibrated_p1 : :none,
+        strange_mass_GeV = mq["s"],
     )
     write_residual_report(
         report_path,
@@ -116,6 +119,6 @@ open(joinpath(report_dir, "scorecard.md"), "w") do io
     println(io)
     println(
         io,
-        "Interpretation: heavy-heavy and heavy-light sectors are useful solver diagnostics. Light and isoscalar sectors still require the missing GI mixing/annihilation machinery and should not be treated as complete.",
+        "Interpretation: heavy-heavy and heavy-light sectors are useful solver diagnostics. The isoscalar `^1S_0` rows now use the calibrated GI P1-style annihilation block; remaining raw isoscalar residuals mostly reflect the still-missing general `n nbar`/`s sbar` flavor mixing machinery.",
     )
 end

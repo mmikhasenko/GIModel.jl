@@ -15,7 +15,7 @@ This report separates raw sector residuals from the rows that should be judged b
 | `charmed` | 11 | 19.1 | 36.2 | 7 | 18.5 | 30.4 | 4 |
 | `charmed_strange` | 11 | 13.4 | 34.3 | 7 | 12.9 | 24.7 | 4 |
 | `charmonium` | 28 | 6.3 | 25.3 | 22 | 7.1 | 25.3 | 6 |
-| `isoscalar` | 49 | 136.8 | 865.0 | 0 | n/a | n/a | 49 |
+| `isoscalar` | 49 | 100.0 | 259.9 | 0 | n/a | n/a | 49 |
 | `isovector` | 30 | 14.1 | 55.0 | 26 | 14.9 | 55.0 | 4 |
 | `strange` | 30 | 12.7 | 43.7 | 14 | 13.9 | 43.0 | 16 |
 
@@ -46,4 +46,5 @@ Two-branch diagnostic: rows=48, mean abs=31.1 MeV, max abs=425.0 MeV.
 ## Audit Read
 
 The contrast across sectors is now diagnostic: heavy, heavy-light, strange, and non-mixed isovector rows are already at the few-to-tens of MeV scale, while raw isoscalar residuals mostly reflect missing flavor mixing/annihilation assignment.
-After the two-branch isoscalar sanity check, the remaining large light-sector outliers are concentrated in pseudoscalar channels. That is exactly where GI warns that annihilation and chiral/nonperturbative pseudoscalar physics are exceptional.
+The calibrated P1-style pseudoscalar annihilation path now removes the raw `^1S_0` isoscalar failures from the main scorecard. The two-branch sanity table is retained as a pre-annihilation diagnostic showing why that block was required.
+The remaining raw isoscalar residuals are no longer concentrated in pseudoscalars; they mostly reflect the still-missing general `n nbar`/`s sbar` flavor-mixing assignment for paired isoscalar states.
