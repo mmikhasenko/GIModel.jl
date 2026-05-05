@@ -48,11 +48,13 @@ Use these files to resume work quickly:
   authority.
 - `data/seed/godfrey_isgur_sources.csv`: manifest for the seed sources.
 - `paper/Godfrey-Isgur-1985.pdf`: primary authority.
-- `paper/text/godfrey_isgur_1985_prose.md`: preferred reading/search reference.
-- `paper/text/pdftotext_layout.txt`: raw layout extraction for table work.
-- `paper/text/pdftotext_bbox.html`: positional extraction for audit work.
-- `paper/text/pdftotext_words.tsv`: word-position extraction for table
-  reconstruction experiments.
+- `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`: preferred
+  reading/search reference with LaTeX-style equation transcription.
+- `paper/vision_ocr/pages/`: one Markdown file per PDF page.
+- `paper/vision_ocr/page_images/` and `paper/vision_ocr/column_crops/`:
+  rendered provenance images for equation/table audit.
+- `paper/vision_ocr/usage.jsonl`: API usage/provenance log for the vision OCR
+  run.
 - `paper/screenshots/spectrum_pages/`: rendered spectrum pages, PDF pages 6-10.
 - `data/raw/digitized_tables/`: reference/provenance copies for table-specific
   raw snippets and structured transcriptions.
@@ -69,12 +71,13 @@ Use these files to resume work quickly:
   has the columns required by `load_reference_spectrum` (used with `compute_sector` / `compare`).
 - `scripts/verify_project.sh`: one-shot full gate (Python prechecks + Julia tests
   + analysis + all spectrum checks); use before committing substantive changes.
-- `scripts/build_paper_prose.py`: rebuilds the prose-only paper reference.
+- `scripts/vision_ocr_paper.py`: rebuilds the vision-OCR paper reference.
 - `scripts/plot_spectrum_digitizations.py`: regenerates clean Fig. 4-9
   comparison replots from digitized figure CSVs.
 
-Intermediate generated paper references exist under `paper/text/` for
-provenance and experiments, but they are not recommended handoff entry points.
+The old `pdftotext` references have been removed because they degraded
+equations. Use the vision-OCR Markdown for search and the saved crops/PDF for
+authoritative checks.
 
 ## Julia layout
 
@@ -172,24 +175,17 @@ solver and validation scripts should start from the top-level `data/` files.
    julia --project=. test/runtests.jl
    ```
 
-6. Rebuild paper text references if the PDF changes:
+6. Rebuild the vision-OCR paper reference if the PDF changes:
 
    ```bash
-   pdftotext -layout paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_layout.txt
-   pdftotext -bbox-layout paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_bbox.html
-   pdftotext -raw paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_raw.txt
-   pdftotext -tsv paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_words.tsv
-   python3 scripts/build_paper_prose.py
+   python3 scripts/vision_ocr_paper.py --model gpt-4.1
    ```
 
-7. Render page images for table verification when needed:
+   This writes page images, column crops, per-page Markdown, an aggregate
+   Markdown file, and usage metadata under `paper/vision_ocr/`.
 
-   ```bash
-   pdftoppm -r 300 -png paper/Godfrey-Isgur-1985.pdf paper/pages/gi
-   ```
-
-8. Create raw extraction CSVs in `data/raw/`.
-9. Promote verified rows into `data/clean/` with provenance preserved.
+7. Create raw extraction CSVs in `data/raw/`.
+8. Promote verified rows into `data/clean/` with provenance preserved.
 
 Current first-pass digitizations are copied to the top level of `data/`.
 Reference/provenance copies remain under `data/raw/digitized_tables/` and

@@ -5,15 +5,12 @@ all row-level disagreements here.
 
 Expected generated files:
 
-- `paper/text/pdftotext_layout.txt`
-- `paper/text/pdftotext_raw.txt`
-- `paper/text/pdftotext_bbox.html`
-- `paper/text/pdftotext_words.tsv`
-- `paper/text/godfrey_isgur_1985_prose.md`
-- `paper/pages/*.png`
+- `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`
+- `paper/vision_ocr/pages/*.md`
+- `paper/vision_ocr/page_images/*.png`
+- `paper/vision_ocr/column_crops/*.png`
 - `paper/screenshots/spectrum_pages/*.png`
 - `data/raw/digitized_tables/*`
-- `data/raw/tables_from_pdf_text.csv`
 - `data/raw/tables_from_page_images.csv`
 - `data/raw/extraction_audit.csv` (header-only template until text-vs-image rows are logged)
 
@@ -21,18 +18,11 @@ Expected generated files:
 
 - Downloaded the primary paper to `paper/Godfrey-Isgur-1985.pdf`.
 - Verified PDF metadata with `pdfinfo`: 43 pages, unencrypted, PDF 1.4.
-- Generated `paper/text/pdftotext_layout.txt` with `pdftotext -layout`.
-- Generated `paper/text/pdftotext_bbox.html` with `pdftotext -bbox-layout`.
-- Generated `paper/text/pdftotext_raw.txt` with `pdftotext -raw`.
-- Generated `paper/text/pdftotext_words.tsv` with `pdftotext -tsv`.
-- Generated `paper/text/godfrey_isgur_1985_prose.md` with
-  `scripts/build_paper_prose.py`.
+- Generated initial text-extraction artifacts and a placeholder page-image root.
 
-The raw extraction has much better reading order than the layout extraction.
-The prose Markdown is currently the preferred reading/navigation file. Table
-extraction must still be checked against the PDF and rendered page images.
-Intermediate generated Markdown experiments are retained in `paper/text/` for
-provenance, but should not be used as default references.
+These artifacts were useful for early navigation but damaged equations. They
+were removed after the 2026-05-05 vision-OCR replacement; use
+`paper/vision_ocr/` instead.
 
 ## 2026-04-25 Spectrum Screenshots And First Tables
 

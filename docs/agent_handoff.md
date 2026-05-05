@@ -8,7 +8,9 @@ to continue the Godfrey-Isgur reproduction.
 - Git repository is initialized on `main`.
 - Phase 0 scaffold is in place.
 - Primary paper is available at `paper/Godfrey-Isgur-1985.pdf`.
-- Preferred prose reference is `paper/text/godfrey_isgur_1985_prose.md`.
+- Preferred paper reference is
+  `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`, with per-page Markdown
+  and audit crops under `paper/vision_ocr/`.
 - Seed data is available under `data/seed/`.
 - Seed schema validation passes with `python3 scripts/validate_seed.py`.
 - Spectrum pages 6-10 are rendered under `paper/screenshots/spectrum_pages/`.
@@ -56,9 +58,10 @@ to continue the Godfrey-Isgur reproduction.
 2. Read `docs/orchestrator_task.md`.
 3. Read `docs/paper_navigation.md`.
 4. Read `docs/code_architecture.md` before changing `src/` or residual scripts (parameters vs masses vs sector rows).
-5. Use `paper/text/godfrey_isgur_1985_prose.md` for prose search.
+5. Use `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` for paper search.
 6. Use `paper/Godfrey-Isgur-1985.pdf` as the authority for every equation,
-   symbol, table value, and state label.
+   symbol, table value, and state label; use `paper/vision_ocr/column_crops/`
+   for fast visual audit.
 
 ## Recommended Subagent Split
 
@@ -84,15 +87,15 @@ Owns raw extraction from the original PDF.
 Start files:
 
 - `paper/Godfrey-Isgur-1985.pdf`
-- `paper/text/pdftotext_layout.txt`
-- `paper/text/pdftotext_bbox.html`
-- `paper/text/pdftotext_words.tsv`
+- `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`
+- `paper/vision_ocr/pages/`
+- `paper/vision_ocr/column_crops/`
 - `docs/paper_navigation.md`
 
 First task:
 
-- Render page images, identify all numerical tables/figure spectra, and begin
-  `data/raw/tables_from_pdf_text.csv`.
+- Identify all numerical tables/figure spectra from the vision-OCR reference and
+  saved crops, then begin `data/raw/tables_from_page_images.csv`.
 
 ### Physics Reviewer
 
@@ -101,7 +104,7 @@ Owns conventions, formula interpretation, and state labels.
 Start files:
 
 - `paper/Godfrey-Isgur-1985.pdf`
-- `paper/text/godfrey_isgur_1985_prose.md`
+- `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`
 - `docs/conventions.md`
 - `docs/formula_map.md`
 - `docs/paper_navigation.md`
@@ -183,8 +186,8 @@ script; Figures 4-9 are regenerated with
 
 - Later quoted GI values in `data/seed/`.
 - Markdown extraction for numerical values.
-- Intermediate Markdown files in `paper/text/` other than
-  `godfrey_isgur_1985_prose.md`.
+- Vision-OCR equations or tables that have not been checked against the saved
+  crop/PDF.
 - Any sector marked complete without residuals and discrepancy classification.
 
 ## 2026-05-05 Hyperfine Checkpoint

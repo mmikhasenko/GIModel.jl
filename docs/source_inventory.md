@@ -13,18 +13,17 @@
 
 ## Derived Paper References
 
-- `paper/text/godfrey_isgur_1985_prose.md`: preferred prose reference for
+- `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`: preferred reference for
   reading, search, and future agent interaction.
-- `paper/text/pdftotext_layout.txt`: raw layout-preserving extraction for table
-  work.
-- `paper/text/pdftotext_bbox.html`: raw positional extraction for audit work.
-- `paper/text/pdftotext_words.tsv`: raw word-position extraction for future
-  table reconstruction experiments.
+- `paper/vision_ocr/pages/`: one Markdown transcription per PDF page.
+- `paper/vision_ocr/page_images/` and `paper/vision_ocr/column_crops/`: rendered
+  provenance images for equation/table audit.
+- `paper/vision_ocr/usage.jsonl`: API usage/provenance log for the vision OCR
+  run.
 
-Other generated paper references may exist under `paper/text/`; treat them as
-intermediate experiments, not handoff entry points. The PDF and rendered page
-images remain the authority for equations, signs, table alignment, and state
-labels.
+The previous `pdftotext` references were removed because they damaged equation
+typography. The PDF and rendered vision-OCR crops remain the authority for
+equations, signs, table alignment, and state labels.
 
 ## Seed Sources
 

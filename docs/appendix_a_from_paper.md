@@ -3,8 +3,10 @@
 This note orients the repository toward the **original** Godfrey–Isgur
 implementation of relativistic smearing. For full equation typography and
 factors, use `paper/Godfrey-Isgur-1985.pdf` (PDF **pp. 36–38**). The
-`paper/text/*` extractions are **OCR-fragile** in (A12)–(A15); do not use them
-for coefficients without checking the scan.
+vision-OCR reference at
+`paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` is useful for search, but
+do not use dense formulas as authoritative until they are checked against the
+saved crops in `paper/vision_ocr/column_crops/`.
 
 ## Smearing setup
 

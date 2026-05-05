@@ -19,7 +19,7 @@ per-phase checklists below. A “complete” 1985 reproduction through Phase 7 i
 | Phase | State |
 | --- | --- |
 | 0 — Inventory & seed | Done enough to work: PDF, seed, validation, `docs/source_inventory.md`. |
-| 1 — PDF / figure extraction | Substantial: `paper/text/*`, `data/raw/digitized_*`, top-level `data/reference_spectrum_*.csv`; not every planned aggregate CSV is filled. |
+| 1 — PDF / figure extraction | Substantial: `paper/vision_ocr/*`, `data/raw/digitized_*`, top-level `data/reference_spectrum_*.csv`; not every planned aggregate CSV is filled. |
 | 2 — Clean schema | Staged: `data/clean/README.md`; `masses.csv` / `mixings.csv` TBD after audit. |
 | 3 — Parameters & formula map | In use: `data/parameters.provisional.toml`, `docs/formula_map.md`, `docs/conventions.md`. |
 | 4 — Minimal solver | Implemented as Julia package **GIModel** (`Project.toml`, module `src/GIModel.jl` and included sources in `src/`): semirelativistic FD + pointwise central + smeared contact + diagnostic fine structure; **`GIParameters`** vs **`QuarkMassTable`** + **`ReferenceStateWithMasses`** workflow documented in `docs/code_architecture.md`. Residuals in `docs/residual_reports/`. |
@@ -93,15 +93,16 @@ docs, and the full `scripts/verify_project.sh` gate (see `README.md`).
 godfrey-isgur-reproduction/
   paper/
     Godfrey-Isgur-1985.pdf
-    pages/
-      p001.png
-      ...
+    vision_ocr/
+      godfrey_isgur_1985_vision_ocr.md
+      pages/
+      page_images/
+      column_crops/
   data/
     seed/
       godfrey_isgur_seed_masses.csv
       godfrey_isgur_sources.csv
     raw/
-      tables_from_pdf_text.csv
       tables_from_page_images.csv
       parameters_from_pdf.csv
     clean/
@@ -156,27 +157,25 @@ Verification gate:
 
 Deliverables:
 
-- `paper/text/pdftotext_layout.txt`
-- `paper/text/pdftotext_bbox.html`
-- `paper/pages/*.png`
-- `data/raw/tables_from_pdf_text.csv`
+- `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`
+- `paper/vision_ocr/pages/*.md`
+- `paper/vision_ocr/page_images/*.png`
+- `paper/vision_ocr/column_crops/*.png`
 - `data/raw/tables_from_page_images.csv`
 - `docs/extraction_notes.md`
 
 Recommended commands:
 
 ```bash
-pdftotext -layout paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_layout.txt
-pdftotext -bbox-layout paper/Godfrey-Isgur-1985.pdf paper/text/pdftotext_bbox.html
-pdftoppm -r 300 -png paper/Godfrey-Isgur-1985.pdf paper/pages/gi
+python3 scripts/vision_ocr_paper.py --model gpt-4.1
 ```
 
 Tasks:
 
 1. Identify all pages containing numerical tables.
-2. Extract tables from `pdftotext -layout` first.
-3. Extract/check the same tables from page images independently.
-4. Compare text-based and image-based extraction row by row.
+2. Extract tables from the vision-OCR Markdown as a first pass.
+3. Check the same tables against the saved column crops independently.
+4. Compare transcription and image-based extraction row by row.
 5. Any mismatch becomes an entry in `extraction_audit.csv`.
 
 Required fields for raw rows:

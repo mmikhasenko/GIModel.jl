@@ -324,10 +324,11 @@ summarized by `GIModel.central_potential_path` in `src/appendix_a_status.jl`.
 
 ## Formula-Audit Gate Before P1/P2 Coding
 
-The next implementation pass should wait for an OCR-backed audit of the main
-formulas. Treat `paper/text/godfrey_isgur_1985_readable.md` and the improved OCR
-as the source-of-truth checkpoint, then update this map with one status per
-formula: exact, approximate, missing, or suspect.
+The next implementation pass should use the vision-OCR reference plus crop/PDF
+audit of the main formulas. Treat
+`paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` as the searchable checkpoint,
+then update this map with one status per formula: exact, approximate, missing,
+or suspect.
 
 Minimum audit list:
 

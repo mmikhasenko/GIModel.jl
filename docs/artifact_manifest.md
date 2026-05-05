@@ -11,17 +11,20 @@ Generated: 2026-04-25
 - `docs/paper_navigation.md`: fast map to high-value paper sections, figures, and extraction caveats.
 - `scripts/validate_seed.py`: local schema check for the seed mass table.
 - `paper/Godfrey-Isgur-1985.pdf`: local copy of the primary paper.
-- `paper/text/godfrey_isgur_1985_prose.md`: preferred prose reference generated from raw extraction.
-- `paper/text/pdftotext_layout.txt`: layout-preserving raw extraction for tables.
-- `paper/text/pdftotext_bbox.html`: positional raw extraction for audit.
-- `paper/text/pdftotext_words.tsv`: word-position raw extraction for table reconstruction experiments.
+- `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`: preferred
+  reading/search reference generated from rendered page and column images.
+- `paper/vision_ocr/pages/`: one Markdown transcription per PDF page.
+- `paper/vision_ocr/page_images/` and `paper/vision_ocr/column_crops/`:
+  rendered provenance images for audit.
+- `paper/vision_ocr/usage.jsonl`: API usage/provenance log for the vision OCR
+  run.
 - `paper/screenshots/spectrum_pages/`: rendered PNG pages containing spectrum figures.
 - `data/raw/digitized_tables/`: one-folder-per-table raw snippets and provisional structured transcriptions.
 - `data/raw/digitized_figures/`: one-folder-per-figure model-label transcriptions.
-- `scripts/build_paper_prose.py`: regenerates the prose-only Markdown reference.
+- `scripts/vision_ocr_paper.py`: regenerates the vision-OCR Markdown reference.
 
-Intermediate generated references under `paper/text/` are retained for
-provenance but are not recommended starting points.
+The older `pdftotext` artifacts were removed after the vision-OCR replacement
+because they damaged equation typography.
 
 ## Important caveats
 

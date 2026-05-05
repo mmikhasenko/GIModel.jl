@@ -1,9 +1,10 @@
 # Paper Navigation
 
 Use this as a fast map into the Godfrey-Isgur paper while coding or extracting
-tables. For prose, start with `paper/text/godfrey_isgur_1985_prose.md`.
-Always verify equations and
-table values against `paper/Godfrey-Isgur-1985.pdf`.
+tables. For reading and search, start with
+`paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`. Always verify equations and
+table values against `paper/Godfrey-Isgur-1985.pdf` or the saved
+`paper/vision_ocr/column_crops/`.
 
 ## Core Model
 
@@ -49,9 +50,7 @@ Digitized spectrum labels begin under `data/raw/digitized_figures/`.
 
 - Markdown references are convenient for search but not reliable enough for
   final numbers.
-- Two-column layout causes split words and interleaved prose; use page images
-  for row-level extraction.
-- Greek symbols, bars, primes, signs, and superscripts are frequently degraded
-  in text extraction.
+- The vision-OCR pass is much better than the removed `pdftotext` artifacts, but
+  dense equations and crowded tables still need crop-level audit.
 - The paper uses isospin symmetry for heavy-light `Q qbar` doublets; precision
   `u` vs `d` splittings are outside the baseline 1985 reproduction.
