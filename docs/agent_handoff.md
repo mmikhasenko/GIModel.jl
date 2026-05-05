@@ -230,3 +230,21 @@ non-mixed residual fell from `133.4 MeV` to `55.0 MeV`, strange max from
 with some expected tradeoff in charm-light singlet ground states. The remaining
 edge now looks like the paper's known pseudoscalar/chiral-annihilation
 sensitivity, not a broad contact blow-up.
+
+## 2026-05-05 Light-Sector Contrast Checkpoint
+
+The raw sector comparison now makes the debugging clue explicit. Heavy,
+heavy-light, strange, and isovector sectors are already on the few-to-tens of
+MeV scale in the refreshed `docs/residual_reports/scorecard.md`; raw isoscalar
+is the outlier because the digitized Fig. 5 rows are mixed `n nbar / s sbar`
+pairs, while the current plain residual report compares both partners to the
+same unmixed `n nbar` prediction.
+
+Added `docs/residual_reports/light_sector_audit.md` from
+`scripts/audit_nonmixing_contact.jl`. Its two-branch sanity check compares the
+lower isoscalar partner to an unmixed `n nbar` solve and the upper partner to an
+unmixed `s sbar` solve. That drops the isoscalar diagnostic to `31.1 MeV` mean
+absolute residual, with the large remaining failures concentrated in
+`1^1S_0` and `2^1S_0` pseudoscalars. This supports the next physics target:
+explicit isoscalar annihilation/flavor mixing, especially the GI P1/P2
+pseudoscalar machinery, rather than a global light-sector retune.
