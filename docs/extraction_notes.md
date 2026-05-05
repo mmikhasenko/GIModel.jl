@@ -62,6 +62,26 @@ promotion.
   `data/raw/digitized_figures/fig03_isovector_mesons/figure_03_replot.svg`
   and `.png`, generated from the CSV without experimental hatching or bands.
 
+## 2026-05-05 Vision OCR Pass
+
+- Added `scripts/vision_ocr_paper.py`, a reproducible OpenAI vision-OCR pipeline:
+  render each PDF page at 300 dpi, create overlapping left/right column crops,
+  send a low-detail full-page image plus high-detail column crops to `gpt-4.1`,
+  and cache one Markdown file per page.
+- Generated `paper/vision_ocr/pages/page-001.md` through `page-043.md` and the
+  aggregate `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`.
+- Saved provenance images under `paper/vision_ocr/page_images/` and
+  `paper/vision_ocr/column_crops/`; API usage is logged in
+  `paper/vision_ocr/usage.jsonl`.
+- Actual billed pass, including one repeated Appendix-A pilot page: 143,537
+  input tokens and 72,014 output tokens with `gpt-4.1`, about $0.86 at the
+  current $2/M input and $8/M output rates. The latest one-output-per-page set is
+  140,309 input tokens and 70,189 output tokens, about $0.84.
+- The result is substantially better than `pdftotext`/Tesseract for equations,
+  but dense formulas still require visual audit before being treated as
+  authoritative. The known Appendix-A (A13) drift from the pilot was manually
+  corrected against the saved crop in `page-037.md` and the aggregate.
+
 ## 2026-04-25 Figures 4-9 Label Digitization
 
 - Added first-pass model-state label CSVs for Figures 4-9 under
