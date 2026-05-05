@@ -29,6 +29,18 @@ to continue the Godfrey-Isgur reproduction.
 - `test/runtests.jl` encodes several convention checks (Coulomb derivative,
   fine-structure angular factors, reduced-radial expectations, smearing
   constant-preservation).
+- Basis audit checkpoint: `GIParameters{FiniteDifferenceBasis}` remains the
+  default solver path, and a first finite `GIParameters{HarmonicOscillatorBasis}`
+  path now exists for paper-style basis comparison. The HO path assembles the
+  spin-independent Hamiltonian in an oscillator subspace and reconstructs
+  mesh wavefunctions for shared diagnostics. Run
+  `julia --project=. scripts/audit_nonmixing_contact.jl` to regenerate
+  `docs/residual_reports/nonmixing_scorecard.md`,
+  `docs/residual_reports/contact_hyperfine_audit.md`, and
+  `docs/residual_reports/basis_nonmixing_comparison.md`. Current read: FD and
+  HO non-mixed residuals are highly consistent outside a few higher S-wave
+  truncation-sensitive rows; the light-sector contact-hyperfine mismatch
+  survives the basis comparison and remains the next audit target.
 - No cleaned *promoted* reference dataset in `data/clean/` has been finished
   yet; extraction remains partly first-pass and needs audit.
 - **Autonomous coding loop:** the guarded outer loop and program file are

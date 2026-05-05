@@ -96,7 +96,7 @@ function _contact_hyperfine_shift_momentum_sandwich_diagonal(
     multiplicity in (1, 3) || return 0.0
     length(r) >= 2 || return 0.0
     h = r[2] - r[1]
-    p2_fact = eigen(p2_operator(m1, 0, r, h))
+    p2_fact = eigen(p2_operator(params, m1, 0, r, h))
     side_exponent = 0.25 + 0.5 * params.epsilon_c
     B = momentum_relativization_matrix(m1, m2, side_exponent, p2_fact)
     sigma = contact_smearing_sigma(params, masses)

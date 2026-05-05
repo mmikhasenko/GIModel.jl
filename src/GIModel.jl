@@ -5,7 +5,7 @@ using Printf
 using TOML
 using CSV
 using KrylovKit: eigsolve
-using SpecialFunctions: erf
+using SpecialFunctions: erf, gamma
 
 # =============================================================================
 # Constants and core layout types (shared by setup bookkeeping and numerics)
@@ -20,7 +20,7 @@ include("model_objects.jl")
 # Setup / bookkeeping: TOML parameters and flavor mass table
 # =============================================================================
 
-export GIParameters, load_parameters
+export GIParameters, GIBasis, FiniteDifferenceBasis, HarmonicOscillatorBasis, load_parameters
 include("parameters.jl")
 
 export QuarkMassTable, load_quark_masses, load_parameters_and_quark_masses
@@ -41,6 +41,7 @@ export central_potential_mode, central_potential_values
 include("central_potential_dispatch.jl")
 
 include("hamiltonian.jl")
+include("harmonic_oscillator_basis.jl")
 
 export channel_solution
 include("channel_solver.jl")
@@ -70,7 +71,7 @@ include("sector_solver.jl")
 # Sector batch solves, comparison vs reference rows, residual markdown
 # =============================================================================
 
-export compute_sector, compare, write_residual_report
+export compute_sector, compare, mixing_prone_state, nonmixing_deviation_summary, write_residual_report
 include("sector_comparison.jl")
 
 export ReferenceState, ReferenceStateWithMasses, load_reference_spectrum

@@ -1,7 +1,8 @@
 # Cached radial solves (`compute_sector`), reference-row comparison (`compare`),
 # markdown reports (`write_residual_report`).
 #
-# Public API (exported from GIModel.jl): compute_sector, compare, write_residual_report
+# Public API (exported from GIModel.jl): compute_sector, compare,
+#   mixing_prone_state, nonmixing_deviation_summary, write_residual_report
 
 """
     compute_sector(params, annotated::AbstractVector; …)
@@ -120,6 +121,86 @@ function compare(
         )
     end
     return rows
+end
+
+function _row_sector(row)
+    return String(getproperty(row, :sector))
+end
+
+function _row_L(row)
+    return String(getproperty(row, :L))
+end
+
+function _same_j_singlet_triplet_prone(row)
+    Ls = _row_L(row)
+    haskey(L_SYMBOLS, Ls) || return false
+    Lval = L_SYMBOLS[Ls]
+    return Lval > 0 && getproperty(row, :J) == Lval && getproperty(row, :multiplicity) in (1, 3)
+end
+
+function _tensor_sd_prone(row)
+    return getproperty(row, :multiplicity) == 3 &&
+           getproperty(row, :J) == 1 &&
+           _row_L(row) in ("S", "D") &&
+           (getproperty(row, :n) > 1 || _row_L(row) == "D")
+end
+
+function _open_flavor_like(row)
+    if hasproperty(row, :m1_GeV) && hasproperty(row, :m2_GeV)
+        return !isapprox(
+            getproperty(row, :m1_GeV),
+            getproperty(row, :m2_GeV);
+            rtol = 0.0,
+            atol = 1.0e-12,
+        )
+    end
+    return _row_sector(row) in (
+        "strange",
+        "charmed",
+        "charmed_strange",
+        "bottom_light",
+        "bottom_strange",
+        "bottom_charm",
+        "b_flavored",
+    )
+end
+
+"""
+    mixing_prone_state(row) -> Bool
+
+Heuristic guardrail for residual scorecards that should not depend on explicit
+mixing machinery. It excludes isoscalar flavor-mixing rows, same-`J`
+`^1L_J`/`^3L_J` candidates, and the common triplet `S`/`D`, `J=1` tensor/radial
+mixing candidates.
+"""
+function mixing_prone_state(row)
+    sector = _row_sector(row)
+    sector == "isoscalar" && return true
+    if _open_flavor_like(row)
+        _same_j_singlet_triplet_prone(row) && return true
+    end
+    return _tensor_sd_prone(row)
+end
+
+function nonmixing_deviation_summary(rows)
+    sectors = sort(unique(_row_sector(row) for row in rows))
+    out = NamedTuple[]
+    for sector in sectors
+        sector_rows = [row for row in rows if _row_sector(row) == sector]
+        kept = [row for row in sector_rows if !mixing_prone_state(row)]
+        absres = [abs(getproperty(row, :residual_MeV)) for row in kept]
+        push!(
+            out,
+            (
+                sector = sector,
+                n_included = length(kept),
+                n_excluded_mixing_prone = length(sector_rows) - length(kept),
+                mean_abs_deviation_MeV = isempty(absres) ? NaN : sum(absres) / length(absres),
+                max_abs_deviation_MeV = isempty(absres) ? NaN : maximum(absres),
+            ),
+        )
+    end
+    return out
 end
 
 function write_residual_report(

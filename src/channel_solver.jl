@@ -26,6 +26,30 @@ function channel_solution(
     end
 end
 
+function channel_solution(
+    params::GIParameters{HarmonicOscillatorBasis},
+    masses::ConstituentMasses,
+    L::Integer;
+    nlevels::Integer = 6,
+    ngrid::Integer = 450,
+    rmax::Real = 24.0,
+    kinetic::Symbol = :relativistic,
+    eigensolver::Symbol = :full,
+)
+    kinetic == :relativistic ||
+        error("HarmonicOscillatorBasis currently supports only relativistic kinetic mode")
+    eigensolver == :full ||
+        error("HarmonicOscillatorBasis uses dense finite oscillator matrices; pass eigensolver=:full")
+    return oscillator_channel_solution(
+        params,
+        masses,
+        L;
+        nlevels = nlevels,
+        ngrid = ngrid,
+        rmax = rmax,
+    )
+end
+
 function solve_channel(args...; kwargs...)
     values, _vectors, _r = channel_solution(args...; kwargs...)
     values

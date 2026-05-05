@@ -32,8 +32,11 @@ can load before reference structs are defined; CSV reading and string→mass hel
 
 ## Loading inputs
 
-- **`load_parameters(path)`** → **`GIParameters`** only (potential, smearing switches,
+- **`load_parameters(path)`** → **`GIParameters{FiniteDifferenceBasis}`** by default
+  (potential, smearing switches,
   relativistic factors, fine-structure flags). It does **not** carry quark masses.
+  The basis is a type parameter so a future HO/GI-basis implementation can add
+  methods for `GIParameters{SomeBasis}` without replacing the current FD path.
 - **`load_quark_masses(path)`** → **`QuarkMassTable`** (`Dict{String,Float64}` with keys
   `"u"`, `"d"`, `"q"`, `"s"`, `"c"`, `"b"` in GeV).
 - **`load_parameters_and_quark_masses(path)`** → `(GIParameters, QuarkMassTable)`. This is

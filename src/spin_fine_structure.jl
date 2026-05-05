@@ -211,7 +211,7 @@ function radial_expect_momentum_sandwich(
     length(r) >= 2 || return 0.0
     # Reuse the same uniform-mesh convention guard as the diagonal expectation path.
     physical_u_norm(r, h, u)
-    p2_fact = eigen(p2_operator(m1, L, r, h))
+    p2_fact = eigen(p2_operator(params, m1, L, r, h))
     side_exponent = 0.25 + 0.5 * epsilon
     B = momentum_relativization_matrix(m1, m2, side_exponent, p2_fact)
     kernel = Diagonal([f(float(ri), i) for (i, ri) in enumerate(r)])

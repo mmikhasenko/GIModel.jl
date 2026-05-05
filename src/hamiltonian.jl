@@ -71,7 +71,7 @@ function relativistic_hamiltonian(
     m1 = masses.m1_GeV
     m2 = masses.m2_GeV
     r, h = radial_grid(ngrid, rmax)
-    p2 = p2_operator(m1, L, r, h)
+    p2 = p2_operator(params, m1, L, r, h)
     p2_fact = eigen(p2)
     kinetic =
         sqrt_kinetic_matrix_from_eigen(p2_fact, m1) +

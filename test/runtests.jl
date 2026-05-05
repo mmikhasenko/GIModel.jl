@@ -128,6 +128,7 @@ end
 
 @testset "central_potential_path (default = GI momentum sandwich)" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    @test params isa GIParameters{FiniteDifferenceBasis}
     p = GIModel.central_potential_path(params)
     @test p.name == "appendix_a_momentum_sandwich"
     @test GIModel.central_potential_mode(params) == :appendix_a_momentum_sandwich
@@ -136,6 +137,37 @@ end
     @test params.appendix_a_closed_form == false
     @test params.appendix_a_momentum_sandwich == true
     @test params.coulomb_1d_smear == false
+end
+
+@testset "GIParameters basis dispatch keeps FD p² path explicit" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    r, h = GIModel.radial_grid(12, 3.0)
+    p2_default = GIModel.p2_operator(mq["c"], 1, r, h)
+    p2_param = GIModel.p2_operator(params, mq["c"], 1, r, h)
+    p2_basis = GIModel.p2_operator(FiniteDifferenceBasis, mq["c"], 1, r, h)
+    @test p2_param ≈ p2_default
+    @test p2_basis ≈ p2_default
+end
+
+@testset "HarmonicOscillatorBasis channel solve returns mesh wavefunctions" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    params_ho = GIModel.with_basis(params, HarmonicOscillatorBasis)
+    vals, vecs, r = channel_solution(
+        params_ho,
+        ConstituentMasses(mq["c"], mq["c"]),
+        0;
+        nlevels = 3,
+        ngrid = 120,
+        rmax = 14.0,
+    )
+    @test params_ho isa GIParameters{HarmonicOscillatorBasis}
+    @test length(vals) == 3
+    @test size(vecs) == (length(r), 3)
+    @test vals[1] < vals[2] < vals[3]
+    h = r[2] - r[1]
+    for col in axes(vecs, 2)
+        @test sum(abs2, vecs[:, col]) * h ≈ 1.0 rtol = 1e-10
+    end
 end
 
 @testset "reduced_mass" begin
@@ -1306,6 +1338,73 @@ end
     @test row.predicted_GeV ≈
           row.central_GeV + row.contact_shift_GeV + row.fine_structure_shift_GeV atol =
         1e-12
+end
+
+@testset "nonmixing deviation summary excludes mixing-prone rows" begin
+    rows = [
+        (
+            sector = "charmed",
+            L = "S",
+            n = 1,
+            J = 0,
+            multiplicity = 1,
+            residual_MeV = -30.0,
+        ),
+        (
+            sector = "charmed",
+            L = "P",
+            n = 1,
+            J = 1,
+            multiplicity = 1,
+            residual_MeV = 500.0,
+        ),
+        (
+            sector = "charmed",
+            L = "P",
+            n = 1,
+            J = 1,
+            multiplicity = 3,
+            residual_MeV = -400.0,
+        ),
+        (
+            sector = "charmonium",
+            L = "D",
+            n = 1,
+            J = 1,
+            multiplicity = 3,
+            residual_MeV = 300.0,
+        ),
+        (
+            sector = "charmonium",
+            L = "P",
+            n = 1,
+            J = 2,
+            multiplicity = 3,
+            residual_MeV = 10.0,
+        ),
+        (
+            sector = "isoscalar",
+            L = "S",
+            n = 1,
+            J = 0,
+            multiplicity = 1,
+            residual_MeV = 900.0,
+        ),
+    ]
+    @test GIModel.mixing_prone_state(rows[2])
+    @test GIModel.mixing_prone_state(rows[3])
+    @test GIModel.mixing_prone_state(rows[4])
+    @test GIModel.mixing_prone_state(rows[6])
+    summary = GIModel.nonmixing_deviation_summary(rows)
+    by_sector = Dict(row.sector => row for row in summary)
+    @test by_sector["charmed"].n_included == 1
+    @test by_sector["charmed"].n_excluded_mixing_prone == 2
+    @test by_sector["charmed"].mean_abs_deviation_MeV ≈ 30.0
+    @test by_sector["charmed"].max_abs_deviation_MeV ≈ 30.0
+    @test by_sector["charmonium"].n_included == 1
+    @test by_sector["charmonium"].n_excluded_mixing_prone == 1
+    @test by_sector["isoscalar"].n_included == 0
+    @test isnan(by_sector["isoscalar"].mean_abs_deviation_MeV)
 end
 
 @testset "ReferenceStateWithMasses stable across compute_sector" begin
