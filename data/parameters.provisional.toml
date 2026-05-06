@@ -46,7 +46,7 @@ s = 1.55
 epsilon_c = -0.168
 epsilon_t = 0.025
 epsilon_so_vector = -0.035
-epsilon_so_scalar = 0.0
+epsilon_so_scalar = 0.055
 # Active research path for the contact term: apply the GI momentum-dependent
 # factor as a Hermitian sandwich around the smeared contact operator.
 contact_momentum_sandwich = true

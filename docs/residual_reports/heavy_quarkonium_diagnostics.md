@@ -9,35 +9,35 @@ Active central path: `appendix_a_momentum_sandwich` — Closed-form smeared G̃(
 ## charmonium
 
 - rows: `28`
-- mean residual/common offset: `-0.6 MeV`
-- mean absolute residual: `6.7 MeV`
-- mean absolute residual after removing common offset: `6.8 MeV`
-- approximate share of *squared* residuals explained by a single common offset: `0%` (order-of-magnitude; not a full variance decomposition across physics channels)
+- mean residual/common offset: `+0.7 MeV`
+- mean absolute residual: `6.0 MeV`
+- mean absolute residual after removing common offset: `6.0 MeV`
+- approximate share of *squared* residuals explained by a single common offset: `1%` (order-of-magnitude; not a full variance decomposition across physics channels)
 
 ### Multiplet Centers
 
 | multiplet | states | reference GeV | model GeV | residual MeV | offset-corrected MeV |
 |---|---:|---:|---:|---:|---:|
-| `1D` | 4 | 3.841 | 3.838 |    -2.1 |    -1.5 |
-| `2D` | 4 | 4.211 | 4.209 |    -1.4 |    -0.8 |
-| `3D` | 1 | 4.520 | 4.518 |    -2.1 |    -1.5 |
-| `1F` | 4 | 4.093 | 4.094 |    +1.9 |    +2.5 |
-| `1P` | 4 | 3.523 | 3.523 |    -0.3 |    +0.3 |
-| `2P` | 4 | 3.962 | 3.962 |    -0.2 |    +0.4 |
-| `1S` | 2 | 3.068 | 3.064 |    -3.2 |    -2.6 |
-| `2S` | 2 | 3.665 | 3.666 |    +0.9 |    +1.5 |
-| `3S` | 2 | 4.090 | 4.091 |    +0.6 |    +1.1 |
-| `4S` | 1 | 4.450 | 4.455 |    +4.9 |    +5.5 |
+| `1D` | 4 | 3.841 | 3.838 |    -2.1 |    -2.8 |
+| `2D` | 4 | 4.211 | 4.209 |    -1.4 |    -2.2 |
+| `3D` | 1 | 4.520 | 4.523 |    +2.9 |    +2.2 |
+| `1F` | 4 | 4.093 | 4.094 |    +1.9 |    +1.2 |
+| `1P` | 4 | 3.523 | 3.523 |    -0.3 |    -1.1 |
+| `2P` | 4 | 3.962 | 3.962 |    -0.2 |    -0.9 |
+| `1S` | 2 | 3.068 | 3.058 |    -9.7 |   -10.5 |
+| `2S` | 2 | 3.665 | 3.665 |    -0.2 |    -0.9 |
+| `3S` | 2 | 4.090 | 4.090 |    +0.2 |    -0.5 |
+| `4S` | 1 | 4.450 | 4.450 |    -0.2 |    -1.0 |
 
-- radial/orbital spacing errors (this table): RMSE = `2.6 MeV`, mean abs = `2.2 MeV` over `6` available rows
+- radial/orbital spacing errors (this table): RMSE = `6.9 MeV`, mean abs = `5.2 MeV` over `6` available rows
 
 ### Radial And Orbital Spacings
 
 | quantity | reference MeV | model MeV | error MeV |
 |---|---:|---:|---:|
-| `2S - 1S` | 597.5 | 601.6 |    +4.1 |
-| `3S - 1S` | 1022.5 | 1026.2 |    +3.7 |
-| `1P - 1S` | 455.8 | 458.7 |    +2.8 |
+| `2S - 1S` | 597.5 | 607.1 |    +9.6 |
+| `3S - 1S` | 1022.5 | 1032.5 |   +10.0 |
+| `1P - 1S` | 455.8 | 465.2 |    +9.4 |
 | `1D - 1P` | 317.2 | 315.4 |    -1.8 |
 | `2P - 1P` | 439.2 | 439.3 |    +0.1 |
 | `2D - 1D` | 370.0 | 370.6 |    +0.6 |
@@ -46,14 +46,14 @@ Active central path: `appendix_a_momentum_sandwich` — Closed-form smeared G̃(
 
 | quantity | reference MeV | model MeV | error MeV |
 |---|---:|---:|---:|
-| `1^3S_1 - 1^1S_0` | 130.0 | 141.6 |   +11.6 |
-| `2^3S_1 - 2^1S_0` | 60.0 | 83.1 |   +23.1 |
-| `1^3P_2 - 1^3P_1` | 40.0 | 7.2 |   -32.8 |
-| `1^3P_1 - 1^3P_0` | 70.0 | 77.2 |    +7.2 |
-| `2^3P_2 - 2^3P_1` | 30.0 | 6.8 |   -23.2 |
-| `2^3P_1 - 2^3P_0` | 30.0 | 56.1 |   +26.1 |
-| `1^3D_3 - 1^3D_2` | 10.0 | -0.3 |   -10.3 |
-| `1^3D_2 - 1^3D_1` | 20.0 | 20.9 |    +0.9 |
+| `1^3S_1 - 1^1S_0` | 130.0 | 132.4 |    +2.4 |
+| `2^3S_1 - 2^1S_0` | 60.0 | 61.6 |    +1.6 |
+| `1^3P_2 - 1^3P_1` | 40.0 | 6.7 |   -33.3 |
+| `1^3P_1 - 1^3P_0` | 70.0 | 61.8 |    -8.2 |
+| `2^3P_2 - 2^3P_1` | 30.0 | 5.3 |   -24.7 |
+| `2^3P_1 - 2^3P_0` | 30.0 | 38.5 |    +8.5 |
+| `1^3D_3 - 1^3D_2` | 10.0 | 0.3 |    -9.7 |
+| `1^3D_2 - 1^3D_1` | 20.0 | 17.1 |    -2.9 |
 
 ### Same-J 1P Mixing Diagnostic
 
@@ -61,42 +61,42 @@ Diagnostic FD-basis `(^1P_1, ^3P_1)` matrix, using the antisymmetric spin-orbit 
 
 | m1 GeV | m2 GeV | ^1P1 diag GeV | ^3P1 diag GeV | offdiag MeV | low GeV | high GeV | theta deg | complement deg |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 1.628 | 1.628 | 3.523 | 3.528 |   +0.00 | 3.523 | 3.528 |   -0.0 |  +90.0 |
+| 1.628 | 1.628 | 3.523 | 3.526 |   +0.00 | 3.523 | 3.526 |   -0.0 |  +90.0 |
 
 ## bottomonium
 
 - rows: `30`
-- mean residual/common offset: `-0.8 MeV`
-- mean absolute residual: `4.0 MeV`
-- mean absolute residual after removing common offset: `4.2 MeV`
-- approximate share of *squared* residuals explained by a single common offset: `3%` (order-of-magnitude; not a full variance decomposition across physics channels)
+- mean residual/common offset: `-1.1 MeV`
+- mean absolute residual: `4.3 MeV`
+- mean absolute residual after removing common offset: `4.5 MeV`
+- approximate share of *squared* residuals explained by a single common offset: `4%` (order-of-magnitude; not a full variance decomposition across physics channels)
 
 ### Multiplet Centers
 
 | multiplet | states | reference GeV | model GeV | residual MeV | offset-corrected MeV |
 |---|---:|---:|---:|---:|---:|
-| `1D` | 4 | 10.152 | 10.148 |    -3.6 |    -2.8 |
-| `2D` | 4 | 10.448 | 10.450 |    +1.5 |    +2.3 |
-| `3D` | 1 | 10.700 | 10.700 |    +0.4 |    +1.3 |
-| `1F` | 4 | 10.353 | 10.355 |    +1.4 |    +2.2 |
-| `1P` | 4 | 9.886 | 9.883 |    -2.9 |    -2.0 |
-| `2P` | 4 | 10.252 | 10.251 |    -1.2 |    -0.4 |
-| `1S` | 2 | 9.445 | 9.444 |    -1.0 |    -0.2 |
-| `2S` | 2 | 9.995 | 9.997 |    +1.7 |    +2.6 |
-| `3S` | 2 | 10.348 | 10.348 |    +0.3 |    +1.2 |
-| `4S` | 1 | 10.630 | 10.634 |    +3.6 |    +4.5 |
-| `5S` | 1 | 10.880 | 10.875 |    -4.8 |    -4.0 |
-| `6S` | 1 | 11.100 | 11.093 |    -7.3 |    -6.4 |
+| `1D` | 4 | 10.152 | 10.148 |    -3.6 |    -2.5 |
+| `2D` | 4 | 10.448 | 10.450 |    +1.5 |    +2.5 |
+| `3D` | 1 | 10.700 | 10.701 |    +1.1 |    +2.2 |
+| `1F` | 4 | 10.353 | 10.355 |    +1.4 |    +2.5 |
+| `1P` | 4 | 9.886 | 9.883 |    -2.9 |    -1.8 |
+| `2P` | 4 | 10.252 | 10.251 |    -1.2 |    -0.1 |
+| `1S` | 2 | 9.445 | 9.441 |    -4.2 |    -3.1 |
+| `2S` | 2 | 9.995 | 9.996 |    +0.6 |    +1.7 |
+| `3S` | 2 | 10.348 | 10.347 |    -0.4 |    +0.7 |
+| `4S` | 1 | 10.630 | 10.632 |    +2.4 |    +3.5 |
+| `5S` | 1 | 10.880 | 10.874 |    -6.0 |    -4.9 |
+| `6S` | 1 | 11.100 | 11.092 |    -8.4 |    -7.3 |
 
-- radial/orbital spacing errors (this table): RMSE = `2.6 MeV`, mean abs = `2.2 MeV` over `6` available rows
+- radial/orbital spacing errors (this table): RMSE = `3.4 MeV`, mean abs = `2.9 MeV` over `6` available rows
 
 ### Radial And Orbital Spacings
 
 | quantity | reference MeV | model MeV | error MeV |
 |---|---:|---:|---:|
-| `2S - 1S` | 550.0 | 552.7 |    +2.7 |
-| `3S - 1S` | 902.5 | 903.8 |    +1.3 |
-| `1P - 1S` | 440.8 | 439.0 |    -1.9 |
+| `2S - 1S` | 550.0 | 554.8 |    +4.8 |
+| `3S - 1S` | 902.5 | 906.3 |    +3.8 |
+| `1P - 1S` | 440.8 | 442.2 |    +1.3 |
 | `1D - 1P` | 266.2 | 265.4 |    -0.8 |
 | `2P - 1P` | 366.7 | 368.3 |    +1.7 |
 | `2D - 1D` | 296.5 | 301.6 |    +5.1 |
@@ -105,14 +105,14 @@ Diagnostic FD-basis `(^1P_1, ^3P_1)` matrix, using the antisymmetric spin-orbit 
 
 | quantity | reference MeV | model MeV | error MeV |
 |---|---:|---:|---:|
-| `1^3S_1 - 1^1S_0` | 60.0 | 66.5 |    +6.5 |
-| `2^3S_1 - 2^1S_0` | 20.0 | 35.2 |   +15.2 |
-| `1^3P_2 - 1^3P_1` | 20.0 | 4.4 |   -15.6 |
-| `1^3P_1 - 1^3P_0` | 30.0 | 30.1 |    +0.1 |
-| `2^3P_2 - 2^3P_1` | 10.0 | 3.4 |    -6.6 |
-| `2^3P_1 - 2^3P_0` | 20.0 | 22.3 |    +2.3 |
+| `1^3S_1 - 1^1S_0` | 60.0 | 68.3 |    +8.3 |
+| `2^3S_1 - 2^1S_0` | 20.0 | 33.1 |   +13.1 |
+| `1^3P_2 - 1^3P_1` | 20.0 | 4.2 |   -15.8 |
+| `1^3P_1 - 1^3P_0` | 30.0 | 27.8 |    -2.2 |
+| `2^3P_2 - 2^3P_1` | 10.0 | 3.2 |    -6.8 |
+| `2^3P_1 - 2^3P_0` | 20.0 | 19.6 |    -0.4 |
 | `1^3D_3 - 1^3D_2` | 10.0 | 1.8 |    -8.2 |
-| `1^3D_2 - 1^3D_1` | 10.0 | 8.1 |    -1.9 |
+| `1^3D_2 - 1^3D_1` | 10.0 | 7.6 |    -2.4 |
 
 ### Same-J 1P Mixing Diagnostic
 
@@ -125,37 +125,37 @@ Diagnostic FD-basis `(^1P_1, ^3P_1)` matrix, using the antisymmetric spin-orbit 
 ## bcbar
 
 - rows: `7`
-- mean residual/common offset: `-3.6 MeV`
-- mean absolute residual: `4.6 MeV`
-- mean absolute residual after removing common offset: `4.0 MeV`
-- approximate share of *squared* residuals explained by a single common offset: `36%` (order-of-magnitude; not a full variance decomposition across physics channels)
+- mean residual/common offset: `-3.9 MeV`
+- mean absolute residual: `4.5 MeV`
+- mean absolute residual after removing common offset: `4.8 MeV`
+- approximate share of *squared* residuals explained by a single common offset: `37%` (order-of-magnitude; not a full variance decomposition across physics channels)
 
 ### Multiplet Centers
 
 | multiplet | states | reference GeV | model GeV | residual MeV | offset-corrected MeV |
 |---|---:|---:|---:|---:|---:|
-| `1D` | 1 | 7.040 | 7.041 |    +1.3 |    +4.8 |
-| `1F` | 1 | 7.270 | 7.269 |    -0.6 |    +3.0 |
-| `1P` | 1 | 6.770 | 6.758 |   -11.6 |    -8.0 |
-| `1S` | 2 | 6.322 | 6.318 |    -4.8 |    -1.2 |
-| `2S` | 2 | 6.880 | 6.881 |    +0.7 |    +4.3 |
+| `1D` | 1 | 7.040 | 7.041 |    +1.1 |    +5.0 |
+| `1F` | 1 | 7.270 | 7.270 |    -0.3 |    +3.6 |
+| `1P` | 1 | 6.770 | 6.758 |   -12.5 |    -8.6 |
+| `1S` | 2 | 6.322 | 6.315 |    -7.6 |    -3.7 |
+| `2S` | 2 | 6.880 | 6.880 |    -0.2 |    +3.7 |
 
-- radial/orbital spacing errors (this table): RMSE = `9.0 MeV`, mean abs = `8.4 MeV` over `3` available rows
+- radial/orbital spacing errors (this table): RMSE = `9.4 MeV`, mean abs = `8.6 MeV` over `3` available rows
 
 ### Radial And Orbital Spacings
 
 | quantity | reference MeV | model MeV | error MeV |
 |---|---:|---:|---:|
-| `2S - 1S` | 557.5 | 563.0 |    +5.5 |
-| `1P - 1S` | 447.5 | 440.7 |    -6.8 |
-| `1D - 1P` | 270.0 | 282.9 |   +12.9 |
+| `2S - 1S` | 557.5 | 565.0 |    +7.5 |
+| `1P - 1S` | 447.5 | 442.6 |    -4.9 |
+| `1D - 1P` | 270.0 | 283.6 |   +13.6 |
 
 ### Spin Splittings
 
 | quantity | reference MeV | model MeV | error MeV |
 |---|---:|---:|---:|
-| `1^3S_1 - 1^1S_0` | 70.0 | 75.6 |    +5.6 |
-| `2^3S_1 - 2^1S_0` | 40.0 | 46.5 |    +6.5 |
+| `1^3S_1 - 1^1S_0` | 70.0 | 71.8 |    +1.8 |
+| `2^3S_1 - 2^1S_0` | 40.0 | 38.4 |    -1.6 |
 
 ### Same-J 1P Mixing Diagnostic
 
@@ -163,7 +163,7 @@ Diagnostic FD-basis `(^1P_1, ^3P_1)` matrix, using the antisymmetric spin-orbit 
 
 | m1 GeV | m2 GeV | ^1P1 diag GeV | ^3P1 diag GeV | offdiag MeV | low GeV | high GeV | theta deg | complement deg |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 4.977 | 1.628 | 6.751 | 6.752 |   -2.41 | 6.749 | 6.754 |  +39.5 |  -50.5 |
+| 4.977 | 1.628 | 6.751 | 6.751 |   -2.28 | 6.749 | 6.753 |  +42.1 |  -47.9 |
 
 
 ## Where to go next (strategy)

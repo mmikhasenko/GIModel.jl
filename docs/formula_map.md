@@ -296,10 +296,39 @@ masses and that detailed smearing is “relegated to Appendix A.”
 **Reference row lock-in:** Table II inputs are checked against
 `data/table_ii_parameters.csv` via `scripts/verify_table_ii_toml.py`. Reference
 spectrum rows are checked for schema via `scripts/validate_reference_spectra.py`.
+Formula-audit checkpoint: Table II `epsilon_so_scalar` was rechecked against
+`paper/vision_ocr/page_images/page-005.png`; the paper value is
+`epsilon_so(S)=+0.055`, now reflected in both the CSV and TOML inputs.
 
 **Paper navigation for Appendix A:** see `docs/appendix_a_from_paper.md` (equation
 labels and PDF pages). The runtime flag for which central path is active is
 summarized by `GIModel.central_potential_path` in `src/appendix_a_status.jl`.
+
+## Formula Audit Ledger
+
+Treat `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` as searchable, but
+use `paper/Godfrey-Isgur-1985.pdf` or the saved page images/crops as authority.
+
+| Paper item | Status | Implementation/readout |
+| --- | --- | --- |
+| Eq. (1a)-(1b), semirelativistic Hamiltonian | exact FD analogue | `relativistic_hamiltonian` uses `sqrt(p^2+m_1^2)+sqrt(p^2+m_2^2)` on the finite-difference `p^2` operator. The paper's HO basis is available only as an audit path, not the default production path. |
+| Eq. (3), spin-independent color Coulomb plus linear confinement | exact color-singlet sign/normalization for pointwise limit | `central_potential = b*r - 4*alpha_s(r)/(3r) + c`; the color-singlet factor turns Eq. (3) into this form. |
+| Eq. (4), contact hyperfine | active GI-style approximation | S-wave contact uses the smeared delta and the A10 `m/E` sandwich. In the FD sector, S-wave contact is diagonalized nonperturbatively with the central Hamiltonian, matching the paper's fixed-`L,S,J` first diagonalization more closely than a first-order shift. |
+| Eq. (4), tensor hyperfine | approximate | Angular factors and the Coulomb-limit color factor are tested. Active kernels use derivatives of closed-form smeared `G~` when enabled, but same-`J` tensor off-diagonal mixing is not yet folded into sector comparisons. |
+| Eq. (6), vector spin-orbit | exact equal-mass radial convention; approximate unequal-mass handling | Eq. (6) uses `alpha_s(r)/r^3` in the pointwise branch and `(1/r)dG~/dr` in the smeared branch. Equal-mass contraction is covered; unequal-mass antisymmetric mixing is diagnostic only. |
+| Eq. (7), Thomas/scalar spin-orbit | exact equal-mass radial convention; approximate unequal-mass handling | Thomas term uses `(1/2r)dH_conf/dr`, with smeared `G~+S~` derivatives in the active branch. Table II `epsilon_so(S)=+0.055` is now loaded from audited input. |
+| Eq. (12)-(13) and Fig. 2, running `alpha_s` | exact for fitted GI ansatz | `alpha_s(Q^2)` coefficients map to `alpha_s(r)=sum alpha_k erf(gamma_k*r)` with `gamma=(1,sqrt(10),sqrt(1000))/2` GeV. Derivatives are regression-tested. |
+| Eq. (14), staged diagonalization | partial | Fixed-sector diagonalization is approximated in FD/HO paths. Later perturbative tensor and antisymmetric spin-orbit mixing stages are not fully integrated. |
+| Eq. (16), general annihilation matrix element | missing literal implementation | Current reports use no annihilation except the calibrated pseudoscalar debug path for isoscalar `^1S_0`. A literal Eq. (16) mode must preserve the `4*pi*(2L+1)`, `alpha_s(M_i^2)alpha_s(M_j^2)`, `S_L` and `1/(m_i m_j)` factors. |
+| Eq. (17), `S_L(Psi)` wavefunction factor | missing literal implementation | Need a momentum-space radial transform of the normalized model wavefunction, including `(p/E)^L*m/E` and the `(2*pi)^(-3/2)/sqrt(4*pi)` normalization. |
+| Eq. (18a), pseudoscalar P1 replacement | missing literal implementation | Current `:calibrated_p1` is a rank-one reconstruction/control, not the paper formula. Literal P1 needs the nonperturbative exponential plus perturbative two-gluon term. |
+| Eq. (18b), pseudoscalar P2 replacement | missing literal implementation | Requires a mass-dependent pole/sign-changing term. The paper expects non-orthogonal poles, so it should be a separate model mode rather than a tweak to calibrated P1. |
+| Table II parameters | audited for active solver inputs | CSV/TOML sync is tested. The latest audited correction is `epsilon_so(S)=+0.055`. Remaining low-confidence labels should still be promoted only after image/PDF checks. |
+| Table III isoscalar mixings | first-pass extraction only | Not yet represented as clean `mixings.csv` or as a validation target for annihilation/mixing model modes. |
+| Appendix A (A7)-(A9), Gaussian smearing and sigma | exact for contact width and diagnostic convolution | A9 width is implemented and tested; A7-A8 3D convolution is available as a diagnostic path, not the paper's main spin-independent calculation. |
+| Appendix A (A10), spin-dependent momentum factors | active FD analogue | Side exponent is `1/2+epsilon_i`, so `epsilon=0` replaces `1/(m_1m_2)` by `1/(E_1E_2)` after the two-sided sandwich. |
+| Appendix A (A12)-(A14), closed-form smeared `G~`, `S~`, `tau_k` | active FD analogue | Closed-form `G~` and `S~` are implemented and tested against quadrature/derivatives. This is still an FD analogue unless routed through the HO matrix-element workflow. |
+| Appendix A (A15)-(A17), effective operators and HO matrix elements | partial | Central Coulomb momentum sandwich is active on the FD `p^2` eigenbasis; spin-side sandwiches are active for expectations. Full HO-basis paper ordering remains an audit/comparison target. |
 
 ## Not Yet Implemented
 
@@ -324,22 +353,9 @@ summarized by `GIModel.central_potential_path` in `src/appendix_a_status.jl`.
 
 ## Formula-Audit Gate Before P1/P2 Coding
 
-The next implementation pass should use the vision-OCR reference plus crop/PDF
-audit of the main formulas. Treat
-`paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` as the searchable checkpoint,
-then update this map with one status per formula: exact, approximate, missing,
-or suspect.
-
-Minimum audit list:
-
-- Hamiltonian pieces and sign/normalization conventions.
-- Running `alpha_s` form and units.
-- Smearing and Appendix A momentum-dependent `m/E` factors.
-- Contact hyperfine ordering and any nonperturbative treatment of S waves.
-- Eq. (16)/(17) annihilation normalization and wavefunction factor.
-- Eq. (18a)/(18b) pseudoscalar replacements and parameter values.
-- Table II/III parameters, units, and model labels.
-
-Only after that audit should dispatch-controlled model choices be added for
-`NoAnnihilation`, the existing calibrated diagnostic, literal paper P1, and
-literal paper P2.
+The ledger above clears the high-level status split: the central, contact, and
+fine-structure paths are now documented as active FD/HO analogues, while literal
+annihilation formulas are still missing. Before coding P1/P2, do one focused
+PDF/image pass on Eq. (16)-(18), Table III, and the pseudoscalar model labels,
+then add dispatch-controlled model choices for `NoAnnihilation`, the existing
+calibrated diagnostic, literal paper P1, and literal paper P2.

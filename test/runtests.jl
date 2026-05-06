@@ -35,7 +35,7 @@ end
     @test params.epsilon_c ≈ -0.168
     @test params.epsilon_t ≈ 0.025
     @test params.epsilon_so_vector ≈ -0.035
-    @test params.epsilon_so_scalar ≈ 0.0
+    @test params.epsilon_so_scalar ≈ 0.055
     @test params.fine_structure == true
     @test params.k_spin_orbit > 0.0
 

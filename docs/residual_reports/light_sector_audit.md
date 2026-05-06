@@ -8,21 +8,21 @@ This report separates raw sector residuals from the rows that should be judged b
 
 | sector | raw rows | raw mean abs | raw max abs | non-mixed rows | non-mixed mean abs | non-mixed max abs | excluded |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| `bottom_charm` | 7 | 4.6 | 12.8 | 6 | 5.2 | 12.8 | 1 |
-| `bottom_light` | 7 | 12.0 | 29.1 | 6 | 13.2 | 29.1 | 1 |
-| `bottom_strange` | 7 | 5.9 | 13.0 | 6 | 6.2 | 13.0 | 1 |
-| `bottomonium` | 30 | 4.3 | 12.1 | 22 | 4.5 | 12.1 | 8 |
-| `charmed` | 11 | 19.1 | 36.2 | 7 | 18.5 | 30.4 | 4 |
-| `charmed_strange` | 11 | 13.4 | 34.3 | 7 | 12.9 | 24.7 | 4 |
-| `charmonium` | 28 | 6.3 | 25.3 | 22 | 7.1 | 25.3 | 6 |
-| `isoscalar` | 49 | 100.0 | 259.9 | 0 | n/a | n/a | 49 |
-| `isovector` | 30 | 14.1 | 55.0 | 26 | 14.9 | 55.0 | 4 |
-| `strange` | 30 | 12.7 | 43.7 | 14 | 13.9 | 43.0 | 16 |
+| `bottom_charm` | 7 | 4.5 | 12.5 | 6 | 5.2 | 12.5 | 1 |
+| `bottom_light` | 7 | 6.8 | 15.9 | 6 | 7.1 | 15.9 | 1 |
+| `bottom_strange` | 7 | 4.2 | 9.5 | 6 | 4.1 | 9.5 | 1 |
+| `bottomonium` | 30 | 4.3 | 12.1 | 22 | 4.4 | 12.1 | 8 |
+| `charmed` | 11 | 13.8 | 35.3 | 7 | 11.3 | 20.2 | 4 |
+| `charmed_strange` | 11 | 11.2 | 34.3 | 7 | 10.4 | 18.2 | 4 |
+| `charmonium` | 28 | 6.0 | 24.4 | 22 | 6.9 | 24.4 | 6 |
+| `isoscalar` | 49 | 101.2 | 259.9 | 0 | n/a | n/a | 49 |
+| `isovector` | 30 | 14.6 | 55.0 | 26 | 15.6 | 55.0 | 4 |
+| `strange` | 30 | 12.2 | 43.7 | 14 | 14.0 | 43.0 | 16 |
 
 ## Isoscalar Two-Branch Sanity Check
 
 The digitized isoscalar figure lists mixed `n nbar / s sbar` pairs. Comparing both partners to the same `n nbar` radial solution creates an artificial sector-wide failure. As a diagnostic only, the lower member of each pair is compared to an unmixed `n nbar` prediction and the upper member to an unmixed `s sbar` prediction.
-Two-branch diagnostic: rows=48, mean abs=31.1 MeV, max abs=425.0 MeV.
+Two-branch diagnostic: rows=48, mean abs=31.0 MeV, max abs=425.0 MeV.
 
 | state | branch | ref | pred | residual MeV |
 |---|---|---:|---:|---:|
@@ -30,18 +30,18 @@ Two-branch diagnostic: rows=48, mean abs=31.1 MeV, max abs=425.0 MeV.
 | `1^1S_0` | `upper vs ss` | 0.960 | 0.630 |  -330.5 |
 | `2^1S_0` | `lower vs nn` | 1.440 | 1.279 |  -161.3 |
 | `2^1S_0` | `upper vs ss` | 1.630 | 1.565 |   -64.7 |
-| `1^3P_0` | `lower vs nn` | 1.090 | 1.133 |   +42.9 |
 | `1^1P_1` | `lower vs nn` | 1.220 | 1.258 |   +37.6 |
-| `1^3P_1` | `lower vs nn` | 1.240 | 1.277 |   +37.2 |
-| `1^3P_1` | `upper vs ss` | 1.480 | 1.513 |   +32.8 |
-| `1^3P_0` | `upper vs ss` | 1.360 | 1.389 |   +29.4 |
+| `1^3P_1` | `upper vs ss` | 1.480 | 1.508 |   +28.2 |
 | `1^1P_1` | `upper vs ss` | 1.470 | 1.498 |   +28.0 |
+| `1^3P_1` | `lower vs nn` | 1.240 | 1.267 |   +27.3 |
 | `2^1P_1` | `lower vs nn` | 1.780 | 1.807 |   +27.1 |
-| `1^3D_1` | `lower vs nn` | 1.660 | 1.681 |   +21.2 |
+| `2^3P_0` | `lower vs nn` | 1.780 | 1.756 |   -24.3 |
+| `1^3P_0` | `lower vs nn` | 1.090 | 1.113 |   +23.2 |
+| `1^3G_5` | `upper vs ss` | 2.470 | 2.493 |   +22.7 |
+| `1^3G_3` | `lower vs nn` | 2.370 | 2.348 |   -21.6 |
+| `1^3P_0` | `upper vs ss` | 1.360 | 1.380 |   +20.3 |
 | `1^3S_1` | `lower vs nn` | 0.780 | 0.760 |   -19.9 |
-| `1^3P_2` | `upper vs ss` | 1.530 | 1.511 |   -19.2 |
-| `2^1P_1` | `upper vs ss` | 2.010 | 2.027 |   +17.0 |
-| `1^3G_5` | `upper vs ss` | 2.470 | 2.487 |   +16.8 |
+| `1^3G_3` | `upper vs ss` | 2.540 | 2.522 |   -18.4 |
 
 ## Audit Read
 

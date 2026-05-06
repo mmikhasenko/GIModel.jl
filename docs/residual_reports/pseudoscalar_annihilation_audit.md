@@ -45,6 +45,4 @@ Entries are in MeV in the same basis order.
 ## Debug Read
 
 The current model's unmixed pseudoscalar masses are not globally wrong: a single positive radial/flavor annihilation channel maps them onto the GI isoscalar pseudoscalar masses exactly in this four-state diagnostic.
-The inferred eigenvectors are qualitatively Table-III/P1-like for the first two states, including a near octet/singlet `eta`/`eta'` pattern and non-negligible radial components. The implemented `:calibrated_p1` comparison path therefore addresses the local pseudoscalar failure without another contact hyperfine retune.
-
-This path is not a literal implementation of GI P1 or P2. Paper P1 still requires Eq. (16) with the Eq. (18a) replacement, including the `A_eta p` exponential and perturbative `alpha_s` product. Paper P2 still requires Eq. (18b), including its explicit pole-mass dependence and the resulting non-orthogonal pole vectors. Before either is coded, run a fresh formula audit against the improved OCR/readable paper text, because the remaining OCR quality can still corrupt signs, exponents, mass arguments, normalizations, and parameter units.
+The inferred eigenvectors are qualitatively Table-III/P1-like for the first two states, including a near octet/singlet `eta`/`eta'` pattern and non-negligible radial components. The implemented `:calibrated_p1` comparison path therefore addresses the local pseudoscalar failure without another contact hyperfine retune; the full mass-dependent P2 prescription remains open.

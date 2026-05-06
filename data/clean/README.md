@@ -4,14 +4,28 @@
 Nothing here supersedes the 1985 paper: each row should trace to raw lines and
 page-level evidence (see `docs/orchestrator_task.md` Phase 2).
 
-Planned files from the plan:
+Current files:
 
-- `masses.csv` — normalized masses with `source`, `page`, and confidence.
-- `mixings.csv` — isospin/strange—nonstrange (Table III) when promoted.
-- `parameters.toml` — long-term: single canonical TOML read by the solver (today
-  the project uses `data/parameters.provisional.toml` at the top level for the
-  diagnostic build).
+- `masses.csv` — normalized promoted spectrum masses with `source`, `page`,
+  confidence, and `provenance_file` / `provenance_row` back to the working
+  `data/reference_spectrum_*.csv` rows.
+- `mixings.csv` — schema-only placeholder. Table III rows remain under
+  `data/raw/digitized_tables/table_iii_isoscalar_mixings/` until visual audit.
+- `parameters.toml` — published Table II values audited for active solver
+  inputs. Solver switches remain in `data/parameters.provisional.toml`.
 
 The repository currently uses top-level `data/reference_spectrum_*.csv` and
 `data/parameters.provisional.toml` for the working solver. Migration into
-`data/clean/` is optional bookkeeping until a full extraction audit is done.
+`data/clean/` is now started but intentionally conservative: low/medium
+confidence rows are preserved as such, and Table III mixings are not promoted
+yet.
+
+Regenerate and validate:
+
+```bash
+python3 scripts/promote_clean_data.py
+python3 scripts/validate_clean_data.py
+```
+
+The progress metric for the next isoscalar-annihilation implementation phase is
+`docs/annihilation_progress_metric.md`.

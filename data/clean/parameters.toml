@@ -1,9 +1,10 @@
 [metadata]
 source = "Godfrey-Isgur 1985"
+doi = "10.1103/PhysRevD.32.189"
 page = 5
 table = "Table II"
-status = "provisional_raw_digitization"
-authority_note = "Verify symbols and values against paper/Godfrey-Isgur-1985.pdf before promoting to data/clean/parameters.toml."
+status = "audited_active_solver_inputs"
+notes = "Published Table II values only. Solver switches remain in data/parameters.provisional.toml."
 
 [masses]
 m_ud_avg_MeV = 220
@@ -13,6 +14,7 @@ m_b_MeV = 4977
 
 [potential]
 b_GeV2 = 0.18
+alpha_s_critical = 0.60
 Lambda_MeV = 200
 c_MeV = -253
 
