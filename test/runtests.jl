@@ -10,16 +10,9 @@ using GIModel
 
 root = dirname(@__DIR__)
 
-@testset "Table II digitization vs parameters TOML" begin
-    script = joinpath(root, "scripts", "verify_table_ii_toml.py")
-    p = run(`python3 $script`, wait = false)
-    wait(p)
-    @test success(p)
-end
-
-@testset "reference spectrum CSVs (required columns)" begin
-    script = joinpath(root, "scripts", "validate_reference_spectra.py")
-    p = run(`python3 $script`, wait = false)
+@testset "data CSV checks" begin
+    script = joinpath(root, "scripts", "data_checks.py")
+    p = run(`python3 $script validate`, wait = false)
     wait(p)
     @test success(p)
 end

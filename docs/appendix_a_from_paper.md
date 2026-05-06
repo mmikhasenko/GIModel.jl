@@ -64,7 +64,5 @@ integrals with the same smeared $G$.
 - `appendix_a_derivative_central_values` —
   `src/appendix_a_derivative_potential.jl`
 - `src/appendix_a_status.jl` — explicit status (which path is active)
-- `scripts/compare_central_paths.jl` — pointwise, 3D blur, 1D G blur, and
-  derivative proxy on one grid
-- `scripts/compare_central_pointwise_vs_a7a8.jl` — pointwise vs (A7)–(A8) blur on
-  a grid (diagnostic only)
+- Appendix-A diagnostics now live in Julia tests and `docs/paper_gap_ledger.md`
+  instead of tracked one-off report scripts.

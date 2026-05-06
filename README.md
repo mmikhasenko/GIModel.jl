@@ -1,204 +1,65 @@
 # Godfrey-Isgur Reproduction
 
-Local, reproducible reproduction of the Godfrey-Isgur relativized quark model
-for meson masses.
+Local reproduction of the Godfrey-Isgur relativized quark model for meson
+masses. The original paper at `paper/Godfrey-Isgur-1985.pdf` is the authority;
+OCR Markdown and extracted CSVs are navigation/provenance aids.
 
-The working plan lives in `docs/orchestrator_task.md`. The primary paper is
-stored at `paper/Godfrey-Isgur-1985.pdf`. The seed database in `data/seed/` is
-only a bootstrap from later sources and must be verified against the original
-1985 paper before being treated as reference data.
+## Current Map
 
-## Handoff Map
+- `src/GIModel.jl` is the Julia package entry point.
+- `test/runtests.jl` is the main correctness gate.
+- `scripts/verify_project.sh` runs the current full gate.
+- `scripts/data_checks.py` is the only Python data/check entry point:
+  - `python3 scripts/data_checks.py promote-clean`
+  - `python3 scripts/data_checks.py validate`
+  - `python3 scripts/data_checks.py score-annihilation`
+- `scripts/run_all_spectrum_checks.jl` regenerates sector residual reports and
+  the compact scorecard.
+- `scripts/analyze_heavy_quarkonium.jl` regenerates heavy-quarkonium diagnostics.
+- `scripts/audit_nonmixing_contact.jl` regenerates the non-mixing/contact
+  scorecards.
+- `docs/formula_map.md` maps active code paths to paper equations.
+- `docs/paper_gap_ledger.md` is the current “what remains vs the paper” list.
+- `docs/code_architecture.md`, `docs/conventions.md`, and
+  `docs/appendix_a_from_paper.md` describe the implementation conventions.
 
-Use these files to resume work quickly:
+Extraction utilities are intentionally separate from the core gate:
+`scripts/vision_ocr_paper.py`, `scripts/plot_figure3_digitization.py`, and
+`scripts/plot_spectrum_digitizations.py`.
 
-- `docs/orchestrator_task.md`: phase plan, validation gates, and acceptance
-  criteria.
-- `docs/autonomous_loop.md`: guarded autonomous-agent loop for multi-iteration
-  project work.
-- `docs/autonomous_program.md`: current autonomous-agent program and guardrails.
-- `docs/agent_handoff.md`: current status, recommended subagent split, and
-  immediate next milestone.
-- `docs/source_inventory.md`: bibliographic metadata and source authority
-  policy.
-- `docs/extraction_notes.md`: running notes for PDF/text/image extraction.
-- `docs/paper_navigation.md`: fast map to paper sections, tables, spectrum
-  figures, and caution zones.
-- `docs/formula_map.md`: required map from implementation terms to the paper.
-- `docs/appendix_a_from_paper.md`: Appendix A equation labels and what is
-  still missing vs the PDF (p.~36--38), beyond the current diagnostic code.
-- `docs/residual_reports/appendix_a_bracket_ccbar.md`: regenerated with
-  `scripts/compare_central_pointwise_vs_a7a8.jl` (pointwise *V* vs (A7)--(A8) blur;
-  not (A12)--(A13)).
-- `docs/conventions.md`: spectroscopic, spin, sector, and basis conventions.
-- `docs/code_architecture.md`: current GIModel types and call graph (`GIParameters`,
-  `QuarkMassTable`, `ConstituentMasses`, `ReferenceStateWithMasses`, sector workflow).
-- `Project.toml`: declares Julia package **GIModel** (module `src/GIModel.jl` and
-  sibling includes in `src/`).
-- `data/table_ii_parameters.csv`: central Table II parameter digitization.
-- `data/parameters.provisional.toml`: provisional solver-facing parameter file
-  copied from the Table II digitization.
-- `data/reference_spectrum_charmonium.csv`: central Fig. 6 `ccbar` reference
-  spectrum.
-- `data/reference_spectrum_bottomonium.csv`: central Fig. 8 `bbbar` reference
-  spectrum.
-- `data/reference_spectrum_*.csv`: top-level copies of Fig. 3-9 model-label
-  spectra for convenient use by scripts and tests.
-- `data/seed/godfrey_isgur_seed_masses.csv`: bootstrap mass table, not final
-  authority.
-- `data/seed/godfrey_isgur_sources.csv`: manifest for the seed sources.
-- `paper/Godfrey-Isgur-1985.pdf`: primary authority.
-- `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`: preferred
-  reading/search reference with LaTeX-style equation transcription.
-- `paper/vision_ocr/pages/`: one Markdown file per PDF page.
-- `paper/vision_ocr/page_images/` and `paper/vision_ocr/column_crops/`:
-  rendered provenance images for equation/table audit.
-- `paper/vision_ocr/usage.jsonl`: API usage/provenance log for the vision OCR
-  run.
-- `paper/screenshots/spectrum_pages/`: rendered spectrum pages, PDF pages 6-10.
-- `data/raw/digitized_tables/`: reference/provenance copies for table-specific
-  raw snippets and structured transcriptions.
-- `data/raw/digitized_figures/`: reference/provenance copies for figure-specific
-  label transcriptions and replots.
-- `data/raw/extraction_audit.csv`: template for text-vs-image (or other)
-  extraction disagreements; add rows as audits proceed.
-- `data/clean/README.md`: what promoted “clean” tables will be (Phase 2);
-  solver today still uses top-level `data/*.csv` and `parameters.provisional.toml`.
-- `scripts/validate_seed.py`: seed schema validation.
-- `scripts/verify_table_ii_toml.py`: ensures `data/parameters.provisional.toml`
-  matches `data/table_ii_parameters.csv` for Table II–mapped entries.
-- `scripts/validate_reference_spectra.py`: every `data/reference_spectrum_*.csv`
-  has the columns required by `load_reference_spectrum` (used with `compute_sector` / `compare`).
-- `scripts/verify_project.sh`: one-shot full gate (Python prechecks + Julia tests
-  + analysis + all spectrum checks); use before committing substantive changes.
-- `scripts/vision_ocr_paper.py`: rebuilds the vision-OCR paper reference.
-- `scripts/plot_spectrum_digitizations.py`: regenerates clean Fig. 4-9
-  comparison replots from digitized figure CSVs.
+## Data
 
-The old `pdftotext` references have been removed because they degraded
-equations. Use the vision-OCR Markdown for search and the saved crops/PDF for
-authoritative checks.
+Working solver inputs:
 
-## Julia layout
+- `data/parameters.provisional.toml`
+- `data/reference_spectrum_*.csv`
 
-The solver is a Julia package named **GIModel** (see `Project.toml`). The
-module entry point is `src/GIModel.jl`; other files in `src/` are included from
-there (constants/types in **`model_objects.jl`**, then TOML parameters + flavor table, Hamiltonian numerics,
-**`sector_solver`** / **`sector_comparison`**, then IO: **`reference_state.jl`** (catalog structs + **`load_reference_spectrum`**), **`masses_from_content`**—see
-`docs/code_architecture.md`). Driver scripts under `scripts/` call `Pkg.activate`
-on the repository root before `using GIModel`, and `test/runtests.jl` does the
-same. Typical workflow:
-`load_parameters_and_quark_masses` → `load_reference_spectrum` →
-`attach_constituent_masses` → `compute_sector` / `compare`. Running
-`julia --project=. …` from the repo root should give the same environment but is
-optional.
+Promoted audited data:
 
-## Central Data Targets
+- `data/clean/masses.csv`
+- `data/clean/mixings.csv`
+- `data/clean/parameters.toml`
 
-Use the top-level files in `data/` as the working inputs:
+Raw provenance stays under `data/raw/` and `paper/vision_ocr/`.
 
-- `data/table_ii_parameters.csv`: Table II parameter digitization.
-- `data/parameters.provisional.toml`: provisional parameter TOML derived from
-  Table II.
-- `data/reference_spectrum_charmonium.csv`: Fig. 6 `ccbar` target spectrum.
-- `data/reference_spectrum_bottomonium.csv`: Fig. 8 `bbbar` target spectrum.
-- `data/reference_spectrum_isovector.csv`: Fig. 3 isovector spectrum.
-- `data/reference_spectrum_strange.csv`: Fig. 4 strange spectrum.
-- `data/reference_spectrum_isoscalar.csv`: Fig. 5 isoscalar spectrum.
-- `data/reference_spectrum_charmed.csv`: Fig. 7 charmed/charmed-strange
-  spectra.
-- `data/reference_spectrum_b_flavored.csv`: Fig. 9 bottom-light,
-  bottom-strange, and bottom-charm spectra.
+## Common Commands
 
-The deeper `data/raw/digitized_tables/` and `data/raw/digitized_figures/`
-folders are kept as provenance/reference material. They preserve the original
-per-table and per-figure working context, raw snippets, and replots, but routine
-solver and validation scripts should start from the top-level `data/` files.
+```bash
+python3 scripts/data_checks.py validate
+julia --project=. test/runtests.jl
+julia scripts/run_all_spectrum_checks.jl
+julia scripts/analyze_heavy_quarkonium.jl
+```
 
-## Immediate Workflow
+Full local gate:
 
-0. (Recommended before a large change) run the full gate:
-
-   ```bash
-   bash scripts/verify_project.sh
-   ```
-
-1. Run seed validation:
-
-   ```bash
-   python3 scripts/validate_seed.py
-   ```
-
-2. Run the current local spectrum baseline:
-
-   ```bash
-   julia scripts/run_baseline_solver.jl
-   ```
-
-   This writes:
-
-   - `docs/residual_reports/ccbar_baseline.md`
-   - `docs/residual_reports/bbbar_baseline.md`
-
-   The current baseline is intentionally diagnostic: it uses the Table II
-   quark masses, `b`, `c`, the Fig. 2 running Coulomb ansatz, semirelativistic
-   kinetic energy, the smeared S-wave contact hyperfine term, and first-order
-   diagnostic tensor/spin-orbit terms. It does not yet include the full GI
-   smearing/nonlocal potential, momentum-dependent spin relativization, or
-   off-diagonal mixing.
-
-3. Run all top-level reference spectrum checks:
-
-   ```bash
-   julia scripts/run_all_spectrum_checks.jl
-   ```
-
-   This regenerates sector reports under `docs/residual_reports/` for every
-   `data/reference_spectrum_*.csv` file.
-   Heavy-light sectors use the `quark_content` column plus the loaded flavor table
-   (`attach_constituent_masses`) to build **`ConstituentMasses`** per row. It also writes
-   `docs/residual_reports/scorecard.md` as the compact progress dashboard.
-
-4. Decompose the heavy-quarkonium mismatch:
-
-   ```bash
-   julia scripts/analyze_heavy_quarkonium.jl
-   ```
-
-   This writes `docs/residual_reports/heavy_quarkonium_diagnostics.md`, splitting
-   `ccbar` and `bbbar` errors into common offsets, multiplet-center spacing
-   errors, and spin-splitting errors.
-
-5. Run Julia tests:
-
-   ```bash
-   julia --project=. test/runtests.jl
-   ```
-
-6. Rebuild the vision-OCR paper reference if the PDF changes:
-
-   ```bash
-   python3 scripts/vision_ocr_paper.py --model gpt-4.1
-   ```
-
-   This writes page images, column crops, per-page Markdown, an aggregate
-   Markdown file, and usage metadata under `paper/vision_ocr/`.
-
-7. Create raw extraction CSVs in `data/raw/`.
-8. Promote verified rows into `data/clean/` with provenance preserved.
-
-Current first-pass digitizations are copied to the top level of `data/`.
-Reference/provenance copies remain under `data/raw/digitized_tables/` and
-`data/raw/digitized_figures/`. Table I and Table III are retained only in the
-raw reference folders for now; the central workflow needs Table II and the
-Figure 3-9 model spectra.
+```bash
+bash scripts/verify_project.sh
+```
 
 ## Authority Rules
 
-- The original 1985 paper is the primary authority.
-- The Markdown paper files are navigation aids, not authorities.
-- Later quoted tables are seed data only.
-- Every numerical value must carry source, table/page when available,
-  extraction method, and confidence.
-- Extraction data and cleaned physics data stay separate.
-- Discrepancies are classified before code or data changes are made.
+- The 1985 paper is authoritative.
+- OCR Markdown is searchable context, not authority.
+- Raw extraction and clean physics data stay separate.
+- Every promoted numerical value should retain provenance and confidence.

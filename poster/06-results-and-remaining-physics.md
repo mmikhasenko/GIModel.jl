@@ -132,11 +132,10 @@ Create a "read the residuals correctly" panel:
 Show as a reproducibility strip:
 
 ```bash
+python3 scripts/data_checks.py validate
 julia --project=. test/runtests.jl
 julia scripts/analyze_heavy_quarkonium.jl
-julia scripts/run_baseline_solver.jl
 julia scripts/run_all_spectrum_checks.jl
-julia scripts/compare_central_paths.jl
 ```
 
 Caption: "The posters explain a pipeline that can be rerun."
@@ -162,4 +161,3 @@ The final visual can show the llama and orca together at the scorecard:
 - Put the exact 1.0 numbers in large readable type.
 - Keep the future-physics list prominent enough that the poster feels accurate,
   not triumphalist.
-

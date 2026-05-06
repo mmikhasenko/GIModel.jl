@@ -20,7 +20,7 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
   - Paper anchor: nonrelativistic orientation around Eqs. (2)-(3), PDF pages
     2-3.
   - Parameters: `data/parameters.provisional.toml`, copied from Table II
-    (`data/table_ii_parameters.csv`). `scripts/verify_table_ii_toml.py` checks
+    (`data/table_ii_parameters.csv`). `scripts/data_checks.py validate` checks
     they still agree on mapped entries. Table II `relativistic_factors`
     $\epsilon$ values from (A10) are currently applied in the **diagnostic**
     code as **scalar multipliers** on the corresponding terms:
@@ -294,8 +294,8 @@ masses and that detailed smearing is “relegated to Appendix A.”
   ordering in the HO basis.
 
 **Reference row lock-in:** Table II inputs are checked against
-`data/table_ii_parameters.csv` via `scripts/verify_table_ii_toml.py`. Reference
-spectrum rows are checked for schema via `scripts/validate_reference_spectra.py`.
+`data/table_ii_parameters.csv` via `scripts/data_checks.py validate`. Reference
+spectrum rows are checked for schema by the same command.
 Formula-audit checkpoint: Table II `epsilon_so_scalar` was rechecked against
 `paper/vision_ocr/page_images/page-005.png`; the paper value is
 `epsilon_so(S)=+0.055`, now reflected in both the CSV and TOML inputs.
