@@ -22,14 +22,12 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
   - Parameters: `data/parameters.provisional.toml`, copied from Table II
     (`data/table_ii_parameters.csv`). `scripts/data_checks.py validate` checks
     they still agree on mapped entries. Table II `relativistic_factors`
-    $\epsilon$ values from (A10) are currently applied in the **diagnostic**
-    code as **scalar multipliers** on the corresponding terms:
-    `epsilon_c`, `epsilon_t`, `epsilon_so_vector`, `epsilon_so_scalar` enter as
-    `(1 + epsilon_i)` prefactors on the contact / tensor / vector spin–orbit /
-    scalar (Thomas) spin–orbit contributions. This is **not** yet the paper’s
-    full relativization in Eq. (A10), which replaces simple `1/m` factors by
-    operator factors involving `E_i = sqrt(p^2 + m_i^2)` (and introduces the
-    small $\epsilon_i$ as exponents).
+    $\epsilon$ values from (A10) are loaded into `GIParameters`; the active
+    contact and fine-structure paths use GI-style Hermitian momentum-factor
+    sandwiches when `contact_momentum_sandwich` and
+    `fine_structure_momentum_sandwich` are enabled. Legacy scalar
+    `(1 + epsilon_i)` paths remain available for diagnostics and regression
+    comparisons.
 
 - `src/GIModel.jl`: running Coulomb ansatz
   `alpha_s(r) = sum_k alpha_k erf(gamma_k r)`.
@@ -311,14 +309,14 @@ use `paper/Godfrey-Isgur-1985.pdf` or the saved page images/crops as authority.
 
 | Paper item | Status | Implementation/readout |
 | --- | --- | --- |
-| Eq. (1a)-(1b), semirelativistic Hamiltonian | exact FD analogue | `relativistic_hamiltonian` uses `sqrt(p^2+m_1^2)+sqrt(p^2+m_2^2)` on the finite-difference `p^2` operator. The paper's HO basis is available only as an audit path, not the default production path. |
+| Eq. (1a)-(1b), semirelativistic Hamiltonian | FD and HO analogues implemented | `relativistic_hamiltonian` uses `sqrt(p^2+m_1^2)+sqrt(p^2+m_2^2)` on the finite-difference `p^2` operator. `GIParameters{HarmonicOscillatorBasis}` provides the finite oscillator-basis analogue and is tested; FD remains the default headline comparison path. |
 | Eq. (3), spin-independent color Coulomb plus linear confinement | exact color-singlet sign/normalization for pointwise limit | `central_potential = b*r - 4*alpha_s(r)/(3r) + c`; the color-singlet factor turns Eq. (3) into this form. |
 | Eq. (4), contact hyperfine | active GI-style approximation | S-wave contact uses the smeared delta and the A10 `m/E` sandwich. In the FD sector, S-wave contact is diagonalized nonperturbatively with the central Hamiltonian, matching the paper's fixed-`L,S,J` first diagonalization more closely than a first-order shift. |
 | Eq. (4), tensor hyperfine | approximate | Angular factors and the Coulomb-limit color factor are tested. Active kernels use derivatives of closed-form smeared `G~` when enabled, but same-`J` tensor off-diagonal mixing is not yet folded into sector comparisons. |
 | Eq. (6), vector spin-orbit | exact equal-mass radial convention; approximate unequal-mass handling | Eq. (6) uses `alpha_s(r)/r^3` in the pointwise branch and `(1/r)dG~/dr` in the smeared branch. Equal-mass contraction is covered; unequal-mass antisymmetric mixing is diagnostic only. |
 | Eq. (7), Thomas/scalar spin-orbit | exact equal-mass radial convention; approximate unequal-mass handling | Thomas term uses `(1/2r)dH_conf/dr`, with smeared `G~+S~` derivatives in the active branch. Table II `epsilon_so(S)=+0.055` is now loaded from audited input. |
 | Eq. (12)-(13) and Fig. 2, running `alpha_s` | exact for fitted GI ansatz | `alpha_s(Q^2)` coefficients map to `alpha_s(r)=sum alpha_k erf(gamma_k*r)` with `gamma=(1,sqrt(10),sqrt(1000))/2` GeV. Derivatives are regression-tested. |
-| Eq. (14), staged diagonalization | partial | Fixed-sector diagonalization is approximated in FD/HO paths. Later perturbative tensor and antisymmetric spin-orbit mixing stages are not fully integrated. |
+| Eq. (14), staged diagonalization | partial integration | Fixed-sector diagonalization exists in FD and HO basis paths. The generic `MixingBlock` layer and antisymmetric spin-orbit diagnostics exist, but tensor/antisymmetric/annihilation block builders are not yet wired into the physical sector comparison path. |
 | Eq. (16), general annihilation matrix element | image-audited; missing literal implementation | OCR/page pass confirms the `4*pi*(2L+1)`, `alpha_s(M_i^2)alpha_s(M_j^2)`, `S_L(Psi_j)S_L(Psi_i)`, and `1/(m_i m_j)` factors. Current reports use no annihilation except the calibrated pseudoscalar debug path for isoscalar `^1S_0`. |
 | Eq. (17), `S_L(Psi)` wavefunction factor | image-audited; missing literal implementation | OCR/page pass confirms the momentum-space normalized-wavefunction factor `(2*pi)^(-3/2) * integral d^3p/sqrt(4*pi) * Phi_i(p) * (p/E_i)^L * (m_i/E_i)`. |
 | Eq. (18a), pseudoscalar P1 replacement | image-audited; missing literal implementation | OCR/page pass confirms the bracket replacement `A_np*exp(-(m_i^2+m_j^2)/m_eta^2) + (2*pi/3)(ln2-1) alpha_s(M_j^2)alpha_s(M_i^2)/pi^2`. Current `:calibrated_p1` is a rank-one reconstruction/control, not the paper formula. |

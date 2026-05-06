@@ -35,8 +35,9 @@ can load before reference structs are defined; CSV reading and string→mass hel
 - **`load_parameters(path)`** → **`GIParameters{FiniteDifferenceBasis}`** by default
   (potential, smearing switches,
   relativistic factors, fine-structure flags). It does **not** carry quark masses.
-  The basis is a type parameter so a future HO/GI-basis implementation can add
-  methods for `GIParameters{SomeBasis}` without replacing the current FD path.
+  The basis is a type parameter; `HarmonicOscillatorBasis` is already
+  implemented and tested as an alternate paper-style oscillator expansion path,
+  while `FiniteDifferenceBasis` remains the default production basis.
 - **`load_quark_masses(path)`** → **`QuarkMassTable`** (`Dict{String,Float64}` with keys
   `"u"`, `"d"`, `"q"`, `"s"`, `"c"`, `"b"` in GeV).
 - **`load_parameters_and_quark_masses(path)`** → `(GIParameters, QuarkMassTable)`. This is
@@ -81,8 +82,9 @@ mechanism-specific matrix construction separate from the linear algebra:
 - isoscalar or radial mixings can use the same block/eigenstate reporting path.
 
 The current `same_j_mixing` helper in `spin_fine_structure.jl` is a two-state
-convenience wrapper around this generic layer; `compare` still reports pure
-basis-state diagnostics unless a script explicitly adds a mixing section.
+convenience wrapper around this generic layer. The gap is not the absence of a
+mixing layer; it is wiring mechanism-specific block builders into `compare`
+and physical sector assignment.
 
 ## Radial and central-potential API
 
