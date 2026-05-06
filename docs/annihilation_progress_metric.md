@@ -18,8 +18,8 @@ Use a 100-point score, with each component computed from committed artifacts.
 
 ## Required Report
 
-Step 4 should generate `docs/residual_reports/annihilation_model_scorecard.md`
-with one row per model:
+Step 4 generates `docs/residual_reports/annihilation_model_scorecard.md` via
+`python3 scripts/score_annihilation_progress.py`, with one row per model:
 
 ```text
 model, formula_points, clean_target_points, implementation_points,

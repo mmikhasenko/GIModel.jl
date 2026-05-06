@@ -26,6 +26,21 @@ REQUIRED_MASSES = {
     "provenance_row",
 }
 
+REQUIRED_MIXINGS = {
+    "clean_id",
+    "source",
+    "page",
+    "table",
+    "state_group",
+    "state_name",
+    "model",
+    "basis",
+    "amplitude",
+    "confidence",
+    "provenance_file",
+    "provenance_row",
+}
+
 
 def main() -> int:
     path = CLEAN / "masses.csv"
@@ -65,10 +80,30 @@ def main() -> int:
     if not mixings.exists():
         bad.append("missing data/clean/mixings.csv")
     else:
+        mixing_ids = set()
         with mixings.open(newline="", encoding="utf-8") as f:
-            header = next(csv.reader(f), [])
-        if "provenance_file" not in header or "confidence" not in header:
-            bad.append("mixings.csv schema lacks provenance/confidence fields")
+            reader = csv.DictReader(f)
+            missing = REQUIRED_MIXINGS - set(reader.fieldnames or [])
+            if missing:
+                bad.append(f"mixings.csv missing columns: {sorted(missing)}")
+            for row_num, row in enumerate(reader, start=2):
+                cid = row.get("clean_id", "")
+                if not cid:
+                    bad.append(f"mixings row {row_num}: missing clean_id")
+                elif cid in mixing_ids:
+                    bad.append(f"mixings row {row_num}: duplicate clean_id {cid}")
+                mixing_ids.add(cid)
+                try:
+                    float(row.get("amplitude", ""))
+                except ValueError:
+                    bad.append(f"mixings row {row_num}: invalid amplitude")
+                prov = ROOT / row.get("provenance_file", "")
+                if not prov.exists():
+                    bad.append(f"mixings row {row_num}: missing provenance file {prov}")
+                if row.get("confidence") not in {"high", "medium", "low"}:
+                    bad.append(
+                        f"mixings row {row_num}: unexpected confidence {row.get('confidence')!r}"
+                    )
 
     if bad:
         for item in bad:

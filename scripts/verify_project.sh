@@ -15,6 +15,7 @@ python3 scripts/validate_seed.py
 python3 scripts/verify_table_ii_toml.py
 python3 scripts/validate_reference_spectra.py
 python3 scripts/validate_clean_data.py
+python3 scripts/score_annihilation_progress.py
 # `test/runtests.jl` expects the GIModel environment (unlike driver scripts that call `Pkg.activate`).
 julia --project="$ROOT" test/runtests.jl
 julia scripts/compare_central_pointwise_vs_a7a8.jl

@@ -42,6 +42,36 @@ OUT_FIELDS = [
     "notes",
 ]
 
+MIXING_FIELDS = [
+    "clean_id",
+    "source",
+    "page",
+    "table",
+    "state_group",
+    "state_name",
+    "model",
+    "basis",
+    "amplitude",
+    "mass_shift_MeV",
+    "confidence",
+    "provenance_file",
+    "provenance_row",
+    "notes",
+]
+
+TABLE_III_PSEUDOSCALAR_ROWS = [
+    ("1 S0", "eta(548)", "P1", 370, 2, [("1 ns", +0.67), ("1 ss", -0.73), ("1 cc", +0.001), ("1 bb", +2e-4), ("2 ns", +0.11), ("2 ss", +0.042), ("2 cc", -5e-4)]),
+    ("1 S0", "eta(548)", "P2", 340, 3, [("1 ns", +0.68), ("1 ss", -0.73), ("1 cc", -0.005), ("1 bb", +3e-4), ("2 ns", +0.09), ("2 ss", +0.051), ("2 cc", +0.002)]),
+    ("1 S0", "eta_prime(958)", "P1", 810, 4, [("1 ns", +0.58), ("1 ss", +0.62), ("1 cc", +0.004), ("1 bb", +5e-4), ("2 ns", +0.47), ("2 ss", +0.13), ("2 cc", -0.002)]),
+    ("1 S0", "eta_prime(958)", "P2", 780, 5, [("1 ns", +0.48), ("1 ss", +0.78), ("1 cc", -0.008), ("1 bb", +9e-4), ("2 ns", +0.34), ("2 ss", +0.14), ("2 cc", +0.004)]),
+    ("1 S0", "eta_c(2980)", "P1", "", 6, [("1 ns", -0.008), ("1 ss", -0.005), ("1 cc", +1.000), ("1 bb", +2e-4), ("2 ns", +0.004), ("2 ss", +0.003), ("2 cc", -0.002)]),
+    ("1 S0", "eta_c(2980)", "P2", "", 7, [("1 ns", -0.002), ("1 ss", -0.001), ("1 cc", +1.000), ("1 bb", +2e-4), ("2 ns", +0.001), ("2 ss", +0.001), ("2 cc", -0.002)]),
+    ("2 S0", "eta_r(?)", "P1", "", 8, [("1 ns", -0.26), ("1 ss", -0.17), ("1 cc", -0.003), ("1 bb", -3e-4), ("2 ns", +0.79), ("2 ss", -0.44), ("2 cc", +0.001)]),
+    ("2 S0", "eta_r(?)", "P2", "", 9, [("1 ns", +0.07), ("1 ss", +0.08), ("1 cc", -0.005), ("1 bb", -2e-4), ("2 ns", +0.99), ("2 ss", +0.07), ("2 cc", +0.002)]),
+    ("2 S0", "eta_r_prime(?)", "P1", "", 10, [("1 ns", -0.17), ("1 ss", -0.10), ("1 cc", -0.003), ("1 bb", -3e-4), ("2 ns", +0.26), ("2 ss", +0.86), ("2 cc", +0.001)]),
+    ("2 S0", "eta_r_prime(?)", "P2", "", 11, [("1 ns", +0.09), ("1 ss", +0.08), ("1 cc", -0.006), ("1 bb", -1e-4), ("2 ns", -0.16), ("2 ss", +0.97), ("2 cc", +0.003)]),
+]
+
 
 def spin_from_multiplicity(value: str) -> str:
     try:
@@ -59,6 +89,34 @@ def parity_charge(jpc: str) -> tuple[str, str]:
     if not match:
         return "", ""
     return match.group(1) or "", match.group(2) or ""
+
+
+def promoted_table_iii_mixings() -> list[dict[str, str]]:
+    rows = []
+    clean_index = 1
+    provenance = "data/raw/digitized_tables/table_iii_isoscalar_mixings/table_iii_visible_rows.provisional.csv"
+    for state_group, state_name, model, shift, raw_row, amplitudes in TABLE_III_PSEUDOSCALAR_ROWS:
+        for basis, amplitude in amplitudes:
+            rows.append(
+                {
+                    "clean_id": f"GI1985-X{clean_index:04d}",
+                    "source": "Godfrey-Isgur-1985.pdf",
+                    "page": "11",
+                    "table": "Table III",
+                    "state_group": state_group,
+                    "state_name": state_name,
+                    "model": model,
+                    "basis": basis,
+                    "amplitude": f"{amplitude:.6g}",
+                    "mass_shift_MeV": str(shift),
+                    "confidence": "medium",
+                    "provenance_file": provenance,
+                    "provenance_row": str(raw_row),
+                    "notes": "Image-audited visible pseudoscalar row from page-011.png; non-pseudoscalar Table III rows remain raw.",
+                }
+            )
+            clean_index += 1
+    return rows
 
 
 def main() -> int:
@@ -108,31 +166,15 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(rows)
 
+    mixing_rows = promoted_table_iii_mixings()
     mixings = CLEAN / "mixings.csv"
-    if not mixings.exists():
-        with mixings.open("w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(
-                [
-                    "clean_id",
-                    "source",
-                    "page",
-                    "table",
-                    "state_group",
-                    "state_name",
-                    "model",
-                    "basis",
-                    "amplitude",
-                    "mass_shift_MeV",
-                    "confidence",
-                    "provenance_file",
-                    "provenance_row",
-                    "notes",
-                ]
-            )
+    with mixings.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=MIXING_FIELDS)
+        writer.writeheader()
+        writer.writerows(mixing_rows)
 
     print(f"wrote {out} ({len(rows)} rows)")
-    print(f"ensured {mixings} schema")
+    print(f"wrote {mixings} ({len(mixing_rows)} rows)")
     return 0
 
 

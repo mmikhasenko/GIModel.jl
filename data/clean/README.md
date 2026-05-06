@@ -9,16 +9,18 @@ Current files:
 - `masses.csv` — normalized promoted spectrum masses with `source`, `page`,
   confidence, and `provenance_file` / `provenance_row` back to the working
   `data/reference_spectrum_*.csv` rows.
-- `mixings.csv` — schema-only placeholder. Table III rows remain under
-  `data/raw/digitized_tables/table_iii_isoscalar_mixings/` until visual audit.
+- `mixings.csv` — normalized Table III pseudoscalar P1/P2 amplitudes promoted
+  from the page-11 image audit. Non-pseudoscalar Table III rows remain under
+  `data/raw/digitized_tables/table_iii_isoscalar_mixings/` until a separate
+  visual audit.
 - `parameters.toml` — published Table II values audited for active solver
   inputs. Solver switches remain in `data/parameters.provisional.toml`.
 
 The repository currently uses top-level `data/reference_spectrum_*.csv` and
 `data/parameters.provisional.toml` for the working solver. Migration into
 `data/clean/` is now started but intentionally conservative: low/medium
-confidence rows are preserved as such, and Table III mixings are not promoted
-yet.
+confidence rows are preserved as such, and only the visually checked Table III
+pseudoscalar rows are promoted.
 
 Regenerate and validate:
 
