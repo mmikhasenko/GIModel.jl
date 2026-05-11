@@ -535,165 +535,25 @@ dependent of their flavor, internal spins, or total angular momentum. These "uni
 
 TABLE IV. The reduced partial-wave amplitudes. The full amplitudes have in addition a factor of $q^L e^{-q^2/16\beta^2}$; $\beta_c$ is defined in Table V.
 
-```{=latex}
-\begin{table}[htbp]
-\centering
-\caption{The reduced partial-wave amplitudes. The full amplitudes have in addition a factor
-of $begin:math:text$q\^L e\^\{\-q\^2\/\(16\\beta\^2\)\}$end:math:text$. $begin:math:text$\\beta\_c$end:math:text$ is defined in Table~V.}
-\label{tab:reduced-partial-wave-amplitudes}
-\begin{tabular}{@{}lll@{}}
-\toprule
-Amplitude & Representative decays & $begin:math:text$L$end:math:text$ \\
-\midrule
-
-$begin:math:text$\\displaystyle A\=\\left\[g\+\\frac14 h\\right\]\\beta$end:math:text$
-&
-$begin:math:text$\\displaystyle 1\\\,\{\}\^3S\_1 \\to 1\\\,\{\}\^1S\_0 \+ P$end:math:text$
-&
-1
-\\
-
-&
-$begin:math:text$\\displaystyle 1\\\,\{\}\^3P\_2 \\to 1\\\,\{\}\^1S\_0 \+ P\,\\quad 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
-&
-2
-\\
-
-&
-$begin:math:text$\\displaystyle 1\\\,\{\}\^3P\_1 \\to 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
-&
-2
-\\
-
-&
-$begin:math:text$\\displaystyle 1\\\,\{\}\^1P\_1 \\to 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
-&
-2
-\\
-
-&
-$begin:math:text$\\displaystyle 1\\\,\{\}\^3D\_3 \\to 1\\\,\{\}\^1S\_0 \+ P\,\\quad 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
-&
-3
-\\[1.0em]
-
-$begin:math:text$\\displaystyle A\'\=\\left\[g\-\\frac14 h\\right\]\\beta$end:math:text$
-&
-$begin:math:text$\\displaystyle 1\\\,\{\}\^1P\_1 \\to 1\\\,\{\}\^3P\_0 \+ P$end:math:text$
-&
-1
-\\[1.0em]
-
-$begin:math:text$\\displaystyle A\'\'\=\\left\[g\+\\frac18 h\\right\]\\beta$end:math:text$
-&
-$begin:math:text$\\displaystyle 1\\\,\{\}\^3D\_3 \\to 1\\\,\{\}\^1P\_1 \+ P$end:math:text$
-&
-2
-\\[1.0em]
-
-$begin:math:text$\\displaystyle
-A\_c\=
-\\left\[
-g\+\\frac12
-\\left\(
-\\frac\{m\_d\}\{m\_d\+m\_c\}
-\\right\)h
-\\right\]\\beta
-$end:math:text$
-&
-as $begin:math:text$A$end:math:text$, but for charmed-meson decays
-&
-\\[1.0em]
-
-$begin:math:text$\\displaystyle A\_0\=\\\{g\\\}\\beta$end:math:text$
-&
-$begin:math:text$\\displaystyle 1\\\,\{\}\^3P\_1 \\to 1\\\,\{\}\^3P\_0 \+ P$end:math:text$
-&
-1
-\\[1.0em]
-
-$begin:math:text$\\displaystyle
-S\=
-\\left\[
-3h\-\\frac12
-\\left\(g\+\\frac14 h\\right\)
-\\frac\{q\^2\}\{\\beta\^2\}
-\\right\]\\beta
-$end:math:text$
-&
-$begin:math:text$\\displaystyle 1\\\,\{\}\^3P\_1 \\to 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
-&
-0
-\\
-
-&
-$begin:math:text$\\displaystyle 1\\\,\{\}\^1P\_1 \\to 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
-&
-0
-\\
-
-&
-$begin:math:text$\\displaystyle 1\\\,\{\}\^3P\_0 \\to 1\\\,\{\}\^1S\_0 \+ P$end:math:text$
-&
-0
-\\[1.0em]
-
-$begin:math:text$\\displaystyle
-D\=
-\\left\[
-3h\-\\frac\{3\}\{10\}
-\\left\(g\+\\frac14 h\\right\)
-\\frac\{q\^2\}\{\\beta\^2\}
-\\right\]\\beta
-$end:math:text$
-&
-$begin:math:text$\\displaystyle 1\\\,\{\}\^3D\_1 \\to 1\\\,\{\}\^1S\_0 \+ P\,\\quad 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
-&
-1
-\\
-
-&
-$begin:math:text$\\displaystyle 1\\\,\{\}\^3D\_3 \\to 1\\\,\{\}\^1S\_0 \+ P\,\\quad 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
-&
-1
-\\[1.0em]
-
-$begin:math:text$\\displaystyle
-P\=
-\\left\[
-3h\-\\frac34
-\\left\(g\+\\frac14 h\\right\)
-\\frac\{q\^2\}\{\\beta\^2\}
-\\right\]\\beta
-$end:math:text$
-&
-$begin:math:text$\\displaystyle 2\\\,\{\}\^1S\_0 \\to 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
-&
-1
-\\
-
-&
-$begin:math:text$\\displaystyle 2\\\,\{\}\^3S\_1 \\to 1\\\,\{\}\^1S\_0 \+ P\,\\quad 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
-&
-1
-\\[1.0em]
-
-$begin:math:text$\\displaystyle
-S\_c\=
-\\left\[
-3h\-
-\\frac\{m\_c A\_c\}\{\(m\_d\+m\_c\)\\beta\}
-\\frac\{q\^2\}\{\\beta\_c\^2\}
-\\right\]\\beta\_c
-$end:math:text$
-&
-as $begin:math:text$S$end:math:text$, but for charmed-meson decays
-&
-\\
-
-\bottomrule
-\end{tabular}
-\end{table}
+| Amplitude | Representative decays | $L$ |
+|:----------|:----------------------|:---:|
+| $A=\left[g+\frac{1}{4} h\right]\beta$ | $1\,{}^3S_1 \to 1\,{}^1S_0 + P$ | 1 |
+| | $1\,{}^3P_2 \to 1\,{}^1S_0 + P \quad 1\,{}^3S_1 + P$ | 2 |
+| | $1\,{}^3P_1 \to 1\,{}^3S_1 + P$ | 2 |
+| | $1\,{}^1P_1 \to 1\,{}^3S_1 + P$ | 2 |
+| | $1\,{}^3D_3 \to 1\,{}^1S_0 + P \quad 1\,{}^3S_1 + P$ | 3 |
+| $A'=\left[g-\frac{1}{4} h\right]\beta$ | $1\,{}^1P_1 \to 1\,{}^3P_0 + P$ | 1 |
+| $A''=\left[g+\frac{1}{8} h\right]\beta$ | $1\,{}^3D_3 \to 1\,{}^1P_1 + P$ | 2 |
+| $A_c=\left[g+\frac{1}{2}\left(\frac{m_d}{m_d+m_c}\right)h\right]\beta$ | as $A$, but for charmed-meson decays | |
+| $A_0=\{g\}\beta$ | $1\,{}^3P_1 \to 1\,{}^3P_0 + P$ | 1 |
+| $S=\left[3h-\frac{1}{2}\left(g+\frac{1}{4} h\right)\frac{q^2}{\beta^2}\right]\beta$ | $1\,{}^3P_1 \to 1\,{}^3S_1 + P$ | 0 |
+| | $1\,{}^1P_1 \to 1\,{}^3S_1 + P$ | 0 |
+| | $1\,{}^3P_0 \to 1\,{}^1S_0 + P$ | 0 |
+| $D=\left[3h-\frac{3}{10}\left(g+\frac{1}{4} h\right)\frac{q^2}{\beta^2}\right]\beta$ | $1\,{}^3D_1 \to 1\,{}^1S_0 + P \quad 1\,{}^3S_1 + P$ | 1 |
+| | $1\,{}^3D_3 \to 1\,{}^1S_0 + P \quad 1\,{}^3S_1 + P$ | 1 |
+| $P=\left[3h-\frac{3}{4}\left(g+\frac{1}{4} h\right)\frac{q^2}{\beta^2}\right]\beta$ | $2\,{}^1S_0 \to 1\,{}^3S_1 + P$ | 1 |
+| | $2\,{}^3S_1 \to 1\,{}^1S_0 + P \quad 1\,{}^3S_1 + P$ | 1 |
+| $S_c=\left[3h-\frac{m_c A_c}{(m_d+m_c)\beta}\frac{q^2}{\beta_c^2}\right]\beta_c$ | as $S$, but for charmed-meson decays | |
 
 ## PDF Page 14
 
