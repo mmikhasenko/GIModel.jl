@@ -255,10 +255,8 @@ $$
 In the pseudoscalar mesons, (16) and (17) fail. We believe that the behavior of this channel is related to the U(1) problem of QCD in which the mass of the ninth pseudoscalar meson is lifted from zero in the chiral limit by *nonperturbative* annihilation amplitudes.$^{6}$ These nonperturbative effects actually have the opposite sign to the perturbative two-gluon annihilation amplitude, implying that the pseudoscalar amplitude $A(^1S_0)$ must have a complicated dependence on the annihilation channel mass $M$. We can consequently offer no compelling description of annihilation in this channel, but we have found two examples of possible behavior for $A(^1S_0)$ with interesting phenomenological consequences. The simplest possibility (P1) is that there is a large positive nonperturbative annihilation amplitude in this channel which dies away exponentially with a scale of $m_\eta^2$ and which is to be added directly to the perturbative piece (which is, as already implied above, known in this case). Thus in P1, in place of the bracketed factor in (16), we take
 
 $$
-\begin{equation}
 \left[ A_{np} e^{-(m_i^2 + m_j^2)/m_\eta^2} \right.
 \left. + \frac{2\pi}{3} (\ln 2 - 1) \left( \frac{\alpha_s(M_j^2) \alpha_s(M_i^2)}{\pi^2} \right) \right]. \tag{18a}
-\end{equation}
 $$
 
 This simple possibility has many attractive features, but, as we shall see below, it would be ruled out if the experimental indication for an isoscalar pseudoscalar meson at around 1275 MeV is confirmed. We consequently consider a second more exotic possibility (P2). At large annihilation-channel invariant mass $M^2$, the perturbative calculation must be correct so we know that in this region
@@ -268,10 +266,8 @@ $$
 is small and negative. As $M^2$ is decreased it is possible that it becomes (nonperturbatively) large and negative before becoming large and positive at $M^2 \rightarrow 0$ as it is constrained to do.$^6$ In this picture the simple exponential in (18a) is replaced by a nonperturbative contribution which rapidly changes sign at some $M_0^2$: the bracketed factor in (16) becomes
 
 $$
-\begin{equation}
 \bigg[ A_{np} \Big\{ 1 - \left( \frac{M}{M_0} \right)^4 \Big\} e^{-(m_i^2 + m_j^2)/M_0^2 - M^4/4M_0^4}
 + \frac{2\pi}{3} (\ln 2 - 1) \left( \frac{\alpha_s(M^2)}{\pi} \right)^2 \bigg]. \tag{18b}
-\end{equation}
 $$
 
 The reader will note that, apart from satisfying the general features required for P2, we allowed ourselves great freedom in parametrizing the dependence of $A(^1S_0)$ on the annihilation-channel invariant mass $M$. With this elaborately defined (but perhaps not implausible) model we are able to accommodate an isoscalar in this sector near or below the $\pi'$.
@@ -559,122 +555,53 @@ TABLE IV. The reduced partial-wave amplitudes. The full amplitudes have in addit
 
 TABLE V. The strong decay amplitudes for $M^* \to M + P$. The amplitudes tabulated here are for the process $M^* \to M + P(q)$ where $P(q)$ is the pseudoscalar meson shown recoiling with momentum $q$ from the decay of $M^*$ at rest; the decay rate is the square of the listed numerical amplitude. The amplitude formula shown has been abbreviated by suppressing a factor of $\langle q/2\pi \rangle^{1/2} \exp(-q^2/16\beta^2)$ as well as a factor of $+i$ in all $P$ and $F$ wave amplitudes. Isospin coefficients are to be calculated in the MP order. Note also that a factor of $1/\sqrt{2}$ has already been included for amplitudes involving identical particles. The two decays $\rho \to \pi\pi$ and $B \to [\omega\pi]_S$ are used as input to the fit. We have allowed for isoscalar mixing in our numerical results, but results in the formula column are for ideal mixing [as in (B10) and (B11)] in every nonet except $1^1S_0$ where we show "perfect-mixing" formulas from (B14) and (B15). The isoscalar mixings are taken from Table III (using P1 for pseudoscalars) in every nonet except $1^1S_0$ where we simply use (B14) and (B15). A mixing angle not given explicitly in Table III is assumed, for now, to be zero. Note that the table gives amplitudes to $K^*\bar{K}$; the full rate to $K^*K$ is (approximately) twice that to $K^*\bar{K}$.
 
-***
 
-#### Harmonic-oscillator amplitude
+| Decay | Harmonic-oscillator amplitude $(\bar q \equiv q/\beta)$ | $(\mathrm{MeV}^{1/2})$ | “Realistic” factor | Experiment$^a$ $(\mathrm{MeV}^{1/2})$ | References, footnotes |
+|:------|:---------------------------------------------------------|:----------------------:|:------------------:|:---------------------------------------:|:----------------------|
+| **$u$-$d$-$s$ mesons** | | | | | |
+| **$1\,{}^3S_1$** | | | | | |
+| $\rho \to \pi\pi$ | $+\left(\frac{4}{3}\right)^{1/2} A\bar q$ | $+12.4$ | | $12.4$ | fit |
+| $\phi \to K\bar K$ | $-\left(\frac{4}{3}\right)^{1/2} A\bar q$ | $-2.4$ | | $1.9\pm0.1$ | |
+| $K^\ast \to K\pi$ | $+A\bar q$ | $+7.9$ | | $7.1\pm0.1$ | |
+| **$1\,{}^3P_2$** | | | | | |
+| $A_2 \to (\pi\pi)_\rho\pi$ | $-\left(\frac{1}{5}\right)^{1/2} A\bar q^2$ | $-5.6$ | $(1.5)$ | $8.8\pm0.3$ | f |
+| $A_2 \to \eta\pi$ | $+\left(\frac{1}{30}\right)^{1/2} A\bar q^2$ | $+4.5$ | | $4.0\pm0.1$ | |
+| $A_2 \to K\bar K$ | $-\left(\frac{1}{30}\right)^{1/2} A\bar q^2$ | $-2.8$ | | $2.3\pm0.1$ | |
+| $A_2 \to \eta'\pi$ | $+\left(\frac{1}{30}\right)^{1/2} A\bar q^2$ | $+1.0$ | | $<1.5$ | |
+| $f \to \pi\pi$ | $-\left(\frac{1}{10}\right)^{1/2} A\bar q^2$ | $-11$ | | $12\pm1$ | |
+| $f \to K\bar K$ | $-\left(\frac{1}{30}\right)^{1/2} A\bar q^2$ | $-2.5$ | | $2.3\pm0.2$ | |
+| $f \to \eta\eta$ | $+\left(\frac{1}{120}\right)^{1/2} A\bar q^2$ | $+0.8$ | | $1.0\pm0.2$ | g |
+| $f' \to \pi\pi$ | $0$ | $+1.1$ | | $0.8\pm0.4$ | |
+| $f' \to K\bar K$ | $-\left(\frac{1}{15}\right)^{1/2} A\bar q^2$ | $-7.1$ | | $\le 8\pm1$ | |
+| $f' \to \eta\eta$ | $+\left(\frac{1}{60}\right)^{1/2} A\bar q^2$ | $+2.9$ | | $<6$ | |
+| $f' \to \eta'\eta$ | $-\left(\frac{1}{30}\right)^{1/2} A\bar q^2$ | $-0.04$ | | | |
+| $f' \to (K\pi)_{K^\ast}\bar K$ | $+\left(\frac{1}{10}\right)^{1/2} A\bar q^2$ | $+1.7$ | $(1.4)$ | $<5$ | f |
+| $K^\ast \to K\pi$ | $+\left(\frac{3}{20}\right)^{1/2} A\bar q^2$ | $+7.7$ | | $6.7\pm0.5$ | |
+| $K^\ast \to (K\pi)_{K^\ast}\pi$ | $-\left(\frac{3}{40}\right)^{1/2} A\bar q^2$ | $-3.7$ | $(1.4)$ | $5.0\pm0.5$ | f |
+| $K^\ast \to (\pi\pi)_\rho K$ | $-\left(\frac{3}{40}\right)^{1/2} A\bar q^2$ | $-2.1$ | $(1.4)$ | $3.0\pm0.4$ | f |
+| $K^\ast \to \omega K$ | $+\left(\frac{1}{40}\right)^{1/2} A\bar q^2$ | $+1.2$ | $(1.4)$ | $2.0\pm0.4$ | |
+| $K^\ast \to K\eta$ | $-\left[\frac{\sqrt{2}-1}{\sqrt{120}}\right]A\bar q^2$ | $-0.8$ | | $2.2^{+1.1}_{-2.2}$ | |
+| $K^\ast \to K\eta'$ | $+\left[\frac{\sqrt{2}+1}{\sqrt{120}}\right]A\bar q^2$ | below threshold | | | |
+| **$1\,{}^3P_1$ (nonstrange)** | | | | | |
+| $A_1 \to [(\pi\pi)_\rho\pi]_S$ | $+\left(\frac{8}{9}\right)^{1/2}S$ | $+20$ | | $18\pm2$ | f |
+| $A_1 \to [(\pi\pi)_\rho\pi]_D$ | $-\left(\frac{1}{9}\right)^{1/2}A\bar q^2$ | $-3.0$ | $(1.5)$ | | f |
+| $A_1 \to (\pi\pi)_\epsilon\pi$ | $-\left(\frac{8}{9}\right)^{1/2}A_0\bar q$ | $-4.3\left(\frac{A_0}{A}\right)$ | | $3.6\pm0.4$ | f |
 
-*Columns (broken OCR layout): Decay; $(\bar{q} \equiv q / \beta)$; (MeV$^{1/2}$); $u$–$d$–$s$ mesons; “Realistic” factor; Experiment; References.*
-
-$1^3S_1$  
-
-$\rho \to \pi\pi$  
-$\phi \to KK$  
-$K^* \to K\pi$  
-
-- $+ \left( \frac{4}{3} \right)^{1/2} A \bar{q}$
-- $- \left( \frac{4}{3} \right)^{1/2} A \bar{q}$
-- $+ A\bar{q}$
-
-- $+12.4$
-- $-2.4$
-- $+7.9$
-
-- 12.4 ; fit
-- 1.9$\pm$0.1 ; 
-- 7.1$\pm$0.1 ; 
-
-$1^3P_2$
-
-$A_2 \to (\pi\pi)\rho\pi$  
-$A_2 \to \eta\pi$  
-$A_2 \to KK$  
-$A_2 \to \eta'\pi$  
-$f \to \pi\pi$  
-$f \to KK$  
-$f' \to \eta\eta$  
-$f' \to (K\pi)K^*\bar{K}$  
-$K^* \to K^*\eta$  
-$K^* \to K^*\eta'$  
-
-- $- \left( \frac{1}{3} \right)^{1/2} A \bar{q}^2$
-- $+ \left( \frac{1}{30} \right)^{1/2} A \bar{q}^2$
-- $- \left( \frac{1}{30} \right)^{1/2} A \bar{q}^2$
-- $+ \left( \frac{1}{30} \right)^{1/2} A \bar{q}^2$
-- $- \left( \frac{1}{10} \right)^{1/2} A \bar{q}^2$
-- $- \left( \frac{1}{30} \right)^{1/2} A \bar{q}^2$
-- $+ \left( \frac{1}{120} \right)^{1/2} A \bar{q}^2$
-- $0$
-- $- \left( \frac{1}{15} \right)^{1/2} A \bar{q}^2$
-- $+ \left( \frac{1}{60} \right)^{1/2} A \bar{q}^2$
-- $- \left( \frac{1}{30} \right)^{1/2} A \bar{q}^2$
-- $- \left( \frac{1}{10} \right)^{1/2} A \bar{q}^2$
-- $+ \left( \frac{1}{10} \right)^{1/2} A \bar{q}^2$
-- $+ \left( \frac{1}{20} \right)^{1/2} A \bar{q}^2$
-- $- \left( \frac{3}{40} \right)^{1/2} A \bar{q}^2$
-- $- \left( \frac{3}{40} \right)^{1/2} A \bar{q}^2$
-- $+ \left( \frac{3}{40} \right)^{1/2} A \bar{q}^2$
-- $- \dfrac{\sqrt{2}-1}{\sqrt{120}} A \bar{q}^2$
-- $+ \dfrac{\sqrt{2}+1}{\sqrt{120}} A \bar{q}^2$
-
-- $-5.6$
-- $+4.5$
-- $-2.8$
-- $+1.0$
-- $-11$
-- $-2.5$
-- $+0.8$
-- $+1.1$
-- $-7.1$
-- $+2.9$
-- $-0.04$
-- $+1.7$
-- $+7.7$
-- $-3.7$
-- $-2.1$
-- $+1.2$
-- $-0.8$
-- below threshold
-
-- (1.5)
-- 8.8$\pm$0.3 ; f
-- 4.0$\pm$0.1 ; 
-- 2.3$\pm$0.1 ; 
-- $<$1.5 ; 
-- 12$\pm$1 ; 
-- 2.3$\pm$0.2 ; 
-- 1.0$\pm$0.2 ; g
-- 0.8$\pm$0.4 ; 
-- $\approx$8$\pm$1 ; 
-- $<$6 ; 
-- (1.4) $<$5 ; f
-- 6.7$\pm$0.5 ; 
-- (1.4) 5.0$\pm$0.5 ; f
-- (1.4) 3.0$\pm$0.4 ; f
-- (1.4) 2.0$\pm$0.4 ; 
-- 2.2$^{+1.1}_{-2.2}$ ; 
-
-$1^3P_1$ (nonstrange)
-
-$A_1 \to [(\pi\pi)\rho\pi]_S$  
-$A_1 \to [(\pi\pi)\rho\pi]_D$  
-$A_1 \to (\pi\pi)\epsilon\pi$  
-
-- $+\left( \frac{8}{9} \right)^{1/2} S$
-- $- \left( \frac{1}{9} \right)^{1/2} A \bar{q}^2$
-- $- \left( \frac{8}{9} \right)^{1/2} A_0 \bar{q}$
-
-- $+20$
-- $-3.0$
-- $-4.3 \left( \frac{A_0}{A} \right)$
-
-- (1.5)
-- 18$\pm$2 ; f
-- f
-- 3.6$\pm$0.4 ; f
 
 ## PDF Page 15
 
 TABLE V. (Continued).
+
+
+| $D \to [(K\pi)_{K^\ast}\bar K]_S$ | $+\left(\frac{2}{9}\right)^{1/2}S$ | $+0.69$ | | | f |
+| $D \to [(K\pi)_{K^\ast}\bar K]_D$ | $-\left(\frac{1}{36}\right)^{1/2}A\bar q^2$ | $-0.0$ | | | f |
+| $D \to (\eta\pi)_{\delta_2}\pi$ | $+\left(\frac{8}{3}\right)^{1/2}A_0\bar q$ | $+4.6\left\{\frac{A_0}{A}\right\}$ | | $4.0\pm0.8$ | e,f |
+| $D \to (\pi\pi)_\epsilon\eta$ | $-\left(\frac{4}{9}\right)^{1/2}A_0\bar q$ | $-3.4\left\{\frac{A_0}{A}\right\}$ | | $1.8\pm0.8$ | f |
+| $E \to [(K\pi)_{K^\ast}\bar K]_S$ | $-\left(\frac{4}{9}\right)^{1/2}S$ | $-10$ | | $7^{+4}_{-1}$ | f,h |
+| $E \to [(K\pi)_{K^\ast}\bar K]_D$ | $+\left(\frac{1}{18}\right)^{1/2}A\bar q^2$ | $+0.7$ | $(1.3)$ | | f |
+| $E \to \delta_2\pi$ | $0$ | $\sim 0$ | | | e,f |
+| $E \to \epsilon\eta$ | $0$ | $\sim 0$ | | | |
+
 
 | Decay | Harmonic-oscillator amplitude $(\vec{q} \equiv q/\beta)$ | (MeV$^{1/2}$) | "Realistic" factor | Experiment$^a$ (MeV$^{1/2}$) | References, footnotes |
 |:------|:--------------------------------------------------------|:-------------:|:------------------:|:-----------------------------:|:----------------------:|
@@ -684,37 +611,47 @@ TABLE V. (Continued).
 | $D \rightarrow (\pi\pi)_{\epsilon} \eta $ | $- ( \frac{4}{9})^{1/2} A_0 \vec{q}$ | $-3.4 \left( \frac{A_0}{A} \right)$ | $1.8 \pm 0.8$ | f |
 | $E \rightarrow [(K\pi)_{K^*} \overline{K}]_S$ | $- ( \frac{4}{9})^{1/2} S$ | $-10$ | $7^{+4}_{-1}$ | f, h |
 | $E \rightarrow [(K\pi)_{K^*} \overline{K}]_D$ | $+ ( \frac{1}{18})^{1/2} A \vec{q}^2$ | $+0.7$ | | f |
-| $E \rightarrow \delta_2 \pi $ | $0$ | $\sim 0$ | | e,f |
-| $E \rightarrow \epsilon \eta$ | $0$ | $\sim 0$ | | f |
+| $E \rightarrow \delta_2 \pi$ | $0$ | $\sim 0$ | | | e,f |
+| $E \rightarrow \epsilon \eta$ | $0$ | $\sim 0$ | | | f |
 
-$ ^{1}P_1 $ and $ ^{1}P_1 $ (strange)
-| $Q_1 \rightarrow [(K\pi)_{K^*} \pi]_S$ | $- ( \frac{1}{6})^{1/2} S $ | $-0.3$ |  | $2.7 \pm 1.5$ | b,f,i,j |
+##### $^1P_1$ and $^1P_1$ (strange)
+
+| Decay | Harmonic-oscillator amplitude $(\vec{q} \equiv q/\beta)$ | (M\eV$^{1/2}$) | "Realistic" factor | Experiment$^a$ (MeV$^{1/2}$) | References, footnotes |
+|:------|:--------------------------------------------------------|:-------------:|:------------------:|:-----------------------------:|:----------------------:|
+| $Q_1 \rightarrow [(K\pi)_{K^*} \pi]_S$ | $- ( \frac{1}{6})^{1/2} S$ | $-0.3$ |  | $2.7 \pm 1.5$ | b,f,i,j |
 | $Q_1 \rightarrow [(K\pi)_{K^*} \pi]_D$ | $- ( \frac{1}{12})^{1/2}A \vec{q}^2$ | $-3.0$ | (1.4) | $2.6 \pm 0.5$ | b,f,i |
-| $Q_1 \rightarrow [(\pi\pi)_\rho K]_S $ | $+ (\frac{1}{6})^{1/2} S$ | $+9.9$ | (1.4) | $6.2 \pm 1.0$ | b,f,i |
-| $Q_1 \rightarrow [(\pi\pi)_\rho K]_D $ | $+ ( \frac{1}{12})^{1/2} A \vec{q}^2$ | $+0.5$ | | not seen | b,f,i |
+| $Q_1 \rightarrow [(\pi\pi)_\rho K]_S$ | $+ (\frac{1}{6})^{1/2} S$ | $+9.9$ | (1.4) | $6.2 \pm 1.0$ | b,f,i |
+| $Q_1 \rightarrow [(\pi\pi)_\rho K]_D$ | $+ ( \frac{1}{12})^{1/2} A \vec{q}^2$ | $+0.5$ | | not seen | b,f,i |
 | $Q_1 \rightarrow [\omega K]_S$ | $- ( \frac{1}{18})^{1/2} S$ | $-7.0$ | | $3.1 \pm 0.5$ | b,i |
-| $Q_1 \rightarrow [\omega K]_D $ | $- ( \frac{1}{36})^{1/2} A \vec{q}^2$ | $-0.2$ | | not seen | b,i |
+| $Q_1 \rightarrow [\omega K]_D$ | $- ( \frac{1}{36})^{1/2} A \vec{q}^2$ | $-0.2$ | | not seen | b,i |
 | $Q_1 \rightarrow (K\pi)_\kappa \pi$ | $- ( \frac{1}{3})^{1/2} A' \vec{q}$ | $-3.1 \left( \frac{A'}{A} \right)$ | (1.3) | $5.1 \pm 0.5$ | f |
 | $Q_1 \rightarrow (\pi\pi)_\epsilon K$ | $+ ( \frac{1}{9})^{1/2} A' \vec{q}$ | $+0.04 \left( \frac{A'}{A} \right)$ | | $1.6 \pm 0.4$ | f, j |
 
-| $Q_2 \rightarrow [(K\pi)_{K^*} \pi]_S$ | $+ ( \frac{1}{3})^{1/2} S $ | $+16$ |  | $13 \pm 3$ | f |
+| Decay | Harmonic-oscillator amplitude $(\vec{q} \equiv q/\beta)$ | (MeV$^{1/2}$) | "Realistic" factor | Experiment$^a$ (MeV$^{1/2}$) | References, footnotes |
+|:------|:--------------------------------------------------------|:-------------:|:------------------:|:-----------------------------:|:----------------------:|
+| $Q_2 \rightarrow [(K\pi)_{K^*} \pi]_S$ | $+ ( \frac{1}{3})^{1/2} S$ | $+16$ |  | $13 \pm 3$ | f |
 | $Q_2 \rightarrow [(K\pi)_{K^*} \pi]_D$ | $- ( \frac{1}{24})^{1/2} A \vec{q}^2$ | $-0.1$ | (1.4) | $2.6 \pm 0.9$ | b,f,i,j |
 | $Q_2 \rightarrow [(\pi\pi)_\rho K]_S$ | $+ ( \frac{1}{3})^{1/2} S$ | $+4.2$ | | $2.4 \pm 2.3$ | b,f,i |
 | $Q_2 \rightarrow [(\pi\pi)_\rho K]_D$ | $- ( \frac{1}{24})^{1/2} A \vec{q}^2$ | $-1.8$ | (1.4) | not seen | b,f,i |
 | $Q_2 \rightarrow [\omega K]_S$ | $- ( \frac{1}{9})^{1/2} S$ | $-3.0$ | | $1.1 \pm 1.0$ | b,i |
-| $Q_2 \rightarrow [\omega K]_D $ | $+ ( \frac{1}{72})^{1/2}A \vec{q}^2$ | $+0.8$ | (1.4) | not seen | b,i |
+| $Q_2 \rightarrow [\omega K]_D$ | $+ ( \frac{1}{72})^{1/2}A \vec{q}^2$ | $+0.8$ | (1.4) | not seen | b,i |
 | $Q_2 \rightarrow (K\pi)_\kappa \pi$ | $- (\frac{2}{3})^{1/2} A \vec{q}$ | $-1.4$ | | ~0 | b,f,i |
 | $Q_2 \rightarrow (\pi\pi)_\epsilon K$ | $- (\frac{2}{9})^{1/2} A\vec{q}$ | $-2.0$ | | $1.7 \pm 1.4$ | b,f,i |
 
-$^1P_1$ (nonstrange)
-| $B \rightarrow [\omega\pi]_S $ | $- ( \frac{2}{9})^{1/2}S$ | $-11$ | 11 | fit |
-| $B \rightarrow [\omega\pi]_D $ | $- ( \frac{1}{9})^{1/2} A \vec{q}^2$ | $-3.0$ | (1.5) | $3.2 \pm 0.5$ | e,f |
-| $B \rightarrow (\eta\pi)_{\delta_2} \pi $ | $- (\frac{8}{9})^{1/2} A'\vec{q}$ | $-4.4 \left( \frac{A'}{A} \right)$ | | $18 \pm 2$ | f |
+##### $^1P_1$ (nonstrange)
 
-| $H \rightarrow [\rho\pi]_S $ | $+ ( \frac{2}{3})^{1/2} S$ | $+19$ | |  | f |
-| $H \rightarrow [\rho\pi]_D $ | $+ ( \frac{1}{3})^{1/2} A \vec{q}^2$ | $+5.2$ | |  | f |
-| $H' \rightarrow [\rho\pi]_S $ | $0$ | $\sim 0$ | |  | f |
-| $H' \rightarrow [\rho\pi]_D $ | $0$ | $\sim 0$ | |  | f |
+| Decay | Harmonic-oscillator amplitude $(\vec{q} \equiv q/\beta)$ | (MeV$^{1/2}$) | "Realistic" factor | Experiment$^a$ (MeV$^{1/2}$) | References, footnotes |
+|:------|:--------------------------------------------------------|:-------------:|:------------------:|:-----------------------------:|:----------------------:|
+| $B \rightarrow [\omega\pi]_S$ | $- ( \frac{2}{9})^{1/2}S$ | $-11$ | $11$ | | fit |
+| $B \rightarrow [\omega\pi]_D$ | $- ( \frac{1}{9})^{1/2} A \vec{q}^2$ | $-3.0$ | (1.5) | $3.2 \pm 0.5$ | e,f |
+| $B \rightarrow (\eta\pi)_{\delta_2} \pi$ | $- (\frac{8}{9})^{1/2} A'\vec{q}$ | $-4.4 \left( \frac{A'}{A} \right)$ | | $18 \pm 2$ | f |
+
+| Decay | Harmonic-oscillator amplitude $(\vec{q} \equiv q/\beta)$ | (MeV$^{1/2}$) | "Realistic" factor | Experiment$^a$ (MeV$^{1/2}$) | References, footnotes |
+|:------|:--------------------------------------------------------|:-------------:|:------------------:|:-----------------------------:|:----------------------:|
+| $H \rightarrow [\rho\pi]_S$ | $+ ( \frac{2}{3})^{1/2} S$ | $+19$ | |  | f |
+| $H \rightarrow [\rho\pi]_D$ | $+ ( \frac{1}{3})^{1/2} A \vec{q}^2$ | $+5.2$ | |  | f |
+| $H' \rightarrow [\rho\pi]_S$ | $0$ | $\sim 0$ | |  | f |
+| $H' \rightarrow [\rho\pi]_D$ | $0$ | $\sim 0$ | |  | f |
 | $H' \rightarrow [(K\pi)_{K^*} \overline{K}]_S$ | $+ ( \frac{2}{9})^{1/2} S$ | $+8.0$ | |  | f |
 | $H' \rightarrow [(K\pi)_{K^*} \overline{K}]_D$ | $+ ( \frac{1}{9})^{1/2} A \vec{q}^2$ | $+1.2$ | |  | f |
 
@@ -984,36 +921,36 @@ TABLE V. (Continued).
 | Decay                           | Harmonic-oscillator amplitude | (MeV$^{1/2}$) | "Realistic" factor | Experiment$^{a}$ (MeV$^{1/2}$) | References, footnotes |
 |----------------------------------|-------------------------------|-----------------|-------------------|---------------------|----------------------|
 |                                 | ($\vec{q}\equiv q/\beta$)   |                 |                   |                     |                      |
-| $K_S^* \rightarrow K \eta$      | $+ \left[ \frac{\sqrt{2}+1}{\sqrt{1296}} \right] P\vec{q} $      | $+2.7$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           |                      |
-| $K_S^* \rightarrow K \eta'$     | $- \left[ \frac{\sqrt{2}-1}{\sqrt{1296}} \right] P\vec{q} $      | $-0.2$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           |                      |
-| $K_S^* \rightarrow \rho K$      | $+\left(-\frac{1}{108}\right)^{1/2}P\vec{q} $             | $+2.9$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           |                      |
-| $K_S^* \rightarrow \omega K$    | $-\left(\frac{1}{324}\right)^{1/2}P\vec{q} $              | $-1.6$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           |                      |
-| $K_S^* \rightarrow \phi K$      | $-\left( \frac{1}{162} \right)^{1/2}P\vec{q} $            | $-0.8$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           |                      |
-| $K_S^* \rightarrow K^* \pi$     | $-\left( \frac{1}{108} \right)^{1/2}P\vec{q} $            | $-3.4$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           |                      |
-| $K_S^* \rightarrow (K \pi) K^* \eta $ | $+ \left[ \frac{\sqrt{2}-1}{\sqrt{648}} \right] P\vec{q} $   | $+0.3$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           | f                    |
-| $\delta \rightarrow \rho \pi$   | $+ \left( \frac{1}{12\,096} \right)^{1/2} A \vec{q}^4 $   | $+2.7$            | $1^3F_4$           | (2.1)                  |                      |
-| $\delta \rightarrow \eta \pi$   | $- \left( \frac{1}{60\,480} \right)^{1/2} A \vec{q}^4 $   | $-1.7$            |                       |                         |                      |
-| $\delta \rightarrow K K$        | $+ \left( \frac{1}{60\,480} \right)^{1/2} A \vec{q}^4 $   | $+1.4$            |                       |                         |                      |
-| $\delta \rightarrow \eta' \pi$  | $- \left( \frac{1}{60\,480} \right)^{1/2} A \vec{q}^4 $   | $-0.8$            |                       |                         |                      |
-| $\delta \rightarrow K^* \bar{K}$| $+ \left( \frac{1}{48\,384} \right)^{1/2} A \vec{q}^4 $   | $+0.7$            |                       |                         |                      |
-| $h \rightarrow \pi \pi$         | $+ \left( \frac{1}{20\,160} \right)^{1/2} A \vec{q}^4 $   | $+3.9$            |                       |                         |                      |
-| $h \rightarrow K K$             | $+ \left( \frac{1}{60\,480} \right)^{1/2} A \vec{q}^4 $   | $+1.4$            |                       |                         |                      |
-| $h \rightarrow \eta \eta$       | $+ \left( \frac{1}{241\,920} \right)^{1/2} A \vec{q}^4 $  | $+1.0$            |                       |                         |                      |
-| $h \rightarrow \eta \eta'$      | $- \left( \frac{1}{120\,960} \right)^{1/2} A \vec{q}^4 $  | $-0.3$            |                       |                         |                      |
-| $h \rightarrow \eta' \eta'$     | $+ \left( \frac{1}{241\,920} \right)^{1/2} A \vec{q}^4 $  | $+0.6$            |                       |                         |                      |
-| $h \rightarrow K^* \bar{K}$     | $+ \left( \frac{1}{48\,384} \right)^{1/2} A \vec{q}^4 $   | $+0.7$            |                       |                         |                      |
+| $K_S^* \rightarrow K \eta$      | $+ \left[ \frac{\sqrt{2}+1}{\sqrt{1296}} \right] P\vec{q}$      | $+2.7$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           |                      |
+| $K_S^* \rightarrow K \eta'$     | $- \left[ \frac{\sqrt{2}-1}{\sqrt{1296}} \right] P\vec{q}$      | $-0.2$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           |                      |
+| $K_S^* \rightarrow \rho K$      | $+\left(-\frac{1}{108}\right)^{1/2}P\vec{q}$             | $+2.9$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           |                      |
+| $K_S^* \rightarrow \omega K$    | $-\left(\frac{1}{324}\right)^{1/2}P\vec{q}$              | $-1.6$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           |                      |
+| $K_S^* \rightarrow \phi K$      | $-\left( \frac{1}{162} \right)^{1/2}P\vec{q}$            | $-0.8$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           |                      |
+| $K_S^* \rightarrow K^* \pi$     | $-\left( \frac{1}{108} \right)^{1/2}P\vec{q}$            | $-3.4$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           |                      |
+| $K_S^* \rightarrow (K \pi) K^* \eta$ | $+ \left[ \frac{\sqrt{2}-1}{\sqrt{648}} \right] P\vec{q}$   | $+0.3$            | $\left[ \frac{P}{S} \right]$ | see Sec. VA           | f                    |
+| $\delta \rightarrow \rho \pi$   | $+ \left( \frac{1}{12\,096} \right)^{1/2} A \vec{q}^4$   | $+2.7$            | $1^3F_4$           | (2.1)                  |                      |
+| $\delta \rightarrow \eta \pi$   | $- \left( \frac{1}{60\,480} \right)^{1/2} A \vec{q}^4$   | $-1.7$            |                       |                         |                      |
+| $\delta \rightarrow K K$        | $+ \left( \frac{1}{60\,480} \right)^{1/2} A \vec{q}^4$   | $+1.4$            |                       |                         |                      |
+| $\delta \rightarrow \eta' \pi$  | $- \left( \frac{1}{60\,480} \right)^{1/2} A \vec{q}^4$   | $-0.8$            |                       |                         |                      |
+| $\delta \rightarrow K^* \bar{K}$| $+ \left( \frac{1}{48\,384} \right)^{1/2} A \vec{q}^4$   | $+0.7$            |                       |                         |                      |
+| $h \rightarrow \pi \pi$         | $+ \left( \frac{1}{20\,160} \right)^{1/2} A \vec{q}^4$   | $+3.9$            |                       |                         |                      |
+| $h \rightarrow K K$             | $+ \left( \frac{1}{60\,480} \right)^{1/2} A \vec{q}^4$   | $+1.4$            |                       |                         |                      |
+| $h \rightarrow \eta \eta$       | $+ \left( \frac{1}{241\,920} \right)^{1/2} A \vec{q}^4$  | $+1.0$            |                       |                         |                      |
+| $h \rightarrow \eta \eta'$      | $- \left( \frac{1}{120\,960} \right)^{1/2} A \vec{q}^4$  | $-0.3$            |                       |                         |                      |
+| $h \rightarrow \eta' \eta'$     | $+ \left( \frac{1}{241\,920} \right)^{1/2} A \vec{q}^4$  | $+0.6$            |                       |                         |                      |
+| $h \rightarrow K^* \bar{K}$     | $+ \left( \frac{1}{48\,384} \right)^{1/2} A \vec{q}^4$   | $+0.7$            |                       |                         |                      |
 | $h' \rightarrow \pi \pi$        | $0$                                                 | $0$              |                       | (2.1)                  |                      |
-| $h' \rightarrow K K$            | $+ \left( \frac{1}{30\,240} \right)^{1/2} A \vec{q}^4 $   | $+3.1$            |                       |                         |                      |
-| $h' \rightarrow \eta \eta$      | $+ \left( \frac{1}{120\,960} \right)^{1/2} A \vec{q}^4 $  | $+1.4$            |                       |                         |                      |
-| $h' \rightarrow \eta \eta'$     | $+ \left( \frac{1}{60\,480} \right)^{1/2} A \vec{q}^4 $   | $+1.0$            |                       |                         |                      |
-| $h' \rightarrow \eta' \eta'$    | $- \left( \frac{1}{120\,960} \right)^{1/2} A \vec{q}^4 $  | $-0.2$            |                       |                         |                      |
-| $h' \rightarrow K^* \bar{K}$    | $- \left( \frac{1}{24\,192} \right)^{1/2} A \vec{q}^4 $   | $-1.9$            |                       |                         |                      |
-| $K^* \rightarrow K \pi$         | $+ \left( \frac{1}{40\,320} \right)^{1/2} A \vec{q}^4 $   | $-2.7$            |                       |                         |                      |
-| $K^* \rightarrow K^* \pi$       | $+ \left( \frac{1}{32\,256} \right)^{1/2} A \vec{q}^4 $   | $+1.7$            |                       | $5 \pm 1$            |                      |
-| $K^* \rightarrow \rho K$        | $+ \left( \frac{1}{32\,256} \right)^{1/2} A \vec{q}^4 $   | $+1.6$            |                       | $1.2 \pm 0.4$        |                      |
-| $K^* \rightarrow \omega K$      | $- \left( \frac{1}{96\,768} \right)^{1/2} A \vec{q}^4 $   | $-0.9$            |                       |                         |                      |
-| $K^* \rightarrow K \eta$        | $+ \left[ \frac{\sqrt{2}-1}{\sqrt{241\,920}} \right] A \vec{q}^4 $ | $+0.3$  |                       |                         |                      |
-| $K^* \rightarrow K \eta'$       | $- \left[ \frac{\sqrt{2}+1}{\sqrt{241\,920}} \right]A \vec{q}^4 $ | $-0.9$  |                       | $4 \pm 1$            |                      |
+| $h' \rightarrow K K$            | $+ \left( \frac{1}{30\,240} \right)^{1/2} A \vec{q}^4$   | $+3.1$            |                       |                         |                      |
+| $h' \rightarrow \eta \eta$      | $+ \left( \frac{1}{120\,960} \right)^{1/2} A \vec{q}^4$  | $+1.4$            |                       |                         |                      |
+| $h' \rightarrow \eta \eta'$     | $+ \left( \frac{1}{60\,480} \right)^{1/2} A \vec{q}^4$   | $+1.0$            |                       |                         |                      |
+| $h' \rightarrow \eta' \eta'$    | $- \left( \frac{1}{120\,960} \right)^{1/2} A \vec{q}^4$  | $-0.2$            |                       |                         |                      |
+| $h' \rightarrow K^* \bar{K}$    | $- \left( \frac{1}{24\,192} \right)^{1/2} A \vec{q}^4$   | $-1.9$            |                       |                         |                      |
+| $K^* \rightarrow K \pi$         | $+ \left( \frac{1}{40\,320} \right)^{1/2} A \vec{q}^4$   | $-2.7$            |                       |                         |                      |
+| $K^* \rightarrow K^* \pi$       | $+ \left( \frac{1}{32\,256} \right)^{1/2} A \vec{q}^4$   | $+1.7$            |                       | $5 \pm 1$            |                      |
+| $K^* \rightarrow \rho K$        | $+ \left( \frac{1}{32\,256} \right)^{1/2} A \vec{q}^4$   | $+1.6$            |                       | $1.2 \pm 0.4$        |                      |
+| $K^* \rightarrow \omega K$      | $- \left( \frac{1}{96\,768} \right)^{1/2} A \vec{q}^4$   | $-0.9$            |                       |                         |                      |
+| $K^* \rightarrow K \eta$        | $+ \left[ \frac{\sqrt{2}-1}{\sqrt{241\,920}} \right] A \vec{q}^4$ | $+0.3$  |                       |                         |                      |
+| $K^* \rightarrow K \eta'$       | $- \left[ \frac{\sqrt{2}+1}{\sqrt{241\,920}} \right]A \vec{q}^4$ | $-0.9$  |                       | $4 \pm 1$            |                      |
 
 ## PDF Page 22
 
@@ -1025,58 +962,35 @@ STEPHEN GODFREY AND NATHAN ISGUR
 
 TABLE V. (Continued).
 
--------------------------------------------------------------------------------
-| Decay                                    | Harmonic-oscillator amplitude  | "Realistic" factor | Experiment\textsuperscript{a} | References, |
-|                                          | $(\tilde{q} \equiv q/\beta)$   | (MeV$^{1/2}$)      | (MeV$^{1/2}$)                  | footnotes   |
--------------------------------------------------------------------------------
+#### Charmed mesons, $1\,{}^{3}S_{1}$
 
-Charmed mesons $1^3S_1$
+| Decay | Harmonic-oscillator amplitude $(\bar q \equiv q/\beta)$ |
+|:-----|:--------------------------------------------------------|
+| $D^{\ast+} \to D^0\pi^+$ | $-\left(\frac{2}{3}\right)^{1/2} A_c \bar q$ |
+| $D^{\ast+} \to D^+\pi^0$ | $+\left(\frac{1}{3}\right)^{1/2} A_c \bar q$ |
+| $D^{\ast0} \to D^0\pi^0$ | $-\left(\frac{1}{3}\right)^{1/2} A_c \bar q$ |
 
-$D^{*+} \rightarrow D^0 \pi^+$ 
-$-\left( \frac{2}{3} \right)^{1/2} A_c \tilde{q}$
-\hspace{2.5cm} $-0.34 \left[ \frac{A_c}{A} \right]$
+#### Charmed mesons, $1\,{}^{3}P_{2}$
 
-$D^{*+} \rightarrow D^+ \pi^0$
-$+\left( \frac{1}{3} \right)^{1/2} A_c \tilde{q}$
-\hspace{2.5cm} $+0.24 \left[ \frac{A_c}{A} \right]$
+| Decay | Harmonic-oscillator amplitude $(\bar q \equiv q/\beta)$ |
+|:-----|:--------------------------------------------------------|
+| $K_c^{\ast} \to D\pi$ | $-\left(\frac{1}{5}\right)^{1/2} A_c \bar q^2\frac{m_c\beta}{(m_c+m_d)\beta_c}$ |
+| $K_c^{\ast} \to D^{\ast}\pi$ | $-\left(\frac{3}{10}\right)^{1/2} A_c \bar q^2\frac{m_c\beta}{(m_c+m_d)\beta_c}$ |
 
-$D^{*0} \rightarrow D^0 \pi^0$
-$-\left( \frac{1}{3} \right)^{1/2} A_c \tilde{q}$
-\hspace{2.5cm} $-0.27 \left[ \frac{A_c}{A} \right]$
+#### $1\,{}^{3}P_{1}$ and $1\,{}^{1}P_{1}$ (charmed, $Q_{ic}$)
 
-Charmed mesons $1^3P_2$
+| Decay | Harmonic-oscillator amplitude $(\bar q \equiv q/\beta)$ |
+|:-----|:--------------------------------------------------------|
+| $Q_{1c} \to [D^{\ast}\pi]_S$ | $+\left(\frac{1}{6}\right)^{1/2} S_c$ |
+| $Q_{1c} \to [D^{\ast}\pi]_D$ | $+\left(\frac{1}{3}\right)^{1/2} A_c \bar q^2\frac{m_c\beta}{(m_c+m_d)\beta_c}$ |
+| $Q_{2c} \to [D^{\ast}\pi]_S$ | $+\left(\frac{1}{3}\right)^{1/2} S_c$ |
+| $Q_{2c} \to [D^{\ast}\pi]_D$ | $-\left(\frac{1}{6}\right)^{1/2} A_c \bar q^2\frac{m_c\beta}{(m_c+m_d)\beta_c}$ |
 
-$K_c^* \rightarrow D\pi$
-$-\left( \frac{1}{5} \right)^{1/2} A_c \tilde{q}^2 \frac{m_c \beta}{(m_c + m_d) \beta_c}$
-\hspace{2.5cm} $-7.3 \left[ \frac{A_c}{A} \right]$ \hspace{1cm} d
+#### Charmed mesons, $1\,{}^{3}P_{0}$
 
-$K_c^* \rightarrow D^* \pi$
-$-\left( \frac{3}{10} \right)^{1/2} A_c \tilde{q}^2 \frac{m_c \beta}{(m_c + m_d) \beta_c}$
-\hspace{2.5cm} $-5.1 \left[ \frac{A_c}{A} \right]$ \hspace{1cm} d
-
-$1^3P_1$ and $1^1P_1$
-
-$Q_{1c} \rightarrow [D^* \pi]_S$
-$+\left(\frac{1}{6}\right)^{1/2} S_c$
-\hspace{2.5cm} $-1.5 \left[ \frac{S_c}{S} \right]$ \hspace{1cm} b,d
-
-$Q_{1c} \rightarrow [D^* \pi]_D$
-$+\left(\frac{1}{3}\right)^{1/2} A_c \tilde{q}^2 \frac{m_c \beta}{(m_c + m_d) \beta_c}$
-\hspace{2.5cm} $+5.3 \left[ \frac{A_c}{A} \right]$ \hspace{1cm} b,d
-
-$Q_{2c} \rightarrow [D^* \pi]_S$
-$+\left( \frac{1}{3} \right)^{1/2} S_c$
-\hspace{2.5cm} $+15 \left[ \frac{S_c}{S} \right]$ \hspace{1cm} b,d
-
-$Q_{2c} \rightarrow [D^* \pi]_D$
-$-\left( \frac{1}{6} \right)^{1/2} A_c \tilde{q}^2 \frac{m_c \beta}{(m_c + m_d) \beta_c}$
-\hspace{2.5cm} $+0.7 \left[ \frac{A_c}{A} \right]$ \hspace{1cm} b,d
-
-Charmed mesons $1^3P_0$
-
-$\kappa_c \rightarrow D\pi$
-$-\left( \frac{1}{2} \right)^{1/2} S_c$
-\hspace{2.5cm} $-15 \left[ \frac{S_c}{S} \right]$ \hspace{1cm} d
+| Decay | Harmonic-oscillator amplitude $(\bar q \equiv q/\beta)$ |
+|:-----|:--------------------------------------------------------|
+| $\kappa_c \to D\pi$ | $-\left(\frac{1}{2}\right)^{1/2} S_c$ |
 
 ***
 
@@ -1330,7 +1244,7 @@ i Reference 23.
 
 ### D. Miscellaneous, weak, electromagnetic, and strong couplings
 
-In addition to the very large body of data on $M^* \rightarrow MP$ and $M^* \rightarrow M \gamma$, considerable information on meson structure resides in weak-pseudoscalar decays ($P \rightarrow l \bar{\nu}$), leptonic-pair decays of vector mesons ($V \rightarrow l^+ l^-$), two-photon decays ($P \rightarrow \gamma\gamma$), gluonic decays of heavy quarkonia ($Q\bar{Q} \rightarrow$ gluons), and meson charge radii. We once again take into account relativistic corrections as described in Appendix D. That this is appropriate, in view of our approach to relativistic corrections to spectroscopy, is especially clear in some of these cases. For example,\super{21} the usual result\super{22} that $V \rightarrow l^+ l^-$ proceeds via $\Psi(0)$, the spatial wave function at zero relative coordinate, is modified by the same smearing effect that regulates the hyperfine interaction $\delta$ function as described in Sec. II. This both affects “allowed” decays and allows “forbidden” ones such as $\tau \rightarrow A_1 \nu_\tau$ and $^3D_1 \rightarrow e^+ e^-$. For convenience we have reproduced several relevant definitions in Appendix D. Our results are given in Table VII. The comments in subsection C above regarding QCD corrections apply with equal force in these cases.
+In addition to the very large body of data on $M^* \rightarrow MP$ and $M^* \rightarrow M \gamma$, considerable information on meson structure resides in weak-pseudoscalar decays ($P \rightarrow l \bar{\nu}$), leptonic-pair decays of vector mesons ($V \rightarrow l^+ l^-$), two-photon decays ($P \rightarrow \gamma\gamma$), gluonic decays of heavy quarkonia ($Q\bar{Q} \rightarrow$ gluons), and meson charge radii. We once again take into account relativistic corrections as described in Appendix D. That this is appropriate, in view of our approach to relativistic corrections to spectroscopy, is especially clear in some of these cases. For example,$^{21}$ the usual result$^{22}$ that $V \rightarrow l^+ l^-$ proceeds via $\Psi(0)$, the spatial wave function at zero relative coordinate, is modified by the same smearing effect that regulates the hyperfine interaction $\delta$ function as described in Sec. II. This both affects “allowed” decays and allows “forbidden” ones such as $\tau \rightarrow A_1 \nu_\tau$ and $^3D_1 \rightarrow e^+ e^-$. For convenience we have reproduced several relevant definitions in Appendix D. Our results are given in Table VII. The comments in subsection C above regarding QCD corrections apply with equal force in these cases.
 
 ***
 
