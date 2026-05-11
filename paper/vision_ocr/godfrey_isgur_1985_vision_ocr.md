@@ -211,18 +211,6 @@ $$
 
 For most states the solution of our Hamiltonian problem is complete at this point, but for self-conjugate isoscalar mesons we must also consider the effects$^5$ of $H_A$.
 
-$$
-A(^{2S+1}L_J)_{ji} = 4\pi (2L+1) \left\{
-A(^{2S+1}L_J) \left[ \frac{\alpha_s(M_j^2) \alpha_s(M_i^2)}{\pi^2} \right]^{n/2} S_L(\Psi_j) S_L(\Psi_i)
-\over m_i m_j
-\right\},
-$$
-
-where $A(^{2S+1}L_J)_{ji}$ depends on the unperturbed annihilation channel masses $M_j$ and $M_i$, $n$ is as above, and where $S_L(\Psi_i)$ is a smearing of the $q_i \bar{q}_i$ wave function at the origin:
-
-
-***
-
 In mesons, single-gluon annihilation is forbidden by color conservation, but annihilation via multiple gluons is expected. For heavy quarks where the annihilation is controlled by a small $\alpha_s$, this process will (at least in the absence of anomalies) be dominated by the minimum number of gluons allowed: two for even and three for odd charge-conjugation states. On general grounds we expect this effect to lead to a contribution to the mass matrix with diagonal entries of the form
 
 $$
@@ -243,6 +231,9 @@ A (^{2S+1}L_J) \left[ \frac{\alpha_s(M_j^2)\alpha_s(M_i^2)}{\pi^2} \right]^{n/2}
 \tag{16}
 $$
 
+where $A(^{2S+1}L_J)_{ji}$ depends on the unperturbed annihilation channel masses $M_j$ and $M_i$, $n$ is as above, and where $S_L(\Psi_i)$ is a smearing of the $q_i \bar{q}_i$ wave function at the origin:
+
+
 $$
 S_L(\Psi_i) \equiv \frac{1}{(2\pi)^{3/2}}
 \int d^3p \frac{1}{\sqrt{4\pi}} \Phi_i(p)
@@ -262,23 +253,27 @@ E_i = (m_i^2 + p^2)^{1/2}.
 $$
 
 In the pseudoscalar mesons, (16) and (17) fail. We believe that the behavior of this channel is related to the U(1) problem of QCD in which the mass of the ninth pseudoscalar meson is lifted from zero in the chiral limit by *nonperturbative* annihilation amplitudes.$^{6}$ These nonperturbative effects actually have the opposite sign to the perturbative two-gluon annihilation amplitude, implying that the pseudoscalar amplitude $A(^1S_0)$ must have a complicated dependence on the annihilation channel mass $M$. We can consequently offer no compelling description of annihilation in this channel, but we have found two examples of possible behavior for $A(^1S_0)$ with interesting phenomenological consequences. The simplest possibility (P1) is that there is a large positive nonperturbative annihilation amplitude in this channel which dies away exponentially with a scale of $m_\eta^2$ and which is to be added directly to the perturbative piece (which is, as already implied above, known in this case). Thus in P1, in place of the bracketed factor in (16), we take
+
 $$
-\begin{aligned}
-&\left[ A_{np} e^{-(m_i^2 + m_j^2)/m_\eta^2} \right. \\
-&\left. + \frac{2\pi}{3} (\ln 2 - 1) \left( \frac{\alpha_s(M_j^2) \alpha_s(M_i^2)}{\pi^2} \right) \right]. \tag{18a}
-\end{aligned}
+\begin{equation}
+\left[ A_{np} e^{-(m_i^2 + m_j^2)/m_\eta^2} \right.
+\left. + \frac{2\pi}{3} (\ln 2 - 1) \left( \frac{\alpha_s(M_j^2) \alpha_s(M_i^2)}{\pi^2} \right) \right]. \tag{18a}
+\end{equation}
 $$
+
 This simple possibility has many attractive features, but, as we shall see below, it would be ruled out if the experimental indication for an isoscalar pseudoscalar meson at around 1275 MeV is confirmed. We consequently consider a second more exotic possibility (P2). At large annihilation-channel invariant mass $M^2$, the perturbative calculation must be correct so we know that in this region
 $$
 A(^1S_0)_{ii} \propto \left[ \frac{\alpha_s(M^2)}{\pi} \right]^2
 $$
 is small and negative. As $M^2$ is decreased it is possible that it becomes (nonperturbatively) large and negative before becoming large and positive at $M^2 \rightarrow 0$ as it is constrained to do.$^6$ In this picture the simple exponential in (18a) is replaced by a nonperturbative contribution which rapidly changes sign at some $M_0^2$: the bracketed factor in (16) becomes
+
 $$
-\begin{aligned}
-\bigg[ A_{np} \Big\{ 1 - \left( \frac{M}{M_0} \right)^4 \Big\} e^{-(m_i^2 + m_j^2)/M_0^2 - M^4/4M_0^4} \\
+\begin{equation}
+\bigg[ A_{np} \Big\{ 1 - \left( \frac{M}{M_0} \right)^4 \Big\} e^{-(m_i^2 + m_j^2)/M_0^2 - M^4/4M_0^4}
 + \frac{2\pi}{3} (\ln 2 - 1) \left( \frac{\alpha_s(M^2)}{\pi} \right)^2 \bigg]. \tag{18b}
-\end{aligned}
+\end{equation}
 $$
+
 The reader will note that, apart from satisfying the general features required for P2, we allowed ourselves great freedom in parametrizing the dependence of $A(^1S_0)$ on the annihilation-channel invariant mass $M$. With this elaborately defined (but perhaps not implausible) model we are able to accommodate an isoscalar in this sector near or below the $\pi'$.
 
 The results of applying (16) and (18) are given in Sec. III. As already mentioned, our results are very stable under any reasonable modification of (16). On the other hand, we find ourselves unable to draw definite conclusions about pseudoscalar mixing. The consequences of the models (18) will, however, be discussed in Sec. V A as two possible scenarios for these states.
@@ -316,8 +311,6 @@ $\epsilon_{\text{sol}(S)} = +0.055$
 $^a$Note that we ignore isospin violation here and throughout this paper unless otherwise indicated.
 
 ## PDF Page 6
-
-194                                                  STEPHEN GODFREY AND NATHAN ISGUR
 
 Since such mass shifts are of the order of magnitude of 10 MeV, this provides a limit to our expected accuracy. It should be noted that such shifts must be expected even in $\Upsilon$ spectroscopy: in that case 
 
@@ -376,8 +369,6 @@ It would be premature to make a detailed comparison between the model and experi
 (4) Finally, the central message of these results is that there are no qualitative changes in the behavior of meson systems as the quark masses decrease. For example, features present in the $c\bar{c}$ system persist in the isovectors, the principle difference between the two spectra being that relativistic corrections (including hyperfine and fine splittings) have become more prominent in the latter.
 
 ## PDF Page 8
-
-196                                            STEPHEN GODFREY AND NATHAN ISGUR                                          32
 
 ![Figure 5 - isoscalar meson spectrum]
 
@@ -476,7 +467,7 @@ Labels under diagrams:
 
 TABLE III. The approximate composition of some mixed isoscalars. These are amplitude decompositions in terms of the eigenstates in the absence of annihilation. The annihilation parameters are $A(^{3}S_1) = +2.5$, $A(^{3}P_2) = -0.8$, and in the case of the pseudoscalars in model P1, $A_{np} = +0.5$, while in model P2 we used $A_{np} = +0.55$ and $M_0 = 1.17$ GeV. Other states, in the absence of compelling evidence to the contrary, have been assumed for now to be ideally mixed. Also shown are the predicted and observed splittings of these states from their isovector companion states. We have denoted $(1/\sqrt{2})(u\bar{u}+d\bar{d})$ by ns; $n$ in the column labeling is the radial quantum number. Note that since (18b) is mass dependent, poles of the inverse propagator are not orthogonal.
 
-| State          | (Name)      | Model | ns    | ss    | cc     | bb       | ns    | ss    | cc     | bb       | $\Delta m^{\mathrm{theory}}$ (MeV) | $\Delta m^{\mathrm{expt}}$ (MeV) |
+| State          | (Name)      | Model | ns    | ss    | cc     | bb       | ns    | ss    | cc     | $\Delta m^{\mathrm{theory}}$ (MeV) | $\Delta m^{\mathrm{expt}}$ (MeV) |
 |----------------|-------------|-------|-------|-------|--------|----------|-------|-------|--------|----------|----------------------|--------------------|
 | $1\,^1S_0$     | $\eta(548)$         | P1    | +0.67 | -0.73 | +0.001  | +2$\times 10^{-4}$ | +0.11 | +0.042 | $-5\times10^{-4}$ | +370                | +410               |
 |                |                        | P2    | +0.68 | -0.73 | -0.005  | +3$\times 10^{-4}$ | +0.09 | +0.051 | +0.002          | +340                |                    |
@@ -496,38 +487,40 @@ TABLE III. The approximate composition of some mixed isoscalars. These are ampli
 
 ## PDF Page 12
 
+![FIG. 12 illustration]
+
 **FIG. 12.** The universal $q\bar{q}$ potential $H^{\text{conf}}(r)$ in a color-singlet meson; also shown is the rms $q\bar{q}$ separation in some representative mesons calculated by analogy to $r_{E}^{2}$ defined in Table VII.
 
-always necessary to bear in mind that amplitudes like that of Fig. 13 are being used as approximations to a pair-creation amplitude and that the correct amplitude is obtained by summing over distinct pair creation plus rearrangement processes. This awkward feature is a symptom of the fact that the spectator model we are using cannot
-
-$$
-A_{q(\bar{q})}\langle M^*(\mathbf{k},s)\rightarrow M(\mathbf{k}',s')P^i(q)\rangle = \pm i \frac{(4\omega\omega')^{1/2}}{(2\pi)^9/2}\langle M(s') \mid (\mathbf{g}\sigma_{q(\bar{q})}
-$$
-
-where $\sigma_{q(\bar{q})}/2$ and $\mathbf{r}_{q(\bar{q})}$ are the spin and position of the quark (antiquark), $\mathbf{p}' = -i\mathbf{\nabla}$ is a gradient acting on the final-state wave function, and the upper (lower) sign refers to the $q\,(\bar{q})$ case. The $X^{i}_{q(\bar{q})}$ are flavor operators defined and detailed in Appendix B. The calculations are most readily performed by taking $\mathbf{q} = q\hat{\mathbf{z}}$ thereby calculating helicity amplitudes $H_{m}$ where $m = s' = s$, and then transforming to the usual partial-wave basis; details of this process are given in Appendix C.
-
-We apply this crude decay model by mimicking completely the previous baryon analysis,$^{{11}}$ forsaking our full
-
-![FIG. 14 illustration]
-
-**FIG. 14.** On the danger of double counting in meson decays to two pseudoscalar mesons.
 
 ![FIG. 13 illustration]
 
 **FIG. 13.** A single quark transition $q \rightarrow qP$.
 
-be strictly valid; we comment further on this point below.
+always necessary to bear in mind that amplitudes like that of Fig. 13 are being used as approximations to a pair-creation amplitude and that the correct amplitude is obtained by summing over distinct pair creation plus rearrangement processes. This awkward feature is a symptom of the fact that the spectator model we are using cannot be strictly valid; we comment further on this point below.
 
 To proceed with the model in the simplest way we add two other assumptions (both of which are supported by our results): (1) pair creation of $u, d,$ and $s$ quarks is approximately SU(3) symmetric and (2) violations of Zweig's rule proceed mainly via meson wave functions. By this latter assumption we mean that in a decay like $K^* \rightarrow K\eta$, only diagrams like Fig. 14 are taken into account, it being assumed that the effects of disconnected diagrams like Fig. 15(a) are mostly taken into account by using the Zweig-rule-violating $\eta$ wave function which arises from the annihilation mixing of Fig. 15(b) as discussed in Sec. II. With these approximations, the amplitudes for pseudoscalar emission from a quark (antiquark) take the form
 
+
 $$
-(s')|(\mathbf{g}\sigma_{q(\bar{q})}\cdot \mathbf{q} \pm h\sigma_{q(\bar{q})}\cdot \mathbf{p}')e^{-i\mathbf{q}'\cdot \mathbf{r}^{i}_{q(\bar{q})}}|M^*(s)\rangle,
+A_{q(\bar{q})}\langle M^*(\mathbf{k},s)\rightarrow M(\mathbf{k}',s')P^i(q)\rangle = \pm i \frac{(4\omega\omega')^{1/2}}{(2\pi)^{9/2}}\langle M(s') \mid (\mathbf{g}\sigma_{q(\bar{q})}\cdot \mathbf{q} \pm h\sigma_{q(\bar{q})}\cdot \mathbf{p}')e^{\mp i\mathbf{q}'\cdot \mathbf{r}} X^{i}_{q(\bar{q})}|M^*(s)\rangle,
 \tag{19}
 $$
 
-wave functions for the harmonic-oscillator wave functions of the SU(6) limit. This allows us to calculate the amplitudes analytically to reveal their basic simplicity and the intrinsic relations between them. We discuss the effect of using more realistic wave functions and the possibility of using a more realistic decay model below.
+
+where $\sigma_{q(\bar{q})}/2$ and $\mathbf{r}_{q(\bar{q})}$ are the spin and position of the quark (antiquark), $\mathbf{p}' = -i\mathbf{\nabla}$ is a gradient acting on the final-state wave function, and the upper (lower) sign refers to the $q\,(\bar{q})$ case. The $X^{i}_{q(\bar{q})}$ are flavor operators defined and detailed in Appendix B. The calculations are most readily performed by taking $\mathbf{q} = q\hat{\mathbf{z}}$ thereby calculating helicity amplitudes $H_{m}$ where $m = s' = s$, and then transforming to the usual partial-wave basis; details of this process are given in Appendix C.
+
+We apply this crude decay model by mimicking completely the previous baryon analysis,$^{{11}}$ forsaking our full wave functions for the harmonic-oscillator wave functions of the SU(6) limit. This allows us to calculate the amplitudes analytically to reveal their basic simplicity and the intrinsic relations between them. We discuss the effect of using more realistic wave functions and the possibility of using a more realistic decay model below.
 
 In our approach we find that all of the states in a given SU(6)$\times$O(3) multiplet often share (apart from individual strength factors) common partial-wave amplitudes in-
+
+
+
+
+
+![FIG. 14 illustration]
+
+**FIG. 14.** On the danger of double counting in meson decays to two pseudoscalar mesons.
+
 
 ![FIG. 15 illustration]
 
@@ -537,56 +530,170 @@ In our approach we find that all of the states in a given SU(6)$\times$O(3) mult
 
 dependent of their flavor, internal spins, or total angular momentum. These "universal" amplitudes are displayed in Table IV from which one can see that, as in baryons, the amplitudes fall into two classes. The first class, called "structure independent," consists of $A, A', A'', A_c$, and $A_0$, which have only the momentum dependence dictated by angular momentum considerations along with the gentle "elastic form factor" $e^{-q^2/16\beta^2}$. The second class of amplitudes, called "structure dependent," consists of $S$, $D$, $P$, and $S_c$ since they have additional polynomial momentum dependences which are highly sensitive to the structure of the states. We follow Ref. 11 at this point and forego attempting to calculate these various reduced amplitudes in terms of $g$ and $h$. Instead we allow a new constant for each such amplitude; in principle this means that our harmonic-oscillator decay amplitudes would be described by an expanded number of parameters instead of just two. However, we note from Table IV that we might expect $A \simeq A' \simeq A'' \simeq A_c \simeq A_0$ and $S \simeq D \simeq P \simeq S_c$ so in practice we tentatively employ such a two-parameter fit to the decay amplitudes. This fit can easily be relaxed as more accurate data on highly excited meson decays become available (since we calculate with $A$ and $S$ but explicitly display factors of $A'/A$, $D/S$, etc.); for now it provides an adequate guide. Recalling that our main objective here is to test the model for meson structure, this relaxation of what is obviously a very rudimentary decay model seems to us both sensible and prudent. With this generalization, the model has much in common with more algebraic approaches.$^{13}$ The values of the reduced partial-wave amplitudes (i.e., the amplitudes in square brackets in Table IV) which we used in our calculations
 
+
 ***
 
 TABLE IV. The reduced partial-wave amplitudes. The full amplitudes have in addition a factor of $q^L e^{-q^2/16\beta^2}$; $\beta_c$ is defined in Table V.
 
-| Amplitude | Representative decays | $L$ |
-| :--- | :--- | :--- |
+```{=latex}
+\begin{table}[htbp]
+\centering
+\caption{The reduced partial-wave amplitudes. The full amplitudes have in addition a factor
+of $begin:math:text$q\^L e\^\{\-q\^2\/\(16\\beta\^2\)\}$end:math:text$. $begin:math:text$\\beta\_c$end:math:text$ is defined in Table~V.}
+\label{tab:reduced-partial-wave-amplitudes}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Amplitude & Representative decays & $begin:math:text$L$end:math:text$ \\
+\midrule
 
-**Amplitude**
+$begin:math:text$\\displaystyle A\=\\left\[g\+\\frac14 h\\right\]\\beta$end:math:text$
+&
+$begin:math:text$\\displaystyle 1\\\,\{\}\^3S\_1 \\to 1\\\,\{\}\^1S\_0 \+ P$end:math:text$
+&
+1
+\\
 
-$A = [g + \frac{1}{4} h]\beta$
-- $1^3 S_1 \rightarrow 1^1 S_0 + P$
-- $1^3 P_2 \rightarrow 1^1 S_0 + P,$ $1^3 S_1 + P$
-- $1^3 P_1 \rightarrow 1^3 S_1 + P$
-- $1^1 P_1 \rightarrow 1^3 S_1 + P$
-- $1^3 D_3 \rightarrow 1^1 S_0 + P,$ $1^3 S_1 + P$
-- $L: 1, 2, 2, 2, 3$
+&
+$begin:math:text$\\displaystyle 1\\\,\{\}\^3P\_2 \\to 1\\\,\{\}\^1S\_0 \+ P\,\\quad 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
+&
+2
+\\
 
-$A' = [g - \frac{1}{4} h]\beta$
-- $1^1 P_1 \rightarrow 1^3 P_0 + P$
-- $L: 1$
+&
+$begin:math:text$\\displaystyle 1\\\,\{\}\^3P\_1 \\to 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
+&
+2
+\\
 
-$A'' = [g + \frac{1}{8} h]\beta$
-- $1^3 D_3 \rightarrow 1^1 P_1 + P$
-- $L: 2$
+&
+$begin:math:text$\\displaystyle 1\\\,\{\}\^1P\_1 \\to 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
+&
+2
+\\
 
-$A_c = \left[ g + \frac{1}{2} \left( \frac{m_d}{m_d + m_c} \right) h \right]\beta$
-- as $A$, but for charmed-meson decays
+&
+$begin:math:text$\\displaystyle 1\\\,\{\}\^3D\_3 \\to 1\\\,\{\}\^1S\_0 \+ P\,\\quad 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
+&
+3
+\\[1.0em]
 
-$A_0 = [g]\beta$
-- $1^3 P_1 \rightarrow 1^3 P_0 + P$
-- $L: 1$
+$begin:math:text$\\displaystyle A\'\=\\left\[g\-\\frac14 h\\right\]\\beta$end:math:text$
+&
+$begin:math:text$\\displaystyle 1\\\,\{\}\^1P\_1 \\to 1\\\,\{\}\^3P\_0 \+ P$end:math:text$
+&
+1
+\\[1.0em]
 
-$S = \left[ 3h - \frac{1}{2} (g + \frac{1}{4} h) \frac{q^2}{\beta^2} \right]\beta$
-- $1^3 P_1 \rightarrow 1^3 S_1 + P$
-- $1^1 P_1 \rightarrow 1^3 S_1 + P$
-- $1^3 P_0 \rightarrow 1^1 S_0 + P$
-- $L: 0, 0, 0$
+$begin:math:text$\\displaystyle A\'\'\=\\left\[g\+\\frac18 h\\right\]\\beta$end:math:text$
+&
+$begin:math:text$\\displaystyle 1\\\,\{\}\^3D\_3 \\to 1\\\,\{\}\^1P\_1 \+ P$end:math:text$
+&
+2
+\\[1.0em]
 
-$D = \left[ 3h - \frac{3}{10} (g + \frac{1}{4} h) \frac{q^2}{\beta^2} \right]\beta$
-- $1^3 D_1 \rightarrow 1^1 S_0 + P$, $1^3 S_1 + P$
-- $1^3 D_3 \rightarrow 1^1 S_0 + P$, $1^3 S_1 + P$
-- $L: 1, 1$
+$begin:math:text$\\displaystyle
+A\_c\=
+\\left\[
+g\+\\frac12
+\\left\(
+\\frac\{m\_d\}\{m\_d\+m\_c\}
+\\right\)h
+\\right\]\\beta
+$end:math:text$
+&
+as $begin:math:text$A$end:math:text$, but for charmed-meson decays
+&
+\\[1.0em]
 
-$P = \left[ 3h - \frac{3}{4} (g + \frac{1}{4} h) \frac{q^2}{\beta^2} \right]\beta$
-- $2^1 S_0 \rightarrow 1^3 S_1 + P$
-- $2^3 S_1 \rightarrow 1^1 S_0 + P$, $1^3 S_1 + P$
-- $L: 1, 1$
+$begin:math:text$\\displaystyle A\_0\=\\\{g\\\}\\beta$end:math:text$
+&
+$begin:math:text$\\displaystyle 1\\\,\{\}\^3P\_1 \\to 1\\\,\{\}\^3P\_0 \+ P$end:math:text$
+&
+1
+\\[1.0em]
 
-$S_c = \left[ 3h - \frac{m_c A_c}{(m_d + m_c)\beta} \frac{q^2}{\beta_c^2} \right] \beta_c$
-- as $S$, but for charmed-meson decays
+$begin:math:text$\\displaystyle
+S\=
+\\left\[
+3h\-\\frac12
+\\left\(g\+\\frac14 h\\right\)
+\\frac\{q\^2\}\{\\beta\^2\}
+\\right\]\\beta
+$end:math:text$
+&
+$begin:math:text$\\displaystyle 1\\\,\{\}\^3P\_1 \\to 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
+&
+0
+\\
+
+&
+$begin:math:text$\\displaystyle 1\\\,\{\}\^1P\_1 \\to 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
+&
+0
+\\
+
+&
+$begin:math:text$\\displaystyle 1\\\,\{\}\^3P\_0 \\to 1\\\,\{\}\^1S\_0 \+ P$end:math:text$
+&
+0
+\\[1.0em]
+
+$begin:math:text$\\displaystyle
+D\=
+\\left\[
+3h\-\\frac\{3\}\{10\}
+\\left\(g\+\\frac14 h\\right\)
+\\frac\{q\^2\}\{\\beta\^2\}
+\\right\]\\beta
+$end:math:text$
+&
+$begin:math:text$\\displaystyle 1\\\,\{\}\^3D\_1 \\to 1\\\,\{\}\^1S\_0 \+ P\,\\quad 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
+&
+1
+\\
+
+&
+$begin:math:text$\\displaystyle 1\\\,\{\}\^3D\_3 \\to 1\\\,\{\}\^1S\_0 \+ P\,\\quad 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
+&
+1
+\\[1.0em]
+
+$begin:math:text$\\displaystyle
+P\=
+\\left\[
+3h\-\\frac34
+\\left\(g\+\\frac14 h\\right\)
+\\frac\{q\^2\}\{\\beta\^2\}
+\\right\]\\beta
+$end:math:text$
+&
+$begin:math:text$\\displaystyle 2\\\,\{\}\^1S\_0 \\to 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
+&
+1
+\\
+
+&
+$begin:math:text$\\displaystyle 2\\\,\{\}\^3S\_1 \\to 1\\\,\{\}\^1S\_0 \+ P\,\\quad 1\\\,\{\}\^3S\_1 \+ P$end:math:text$
+&
+1
+\\[1.0em]
+
+$begin:math:text$\\displaystyle
+S\_c\=
+\\left\[
+3h\-
+\\frac\{m\_c A\_c\}\{\(m\_d\+m\_c\)\\beta\}
+\\frac\{q\^2\}\{\\beta\_c\^2\}
+\\right\]\\beta\_c
+$end:math:text$
+&
+as $begin:math:text$S$end:math:text$, but for charmed-meson decays
+&
+\\
+
+\bottomrule
+\end{tabular}
+\end{table}
 
 ## PDF Page 14
 
