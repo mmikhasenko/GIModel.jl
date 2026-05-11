@@ -1258,7 +1258,7 @@ end
         0.0
 end
 
-@testset "A10 spin-dependent momentum exponent gives energy denominators" begin
+@testset "post-A14 spin-dependent momentum exponent gives energy denominators" begin
     @test GIModel.gi_spin_dependent_side_exponent(0.0) ≈ 0.5
     @test GIModel.gi_spin_dependent_side_exponent(-0.168) ≈ 0.332
 

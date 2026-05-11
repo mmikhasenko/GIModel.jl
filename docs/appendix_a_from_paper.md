@@ -1,12 +1,10 @@
 # Appendix A: structure from the 1985 paper (navigation)
 
 This note orients the repository toward the **original** Godfrey–Isgur
-implementation of relativistic smearing. For full equation typography and
-factors, use `paper/Godfrey-Isgur-1985.pdf` (PDF **pp. 36–38**). The
-vision-OCR reference at
-`paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` is useful for search, but
-do not use dense formulas as authoritative until they are checked against the
-saved crops in `paper/vision_ocr/column_crops/`.
+implementation of relativistic smearing. The current local equation source is
+the checked markdown under `paper/vision_ocr/pages/`; see
+`docs/appendix_a_equation_audit.md` for the source-status ledger. The combined
+`paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` remains useful for search.
 
 ## Smearing setup
 
@@ -18,37 +16,40 @@ saved crops in `paper/vision_ocr/column_crops/`.
   `contact_smearing_sigma` and the (experimental) 3D blur
   `smear_3d_radial` / `smeared_central_values`.
 
-## Pointwise “text” potentials
+## Pointwise And Smeared Central Potentials
 
-- **(A10)** and **(A11)** – Relativized strengths for spin-dependent
-  interactions, tied to the **ε** factors in Table II (already applied in
-  `src/` for contact and first-order fine structure where coded).
+- **(A10)** and **(A11)** – Pointwise Coulomb and confinement building blocks:
+  `G(r)` and `S(r)`.
 - The **Coulomb** and **confinement** building blocks in coordinate space
   (orientation around Eqs. (11)–(13) in the main text) match our `static_coulomb_G`
   and `static_confinement_S` (see `docs/formula_map.md`).
+- **(A12)**, **(A13)**, and **(A14)** – Closed-form smeared `G~`, smeared `S~`,
+  and `tau_k`. These are implemented by `smeared_coulomb_G_closed`,
+  `smeared_confinement_S_closed`, and `appendix_a_closed_central_values`.
+- The active central candidate adds the subsequent Coulomb momentum factor as
+  `A(p) G~ A(p)` on the finite-difference `p^2` eigenbasis.
 
-## What we do **not** yet implement (main gap)
+## What Remains Approximate
 
-- **(A12)** – **Expanded** effective **Coulomb** piece after the (A7)–(A8) smearing,
-  with **derivative** structure (the HO diagonalization in the paper uses this
-  form, not a naive 3D average of the pointwise $-4\alpha_s/(3r)$ on a line).
-- **(A13)** – Analogous **expanded** **confinement** $S$; the paper also states
-  a pragmatic simplification: **$S$ may be left unmodified** in their QED
-  one-dimensional analog while **$G$** is expanded ((A12)–(A14) region in the PDF).
-- **(A10)**-style Q-dependent **modifications** to spin–orbit and tensor
-  *operators* are only partially represented via constant **ε** in the current
-  code.
+- **(A5)** and **(A6)** – Derivational context only. They motivate the later
+  prescription, but the local markdown still has spin-label risk and should not
+  be used as a direct coefficient source.
+- **(A15)** and **(A16)** – Effective spin-dependent operators are partially
+  represented. Diagonal contact/fine-structure paths use GI-style momentum
+  sandwiches and smeared kernels, but off-diagonal tensor mixing and full
+  unequal-mass antisymmetric spin-orbit integration are still follow-up stages.
+- **(A17)** – The HO matrix-element factorization is available as a basis path,
+  but the physical comparison path still needs paper-order staging: fixed-sector
+  HO diagonalization followed by tensor, antisymmetric spin-orbit, and
+  annihilation mass-matrix blocks.
 
-**Repository consequence:** the flag `appendix_a_smearing` enables only the
-**experimental (A7)–(A8) style 3D blur** in `smeared_central_values` (see
-`src/GIModel.jl`), which `docs/formula_map.md` states is **not** the
-same as (A12)–(A13). The flag `appendix_a_derivative_g` enables a modular
-finite-difference **proxy** for the first derivative-smearing term,
-`G + ∇²G/(4σ²)`, while leaving `S` pointwise. This is useful for comparison and
-testing the central-potential interface, but it is not yet the fully audited
-(A12)–(A13) expression. The next **serious** coding milestone is a paper-faithful
-(A12) path (or a verified HO-basis port), then aligning spin-dependent radial
-integrals with the same smeared $G$.
+**Repository consequence:** the flag `appendix_a_smearing` remains the older
+experimental (A7)–(A8) 3D blur of pointwise `G` and `S`; keep it as a diagnostic
+branch. The active central reproduction branch is
+`appendix_a_momentum_sandwich`, which uses closed-form `G~`, `S~`, plus
+`A(p)G~A(p)`. The remaining serious milestone is no longer "get A12-A13 into
+code"; it is to compare the FD analogue against the paper's HO matrix-element
+ordering and wire the post-diagonalization mixing blocks.
 
 ## Quick PDF map
 
@@ -61,8 +62,13 @@ integrals with the same smeared $G$.
 ## Related code
 
 - `smeared_central_values` / `smear_3d_radial` — `src/GIModel.jl`
+- `smeared_coulomb_G_closed` / `smeared_confinement_S_closed` —
+  `src/smearing_appendix_a.jl`
+- `appendix_a_momentum_sandwich_matrix` — `src/hamiltonian.jl`
 - `appendix_a_derivative_central_values` —
   `src/appendix_a_derivative_potential.jl`
 - `src/appendix_a_status.jl` — explicit status (which path is active)
+- `docs/appendix_a_equation_audit.md` — equation-source audit and next-stage
+  ledger
 - Appendix-A diagnostics now live in Julia tests and `docs/paper_gap_ledger.md`
   instead of tracked one-off report scripts.

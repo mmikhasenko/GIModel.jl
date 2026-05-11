@@ -22,7 +22,7 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
   - Parameters: `data/parameters.provisional.toml`, copied from Table II
     (`data/table_ii_parameters.csv`). `scripts/data_checks.py validate` checks
     they still agree on mapped entries. Table II `relativistic_factors`
-    $\epsilon$ values from (A10) are loaded into `GIParameters`; the active
+    $\epsilon$ values are loaded into `GIParameters`; the active
     contact and fine-structure paths use GI-style Hermitian momentum-factor
     sandwiches when `contact_momentum_sandwich` and
     `fine_structure_momentum_sandwich` are enabled. Legacy scalar
@@ -97,13 +97,11 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     is only exercised if a caller provides a mesh including `r=0` (kept as a
     numerical guardrail for future Appendix A work).
   - Paper: (A7)–(A8) with $\sigma$ from (A9), Table II; PDF p. 36.
-  - **Not** the expanded derivative forms (A12)–(A13) that the paper actually uses
-  for the spin-independent part in the HO diagonalization, and not equivalent to
-  convolving with the *same* width as the contact hyperfine when $\sigma$ is
-  large: a naive 3D blur of the pointwise $-4\alpha_s/(3r)$ piece can move the
-  small-$r$ potential toward less binding on a fixed radial line. The flag
-  `appendix_a_smearing` in the parameters file is **off** by default; keep it off
-  until the (A12)–(A13) structure (or a momentum/HO-basis path) is implemented.
+  - **Not** the closed-form (A12)–(A14) branch used by the active central path:
+  a naive 3D blur of the pointwise $-4\alpha_s/(3r)$ piece can move the small-$r$
+  potential toward less binding on a fixed radial line. The flag
+  `appendix_a_smearing` in the parameters file is **off** by default; keep it as
+  a diagnostic comparator below the closed-form modes.
   - Code toggle: `GIParameters.appendix_a_smearing` gates `potential_diagonal` →
     `smeared_central_values`.
   - Regression test: `test/runtests.jl` checks that `smear_3d_radial` preserves a
@@ -134,8 +132,9 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     $\exp(\nabla^2/(4\sigma^2))G$. The implemented comparator keeps only the
     first correction, $G_{\rm eff}\approx G+\nabla^2G/(4\sigma^2)$, and keeps
     $S(r)=br+c$ pointwise, matching the pragmatic simplification noted around
-    (A12)–(A14). This is **not** yet the exact (A12)–(A13) transcription; those
-    coefficients still require PDF audit because the OCR extraction is fragile.
+    (A12)–(A14). This is now an older comparator: the closed-form (A12)–(A14)
+    branch is the primary Appendix-A central source, and this first-term
+    expansion remains useful only as a sensitivity check.
   - Numerical implementation: `radial_laplacian_values` uses the uniform FD
     radial Laplacian `f''+2f'/r`; `appendix_a_derivative_central_values` applies
     it to `static_coulomb_G` using the same Table II width from
@@ -146,9 +145,9 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     the raw 3D/1D smearing diagnostics.
 
 - `src/GIModel.jl`: **closed-form Appendix-A central candidates**
-  from the expanded web/literature research trail.
+  from the checked Appendix-A markdown source.
   - `:appendix_a_closed_form` evaluates the analytic Gaussian-smearing forms
-    used in later GI/MGI implementations:
+    from (A12)-(A14):
     $\tilde G(r)=-\sum_k 4\alpha_k\,\mathrm{erf}(\tau_k r)/(3r)$ with
     $\tau_k^{-2}=\sigma^{-2}+\gamma_k^{-2}$, and the corresponding closed-form
     smeared linear $\tilde S(r)$.
@@ -156,9 +155,9 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     the central Coulomb factor as a matrix on the existing FD $p^2$ eigenbasis:
     $G'=A(p)\tilde G(r)A(p)$ with
     $A(p)=\sqrt{1+p^2/(E_1E_2)}$ and $E_i=\sqrt{p^2+m_i^2}$.
-  - This is the first implementation path that follows the cross-source
-    consensus from later GI/MGI papers. It is still an FD-basis analogue rather
-    than the original HO-basis code.
+  - This is the first implementation path that follows the local (A12)–(A14)
+    source directly. It is still an FD-basis analogue rather than the original
+    paper-order HO calculation.
   - Code toggles: `GIParameters.appendix_a_closed_form` and
     `GIParameters.appendix_a_momentum_sandwich`. Precedence is now
     `appendix_a_momentum_sandwich`, then `appendix_a_closed_form`, then the older
@@ -187,9 +186,9 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
   as GI-style Hermitian momentum-factor sandwiches around the tensor, vector
   spin–orbit, and scalar Thomas radial kernels; global `k_spin_orbit`,
   `k_tensor` in `[fine_structure]`.
-  - Paper: spin-dependent structure around Eqs. (3)–(7) (text), and (A10) (Appendix
-    A) for the $\epsilon$ factors. Tensor angular factors for triplet
-    $J=L-1,L,L+1$ states use the closed forms
+  - Paper: spin-dependent structure around Eqs. (3)–(7) (text), and the post-A14
+    Appendix-A momentum-factor prescription for the $\epsilon$ factors. Tensor
+    angular factors for triplet $J=L-1,L,L+1$ states use the closed forms
     $-2(L+1)/(2L-1)$, $2$, and $-2L/(2L+3)$, whose $(2J+1)$-weighted
     average vanishes across the triplet multiplet. The spin–orbit implementation
     now follows the *paper text* Eqs. (6)–(7) directly: the color-magnetic piece
@@ -262,12 +261,11 @@ masses and that detailed smearing is “relegated to Appendix A.”
 **What we implement today**
 
 - A **finite-difference** radial mesh with semirelativistic $\sqrt{p^2+m^2}$
-  kinetics and a **pointwise** spin-independent $V$ (plus the experimental
-  `appendix_a_smearing` branch that 3D-blurs pointwise $G$ and $S$ in the spirit
-  of (A7)–(A8), but **not** the (A12)–(A13) derivative expansion the HO
-  solution actually uses). The named central dispatcher also exposes
-  `:coulomb_1d` and `:appendix_a_derivative_g` comparison modes so these choices
-  can be measured without editing solver internals.
+  kinetics and an active closed-form Appendix-A central candidate:
+  `A(p)G~A(p)+S~` on the FD `p^2` eigenbasis. The named central dispatcher also
+  exposes pointwise, `:coulomb_1d`, `:appendix_a_3d_a7a8`, and
+  `:appendix_a_derivative_g` comparison modes so these choices can be measured
+  without editing solver internals.
 - Smeared **contact** hyperfine and first-order **fine structure** on the same
   $u(r)$. With `contact_momentum_sandwich=true` and
   `fine_structure_momentum_sandwich=true`, the Table II $\epsilon$ values enter
@@ -278,13 +276,10 @@ masses and that detailed smearing is “relegated to Appendix A.”
 
 **What “done” should look like for the spin-independent sector**
 
-- Replace or strictly **bracket** the pointwise central potential with the
-  **paper’s Appendix A** effective spin-independent operator: either implement the
-  **(A12)–(A13)** structure (or equivalent) on the FD mesh, or reproduce the
-  paper’s **HO-basis** construction and map to observables we can compare to
-  Fig. 6 / Fig. 8. Until then, the **common mass offset** seen in
-  `heavy_quarkonium_diagnostics.md` is expected to be dominated by this gap, not
-  by retuning `k_spin_orbit` / `k_tensor`.
+- Keep the closed-form FD central path as the headline reproduction candidate,
+  then reproduce the paper’s **HO-basis** matrix-element construction and map it
+  to observables we can compare to Fig. 6 / Fig. 8. The remaining question is
+  basis/order fidelity, not whether (A12)–(A14) exist in code.
 - The equal-mass spin-dependent operators now use the same closed-form smeared
   $G(r)$ and confinement $S(r)$ derivatives as the active central path. The
   remaining spin-side gaps are unequal-mass antisymmetric spin-orbit terms,
@@ -298,20 +293,22 @@ Formula-audit checkpoint: Table II `epsilon_so_scalar` was rechecked against
 `paper/vision_ocr/page_images/page-005.png`; the paper value is
 `epsilon_so(S)=+0.055`, now reflected in both the CSV and TOML inputs.
 
-**Paper navigation for Appendix A:** see `docs/appendix_a_from_paper.md` (equation
-labels and PDF pages). The runtime flag for which central path is active is
-summarized by `GIModel.central_potential_path` in `src/appendix_a_status.jl`.
+**Paper navigation for Appendix A:** see `docs/appendix_a_from_paper.md` and
+`docs/appendix_a_equation_audit.md` (equation labels, local source status, and
+next stages). The runtime flag for which central path is active is summarized
+by `GIModel.central_potential_path` in `src/appendix_a_status.jl`.
 
 ## Formula Audit Ledger
 
-Treat `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` as searchable, but
-use `paper/Godfrey-Isgur-1985.pdf` or the saved page images/crops as authority.
+Treat `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` as searchable. For
+Appendix A, use the checked split markdown pages and
+`docs/appendix_a_equation_audit.md` as the local equation-source ledger.
 
 | Paper item | Status | Implementation/readout |
 | --- | --- | --- |
 | Eq. (1a)-(1b), semirelativistic Hamiltonian | FD and HO analogues implemented | `relativistic_hamiltonian` uses `sqrt(p^2+m_1^2)+sqrt(p^2+m_2^2)` on the finite-difference `p^2` operator. `GIParameters{HarmonicOscillatorBasis}` provides the finite oscillator-basis analogue and is tested; FD remains the default headline comparison path. |
 | Eq. (3), spin-independent color Coulomb plus linear confinement | exact color-singlet sign/normalization for pointwise limit | `central_potential = b*r - 4*alpha_s(r)/(3r) + c`; the color-singlet factor turns Eq. (3) into this form. |
-| Eq. (4), contact hyperfine | active GI-style approximation | S-wave contact uses the smeared delta and the A10 `m/E` sandwich. In the FD sector, S-wave contact is diagonalized nonperturbatively with the central Hamiltonian, matching the paper's fixed-`L,S,J` first diagonalization more closely than a first-order shift. |
+| Eq. (4), contact hyperfine | active GI-style approximation | S-wave contact uses the smeared delta and the post-A14 `m/E` sandwich. In the FD sector, S-wave contact is diagonalized nonperturbatively with the central Hamiltonian, matching the paper's fixed-`L,S,J` first diagonalization more closely than a first-order shift. |
 | Eq. (4), tensor hyperfine | approximate | Angular factors and the Coulomb-limit color factor are tested. Active kernels use derivatives of closed-form smeared `G~` when enabled, but same-`J` tensor off-diagonal mixing is not yet folded into sector comparisons. |
 | Eq. (6), vector spin-orbit | exact equal-mass radial convention; approximate unequal-mass handling | Eq. (6) uses `alpha_s(r)/r^3` in the pointwise branch and `(1/r)dG~/dr` in the smeared branch. Equal-mass contraction is covered; unequal-mass antisymmetric mixing is diagnostic only. |
 | Eq. (7), Thomas/scalar spin-orbit | exact equal-mass radial convention; approximate unequal-mass handling | Thomas term uses `(1/2r)dH_conf/dr`, with smeared `G~+S~` derivatives in the active branch. Table II `epsilon_so(S)=+0.055` is now loaded from audited input. |
@@ -324,16 +321,16 @@ use `paper/Godfrey-Isgur-1985.pdf` or the saved page images/crops as authority.
 | Table II parameters | audited for active solver inputs | CSV/TOML sync is tested. The latest audited correction is `epsilon_so(S)=+0.055`. Remaining low-confidence labels should still be promoted only after image/PDF checks. |
 | Table III isoscalar mixings | image-audited pseudoscalar rows | The visible page-11 pseudoscalar P1/P2 rows are promoted into clean `mixings.csv`; non-pseudoscalar rows remain provisional until a separate image pass. |
 | Appendix A (A7)-(A9), Gaussian smearing and sigma | exact for contact width and diagnostic convolution | A9 width is implemented and tested; A7-A8 3D convolution is available as a diagnostic path, not the paper's main spin-independent calculation. |
-| Appendix A (A10), spin-dependent momentum factors | active FD analogue | Side exponent is `1/2+epsilon_i`, so `epsilon=0` replaces `1/(m_1m_2)` by `1/(E_1E_2)` after the two-sided sandwich. |
-| Appendix A (A12)-(A14), closed-form smeared `G~`, `S~`, `tau_k` | active FD analogue | Closed-form `G~` and `S~` are implemented and tested against quadrature/derivatives. This is still an FD analogue unless routed through the HO matrix-element workflow. |
+| Appendix A post-A14 spin-dependent momentum factors | active FD analogue | Side exponent is `1/2+epsilon_i`, so `epsilon=0` replaces `1/(m_1m_2)` by `1/(E_1E_2)` after the two-sided sandwich. |
+| Appendix A (A12)-(A14), closed-form smeared `G~`, `S~`, `tau_k` | active FD analogue; local source clear | Closed-form `G~` and `S~` are implemented and tested against quadrature/derivatives. This is still an FD analogue unless routed through the HO matrix-element workflow. |
 | Appendix A (A15)-(A17), effective operators and HO matrix elements | partial | Central Coulomb momentum sandwich is active on the FD `p^2` eigenbasis; spin-side sandwiches are active for expectations. Full HO-basis paper ordering remains an audit/comparison target. |
 
 ## Not Yet Implemented
 
-- Full GI effective spin-independent smearing from (A12)–(A13) and/or the paper’s
-  HO-basis smearing, replacing the separate experimental (A7)–(A8) convolution
-  and the first-term `appendix_a_derivative_g` proxy when those comparison modes
-  are enabled.
+- HO-basis paper-order comparison for the already implemented closed-form
+  Appendix-A central operator, replacing the separate experimental (A7)–(A8)
+  convolution and first-term `appendix_a_derivative_g` proxy as headline
+  comparison modes.
 - Exact paper-order validation of the momentum-factor sandwiches in the spin
   couplings against the original HO-basis perturbation workflow.
 - Unequal-mass antisymmetric spin–orbit and tensor off-diagonal mixing
@@ -353,7 +350,8 @@ use `paper/Godfrey-Isgur-1985.pdf` or the saved page images/crops as authority.
 
 The ledger above clears the high-level status split: the central, contact, and
 fine-structure paths are now documented as active FD/HO analogues, while literal
-annihilation formulas are still missing. Before coding P1/P2, do one focused
-PDF/image pass on Eq. (16)-(18), Table III, and the pseudoscalar model labels,
-then add dispatch-controlled model choices for `NoAnnihilation`, the existing
-calibrated diagnostic, literal paper P1, and literal paper P2.
+annihilation formulas are still missing. Before coding P1/P2, promote the
+checked Eq. (16)-(18), Table III, and pseudoscalar model-label sources into a
+small annihilation ledger, then add dispatch-controlled model choices for
+`NoAnnihilation`, the existing calibrated diagnostic, literal paper P1, and
+literal paper P2.

@@ -17,17 +17,17 @@ b_GeV2 = 0.18
 Lambda_MeV = 200
 c_MeV = -253
 # Experimental: naive 3D Gaussian (A8) of pointwise G and S with the same σ as contact
-# hyperfine (A9) wipes the small-r Coulomb well on a radial grid. The full GI
-# treatment uses the expanded forms (A12)–(A13) (and typically an HO basis), not
-# this path. Kept for future (A12) work.
+# hyperfine (A9) wipes the small-r Coulomb well on a radial grid. The active GI
+# central candidate uses closed-form (A12)–(A14) and the momentum sandwich below,
+# not this path.
 appendix_a_smearing = false
 # Research: first derivative-expansion term for smeared Coulomb G(r), with S(r)
-# pointwise. This is a modular Appendix-A proxy, not a full audited (A12)-(A13)
-# transcription. If enabled it takes precedence over the two diagnostic smears below.
+# pointwise. This is a modular Appendix-A proxy below the closed-form modes. If
+# enabled it takes precedence over the two diagnostic smears below.
 appendix_a_derivative_g = false
 # Research: closed-form Gaussian-smearing of GI G(r) and S(r), using the
-# externally cross-checked τ_k and smeared-linear formulas. This is diagonal only:
-# it omits the central Coulomb momentum sandwich G' = A(p) G~ A(p).
+# checked (A12)–(A14) τ_k and smeared-linear formulas. This is diagonal only: it
+# omits the central Coulomb momentum sandwich G' = A(p) G~ A(p).
 appendix_a_closed_form = false
 # Active reproduction path: full spin-independent central GI candidate on the existing FD basis:
 # closed-form G~, S~, plus the nonlocal Coulomb momentum sandwich
@@ -62,7 +62,8 @@ fine_structure_smeared_kernels = true
 
 [fine_structure]
 # Vector + Thomas (scalar) spin–orbit and OGE-tensor, first order on the FD
-# radial u(r) with (A10) ε and global scales to align with the paper’s HO result.
+# radial u(r) with the post-A14 ε momentum factors and global scales to align
+# with the paper’s HO result.
 enabled = true
 k_spin_orbit = 0.48
 k_tensor = 0.42

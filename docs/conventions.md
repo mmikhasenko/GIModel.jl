@@ -33,9 +33,13 @@ Full call graph: **`docs/code_architecture.md`**.
   `GIModel.central_potential_path(params)`:
   pointwise `V(r)`, optional `coulomb_1d_smear` (1D Gaussian renormalization of
   Coulomb $G(r)$ only), experimental `appendix_a_smearing` (3D (A7)–(A8)
-  convolution of pointwise $G$ and $S$), or `appendix_a_derivative_g` (first
-  derivative-smearing proxy for $G$ with pointwise $S$). The last two are
-  comparison paths, not a completed audited (A12)–(A13) central effective form.
+  convolution of pointwise $G$ and $S$), `appendix_a_derivative_g` (first
+  derivative-smearing proxy for $G$ with pointwise $S$),
+  `appendix_a_closed_form` (closed-form (A12)-(A14) `G~+S~`), or
+  `appendix_a_momentum_sandwich` (active central candidate
+  `A(p)G~A(p)+S~`). The 1D, 3D, and derivative paths are comparison branches;
+  the closed-form and momentum-sandwich paths are the current Appendix-A central
+  reproduction candidates. See `docs/appendix_a_equation_audit.md`.
 
 ## Sector naming and reference CSVs
 

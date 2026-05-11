@@ -1889,6 +1889,15 @@ $$
 
 we have
 
+
+
+$$
+\begin{aligned}
+x &= y \\
+x &= y
+\end{aligned}
+$$
+
 $$
 \begin{aligned}
 G_{\rm eff}(r) = {}& \left[ 1 + \frac{p^2}{E_1 E_2} \right]^{1/2} \tilde{G}(r) \left[ 1 + \frac{p^2}{E_1 E_2} \right]^{1/2} \\

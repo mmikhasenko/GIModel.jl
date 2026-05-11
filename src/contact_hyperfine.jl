@@ -47,8 +47,9 @@ function momentum_relativization_matrix(m1::Real, m2::Real, exponent::Real, p2_f
 end
 
 """
-Appendix A (A10) places `(m1*m2/(E1*E2))^(1/2 + epsilon_i)` on each side of a
-spin-dependent potential. With `epsilon_i = 0`, the two-sided product turns the
+Appendix A's post-A14 prescription places
+`(m1*m2/(E1*E2))^(1/2 + epsilon_i)` on each side of a spin-dependent potential.
+With `epsilon_i = 0`, the two-sided product turns the
 nonrelativistic `1/(m1*m2)` strength into `1/(E1*E2)`.
 """
 gi_spin_dependent_side_exponent(epsilon::Real) = 0.5 + float(epsilon)

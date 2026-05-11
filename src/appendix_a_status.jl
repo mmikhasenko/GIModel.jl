@@ -17,7 +17,7 @@ function central_potential_path(params::GIParameters)::CentralPotentialPath
         return CentralPotentialPath(
             "appendix_a_momentum_sandwich",
             "Closed-form smeared G̃(r), S̃(r), plus central Coulomb momentum sandwich G' = A(p)G̃A(p) on the FD p² eigenbasis",
-            "Research implementation of the spin-independent GI central operator informed by later GI/MGI references; takes precedence over diagonal comparator modes.",
+            "Active spin-independent GI central candidate from the checked Appendix-A source; takes precedence over diagonal comparator modes.",
         )
     end
     if mode == :appendix_a_closed_form
@@ -30,8 +30,8 @@ function central_potential_path(params::GIParameters)::CentralPotentialPath
     if mode == :appendix_a_derivative_g
         return CentralPotentialPath(
             "appendix_a_derivative_g",
-            "First finite-difference derivative term for Gaussian-smearing G(r): G + ∇²G/(4σ²); S(r)=br+c pointwise; A12/A13 coefficients still PDF-audit gated",
-            "Comparator path for Appendix-A work. Precedence: `appendix_a_derivative_g` wins over the older 3D and 1D diagnostic toggles.",
+            "First finite-difference derivative term for Gaussian-smearing G(r): G + ∇²G/(4σ²); S(r)=br+c pointwise",
+            "Older comparator path for Appendix-A work. The closed-form A12-A14 and momentum-sandwich modes take precedence.",
         )
     end
     if mode == :appendix_a_3d_a7a8
@@ -51,6 +51,6 @@ function central_potential_path(params::GIParameters)::CentralPotentialPath
     return CentralPotentialPath(
         "pointwise_fd",
         "Eqs. (11)–(13) orientation: V = b r - 4α_s/(3r) + c on the FD mesh",
-        "Semirelativistic kinetic + this V is the main diagnostic baseline until (A12) is implemented.",
+        "Semirelativistic kinetic + this V is the raw diagnostic baseline; the active reproduction candidate is the closed-form Appendix-A momentum-sandwich path.",
     )
 end

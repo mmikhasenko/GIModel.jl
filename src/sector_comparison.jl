@@ -393,11 +393,11 @@ function write_residual_report(
         elseif appendix_a_closed_form
             "closed-form Gaussian-smeared GI G̃(r) and S̃(r), without the central Coulomb momentum sandwich, "
         elseif appendix_a_derivative_g
-            "Appendix-A derivative proxy for G(r), `G + ∇²G/(4σ²)`, with pointwise S(r); not the full audited (A12)–(A13) expansion, "
+            "Appendix-A derivative proxy for G(r), `G + ∇²G/(4σ²)`, with pointwise S(r); older comparator below the closed-form (A12)–(A14) modes, "
         elseif appendix_a_smearing
             "experimental (A7)–(A8)-style 3D isotropic smearing of pointwise Coulomb G and confinement S (Table II σ₀, s), "
         elseif coulomb_1d_smear
-            "1D Gaussian renormalization of G(r) only (pointwise S); same σ as contact (A9); not the full (A12)–(A13) expansion, "
+            "1D Gaussian renormalization of G(r) only (pointwise S); same σ as contact (A9); diagnostic comparator below the closed-form (A12)–(A14) modes, "
         else
             "pointwise Coulomb + linear + constant (no Appendix A or 1D G smear), "
         end

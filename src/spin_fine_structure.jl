@@ -1,5 +1,6 @@
 # First-order color-magnetic + Thomas-precession spin–orbit, plus OGE-tensor
-# in the structure of the paper, Eqs. (3)–(7) (text), using Table II ε in (A10).
+# in the structure of the paper, Eqs. (3)–(7) (text), using Table II ε in the
+# post-A14 Appendix-A momentum-factor prescription.
 # Radial integrals: we treat the FD eigenvector as the reduced Schrödinger radial
 # wavefunction u(r) sampled on a uniform mesh. The physical normalization is
 #   ∫ |u(r)|² dr = 1
