@@ -1889,15 +1889,6 @@ $$
 
 we have
 
-
-
-$$
-\begin{aligned}
-x &= y \\
-x &= y
-\end{aligned}
-$$
-
 $$
 \begin{aligned}
 G_{\rm eff}(r) = {}& \left[ 1 + \frac{p^2}{E_1 E_2} \right]^{1/2} \tilde{G}(r) \left[ 1 + \frac{p^2}{E_1 E_2} \right]^{1/2} \\
@@ -1914,8 +1905,8 @@ G_{\rm eff}(r) = {}& \left[ 1 + \frac{p^2}{E_1 E_2} \right]^{1/2} \tilde{G}(r) \
 \frac{\partial^2}{\partial r^2} - \frac{1}{r} \frac{\partial}{\partial r}
 \right]
 \tilde{G}_{12}^{t}
-\tag{A15}
 \end{aligned}
+\tag{A15}
 $$
 
 ## PDF Page 38
