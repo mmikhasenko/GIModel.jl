@@ -194,4 +194,6 @@ function main()
     println("wrote ", REPORT)
 end
 
-main()
+if abspath(PROGRAM_FILE) == @__FILE__
+    main()
+end
