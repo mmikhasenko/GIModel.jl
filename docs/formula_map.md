@@ -317,7 +317,7 @@ Appendix A, use the checked split markdown pages and
 | Eq. (18a), pseudoscalar P1 replacement | implemented as `:p1` / `PaperP1Annihilation` | OCR/page pass confirms the bracket replacement `A_np*exp(-(m_i^2+m_j^2)/m_eta^2) + (2*pi/3)(ln2-1) alpha_s(M_j^2)alpha_s(M_i^2)/pi^2`. Table III constants are loaded from `[annihilation]` in `data/parameters.provisional.toml`. |
 | Eq. (18b), pseudoscalar P2 replacement | implemented as `:p2` / `PaperP2Annihilation` | OCR/page pass confirms the mass-dependent sign-changing term `A_np*(1-(M/M0)^4)*exp(-(m_i^2+m_j^2)/M0^2 - M^4/(4M0^4))` plus the perturbative `(alpha_s(M^2)/pi)^2` term. The implementation solves each pole as a mass-dependent fixed point, so the vectors are not treated as orthogonal. |
 | Table II parameters | audited for active solver inputs | CSV/TOML sync is tested. The latest audited correction is `epsilon_so(S)=+0.055`. Remaining low-confidence labels should still be promoted only after image/PDF checks. |
-| Table III isoscalar mixings | image-audited pseudoscalar rows | The visible page-11 pseudoscalar P1/P2 rows are promoted into clean `mixings.csv`; non-pseudoscalar rows remain provisional until a separate image pass. |
+| Table III isoscalar mixings | visible page-11 rows promoted; audit active | The visible page-11 pseudoscalar P1/P2 rows plus `1^3S_1` and `1^3P_2` rows are promoted into clean `mixings.csv`. `table_iii_mixing_audit.md` shows that the current literal FD P1/P2 modes under-mix relative to the Table III eigenvectors. |
 | Appendix A (A7)-(A9), Gaussian smearing and sigma | exact for contact width and diagnostic convolution | A9 width is implemented and tested; A7-A8 3D convolution is available as a diagnostic path, not the paper's main spin-independent calculation. |
 | Appendix A post-A14 spin-dependent momentum factors | active FD analogue | Side exponent is `1/2+epsilon_i`, so `epsilon=0` replaces `1/(m_1m_2)` by `1/(E_1E_2)` after the two-sided sandwich. |
 | Appendix A (A12)-(A14), closed-form smeared `G~`, `S~`, `tau_k` | active FD analogue; local source clear | Closed-form `G~` and `S~` are implemented and tested against quadrature/derivatives. This is still an FD analogue unless routed through the HO matrix-element workflow. |
@@ -331,23 +331,8 @@ Appendix A, use the checked split markdown pages and
   couplings against the original HO-basis perturbation workflow.
 - HO-order validation of the now-active antisymmetric spin-orbit and tensor
   blocks.
-- Isoscalar annihilation and explicit $n\bar n$—$s\bar s$ large mixings
-  (Table III). The current debug target is the pseudoscalar `^1S_0` block:
-  `docs/residual_reports/pseudoscalar_annihilation_audit.md` shows that a
-  positive rank-one radial/flavor annihilation update maps the current unmixed
-  `[1n, 1s, 2n, 2s]` masses onto the GI isoscalar pseudoscalar masses, with
-  Table-III/P1-like eigenvectors. This is a calibrated diagnostic/control, not
-  the literal paper P1 implementation. Paper P1 must still implement Eq. (16)
-  with the Eq. (18a) replacement, including the stated `A_eta p` exponential and
-  perturbative `alpha_s` product. Paper P2 must still implement Eq. (18b) as a
-  mass-dependent pole problem, with non-orthogonal poles expected by the paper.
-
-## Formula-Audit Gate Before P1/P2 Coding
-
-The ledger above clears the high-level status split: the central, contact, and
-fine-structure paths are now documented as active FD/HO analogues, while literal
-annihilation formulas are still missing. Before coding P1/P2, promote the
-checked Eq. (16)-(18), Table III, and pseudoscalar model-label sources into a
-small annihilation ledger, then add dispatch-controlled model choices for
-`NoAnnihilation`, the existing calibrated diagnostic, literal paper P1, and
-literal paper P2.
+- Table III eigenvector fidelity. Literal P1/P2 modes exist, but
+  `docs/residual_reports/table_iii_mixing_audit.md` shows that the current FD
+  Eq. (17) proxy produces too little light/radial mixing compared with the
+  published amplitudes. The next target is matrix-element fidelity, not another
+  calibrated mass-only control.

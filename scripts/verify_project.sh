@@ -6,6 +6,7 @@ cd "$ROOT"
 
 python3 scripts/data_checks.py validate
 python3 scripts/data_checks.py score-annihilation
+julia --project=. scripts/audit_table_iii_mixings.jl
 # `test/runtests.jl` expects the GIModel environment.
 julia --project=. test/runtests.jl
 julia --project=. scripts/analyze_heavy_quarkonium.jl

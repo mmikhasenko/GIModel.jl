@@ -129,21 +129,21 @@ mass matrix after the fixed-sector diagonalization. Eq. (16)-Eq. (17) define
 the general matrix element; Eq. (18a) and Eq. (18b) replace the pseudoscalar
 bracket for P1 and P2.
 
-What the repo does: formulas and Table III pseudoscalar rows are audited.
+What the repo does: formulas and Table III rows are audited.
 `:calibrated_p1` is routed through `assign_mixed_rows(::IsoscalarAnnihilation, ...)`
 as a rank-one control that reproduces the four isoscalar pseudoscalar masses.
-Literal `:paper_p1` and `:paper_p2` modes do not exist, and their
-constants/mode switches are not yet represented in `GIParameters` or the TOML
-parameter files.
+Literal `:paper_p1` and `:paper_p2` modes exist and their constants are
+represented in `GIParameters` and the TOML parameter file. The current FD
+Eq. (17) proxy does not reproduce the Table III eigenvectors; see
+`docs/residual_reports/table_iii_mixing_audit.md`.
 
 Why it matters: calibrated P1 proves the missing physics is localized, but it
 is not a paper implementation. P2 is especially different because the paper
 expects mass-dependent, non-orthogonal poles.
 
-Acceptance check: add annihilation/P1/P2 fields to `GIParameters` and the
-parameter TOMLs, implement `:paper_p1` and `:paper_p2` as separate dispatch
-modes, keep `:calibrated_p1` as a control, and require scorecard rows for all
-four modes.
+Acceptance check: partially complete. The modes and parameters exist; the
+remaining acceptance criterion is eigenvector/mass-splitting fidelity against
+Table III.
 
 ### 6. General Table III Isoscalar Mixing, Later Than 1-5
 
@@ -151,15 +151,17 @@ What the paper does: Table III gives approximate isoscalar compositions beyond
 the pseudoscalar rows, including non-pseudoscalar sectors with predicted and
 observed splittings.
 
-What the repo does: `data/clean/mixings.csv` promotes only the visually checked
-pseudoscalar P1/P2 rows. Other Table III rows remain raw/provisional.
+What the repo does: `data/clean/mixings.csv` promotes the visually checked
+pseudoscalar P1/P2 rows plus the visible `1^3S_1` and `1^3P_2` rows from
+page 11.
 
 Why it matters: once general annihilation is added, non-pseudoscalar isoscalar
 rows should become validation targets instead of being treated as unexplained
 duplicates in the isoscalar residual report.
 
-Acceptance check: promote the remaining image-audited Table III rows into
-clean data and add a validation report for composition and mass splitting.
+Acceptance check: clean-data promotion is complete for the visible rows.
+Remaining work is a validation report for the non-pseudoscalar Eq. (16)
+composition and mass splitting.
 
 ### 7. Eigenvector Fidelity Scoring, Later Than 1-5
 
@@ -168,15 +170,17 @@ not just mass targets.
 
 What the repo does: `docs/residual_reports/annihilation_model_scorecard.md`
 scores formula provenance, clean targets, implementation modes, and
-pseudoscalar mass residuals. It does not compute RMS amplitude error yet.
+pseudoscalar mass residuals. `docs/residual_reports/table_iii_mixing_audit.md`
+now computes RMS amplitude error for literal P1/P2 against the promoted
+Table III pseudoscalar rows.
 
 Why it matters: a model can fit the four pseudoscalar masses while producing
 the wrong flavor/radial composition. The next score must prevent that false
 positive.
 
-Acceptance check: compare model eigenvectors against `data/clean/mixings.csv`
-up to overall sign, report RMS amplitude error separately for P1 and P2, and
-award mixing-fidelity points only from that calculation.
+Acceptance check: amplitude comparison exists. Next, fold that RMS into the
+annihilation scorecard and fix the matrix-element path until the score is
+acceptable.
 
 ### 8. Observables Outside The Mass Spectrum, Later Than 1-5
 
@@ -195,12 +199,13 @@ implicitly.
 
 ## Next Clean Implementation Step
 
-Close items 1-5 before spending time on 6-8. The most direct implementation
-order is:
+The most direct implementation order is:
 
-1. Add annihilation/P1/P2 parameter fields to `GIParameters` and TOML.
-2. Implement literal `:paper_p1` using Eq. (16), Eq. (17), and Eq. (18a),
-   then expose it through `assign_mixed_rows(::IsoscalarAnnihilation, ...)`.
-3. Implement literal `:paper_p2` with the paper's mass-dependent pole term.
+1. Use `table_iii_mixing_audit.md` to debug why literal FD P1/P2 under-mix
+   compared with Table III.
+2. Implement the general non-pseudoscalar Eq. (16) model for `1^3S_1` and
+   `1^3P_2`.
+3. Fold Table III eigenvector/mass-shift scoring into
+   `annihilation_model_scorecard.md`.
 4. Revisit Appendix-A/HO paper-order staging with the now-explicit mixing
    blocks.

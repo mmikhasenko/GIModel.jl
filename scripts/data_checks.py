@@ -115,6 +115,14 @@ TABLE_III_PSEUDOSCALAR_ROWS = [
     ("2 S0", "eta_r_prime(?)", "P2", "", 11, [("1 ns", +0.09), ("1 ss", +0.08), ("1 cc", -0.006), ("1 bb", -1e-4), ("2 ns", -0.16), ("2 ss", +0.97), ("2 cc", +0.003)]),
 ]
 
+TABLE_III_NONPSEUDOSCALAR_ROWS = [
+    ("1 3S1", "omega(783)", "", 10, 50, [("1 ns", +0.999), ("1 ss", -0.020), ("1 cc", -0.001), ("1 bb", -1e-4)]),
+    ("1 3S1", "phi(1019)", "", 250, 51, [("1 ns", +0.020), ("1 ss", +0.999), ("1 cc", -0.0006), ("1 bb", -7e-5)]),
+    ("1 3S1", "J/psi(3097)", "", -40, 52, [("1 ns", +0.0009), ("1 ss", +0.0006), ("1 cc", +1.000), ("1 bb", -3e-5)]),
+    ("1 3P2", "f2(1270)", "", 215, 53, [("1 ns", +0.997), ("1 ss", +0.060), ("1 cc", +0.007), ("1 bb", +9e-4)]),
+    ("1 3P2", "f2_prime(1515)", "", "", 54, [("1 ns", -0.070), ("1 ss", +0.997), ("1 cc", +0.004), ("1 bb", +4e-4)]),
+]
+
 
 def read_csv(path: Path) -> list[dict[str, str]]:
     if not path.exists():
@@ -166,7 +174,26 @@ def promoted_table_iii_mixings() -> list[dict[str, str]]:
                 "confidence": "medium",
                 "provenance_file": provenance,
                 "provenance_row": str(raw_row),
-                "notes": "Image-audited visible pseudoscalar row from page-011.png; non-pseudoscalar Table III rows remain raw.",
+                "notes": "Image-audited visible pseudoscalar row from page-011 markdown.",
+            })
+            clean_index += 1
+    for state_group, state_name, model, shift, raw_row, amplitudes in TABLE_III_NONPSEUDOSCALAR_ROWS:
+        for basis, amplitude in amplitudes:
+            rows.append({
+                "clean_id": f"GI1985-X{clean_index:04d}",
+                "source": "Godfrey-Isgur-1985.pdf",
+                "page": "11",
+                "table": "Table III",
+                "state_group": state_group,
+                "state_name": state_name,
+                "model": model,
+                "basis": basis,
+                "amplitude": f"{amplitude:.6g}",
+                "mass_shift_MeV": str(shift),
+                "confidence": "medium",
+                "provenance_file": "paper/vision_ocr/pages/page-011.md",
+                "provenance_row": str(raw_row),
+                "notes": "Image-audited visible non-pseudoscalar row from page-011 markdown; general Eq. (16) reproduction is pending.",
             })
             clean_index += 1
     return rows
@@ -211,12 +238,12 @@ def promote_clean(_args: argparse.Namespace) -> int:
                 clean_index += 1
 
     with (CLEAN / "masses.csv").open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=MASS_FIELDS)
+        writer = csv.DictWriter(f, fieldnames=MASS_FIELDS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     mixings = promoted_table_iii_mixings()
     with (CLEAN / "mixings.csv").open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=MIXING_FIELDS)
+        writer = csv.DictWriter(f, fieldnames=MIXING_FIELDS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(mixings)
     print(f"wrote data/clean/masses.csv ({len(rows)} rows)")
@@ -409,8 +436,8 @@ def annihilation_score(_args: argparse.Namespace) -> int:
             mean = f"{mean_abs:.1f}" if model == ":calibrated_p1" and mean_abs is not None else "n/a"
             f.write(f"| {model} | {fp} | {cp} | {ip} | {sp} | {mp} | {total} | {mean} | n/a |\n")
         f.write("\n## Missing Points\n\n")
-        f.write("- Mixing RMS scoring is still blocked on comparing model eigenvectors to `data/clean/mixings.csv`.\n")
-        f.write("- Literal P1/P2 spectral scoring should be added once the FD Eq. (17) proxy is benchmarked against the paper-order HO matrix elements.\n")
+        f.write("- Table III eigenvector RMS is now reported in `table_iii_mixing_audit.md`, but not yet folded into this point score.\n")
+        f.write("- Literal P1/P2 spectral scoring should be added once the FD Eq. (17) proxy is corrected or benchmarked against the paper-order HO matrix elements.\n")
     print("wrote docs/residual_reports/annihilation_model_scorecard.md")
     print("top score:", max(row[-1] for row in rows), "/ 100")
     return 0
