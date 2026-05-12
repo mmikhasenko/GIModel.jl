@@ -233,20 +233,16 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     solver eigenvectors as reduced radial functions $u(r)$ that are normalized
     via $\int |u|^2 dr=1$ before computing expectation values; the contact test
     also checks the expected singlet/triplet ratio from `spin_dot`.
-  - Unequal-mass scope note: the current implementation contracts the spin–orbit
-    operator into total `L·S` with a symmetric mass prefactor (an “equal-share”
-    convention). This is exact for equal-mass $q\bar q$ (the primary validation
-    target `ccbar`/`bbbar`), but is only diagnostic for unequal-mass channels
-    until the paper’s antisymmetric spin–orbit term and same-`J` mixing
-    machinery are implemented.
-  - Diagnostic same-`J` mixing hook: `spin_orbit_mixing_components(...)` now
-    computes the antisymmetric spin–orbit off-diagonal matrix element for
-    `^1L_L`/`^3L_L`, and `same_j_mixing(...)` diagonalizes the resulting `2x2`
-    mass matrix. This is deliberately reported as a convention-sensitive
-    diagnostic layer rather than folded into `compare` by default; equal-mass
-    channels are regression-tested to give zero off-diagonal mixing, and the
-    heavy-quarkonium diagnostic report prints the `1P` result for `ccbar`,
-    `bbbar`, and the Fig. 9 `bcbar` panel.
+  - Unequal-mass scope note: diagonal fine structure still contracts the
+    spin-orbit operator into total `L·S` with a symmetric mass prefactor. The
+    antisymmetric part is now applied afterward for open-flavor same-`J`
+    `^1L_J`/`^3L_J` pairs when both partner rows are present.
+  - Same-`J` mixing path: `spin_orbit_mixing_components(...)` computes the
+    antisymmetric spin–orbit off-diagonal matrix element for `^1L_L`/`^3L_L`,
+    `same_j_mixing(...)` diagonalizes the resulting `2x2` mass matrix, and
+    `compare(...)` assigns mixed eigenvalues while reporting the off-diagonal
+    element, angle, and singlet/triplet components. Equal-mass channels are
+    regression-tested to give zero off-diagonal mixing.
 
 ## Appendix A: paper method vs this codebase (completion target)
 
@@ -277,14 +273,16 @@ masses and that detailed smearing is “relegated to Appendix A.”
 **What “done” should look like for the spin-independent sector**
 
 - Keep the closed-form FD central path as the headline reproduction candidate,
-  then reproduce the paper’s **HO-basis** matrix-element construction and map it
-  to observables we can compare to Fig. 6 / Fig. 8. The remaining question is
-  basis/order fidelity, not whether (A12)–(A14) exist in code.
+  The focused FD/HO central comparison is complete in
+  `docs/residual_reports/appendix_a_ho_comparison.md`: the active central
+  operator agrees between bases at the sub-MeV level over the audited channels.
+  The remaining basis/order question is now in the post-diagonalization spin and
+  mixing layers, not in the central (A12)–(A14) operator.
 - The equal-mass spin-dependent operators now use the same closed-form smeared
   $G(r)$ and confinement $S(r)$ derivatives as the active central path. The
-  remaining spin-side gaps are unequal-mass antisymmetric spin-orbit terms,
-  same-`J` tensor mixing, and comparison against the paper's perturbative
-  ordering in the HO basis.
+  open-flavor antisymmetric spin-orbit block is assigned in the FD comparison
+  path. The remaining spin-side gaps are same-`J` tensor mixing and comparison
+  against the paper's perturbative ordering in the HO basis.
 
 **Reference row lock-in:** Table II inputs are checked against
 `data/table_ii_parameters.csv` via `scripts/data_checks.py validate`. Reference
@@ -310,10 +308,10 @@ Appendix A, use the checked split markdown pages and
 | Eq. (3), spin-independent color Coulomb plus linear confinement | exact color-singlet sign/normalization for pointwise limit | `central_potential = b*r - 4*alpha_s(r)/(3r) + c`; the color-singlet factor turns Eq. (3) into this form. |
 | Eq. (4), contact hyperfine | active GI-style approximation | S-wave contact uses the smeared delta and the post-A14 `m/E` sandwich. In the FD sector, S-wave contact is diagonalized nonperturbatively with the central Hamiltonian, matching the paper's fixed-`L,S,J` first diagonalization more closely than a first-order shift. |
 | Eq. (4), tensor hyperfine | approximate | Angular factors and the Coulomb-limit color factor are tested. Active kernels use derivatives of closed-form smeared `G~` when enabled, but same-`J` tensor off-diagonal mixing is not yet folded into sector comparisons. |
-| Eq. (6), vector spin-orbit | exact equal-mass radial convention; approximate unequal-mass handling | Eq. (6) uses `alpha_s(r)/r^3` in the pointwise branch and `(1/r)dG~/dr` in the smeared branch. Equal-mass contraction is covered; unequal-mass antisymmetric mixing is diagnostic only. |
+| Eq. (6), vector spin-orbit | exact equal-mass radial convention; assigned unequal-mass same-`J` blocks | Eq. (6) uses `alpha_s(r)/r^3` in the pointwise branch and `(1/r)dG~/dr` in the smeared branch. Equal-mass contraction is covered; open-flavor same-`J` antisymmetric spin-orbit mixing is now folded into `compare` when partner rows are present. |
 | Eq. (7), Thomas/scalar spin-orbit | exact equal-mass radial convention; approximate unequal-mass handling | Thomas term uses `(1/2r)dH_conf/dr`, with smeared `G~+S~` derivatives in the active branch. Table II `epsilon_so(S)=+0.055` is now loaded from audited input. |
 | Eq. (12)-(13) and Fig. 2, running `alpha_s` | exact for fitted GI ansatz | `alpha_s(Q^2)` coefficients map to `alpha_s(r)=sum alpha_k erf(gamma_k*r)` with `gamma=(1,sqrt(10),sqrt(1000))/2` GeV. Derivatives are regression-tested. |
-| Eq. (14), staged diagonalization | partial integration | Fixed-sector diagonalization exists in FD and HO basis paths. The generic `MixingBlock` layer and antisymmetric spin-orbit diagnostics exist, but tensor/antisymmetric/annihilation block builders are not yet wired into the physical sector comparison path. |
+| Eq. (14), staged diagonalization | central basis comparison complete; mixing stages partial | Fixed-sector diagonalization exists in FD and HO basis paths. The central FD/HO comparison is documented in `appendix_a_ho_comparison.md`. The generic `MixingBlock` layer and open-flavor antisymmetric spin-orbit assignment are active in the FD comparison path; tensor and annihilation block builders are not yet wired into the physical sector comparison path. |
 | Eq. (16), general annihilation matrix element | image-audited; missing literal implementation | OCR/page pass confirms the `4*pi*(2L+1)`, `alpha_s(M_i^2)alpha_s(M_j^2)`, `S_L(Psi_j)S_L(Psi_i)`, and `1/(m_i m_j)` factors. Current reports use no annihilation except the calibrated pseudoscalar debug path for isoscalar `^1S_0`. |
 | Eq. (17), `S_L(Psi)` wavefunction factor | image-audited; missing literal implementation | OCR/page pass confirms the momentum-space normalized-wavefunction factor `(2*pi)^(-3/2) * integral d^3p/sqrt(4*pi) * Phi_i(p) * (p/E_i)^L * (m_i/E_i)`. |
 | Eq. (18a), pseudoscalar P1 replacement | image-audited; missing literal implementation | OCR/page pass confirms the bracket replacement `A_np*exp(-(m_i^2+m_j^2)/m_eta^2) + (2*pi/3)(ln2-1) alpha_s(M_j^2)alpha_s(M_i^2)/pi^2`. Current `:calibrated_p1` is a rank-one reconstruction/control, not the paper formula. |
@@ -323,18 +321,16 @@ Appendix A, use the checked split markdown pages and
 | Appendix A (A7)-(A9), Gaussian smearing and sigma | exact for contact width and diagnostic convolution | A9 width is implemented and tested; A7-A8 3D convolution is available as a diagnostic path, not the paper's main spin-independent calculation. |
 | Appendix A post-A14 spin-dependent momentum factors | active FD analogue | Side exponent is `1/2+epsilon_i`, so `epsilon=0` replaces `1/(m_1m_2)` by `1/(E_1E_2)` after the two-sided sandwich. |
 | Appendix A (A12)-(A14), closed-form smeared `G~`, `S~`, `tau_k` | active FD analogue; local source clear | Closed-form `G~` and `S~` are implemented and tested against quadrature/derivatives. This is still an FD analogue unless routed through the HO matrix-element workflow. |
-| Appendix A (A15)-(A17), effective operators and HO matrix elements | partial | Central Coulomb momentum sandwich is active on the FD `p^2` eigenbasis; spin-side sandwiches are active for expectations. Full HO-basis paper ordering remains an audit/comparison target. |
+| Appendix A (A15)-(A17), effective operators and HO matrix elements | central comparison complete; spin/mixing ordering partial | Central Coulomb momentum sandwich is active on the FD `p^2` eigenbasis and agrees with the finite-HO central realization at sub-MeV precision in `appendix_a_ho_comparison.md`. Spin-side sandwiches are active for expectations; post-diagonalization spin/mixing ordering remains a target. |
 
 ## Not Yet Implemented
 
-- HO-basis paper-order comparison for the already implemented closed-form
-  Appendix-A central operator, replacing the separate experimental (A7)–(A8)
-  convolution and first-term `appendix_a_derivative_g` proxy as headline
-  comparison modes.
+- Paper-order spin/mixing comparison on top of the already validated central
+  FD/HO Appendix-A operator.
 - Exact paper-order validation of the momentum-factor sandwiches in the spin
   couplings against the original HO-basis perturbation workflow.
-- Unequal-mass antisymmetric spin–orbit and tensor off-diagonal mixing
-  (perturbative in the text).
+- Tensor off-diagonal mixing (perturbative in the text) and HO-order validation
+  of the now-active antisymmetric spin-orbit block.
 - Isoscalar annihilation and explicit $n\bar n$—$s\bar s$ large mixings
   (Table III). The current debug target is the pseudoscalar `^1S_0` block:
   `docs/residual_reports/pseudoscalar_annihilation_audit.md` shows that a

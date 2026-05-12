@@ -338,7 +338,7 @@ open(report_path, "w") do io
     )
     println(
         io,
-        "4. Heavy–light and light sectors still require unequal-mass antisymmetric spin–orbit mixing, same-J tensor mixing, annihilation/mixing, and eventually coupled-channel physics; do not read their residuals as a failure of the heavy-heavy GI reproduction.",
+        "4. Heavy–light and light sectors now include available unequal-mass antisymmetric spin–orbit assignment, but still require same-J tensor mixing, annihilation/mixing, and eventually coupled-channel physics; do not read their residuals as a failure of the heavy-heavy GI reproduction.",
     )
     println(
         io,

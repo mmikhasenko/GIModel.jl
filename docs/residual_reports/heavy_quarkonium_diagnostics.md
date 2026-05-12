@@ -171,6 +171,6 @@ Diagnostic FD-basis `(^1P_1, ^3P_1)` matrix, using the antisymmetric spin-orbit 
 1. Heavy-quarkonium centers and radial/orbital spacings are reproduced at the few-MeV level with the active `appendix_a_momentum_sandwich` central path.
 2. The active contact, tensor, and spin–orbit terms now include GI-style momentum-factor sandwiches; tensor and spin–orbit radial kernels are derived from the smeared Appendix-A `G̃(r)`/`S̃(r)` derivatives.
 3. The next equal-mass refinement is to audit remaining extraction/rounding ambiguity in the plotted charmonium labels and compare the perturbative FD treatment against the paper's HO-basis implementation order.
-4. Heavy–light and light sectors still require unequal-mass antisymmetric spin–orbit mixing, same-J tensor mixing, annihilation/mixing, and eventually coupled-channel physics; do not read their residuals as a failure of the heavy-heavy GI reproduction.
+4. Heavy–light and light sectors now include available unequal-mass antisymmetric spin–orbit assignment, but still require same-J tensor mixing, annihilation/mixing, and eventually coupled-channel physics; do not read their residuals as a failure of the heavy-heavy GI reproduction.
 5. Close the extraction loop: log text-vs-figure issues in `data/raw/extraction_audit.csv` and promote reference rows to `data/clean/` with provenance before arguing about sub-5-MeV agreement.
 

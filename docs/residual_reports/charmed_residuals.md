@@ -10,8 +10,8 @@ Model: finite-difference + `relativistic` kinetic, with GI momentum-sandwiched s
 | `2^3S_1` | 2.640 | 2.648 |    +7.6 | high |
 | `1^3D_1` | 2.820 | 2.840 |   +19.6 | high |
 | `1^3P_0` | 2.400 | 2.412 |   +11.8 | high |
-| `1^1P_1` | 2.440 | 2.475 |   +35.3 | high |
-| `1^3P_1` | 2.490 | 2.479 |   -10.7 | high |
+| `1^1P_1` | 2.440 | 2.474 |   +34.2 | high |
+| `1^3P_1` | 2.490 | 2.480 |    -9.7 | high |
 | `1^3P_2` | 2.500 | 2.486 |   -14.4 | high |
 | `1^3D_3` | 2.830 | 2.818 |   -12.2 | high |
 | `1^3F_4` | 3.110 | 3.096 |   -14.1 | medium |
@@ -21,8 +21,8 @@ Model: finite-difference + `relativistic` kinetic, with GI momentum-sandwiched s
 | `2^3S_1` | 2.730 | 2.737 |    +6.8 | high |
 | `1^3D_1` | 2.900 | 2.908 |    +7.7 | high |
 | `1^3P_0` | 2.480 | 2.498 |   +18.2 | high |
-| `1^1P_1` | 2.530 | 2.564 |   +34.3 | high |
-| `1^3P_1` | 2.570 | 2.569 |    -1.1 | high |
+| `1^1P_1` | 2.530 | 2.564 |   +34.0 | high |
+| `1^3P_1` | 2.570 | 2.569 |    -0.8 | high |
 | `1^3P_2` | 2.590 | 2.575 |   -15.2 | high |
 | `1^3D_3` | 2.920 | 2.909 |   -10.7 | high |
 | `1^3F_4` | 3.190 | 3.187 |    -3.0 | medium |
@@ -39,8 +39,8 @@ All shifts below are relative to the central FD eigenvalue (the spin-independent
 | `2^3S_1` | 2.629 |   +18.8 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |   +18.8 | 2.648 |
 | `1^3D_1` | 2.831 |    +0.0 |   -84.6 |  +100.9 |   +16.3 |    -7.5 |    +0.0 |    +8.8 | 2.840 |
 | `1^3P_0` | 2.475 |    +0.0 |  -148.8 |  +121.0 |   -27.8 |   -35.7 |    +0.0 |   -63.5 | 2.412 |
-| `1^1P_1` | 2.475 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 | 2.475 |
-| `1^3P_1` | 2.475 |    +0.0 |   -74.4 |   +60.5 |   -13.9 |   +17.9 |    +0.0 |    +4.0 | 2.479 |
+| `1^1P_1` | 2.475 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 | 2.474 |
+| `1^3P_1` | 2.475 |    +0.0 |   -74.4 |   +60.5 |   -13.9 |   +17.9 |    +0.0 |    +4.0 | 2.480 |
 | `1^3P_2` | 2.475 |    +0.0 |   +74.4 |   -60.5 |   +13.9 |    -3.6 |    +0.0 |   +10.3 | 2.486 |
 | `1^3D_3` | 2.831 |    +0.0 |   +56.4 |   -67.3 |   -10.9 |    -2.2 |    +0.0 |   -13.0 | 2.818 |
 | `1^3F_4` | 3.124 |    +0.0 |   +41.3 |   -67.9 |   -26.6 |    -1.3 |    +0.0 |   -27.9 | 3.096 |
@@ -58,7 +58,7 @@ All shifts below are relative to the central FD eigenvalue (the spin-independent
 
 ## Fine-Structure Mass Convention (audit note)
 
-Fine structure is currently implemented in terms of total `L·S` and a symmetric mass prefactor; this is exact for equal-mass `q\bar q` but only a diagnostic convention for unequal masses (antisymmetric spin–orbit and mixing are not yet implemented).
+Unequal-mass diagonal fine structure still uses the symmetric `L·S` contraction. Same-`J` `^1L_J`/`^3L_J` rows are then corrected by the antisymmetric spin-orbit block when both partner rows are present; other unequal-mass rows remain under the symmetric convention.
 
 | state | m1 GeV | m2 GeV | convention |
 |---|---:|---:|---|
@@ -68,8 +68,8 @@ Fine structure is currently implemented in terms of total `L·S` and a symmetric
 | `2^3S_1` | 1.628000 | 0.220000 | `unequal_mass_equal_share_LdotS` |
 | `1^3D_1` | 1.628000 | 0.220000 | `unequal_mass_equal_share_LdotS` |
 | `1^3P_0` | 1.628000 | 0.220000 | `unequal_mass_equal_share_LdotS` |
-| `1^1P_1` | 1.628000 | 0.220000 | `unequal_mass_equal_share_LdotS` |
-| `1^3P_1` | 1.628000 | 0.220000 | `unequal_mass_equal_share_LdotS` |
+| `1^1P_1` | 1.628000 | 0.220000 | `unequal_mass_same_j_mixed` |
+| `1^3P_1` | 1.628000 | 0.220000 | `unequal_mass_same_j_mixed` |
 | `1^3P_2` | 1.628000 | 0.220000 | `unequal_mass_equal_share_LdotS` |
 | `1^3D_3` | 1.628000 | 0.220000 | `unequal_mass_equal_share_LdotS` |
 | `1^3F_4` | 1.628000 | 0.220000 | `unequal_mass_equal_share_LdotS` |
@@ -79,14 +79,25 @@ Fine structure is currently implemented in terms of total `L·S` and a symmetric
 | `2^3S_1` | 1.628000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
 | `1^3D_1` | 1.628000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
 | `1^3P_0` | 1.628000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
-| `1^1P_1` | 1.628000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
-| `1^3P_1` | 1.628000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
+| `1^1P_1` | 1.628000 | 0.419000 | `unequal_mass_same_j_mixed` |
+| `1^3P_1` | 1.628000 | 0.419000 | `unequal_mass_same_j_mixed` |
 | `1^3P_2` | 1.628000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
 | `1^3D_3` | 1.628000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
 | `1^3F_4` | 1.628000 | 0.419000 | `unequal_mass_equal_share_LdotS` |
 
-Mean absolute residual: 12.5 MeV.
-Max absolute residual: 35.3 MeV.
+## Same-J Antisymmetric Spin-Orbit Mixing
+
+Rows below use the mixed eigenvalues from the `(^1L_J, ^3L_J)` mass block. Components are ordered as singlet/triplet in the unmixed basis.
+
+| state | unmixed GeV | mixed GeV | offdiag MeV | theta deg | singlet component | triplet component |
+|---|---:|---:|---:|---:|---:|---:|
+| `1^1P_1` | 2.475 | 2.474 |    +2.3 |  -24.82 |  +0.908 |  -0.420 |
+| `1^3P_1` | 2.479 | 2.480 |    +2.3 |  -24.82 |  +0.420 |  +0.908 |
+| `1^1P_1` | 2.564 | 2.564 |    +1.2 |  -14.15 |  +0.970 |  -0.244 |
+| `1^3P_1` | 2.569 | 2.569 |    +1.2 |  -14.15 |  +0.244 |  +0.970 |
+
+Mean absolute residual: 12.4 MeV.
+Max absolute residual: 34.2 MeV.
 
 ## Spin-Averaged Diagnostics
 

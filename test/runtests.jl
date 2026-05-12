@@ -1348,6 +1348,43 @@ end
         1e-12
 end
 
+@testset "compare applies unequal-mass same-J antisymmetric spin-orbit mixing" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    reference = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_strange.csv"))
+    sub = [
+        row for row in reference if
+        row.n == 1 && row.L == "P" && row.J == 1 && row.multiplicity in (1, 3)
+    ]
+    @test length(sub) == 2
+    ann = attach_constituent_masses(mq, sub, mq["q"])
+    computed =
+        compute_sector(params, ann; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
+    plain = compare(
+        computed,
+        ann;
+        contact_hyperfine = true,
+        use_fine_structure = true,
+        antisymmetric_spin_orbit_mixing = false,
+    )
+    mixed = compare(
+        computed,
+        ann;
+        contact_hyperfine = true,
+        use_fine_structure = true,
+        antisymmetric_spin_orbit_mixing = true,
+    )
+    @test length(plain) == 2
+    @test length(mixed) == 2
+    @test all(row.same_j_mixing_scheme == "none" for row in plain)
+    @test all(row.same_j_mixing_scheme == "antisymmetric_spin_orbit" for row in mixed)
+    @test all(row.fine_structure_mass_convention == "unequal_mass_same_j_mixed" for row in mixed)
+    @test any(abs(row.same_j_offdiag_GeV) > 0 for row in mixed)
+    @test sum(row.predicted_GeV for row in mixed) ≈ sum(row.predicted_GeV for row in plain) rtol =
+        1e-12
+    @test all(!GIModel.mixing_prone_state(row) for row in mixed)
+    @test any(abs(mixed[i].predicted_GeV - plain[i].predicted_GeV) > 1e-6 for i in eachindex(mixed))
+end
+
 @testset "nonmixing deviation summary excludes mixing-prone rows" begin
     rows = [
         (

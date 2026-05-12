@@ -136,7 +136,7 @@ open(joinpath(report_dir, "nonmixing_scorecard.md"), "w") do io
     println(io)
     println(
         io,
-        "Rows marked as likely to require explicit mixing are excluded: isoscalar flavor mixing, open-flavor same-`J` `^1L_J`/`^3L_J` candidates, and triplet `S`/`D`, `J=1` tensor/radial candidates.",
+        "Rows marked as likely to require still-missing explicit mixing are excluded: isoscalar flavor mixing and triplet `S`/`D`, `J=1` tensor/radial candidates. Open-flavor same-`J` `^1L_J`/`^3L_J` rows are included once the antisymmetric spin-orbit block is assigned.",
     )
     println(io)
     println(io, "| sector | included | excluded | mean abs deviation MeV | max abs deviation MeV |")
@@ -175,7 +175,7 @@ open(joinpath(report_dir, "basis_nonmixing_comparison.md"), "w") do io
     println(io)
     println(
         io,
-        "HO caveat: the spin-independent Hamiltonian is assembled in the oscillator subspace with a per-channel variational beta scan; spin-dependent expectations are evaluated on reconstructed mesh wavefunctions.",
+        "HO caveat: the spin-independent Hamiltonian is assembled in the oscillator subspace with a per-channel variational beta scan. One beta is used for each orthogonal channel set, chosen by minimizing the last requested level; spin-dependent expectations are evaluated on reconstructed mesh wavefunctions.",
     )
     println(io)
     println(io, "## Sector Summary")

@@ -120,6 +120,91 @@ function _apply_isoscalar_pseudoscalar_annihilation(
     return out
 end
 
+function _same_j_group_key(row)
+    return (
+        row.sector,
+        row.n,
+        row.L,
+        row.J,
+        row.m1_GeV,
+        row.m2_GeV,
+    )
+end
+
+function _same_j_mixing_candidate(row)
+    haskey(L_SYMBOLS, row.L) || return false
+    Lval = L_SYMBOLS[row.L]
+    return row.J == Lval &&
+           Lval > 0 &&
+           row.multiplicity in (1, 3) &&
+           !isapprox(row.m1_GeV, row.m2_GeV; rtol = 0.0, atol = 1.0e-12)
+end
+
+function _apply_antisymmetric_spin_orbit_mixing(
+    rows::Vector,
+    computed::SectorComputation;
+    enabled::Bool,
+    use_fine_structure::Bool,
+)
+    (!enabled || !use_fine_structure || !computed.params.fine_structure) && return rows
+
+    groups = Dict{Any,Vector{Int}}()
+    for (i, row) in pairs(rows)
+        _same_j_mixing_candidate(row) || continue
+        push!(get!(groups, _same_j_group_key(row), Int[]), i)
+    end
+
+    out = copy(rows)
+    for indices in values(groups)
+        length(indices) == 2 || continue
+        singlet_idx = findfirst(i -> rows[i].multiplicity == 1, indices)
+        triplet_idx = findfirst(i -> rows[i].multiplicity == 3, indices)
+        (isnothing(singlet_idx) || isnothing(triplet_idx)) && continue
+
+        isinglet = indices[singlet_idx]
+        itriplet = indices[triplet_idx]
+        singlet = rows[isinglet]
+        triplet = rows[itriplet]
+        masses = ConstituentMasses(singlet.m1_GeV, singlet.m2_GeV)
+        key = RadialChannelKey(masses, singlet.L)
+        haskey(computed.channel_cache, key) || continue
+        sol = computed.channel_cache[key]
+        singlet.n <= length(sol.eigenvalues_GeV) || continue
+        radial = RadialWaveOnUniformMesh(sol, singlet.n)
+        offdiag = spin_orbit_mixing_components(
+            computed.params,
+            masses,
+            singlet.L,
+            radial;
+            enabled = true,
+            k_spin_orbit = computed.params.k_spin_orbit,
+        )
+        mix = same_j_mixing(singlet.predicted_GeV, triplet.predicted_GeV, offdiag.total)
+        ordered_indices = sort([isinglet, itriplet]; by = i -> rows[i].reference_GeV)
+        for level in eachindex(ordered_indices)
+            irow = ordered_indices[level]
+            row = rows[irow]
+            predicted = mix.masses[level]
+            vec = mix.vectors[:, level]
+            out[irow] = merge(
+                row,
+                (
+                    same_j_mixing_scheme = "antisymmetric_spin_orbit",
+                    same_j_unmixed_GeV = row.predicted_GeV,
+                    same_j_offdiag_GeV = offdiag.total,
+                    same_j_mixing_angle_deg = mix.theta_deg,
+                    same_j_component_singlet = vec[1],
+                    same_j_component_triplet = vec[2],
+                    predicted_GeV = predicted,
+                    residual_MeV = 1000 * (predicted - row.reference_GeV),
+                    fine_structure_mass_convention = "unequal_mass_same_j_mixed",
+                ),
+            )
+        end
+    end
+    return out
+end
+
 """
     compute_sector(params, annotated::AbstractVector; …)
 
@@ -165,6 +250,7 @@ function compare(
     annotated::AbstractVector;
     contact_hyperfine::Bool = true,
     use_fine_structure::Bool = true,
+    antisymmetric_spin_orbit_mixing::Bool = true,
     isoscalar_pseudoscalar_annihilation::Symbol = :none,
     strange_mass_GeV = nothing,
 )
@@ -252,12 +338,24 @@ function compare(
                 fine_structure_shift_GeV = fine_structure_shift,
                 annihilation_shift_GeV = annihilation_shift,
                 annihilation_scheme = annihilation_scheme,
+                same_j_mixing_scheme = "none",
+                same_j_unmixed_GeV = predicted,
+                same_j_offdiag_GeV = 0.0,
+                same_j_mixing_angle_deg = 0.0,
+                same_j_component_singlet = NaN,
+                same_j_component_triplet = NaN,
                 predicted_GeV = predicted,
                 residual_MeV = 1000 * (predicted - state.mass_GeV),
                 confidence = state.confidence,
             ),
         )
     end
+    rows = _apply_antisymmetric_spin_orbit_mixing(
+        rows,
+        computed;
+        enabled = antisymmetric_spin_orbit_mixing,
+        use_fine_structure = use_fine_structure,
+    )
     return _apply_isoscalar_pseudoscalar_annihilation(
         rows,
         computed;
@@ -313,13 +411,18 @@ end
     mixing_prone_state(row) -> Bool
 
 Heuristic guardrail for residual scorecards that should not depend on explicit
-mixing machinery. It excludes isoscalar flavor-mixing rows, same-`J`
+mixing machinery. It excludes isoscalar flavor-mixing rows, unassigned same-`J`
 `^1L_J`/`^3L_J` candidates, and the common triplet `S`/`D`, `J=1` tensor/radial
-mixing candidates.
+mixing candidates. Open-flavor same-`J` rows become scoreable once the
+antisymmetric spin-orbit block has been applied.
 """
 function mixing_prone_state(row)
     sector = _row_sector(row)
     sector == "isoscalar" && return true
+    if hasproperty(row, :same_j_mixing_scheme) &&
+       getproperty(row, :same_j_mixing_scheme) == "antisymmetric_spin_orbit"
+        return _tensor_sd_prone(row)
+    end
     if _open_flavor_like(row)
         _same_j_singlet_triplet_prone(row) && return true
     end
@@ -475,7 +578,7 @@ function write_residual_report(
             println(io)
             println(
                 io,
-                "Fine structure is currently implemented in terms of total `L·S` and a symmetric mass prefactor; this is exact for equal-mass `q\\bar q` but only a diagnostic convention for unequal masses (antisymmetric spin–orbit and mixing are not yet implemented).",
+                "Unequal-mass diagonal fine structure still uses the symmetric `L·S` contraction. Same-`J` `^1L_J`/`^3L_J` rows are then corrected by the antisymmetric spin-orbit block when both partner rows are present; other unequal-mass rows remain under the symmetric convention.",
             )
             println(io)
             println(io, "| state | m1 GeV | m2 GeV | convention |")
@@ -491,6 +594,41 @@ function write_residual_report(
                         row.m2_GeV,
                         row.fine_structure_mass_convention
                     )
+                )
+            end
+        end
+
+        if !isempty(rows) &&
+           hasproperty(rows[1], :same_j_mixing_scheme) &&
+           any(row.same_j_mixing_scheme == "antisymmetric_spin_orbit" for row in rows)
+            println(io)
+            println(io, "## Same-J Antisymmetric Spin-Orbit Mixing")
+            println(io)
+            println(
+                io,
+                "Rows below use the mixed eigenvalues from the `(^1L_J, ^3L_J)` mass block. Components are ordered as singlet/triplet in the unmixed basis.",
+            )
+            println(io)
+            println(
+                io,
+                "| state | unmixed GeV | mixed GeV | offdiag MeV | theta deg | singlet component | triplet component |",
+            )
+            println(io, "|---|---:|---:|---:|---:|---:|---:|")
+            for row in rows
+                row.same_j_mixing_scheme == "antisymmetric_spin_orbit" || continue
+                label = @sprintf("%d^%d%s_%d", row.n, row.multiplicity, row.L, row.J)
+                println(
+                    io,
+                    @sprintf(
+                        "| `%s` | %.3f | %.3f | %+7.1f | %+7.2f | %+7.3f | %+7.3f |",
+                        label,
+                        row.same_j_unmixed_GeV,
+                        row.predicted_GeV,
+                        1000 * row.same_j_offdiag_GeV,
+                        row.same_j_mixing_angle_deg,
+                        row.same_j_component_singlet,
+                        row.same_j_component_triplet,
+                    ),
                 )
             end
         end

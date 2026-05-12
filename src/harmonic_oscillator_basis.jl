@@ -127,7 +127,11 @@ function oscillator_channel_solution(
     for β in oscillator_beta_candidates(masses, L)
         H, U = oscillator_hamiltonian_for_beta(params, masses, L, r, h, β; nbasis = nbasis)
         vals, vecs = lowest_eigenpairs(Matrix(H), nlevels; eigensolver = :full)
-        if isnothing(best) || vals[1] < best.values[1]
+        # For an orthogonal set in a fixed sector, use one beta for all reported
+        # levels. Following the paper's practical convention, choose the beta
+        # that minimizes the last requested state rather than overfitting the
+        # ground state.
+        if isnothing(best) || vals[end] < best.values[end]
             best = (beta = β, values = vals, coeffs = vecs, basis = U)
         end
     end

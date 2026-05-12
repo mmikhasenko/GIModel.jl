@@ -12,7 +12,9 @@ handoff/autonomous planning notes.
   path.
 - `HarmonicOscillatorBasis` is implemented through `GIParameters{Basis}`
   dispatch and has regression tests. `scripts/audit_nonmixing_contact.jl`
-  already compares FD and HO non-mixing scorecards.
+  compares FD and HO non-mixing scorecards, and
+  `scripts/audit_appendix_a_ho_comparison.jl` compares the active Appendix-A
+  central operator directly.
 - The central potential uses the GI color-singlet sign and normalization.
 - Fig. 2 running `alpha_s(r)` is implemented and regression-tested.
 - S-wave contact hyperfine is smeared and diagonalized nonperturbatively in the
@@ -20,8 +22,9 @@ handoff/autonomous planning notes.
 - Equal-mass spin-orbit and tensor diagonal shifts are implemented as active
   sector diagnostics.
 - The generic mixing layer exists: `MixingBlock`,
-  `diagonalize_mixing_block`, and same-`J` antisymmetric spin-orbit diagnostics
-  are implemented and tested.
+  `diagonalize_mixing_block`, and same-`J` antisymmetric spin-orbit blocks are
+  implemented and tested. `compare` now assigns open-flavor `^1L_J`/`^3L_J`
+  same-`J` pairs when both partner rows are present.
 - Top-level spectrum CSVs cover Figs. 3-9, and promoted clean mass/mixing data
   now exists under `data/clean/`.
 
@@ -40,12 +43,14 @@ into a finite oscillator subspace, scans the oscillator scale, reconstructs
 mesh wavefunctions, and is tested. Current headline sector reports still use
 FD; the HO path is used mainly for basis-comparison audits.
 
-Why it matters: the claim that "HO is missing" is wrong. The remaining gap is
-paper-order staging: fixed-sector HO diagonalization followed by explicit
-tensor, antisymmetric spin-orbit, and annihilation mass-matrix stages as the
-physical comparison path.
+Why it matters: the claim that "HO is missing" is wrong. The central
+Appendix-A FD/HO comparison is now complete at the sub-MeV level. The
+open-flavor antisymmetric spin-orbit block is wired into the FD comparison path;
+the remaining gap is paper-order staging after the fixed-sector solve: explicit
+tensor and annihilation mass-matrix stages, plus HO-order validation of the
+spin/mixing blocks.
 
-Acceptance check: keep the existing FD-vs-HO scorecard, then add a paper-order
+Acceptance check: keep the existing FD-vs-HO scorecards, then add a paper-order
 comparison mode that starts from HO fixed-sector eigenvectors and applies the
 post-diagonalization mixing blocks before assigning physical rows.
 
@@ -62,14 +67,15 @@ corresponding parameter switches are enabled; the side exponent is
 GI-style Hermitian sandwich. The central path also has a momentum sandwich.
 
 Why it matters: this is now a follow-up/audit gap, not a blank missing feature.
-The remaining uncertainty is whether every active kernel and operator ordering
-matches the exact Appendix-A HO matrix-element prescription, especially the
-A12-A17 effective operators and the paper's perturbative ordering.
+The central A12-A14 operator has been compared between FD and HO bases. The
+remaining uncertainty is whether every spin-dependent kernel and operator
+ordering matches the exact Appendix-A HO matrix-element prescription and the
+paper's perturbative ordering.
 
-Acceptance check: audit A12-A17 coefficient-by-coefficient against the PDF,
-then add a report comparing FD-sandwich and HO-sandwich matrix elements for
-contact, tensor, vector spin-orbit, and scalar spin-orbit terms on `ccbar`,
-`ssbar`, and light `q qbar`.
+Acceptance check: add a report comparing FD-sandwich and HO-sandwich matrix
+elements for contact, tensor, vector spin-orbit, and scalar spin-orbit terms on
+`ccbar`, `ssbar`, and light `q qbar`, then wire the resulting paper-order
+blocks into sector assignment.
 
 ### 3. Off-Diagonal Tensor Mixing
 
@@ -95,24 +101,21 @@ non-mixing scorecard only after the block has tests.
 What the paper does: for unequal constituent masses, the antisymmetric
 spin-orbit term mixes `^1L_J` and `^3L_J` states.
 
-What the repo does: this has been investigated beyond a sketch. The radial
-antisymmetric matrix element, angular convention, `same_j_mixing` diagonalizer,
-and tests for equal-mass zero/off-equal-mass nonzero behavior already exist.
-What is missing is integration into the sector comparison/assignment layer.
+What the repo does: the radial antisymmetric matrix element, angular convention,
+`same_j_mixing` diagonalizer, equal-mass/off-equal-mass tests, and comparison
+assignment layer now exist. `compare` detects candidate open-flavor
+`^1L_J`/`^3L_J` pairs, builds the `2x2` mass matrix from the cached radial
+solution and diagonal fine-structure masses, assigns the mixed eigenvalues by
+reference-mass order, and records the off-diagonal element, mixing angle, and
+singlet/triplet components.
 
-Why it matters: heavy-light P-wave patterns are not meaningful final tests
-until this is implemented. Without it, residuals can look like potential
-failures when they are really assignment/mixing failures.
+Why it matters: heavy-light P-, D-, F-, and G-wave same-`J` rows are now
+scoreable in the main residual reports instead of being excluded as unresolved
+assignment/mixing failures.
 
-How far to completion: roughly the core algebra is in place; the remaining
-work is plumbing and assignment. Concretely: detect candidate `^1L_J`/`^3L_J`
-pairs in each open-flavor sector, build the mass matrix from the cached radial
-solutions and diagonal fine-structure shifts, replace the pure-row comparison
-with mixed eigenstates, and report angles/eigenvectors.
-
-Acceptance check: sector reports for strange, charmed, and bottom-flavored
-states include a same-`J` spin-orbit mixing table, and those rows are no longer
-excluded from the non-mixing scorecard once assigned.
+Acceptance check: complete. Sector reports for strange, charmed, and
+bottom-flavored states include a same-`J` spin-orbit mixing table, and assigned
+rows are no longer excluded from the non-mixing scorecard.
 
 ### 5. Literal Isoscalar Annihilation, Eq. (16)-Eq. (18)
 
@@ -189,8 +192,8 @@ implicitly.
 Close items 1-5 before spending time on 6-8. The most direct implementation
 order is:
 
-1. Wire the already-implemented antisymmetric spin-orbit mixing diagnostics
-   into sector comparison for open-flavor same-`J` pairs.
+1. Add tensor off-diagonal block builders for same-`J` triplet `L/L'` pairs and
+   feed them through `MixingBlock`.
 2. Add annihilation/P1/P2 parameter fields to `GIParameters` and TOML.
 3. Implement literal `:paper_p1` using Eq. (16), Eq. (17), and Eq. (18a).
 4. Revisit Appendix-A/HO paper-order staging with the now-explicit mixing

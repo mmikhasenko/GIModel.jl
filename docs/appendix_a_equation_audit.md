@@ -26,8 +26,8 @@ Primary sources used here:
 | Coulomb momentum factor after (A14) | clear | active FD analogue | `appendix_a_momentum_sandwich_matrix` builds `A(p) G~ A(p)` on the FD `p^2` eigenbasis. |
 | Spin-dependent `m/E` factor after (A14) | clear | active FD analogue | Contact, tensor, vector spin-orbit, and scalar spin-orbit use the two-sided `1/2 + epsilon_i` sandwich when the corresponding switches are enabled. |
 | (A15) effective Coulomb-side spin operators | mostly clear | partial | Diagonal fine-structure kernels are present, and active kernels use smeared `G~` derivatives. Off-diagonal tensor mixing is not yet wired into sector comparison. |
-| (A16) scalar/Thomas spin-orbit operator | mostly clear | partial | The equal-mass radial convention is implemented; unequal-mass antisymmetric spin-orbit mixing exists as diagnostics but is not yet folded into physical assignment. |
-| (A17) HO matrix-element factorization | clear | basis-comparison path exists | `HarmonicOscillatorBasis` projects radial and momentum operators, but paper-order HO staging with post-diagonalization tensor/antisymmetric/annihilation blocks remains the next comparison target. |
+| (A16) scalar/Thomas spin-orbit operator | mostly clear | partial | The equal-mass radial convention is implemented; unequal-mass antisymmetric spin-orbit mixing is now folded into open-flavor same-`J` physical assignment in the FD comparison path. |
+| (A17) HO matrix-element factorization | clear | central basis comparison complete | `HarmonicOscillatorBasis` projects radial and momentum operators. The focused central comparison in `docs/residual_reports/appendix_a_ho_comparison.md` finds sub-MeV FD/HO agreement for the active Appendix-A central operator; post-diagonalization tensor/annihilation blocks and HO-order validation of the antisymmetric block remain separate stages. |
 
 ## Cleared By This Audit
 
@@ -44,9 +44,11 @@ Primary sources used here:
 
 1. Keep the FD active path as the headline reproduction candidate:
    `G_eff = A(p) G~ A(p) + S~`.
-2. Use the HO basis to compare matrix elements for the same central and
-   spin-dependent operators, rather than reopening A5/A6.
-3. Wire already-implemented same-`J` mixing diagnostics into sector comparison:
-   unequal-mass antisymmetric spin-orbit first, tensor mixing second.
-4. Treat isoscalar annihilation/P1/P2 as a separate stage using the Eq. (16)-(18)
+2. The central FD/HO Appendix-A comparison is complete:
+   `docs/residual_reports/appendix_a_ho_comparison.md`.
+3. Use the HO basis next for paper-order spin-dependent checks, rather than
+   reopening A5/A6.
+4. Wire tensor same-`J` mixing into sector comparison; the unequal-mass
+   antisymmetric spin-orbit block is now assigned for open-flavor partner rows.
+5. Treat isoscalar annihilation/P1/P2 as a separate stage using the Eq. (16)-(18)
    ledger in `docs/formula_map.md`.

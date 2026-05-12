@@ -56,7 +56,7 @@ All shifts below are relative to the central FD eigenvalue (the spin-independent
 
 ## Fine-Structure Mass Convention (audit note)
 
-Fine structure is currently implemented in terms of total `L·S` and a symmetric mass prefactor; this is exact for equal-mass `q\bar q` but only a diagnostic convention for unequal masses (antisymmetric spin–orbit and mixing are not yet implemented).
+Unequal-mass diagonal fine structure still uses the symmetric `L·S` contraction. Same-`J` `^1L_J`/`^3L_J` rows are then corrected by the antisymmetric spin-orbit block when both partner rows are present; other unequal-mass rows remain under the symmetric convention.
 
 | state | m1 GeV | m2 GeV | convention |
 |---|---:|---:|---|

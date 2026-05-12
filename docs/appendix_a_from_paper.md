@@ -36,12 +36,13 @@ the checked markdown under `paper/vision_ocr/pages/`; see
   be used as a direct coefficient source.
 - **(A15)** and **(A16)** – Effective spin-dependent operators are partially
   represented. Diagonal contact/fine-structure paths use GI-style momentum
-  sandwiches and smeared kernels, but off-diagonal tensor mixing and full
-  unequal-mass antisymmetric spin-orbit integration are still follow-up stages.
+  sandwiches and smeared kernels, and open-flavor same-`J` antisymmetric
+  spin-orbit assignment is active. Off-diagonal tensor mixing is still a
+  follow-up stage.
 - **(A17)** – The HO matrix-element factorization is available as a basis path,
   but the physical comparison path still needs paper-order staging: fixed-sector
-  HO diagonalization followed by tensor, antisymmetric spin-orbit, and
-  annihilation mass-matrix blocks.
+  HO diagonalization followed by tensor and annihilation mass-matrix blocks,
+  plus HO-order validation of the antisymmetric spin-orbit block.
 
 **Repository consequence:** the flag `appendix_a_smearing` remains the older
 experimental (A7)–(A8) 3D blur of pointwise `G` and `S`; keep it as a diagnostic
