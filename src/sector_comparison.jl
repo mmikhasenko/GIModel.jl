@@ -69,7 +69,7 @@ function assign_mixed_rows(
     strange_mass_GeV,
 )
     (!enabled || scheme == :none) && return rows
-    scheme in (:calibrated_p1, :p1) ||
+    scheme in (:calibrated_p1, :p1, :paper_p1, :p2, :paper_p2) ||
         throw(ArgumentError("unsupported isoscalar pseudoscalar annihilation scheme `$scheme`"))
     isnothing(strange_mass_GeV) &&
         throw(ArgumentError("strange_mass_GeV is required for isoscalar pseudoscalar annihilation"))
@@ -83,12 +83,16 @@ function assign_mixed_rows(
     ]
     length(matches) == 4 || return rows
 
-    q_by_n = Dict{Int,Float64}()
-    for (_, row) in matches
-        q_by_n[row.n] = row.predicted_GeV
+    q_by_n = Dict{Int,eltype(matches)}()
+    for (i, row) in matches
+        q_by_n[row.n] = (i, row)
     end
     haskey(q_by_n, 1) && haskey(q_by_n, 2) || return rows
 
+    q_row = q_by_n[1][2]
+    q_masses = ConstituentMasses(q_row.m1_GeV, q_row.m2_GeV)
+    q_key = RadialChannelKey(q_masses, "S")
+    haskey(ctx.channel_cache, q_key) || return rows
     strange_masses = ConstituentMasses(strange_mass_GeV, strange_mass_GeV)
     strange_key = RadialChannelKey(strange_masses, "S")
     haskey(ctx.channel_cache, strange_key) || throw(ArgumentError(
@@ -101,9 +105,54 @@ function assign_mixed_rows(
         2;
         contact_hyperfine = contact_hyperfine,
     )
-    diagonal = [q_by_n[1], ss[1], q_by_n[2], ss[2]]
+    diagonal = [q_by_n[1][2].predicted_GeV, ss[1], q_by_n[2][2].predicted_GeV, ss[2]]
     targets = sort([row.reference_GeV for (_, row) in matches])
-    solution = isoscalar_pseudoscalar_annihilation_solution(diagonal; targets = targets)
+    solution =
+        if scheme == :calibrated_p1
+            isoscalar_pseudoscalar_annihilation_solution(diagonal; targets = targets)
+        else
+            q_sol = ctx.channel_cache[q_key]
+            s_sol = ctx.channel_cache[strange_key]
+            basis = [
+                pseudoscalar_annihilation_basis_input(
+                    "1 n nbar",
+                    q_masses.m1_GeV,
+                    diagonal[1],
+                    RadialWaveOnUniformMesh(q_sol, 1),
+                ),
+                pseudoscalar_annihilation_basis_input(
+                    "1 s sbar",
+                    strange_masses.m1_GeV,
+                    diagonal[2],
+                    RadialWaveOnUniformMesh(s_sol, 1),
+                ),
+                pseudoscalar_annihilation_basis_input(
+                    "2 n nbar",
+                    q_masses.m1_GeV,
+                    diagonal[3],
+                    RadialWaveOnUniformMesh(q_sol, 2),
+                ),
+                pseudoscalar_annihilation_basis_input(
+                    "2 s sbar",
+                    strange_masses.m1_GeV,
+                    diagonal[4],
+                    RadialWaveOnUniformMesh(s_sol, 2),
+                ),
+            ]
+            if scheme in (:p1, :paper_p1)
+                isoscalar_pseudoscalar_annihilation_solution(
+                    PaperP1Annihilation(),
+                    ctx.params,
+                    basis,
+                )
+            else
+                isoscalar_pseudoscalar_annihilation_solution(
+                    PaperP2Annihilation(),
+                    ctx.params,
+                    basis,
+                )
+            end
+        end
 
     out = copy(rows)
     ordered_matches = sort(matches; by = item -> item[2].reference_GeV)
@@ -814,7 +863,7 @@ function write_residual_report(
             println(io)
             println(
                 io,
-                "Rows below use the calibrated isoscalar pseudoscalar annihilation control. Literal paper P1/P2 formulas remain separate modes.",
+                "Rows below use the selected isoscalar pseudoscalar annihilation mode. `calibrated_p1` is the Fig. 5/Table III control; `p1` and `p2` are the paper Eq. (18a,b) formula modes.",
             )
             println(io)
             println(io, "| state | scheme | unmixed GeV | mixed GeV | shift MeV |")

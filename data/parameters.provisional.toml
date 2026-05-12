@@ -67,3 +67,12 @@ fine_structure_smeared_kernels = true
 enabled = true
 k_spin_orbit = 0.48
 k_tensor = 0.42
+
+[annihilation]
+# Paper Table III pseudoscalar model constants.
+# P1 uses Eq. (18a): A_np exp[-(m_i^2+m_j^2)/m_eta^2] plus the perturbative term.
+p1_A_np = 0.50
+p1_m_eta_GeV = 0.548
+# P2 uses Eq. (18b): a mass-dependent nonperturbative term with zero at M0.
+p2_A_np = 0.55
+p2_M0_GeV = 1.17

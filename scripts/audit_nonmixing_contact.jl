@@ -36,6 +36,10 @@ function with_contact_momentum_sandwich(params::GIParameters{Basis}, enabled::Bo
         params.k_spin_orbit,
         params.k_tensor,
         params.coulomb_1d_smear,
+        params.annihilation_p1_A_np,
+        params.annihilation_p1_m_eta,
+        params.annihilation_p2_A_np,
+        params.annihilation_p2_M0,
     )
 end
 

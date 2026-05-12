@@ -43,6 +43,10 @@ struct GIParameters{Basis<:GIBasis}
     k_spin_orbit::Float64
     k_tensor::Float64
     coulomb_1d_smear::Bool
+    annihilation_p1_A_np::Float64
+    annihilation_p1_m_eta::Float64
+    annihilation_p2_A_np::Float64
+    annihilation_p2_M0::Float64
 end
 
 function GIParameters(args...)
@@ -72,6 +76,10 @@ function with_basis(params::GIParameters, ::Type{Basis}) where {Basis<:GIBasis}
         params.k_spin_orbit,
         params.k_tensor,
         params.coulomb_1d_smear,
+        params.annihilation_p1_A_np,
+        params.annihilation_p1_m_eta,
+        params.annihilation_p2_A_np,
+        params.annihilation_p2_M0,
     )
 end
 
@@ -85,6 +93,11 @@ function gi_parameters_from_raw(raw)::GIParameters
     fine_on = isnothing(fs) ? true : get(fs, "enabled", true)
     k_so = isnothing(fs) ? 0.5 : get(fs, "k_spin_orbit", 0.5)
     k_tn = isnothing(fs) ? 0.4 : get(fs, "k_tensor", 0.4)
+    ann = get(raw, "annihilation", nothing)
+    p1_A = isnothing(ann) ? 0.5 : get(ann, "p1_A_np", 0.5)
+    p1_meta = isnothing(ann) ? 0.548 : get(ann, "p1_m_eta_GeV", 0.548)
+    p2_A = isnothing(ann) ? 0.55 : get(ann, "p2_A_np", 0.55)
+    p2_M0 = isnothing(ann) ? 1.17 : get(ann, "p2_M0_GeV", 1.17)
     return GIParameters(
         raw["potential"]["b_GeV2"],
         raw["potential"]["c_MeV"] / 1000,
@@ -105,6 +118,10 @@ function gi_parameters_from_raw(raw)::GIParameters
         float(k_so),
         float(k_tn),
         get(raw["potential"], "coulomb_1d_smear", false),
+        float(p1_A),
+        float(p1_meta),
+        float(p2_A),
+        float(p2_M0),
     )
 end
 

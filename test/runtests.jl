@@ -131,6 +131,10 @@ end
     @test params.appendix_a_closed_form == false
     @test params.appendix_a_momentum_sandwich == true
     @test params.coulomb_1d_smear == false
+    @test params.annihilation_p1_A_np ≈ 0.50
+    @test params.annihilation_p1_m_eta ≈ 0.548
+    @test params.annihilation_p2_A_np ≈ 0.55
+    @test params.annihilation_p2_M0 ≈ 1.17
 end
 
 @testset "GIParameters basis dispatch keeps FD p² path explicit" begin
@@ -1672,4 +1676,44 @@ end
     )
     @test all(solution.weights_GeV .>= 0.0)
     @test solution.block.mechanism == "rank_one_calibrated_pseudoscalar_annihilation"
+
+    p1 = compare(
+        computed,
+        ann;
+        contact_hyperfine = true,
+        use_fine_structure = false,
+        isoscalar_pseudoscalar_annihilation = :paper_p1,
+        strange_mass_GeV = mq["s"],
+    )
+    p2 = compare(
+        computed,
+        ann;
+        contact_hyperfine = true,
+        use_fine_structure = false,
+        isoscalar_pseudoscalar_annihilation = :paper_p2,
+        strange_mass_GeV = mq["s"],
+    )
+    p1_short = compare(
+        computed,
+        ann;
+        contact_hyperfine = true,
+        use_fine_structure = false,
+        isoscalar_pseudoscalar_annihilation = :p1,
+        strange_mass_GeV = mq["s"],
+    )
+    p2_short = compare(
+        computed,
+        ann;
+        contact_hyperfine = true,
+        use_fine_structure = false,
+        isoscalar_pseudoscalar_annihilation = :p2,
+        strange_mass_GeV = mq["s"],
+    )
+    @test all(row.annihilation_scheme == "paper_p1" for row in p1)
+    @test all(row.annihilation_scheme == "paper_p2" for row in p2)
+    @test all(isfinite(row.predicted_GeV) for row in p1)
+    @test all(isfinite(row.predicted_GeV) for row in p2)
+    @test [row.predicted_GeV for row in p1] != [row.predicted_GeV for row in p2]
+    @test [row.predicted_GeV for row in p1_short] ≈ [row.predicted_GeV for row in p1]
+    @test [row.predicted_GeV for row in p2_short] ≈ [row.predicted_GeV for row in p2]
 end

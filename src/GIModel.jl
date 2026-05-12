@@ -59,7 +59,11 @@ export MixingMechanism,
     diagonalize_mixing_block
 include("state_mixing.jl")
 
-export isoscalar_pseudoscalar_annihilation_solution
+export CalibratedP1Annihilation,
+    PaperP1Annihilation,
+    PaperP2Annihilation,
+    pseudoscalar_annihilation_basis_input,
+    isoscalar_pseudoscalar_annihilation_solution
 include("pseudoscalar_annihilation.jl")
 
 export fine_structure_split,

@@ -112,7 +112,7 @@ All shifts below are relative to the central FD eigenvalue (the spin-independent
 
 ## Isoscalar Annihilation Mixing
 
-Rows below use the calibrated isoscalar pseudoscalar annihilation control. Literal paper P1/P2 formulas remain separate modes.
+Rows below use the selected isoscalar pseudoscalar annihilation mode. `calibrated_p1` is the Fig. 5/Table III control; `p1` and `p2` are the paper Eq. (18a,b) formula modes.
 
 | state | scheme | unmixed GeV | mixed GeV | shift MeV |
 |---|---|---:|---:|---:|

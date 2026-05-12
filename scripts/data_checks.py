@@ -351,7 +351,11 @@ def annihilation_score(_args: argparse.Namespace) -> int:
     formula_points = sum(
         4
         for item in formula_items
-        if any("image-audited" in line.lower() for line in formula_text.splitlines() if item in line)
+        if any(
+            ("image-audited" in line.lower() or "implemented" in line.lower())
+            for line in formula_text.splitlines()
+            if item in line
+        )
     )
 
     masses = read_csv(CLEAN / "masses.csv")
@@ -369,8 +373,8 @@ def annihilation_score(_args: argparse.Namespace) -> int:
     modes = {
         ":none": ("scheme == :none", "plain = compare("),
         ":calibrated_p1": (":calibrated_p1", "isoscalar_pseudoscalar_annihilation = :calibrated_p1"),
-        ":paper_p1": (":paper_p1", "isoscalar_pseudoscalar_annihilation = :paper_p1"),
-        ":paper_p2": (":paper_p2", "isoscalar_pseudoscalar_annihilation = :paper_p2"),
+        ":paper_p1": ("PaperP1Annihilation", "isoscalar_pseudoscalar_annihilation = :paper_p1"),
+        ":paper_p2": ("PaperP2Annihilation", "isoscalar_pseudoscalar_annihilation = :paper_p2"),
     }
     implementation_points = sum(5 for dispatch, test in modes.values() if dispatch in source and test in tests)
 
@@ -405,8 +409,8 @@ def annihilation_score(_args: argparse.Namespace) -> int:
             mean = f"{mean_abs:.1f}" if model == ":calibrated_p1" and mean_abs is not None else "n/a"
             f.write(f"| {model} | {fp} | {cp} | {ip} | {sp} | {mp} | {total} | {mean} | n/a |\n")
         f.write("\n## Missing Points\n\n")
-        f.write("- Literal `:paper_p1` and `:paper_p2` implementation modes are not implemented yet.\n")
-        f.write("- Mixing RMS scoring is blocked on comparing model eigenvectors to `data/clean/mixings.csv`.\n")
+        f.write("- Mixing RMS scoring is still blocked on comparing model eigenvectors to `data/clean/mixings.csv`.\n")
+        f.write("- Literal P1/P2 spectral scoring should be added once the FD Eq. (17) proxy is benchmarked against the paper-order HO matrix elements.\n")
     print("wrote docs/residual_reports/annihilation_model_scorecard.md")
     print("top score:", max(row[-1] for row in rows), "/ 100")
     return 0

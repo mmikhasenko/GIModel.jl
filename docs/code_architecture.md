@@ -96,9 +96,11 @@ The implemented assignment methods are:
   `^1L_J`/`^3L_J` pairs;
 - `assign_mixed_rows(::TensorMixing, rows, ctx; ...)` for triplet
   `L=J-1`/`L=J+1` pairs such as `^3S_1`/`^3D_1`;
-- `assign_mixed_rows(::IsoscalarAnnihilation, rows, ctx; ...)` for the current
-  calibrated isoscalar pseudoscalar P1 control. Literal paper P1/P2 formulas
-  should extend this mechanism rather than adding solver-side logic.
+- `assign_mixed_rows(::IsoscalarAnnihilation, rows, ctx; ...)` for the
+  calibrated isoscalar pseudoscalar control and the literal paper P1/P2
+  formula modes. The model-specific details live behind
+  `CalibratedP1Annihilation`, `PaperP1Annihilation`, and
+  `PaperP2Annihilation`, while comparison only selects the mode.
 
 ## Radial and central-potential API
 

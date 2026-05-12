@@ -24,9 +24,10 @@ handoff/autonomous planning notes.
 - The generic mixing layer exists: `MixingMechanism`, `MixingBlock`,
   `diagonalize_mixing_block`, and comparison-layer assignment methods for
   `AntisymmetricSpinOrbit`, `TensorMixing`, and the calibrated
-  `IsoscalarAnnihilation` control. `compare` now assigns open-flavor
-  `^1L_J`/`^3L_J` same-`J` pairs and triplet tensor `L/L'` pairs when partner
-  rows are present.
+  `IsoscalarAnnihilation` control. `IsoscalarAnnihilation` also has paper
+  pseudoscalar P1/P2 modes driven by the `[annihilation]` TOML constants.
+  `compare` now assigns open-flavor `^1L_J`/`^3L_J` same-`J` pairs and triplet
+  tensor `L/L'` pairs when partner rows are present.
 - Top-level spectrum CSVs cover Figs. 3-9, and promoted clean mass/mixing data
   now exists under `data/clean/`.
 
@@ -49,10 +50,10 @@ Why it matters: the claim that "HO is missing" is wrong. The central
 Appendix-A FD/HO comparison is now complete at the sub-MeV level. The
 open-flavor antisymmetric spin-orbit and triplet tensor blocks are wired into
 the FD comparison path, and the calibrated isoscalar pseudoscalar annihilation
-control is routed through the same mixing layer. The remaining gap is
-paper-order staging after the fixed-sector solve: literal paper P1/P2
-annihilation, broader Table III flavor/radial mixing, and HO-order validation
-of the spin/mixing blocks.
+control plus literal P1/P2 formula modes are routed through the same mixing
+layer. The remaining gap is paper-order staging after the fixed-sector solve:
+broader Table III flavor/radial mixing and HO-order validation of the
+spin/mixing blocks.
 
 Acceptance check: keep the existing FD-vs-HO scorecards, then add a paper-order
 comparison mode that starts from HO fixed-sector eigenvectors and applies the
