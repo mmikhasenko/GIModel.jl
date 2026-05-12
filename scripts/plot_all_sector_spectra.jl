@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 # Save reference-vs-model ladder plots for all digitized GI sectors, before and
-# after the currently implemented same-J spin-orbit mixing diagnostic.
+# after the currently assigned same-J antisymmetric spin-orbit mixing.
 
 using Pkg
 Pkg.activate(joinpath(@__DIR__, ".."))

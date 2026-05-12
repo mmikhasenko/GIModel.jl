@@ -11,13 +11,13 @@ This report separates raw sector residuals from the rows that should be judged b
 | `bottom_charm` | 7 | 4.5 | 12.5 | 6 | 5.2 | 12.5 | 1 |
 | `bottom_light` | 7 | 6.8 | 15.9 | 6 | 7.1 | 15.9 | 1 |
 | `bottom_strange` | 7 | 4.2 | 9.5 | 6 | 4.1 | 9.5 | 1 |
-| `bottomonium` | 30 | 4.3 | 12.1 | 22 | 4.4 | 12.1 | 8 |
-| `charmed` | 11 | 13.6 | 34.2 | 9 | 13.6 | 34.2 | 2 |
-| `charmed_strange` | 11 | 11.1 | 34.0 | 9 | 12.0 | 34.0 | 2 |
-| `charmonium` | 28 | 6.0 | 24.4 | 22 | 6.9 | 24.4 | 6 |
+| `bottomonium` | 30 | 4.3 | 12.1 | 28 | 4.1 | 12.1 | 2 |
+| `charmed` | 11 | 13.6 | 34.2 | 11 | 13.6 | 34.2 | 0 |
+| `charmed_strange` | 11 | 11.1 | 34.0 | 11 | 11.1 | 34.0 | 0 |
+| `charmonium` | 28 | 6.0 | 24.4 | 28 | 6.0 | 24.4 | 0 |
 | `isoscalar` | 49 | 101.2 | 259.9 | 0 | n/a | n/a | 49 |
-| `isovector` | 30 | 14.6 | 55.0 | 26 | 15.6 | 55.0 | 4 |
-| `strange` | 30 | 10.9 | 43.0 | 26 | 12.1 | 43.0 | 4 |
+| `isovector` | 30 | 14.5 | 55.0 | 30 | 14.5 | 55.0 | 0 |
+| `strange` | 30 | 10.8 | 43.0 | 30 | 10.8 | 43.0 | 0 |
 
 ## Isoscalar Two-Branch Sanity Check
 

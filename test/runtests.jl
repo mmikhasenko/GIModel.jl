@@ -922,6 +922,13 @@ end
     end
 end
 
+@testset "tensor off-diagonal same-J angular factor" begin
+    @test GIModel.tensor_triplet_offdiag_sameJ(0, 1) ≈ 0.0
+    @test GIModel.tensor_triplet_offdiag_sameJ(1, 1) ≈ sqrt(8.0)
+    @test GIModel.tensor_triplet_offdiag_sameJ(2, 1) ≈ 6sqrt(6.0) / 5
+    @test GIModel.tensor_triplet_offdiag_sameJ(1, 0) ≈ 0.0
+end
+
 @testset "contact_hyperfine_shift: normalization + spin algebra" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     m = mq["c"]
@@ -1322,8 +1329,14 @@ end
         load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
     sub = reference[1:1]
     ann = attach_constituent_masses(mq, sub, mq["c"])
-    computed =
-        compute_sector(params, ann; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
+    computed = compute_sector(
+        params,
+        ann;
+        ngrid = 120,
+        rmax = 12.0,
+        kinetic = :relativistic,
+        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
+    )
     rows = compare(computed, ann; contact_hyperfine = true, use_fine_structure = true)
     @test length(rows) == 1
     row = rows[1]
@@ -1348,6 +1361,12 @@ end
         1e-12
 end
 
+@testset "mixing mechanisms are comparison-layer markers" begin
+    @test GIModel.AntisymmetricSpinOrbit() isa GIModel.MixingMechanism
+    @test GIModel.TensorMixing() isa GIModel.MixingMechanism
+    @test GIModel.IsoscalarAnnihilation() isa GIModel.MixingMechanism
+end
+
 @testset "compare applies unequal-mass same-J antisymmetric spin-orbit mixing" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     reference = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_strange.csv"))
@@ -1357,8 +1376,14 @@ end
     ]
     @test length(sub) == 2
     ann = attach_constituent_masses(mq, sub, mq["q"])
-    computed =
-        compute_sector(params, ann; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
+    computed = compute_sector(
+        params,
+        ann;
+        ngrid = 120,
+        rmax = 12.0,
+        kinetic = :relativistic,
+        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
+    )
     plain = compare(
         computed,
         ann;
@@ -1383,6 +1408,48 @@ end
         1e-12
     @test all(!GIModel.mixing_prone_state(row) for row in mixed)
     @test any(abs(mixed[i].predicted_GeV - plain[i].predicted_GeV) > 1e-6 for i in eachindex(mixed))
+end
+
+@testset "compare applies tensor same-J triplet L/L' mixing" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    reference = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_isovector.csv"))
+    sub = [
+        row for row in reference if
+        (row.n == 2 && row.L == "S" && row.J == 1 && row.multiplicity == 3) ||
+        (row.n == 1 && row.L == "D" && row.J == 1 && row.multiplicity == 3)
+    ]
+    @test length(sub) == 2
+    ann = attach_constituent_masses(mq, sub, mq["q"])
+    computed = compute_sector(
+        params,
+        ann;
+        ngrid = 120,
+        rmax = 12.0,
+        kinetic = :relativistic,
+        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
+    )
+    plain = compare(
+        computed,
+        ann;
+        contact_hyperfine = true,
+        use_fine_structure = true,
+        tensor_mixing = false,
+    )
+    mixed = compare(
+        computed,
+        ann;
+        contact_hyperfine = true,
+        use_fine_structure = true,
+        tensor_mixing = true,
+    )
+    @test length(plain) == 2
+    @test length(mixed) == 2
+    @test all(row.tensor_mixing_scheme == "none" for row in plain)
+    @test all(row.tensor_mixing_scheme == "tensor_mixing" for row in mixed)
+    @test any(abs(row.tensor_offdiag_GeV) > 0 for row in mixed)
+    @test sum(row.predicted_GeV for row in mixed) ≈ sum(row.predicted_GeV for row in plain) rtol =
+        1e-12
+    @test all(!GIModel.mixing_prone_state(row) for row in mixed)
 end
 
 @testset "nonmixing deviation summary excludes mixing-prone rows" begin
@@ -1536,8 +1603,14 @@ end
         load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
     sub = reference[1:1]
     ann = attach_constituent_masses(mq, sub, mq["c"])
-    computed =
-        compute_sector(params, ann; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
+    computed = compute_sector(
+        params,
+        ann;
+        ngrid = 120,
+        rmax = 12.0,
+        kinetic = :relativistic,
+        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
+    )
     with_hf = compare(computed, ann; contact_hyperfine = true, use_fine_structure = false)
     no_hf = compare(computed, ann; contact_hyperfine = false, use_fine_structure = false)
     @test length(with_hf) == 1 && length(no_hf) == 1
@@ -1571,8 +1644,14 @@ end
         load_reference_spectrum(joinpath(root, "data", "reference_spectrum_isoscalar.csv"))
     sub = reference[1:4]
     ann = attach_constituent_masses(mq, sub, mq["q"])
-    computed =
-        compute_sector(params, ann; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
+    computed = compute_sector(
+        params,
+        ann;
+        ngrid = 120,
+        rmax = 12.0,
+        kinetic = :relativistic,
+        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
+    )
     plain = compare(computed, ann; contact_hyperfine = true, use_fine_structure = false)
     mixed = compare(
         computed,

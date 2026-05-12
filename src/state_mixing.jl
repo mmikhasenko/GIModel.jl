@@ -1,7 +1,26 @@
 # Generic state-mixing bookkeeping and diagonalization.
 #
 # Public API (exported from GIModel.jl):
+#   MixingMechanism, AntisymmetricSpinOrbit, TensorMixing, IsoscalarAnnihilation
 #   BasisState, MixingBlock, MixingResult, diagonalize_mixing_block
+
+"""
+    MixingMechanism
+
+Marker supertype for post-fixed-sector mixing mechanisms. These objects name
+which paper mass-matrix contribution is being assigned at the comparison layer;
+they are not radial solver paths.
+"""
+abstract type MixingMechanism end
+
+"""Open-flavor unequal-mass `^1L_J`/`^3L_J` antisymmetric spin-orbit mixing."""
+struct AntisymmetricSpinOrbit <: MixingMechanism end
+
+"""Triplet same-`J`, different-`L` tensor mixing, e.g. `^3S_1`/`^3D_1`."""
+struct TensorMixing <: MixingMechanism end
+
+"""Self-conjugate isoscalar flavor/radial annihilation mixing."""
+struct IsoscalarAnnihilation <: MixingMechanism end
 
 """
     BasisState(n, L_label, multiplicity, J; label="")

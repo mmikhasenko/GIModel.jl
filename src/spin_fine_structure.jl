@@ -140,6 +140,12 @@ function tensor_triplet_LJ(L::Int, J::Int, S::Int)
     return 0.0
 end
 
+function tensor_triplet_offdiag_sameJ(J::Int, S::Int)
+    S == 1 || return 0.0
+    J <= 0 && return 0.0
+    return 6.0 * sqrt(J * (J + 1.0)) / (2J + 1)
+end
+
 function LdotS(L::Int, S::Int, J::Int)
     0.5 * (J * (J + 1) - L * (L + 1) - S * (S + 1))
 end
@@ -195,6 +201,26 @@ function radial_expect_udr(
     return s
 end
 
+function radial_cross_expect_udr(
+    u_left::AbstractVector{<:Real},
+    u_right::AbstractVector{<:Real},
+    r::AbstractVector{<:Real},
+    h::Real,
+    f::F,
+) where {F<:Function}
+    length(r) == length(u_left) == length(u_right) ||
+        throw(ArgumentError("radial_cross_expect_udr: vector lengths differ"))
+    n_left = physical_u_norm(r, h, u_left)
+    n_right = physical_u_norm(r, h, u_right)
+    (n_left == 0.0 || n_right == 0.0) && return 0.0
+    s = 0.0
+    for i in eachindex(r)
+        s += (n_left * float(u_left[i])) * (n_right * float(u_right[i])) * h *
+             f(float(r[i]), i)
+    end
+    return s
+end
+
 function radial_expect_momentum_sandwich(
     params::GIParameters,
     masses::ConstituentMasses,
@@ -217,6 +243,31 @@ function radial_expect_momentum_sandwich(
     B = momentum_relativization_matrix(m1, m2, side_exponent, p2_fact)
     kernel = Diagonal([f(float(ri), i) for (i, ri) in enumerate(r)])
     return euclidean_expectation(u, Symmetric(B * kernel * B))
+end
+
+function radial_cross_expect_momentum_sandwich(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L_left::Integer,
+    u_left::AbstractVector{<:Real},
+    L_right::Integer,
+    u_right::AbstractVector{<:Real},
+    r::AbstractVector{<:Real},
+    h::Real,
+    epsilon::Real,
+    f::F,
+) where {F<:Function}
+    length(r) == length(u_left) == length(u_right) ||
+        throw(ArgumentError("radial_cross_expect_momentum_sandwich: vector lengths differ"))
+    physical_u_norm(r, h, u_left)
+    physical_u_norm(r, h, u_right)
+    p2_left = eigen(p2_operator(params, masses.m1_GeV, L_left, r, h))
+    p2_right = eigen(p2_operator(params, masses.m1_GeV, L_right, r, h))
+    side_exponent = gi_spin_dependent_side_exponent(epsilon)
+    B_left = momentum_relativization_matrix(masses.m1_GeV, masses.m2_GeV, side_exponent, p2_left)
+    B_right = momentum_relativization_matrix(masses.m1_GeV, masses.m2_GeV, side_exponent, p2_right)
+    kernel = Diagonal([f(float(ri), i) for (i, ri) in enumerate(r)])
+    return dot(u_left, B_left * kernel * B_right * u_right)
 end
 
 function fine_structure_components(
@@ -399,7 +450,7 @@ end
 """
     spin_orbit_mixing_components(params, masses, L_label, radial; ...)
 
-Diagnostic antisymmetric spin-orbit matrix element for the same-`J` basis
+Antisymmetric spin-orbit matrix element for the same-`J` basis
 `|n ^1L_L>` / `|n ^3L_L>`. The angular convention is
 `<^1L_L| L·(S1-S2) |^3L_L> = sqrt(L(L+1))`; the sign of the reported mixing
 angle is therefore tied to the basis ordering used in [`same_j_mixing`](@ref).
@@ -438,6 +489,59 @@ function spin_orbit_mixing_components(
         total = vector + thomas,
         angular = angular,
     )
+end
+
+function tensor_mixing_components(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    radial_left::RadialWaveOnUniformMesh,
+    radial_right::RadialWaveOnUniformMesh,
+    J::Integer;
+    enabled::Bool = true,
+    k_tensor::Real = 1.0,
+)
+    Jn = Int(J)
+    L_left = Jn - 1
+    L_right = Jn + 1
+    if !enabled || Jn <= 0
+        return (I_tk = 0.0, angular = 0.0, total = 0.0)
+    end
+    length(radial_left.r) == length(radial_right.r) ||
+        throw(ArgumentError("tensor_mixing_components: radial grids have different sizes"))
+    all(isapprox.(radial_left.r, radial_right.r; rtol = 1e-10, atol = 1e-12)) ||
+        throw(ArgumentError("tensor_mixing_components: radial grids differ"))
+    isapprox(radial_left.h, radial_right.h; rtol = 1e-10, atol = 1e-12) ||
+        throw(ArgumentError("tensor_mixing_components: radial spacings differ"))
+    kernel =
+        (ri, i) ->
+            params.fine_structure_smeared_kernels ?
+            tensor_kernel_smeared_coulomb(params, masses, ri) :
+            tensor_kernel_coulomb_running(ri)
+    Itk =
+        params.fine_structure_momentum_sandwich ?
+        radial_cross_expect_momentum_sandwich(
+            params,
+            masses,
+            L_left,
+            radial_left.u,
+            L_right,
+            radial_right.u,
+            radial_left.r,
+            radial_left.h,
+            params.epsilon_t,
+            kernel,
+        ) :
+        radial_cross_expect_udr(
+            radial_left.u,
+            radial_right.u,
+            radial_left.r,
+            radial_left.h,
+            kernel,
+        )
+    tensor_scale = params.fine_structure_momentum_sandwich ? 1.0 : (1.0 + params.epsilon_t)
+    angular = tensor_triplet_offdiag_sameJ(Jn, 1)
+    total = tensor_scale * k_tensor * (1.0 / (3.0 * masses.m1_GeV * masses.m2_GeV)) * Itk * angular
+    return (I_tk = Itk, angular = angular, total = total)
 end
 
 """

@@ -280,9 +280,9 @@ masses and that detailed smearing is “relegated to Appendix A.”
   mixing layers, not in the central (A12)–(A14) operator.
 - The equal-mass spin-dependent operators now use the same closed-form smeared
   $G(r)$ and confinement $S(r)$ derivatives as the active central path. The
-  open-flavor antisymmetric spin-orbit block is assigned in the FD comparison
-  path. The remaining spin-side gaps are same-`J` tensor mixing and comparison
-  against the paper's perturbative ordering in the HO basis.
+  open-flavor antisymmetric spin-orbit block and triplet same-`J` tensor blocks
+  are assigned in the FD comparison path. The remaining spin-side gap is
+  comparison against the paper's perturbative ordering in the HO basis.
 
 **Reference row lock-in:** Table II inputs are checked against
 `data/table_ii_parameters.csv` via `scripts/data_checks.py validate`. Reference
@@ -307,12 +307,12 @@ Appendix A, use the checked split markdown pages and
 | Eq. (1a)-(1b), semirelativistic Hamiltonian | FD and HO analogues implemented | `relativistic_hamiltonian` uses `sqrt(p^2+m_1^2)+sqrt(p^2+m_2^2)` on the finite-difference `p^2` operator. `GIParameters{HarmonicOscillatorBasis}` provides the finite oscillator-basis analogue and is tested; FD remains the default headline comparison path. |
 | Eq. (3), spin-independent color Coulomb plus linear confinement | exact color-singlet sign/normalization for pointwise limit | `central_potential = b*r - 4*alpha_s(r)/(3r) + c`; the color-singlet factor turns Eq. (3) into this form. |
 | Eq. (4), contact hyperfine | active GI-style approximation | S-wave contact uses the smeared delta and the post-A14 `m/E` sandwich. In the FD sector, S-wave contact is diagonalized nonperturbatively with the central Hamiltonian, matching the paper's fixed-`L,S,J` first diagonalization more closely than a first-order shift. |
-| Eq. (4), tensor hyperfine | approximate | Angular factors and the Coulomb-limit color factor are tested. Active kernels use derivatives of closed-form smeared `G~` when enabled, but same-`J` tensor off-diagonal mixing is not yet folded into sector comparisons. |
+| Eq. (4), tensor hyperfine | assigned FD analogue | Angular factors, the Coulomb-limit color factor, and the same-`J` off-diagonal angular factor are tested. Active kernels use derivatives of closed-form smeared `G~` when enabled, and partnered triplet `L=J-1`/`L=J+1` rows are folded into `compare` through `TensorMixing`. |
 | Eq. (6), vector spin-orbit | exact equal-mass radial convention; assigned unequal-mass same-`J` blocks | Eq. (6) uses `alpha_s(r)/r^3` in the pointwise branch and `(1/r)dG~/dr` in the smeared branch. Equal-mass contraction is covered; open-flavor same-`J` antisymmetric spin-orbit mixing is now folded into `compare` when partner rows are present. |
 | Eq. (7), Thomas/scalar spin-orbit | exact equal-mass radial convention; approximate unequal-mass handling | Thomas term uses `(1/2r)dH_conf/dr`, with smeared `G~+S~` derivatives in the active branch. Table II `epsilon_so(S)=+0.055` is now loaded from audited input. |
 | Eq. (12)-(13) and Fig. 2, running `alpha_s` | exact for fitted GI ansatz | `alpha_s(Q^2)` coefficients map to `alpha_s(r)=sum alpha_k erf(gamma_k*r)` with `gamma=(1,sqrt(10),sqrt(1000))/2` GeV. Derivatives are regression-tested. |
-| Eq. (14), staged diagonalization | central basis comparison complete; mixing stages partial | Fixed-sector diagonalization exists in FD and HO basis paths. The central FD/HO comparison is documented in `appendix_a_ho_comparison.md`. The generic `MixingBlock` layer and open-flavor antisymmetric spin-orbit assignment are active in the FD comparison path; tensor and annihilation block builders are not yet wired into the physical sector comparison path. |
-| Eq. (16), general annihilation matrix element | image-audited; missing literal implementation | OCR/page pass confirms the `4*pi*(2L+1)`, `alpha_s(M_i^2)alpha_s(M_j^2)`, `S_L(Psi_j)S_L(Psi_i)`, and `1/(m_i m_j)` factors. Current reports use no annihilation except the calibrated pseudoscalar debug path for isoscalar `^1S_0`. |
+| Eq. (14), staged diagonalization | central basis comparison complete; mixing stages partial | Fixed-sector diagonalization exists in FD and HO basis paths. The central FD/HO comparison is documented in `appendix_a_ho_comparison.md`. The generic `MixingBlock` layer, open-flavor antisymmetric spin-orbit assignment, partnered tensor assignment, and calibrated isoscalar pseudoscalar annihilation control are active in the FD comparison path; literal paper P1/P2 and HO-order validation remain. |
+| Eq. (16), general annihilation matrix element | image-audited; missing literal implementation | OCR/page pass confirms the `4*pi*(2L+1)`, `alpha_s(M_i^2)alpha_s(M_j^2)`, `S_L(Psi_j)S_L(Psi_i)`, and `1/(m_i m_j)` factors. Current reports use the calibrated pseudoscalar control through `IsoscalarAnnihilation`; literal paper P1/P2 are still missing. |
 | Eq. (17), `S_L(Psi)` wavefunction factor | image-audited; missing literal implementation | OCR/page pass confirms the momentum-space normalized-wavefunction factor `(2*pi)^(-3/2) * integral d^3p/sqrt(4*pi) * Phi_i(p) * (p/E_i)^L * (m_i/E_i)`. |
 | Eq. (18a), pseudoscalar P1 replacement | image-audited; missing literal implementation | OCR/page pass confirms the bracket replacement `A_np*exp(-(m_i^2+m_j^2)/m_eta^2) + (2*pi/3)(ln2-1) alpha_s(M_j^2)alpha_s(M_i^2)/pi^2`. Current `:calibrated_p1` is a rank-one reconstruction/control, not the paper formula. |
 | Eq. (18b), pseudoscalar P2 replacement | image-audited; missing literal implementation | OCR/page pass confirms the mass-dependent sign-changing term `A_np*(1-(M/M0)^4)*exp(-(m_i^2+m_j^2)/M0^2 - M^4/(4M0^4))` plus the perturbative `(alpha_s(M^2)/pi)^2` term. The paper expects non-orthogonal poles, so it should be a separate model mode. |
@@ -329,8 +329,8 @@ Appendix A, use the checked split markdown pages and
   FD/HO Appendix-A operator.
 - Exact paper-order validation of the momentum-factor sandwiches in the spin
   couplings against the original HO-basis perturbation workflow.
-- Tensor off-diagonal mixing (perturbative in the text) and HO-order validation
-  of the now-active antisymmetric spin-orbit block.
+- HO-order validation of the now-active antisymmetric spin-orbit and tensor
+  blocks.
 - Isoscalar annihilation and explicit $n\bar n$—$s\bar s$ large mixings
   (Table III). The current debug target is the pseudoscalar `^1S_0` block:
   `docs/residual_reports/pseudoscalar_annihilation_audit.md` shows that a

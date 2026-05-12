@@ -72,6 +72,21 @@ All shifts below are relative to the central FD eigenvalue (the spin-independent
 | `1^3F_3` | 10.355 |    +0.0 |    -1.5 |    +0.9 |    -0.5 |    +1.1 |    +0.0 |    +0.6 | 10.355 |
 | `1^3F_4` | 10.355 |    +0.0 |    +4.4 |    -2.8 |    +1.6 |    -0.4 |    +0.0 |    +1.2 | 10.356 |
 
+## Same-J Tensor Mixing
+
+Rows below use the mixed eigenvalues from triplet `L=J-1` / `L=J+1` tensor blocks. Components are ordered as lower-`L`/higher-`L` in the unmixed basis.
+
+| state | unmixed GeV | mixed GeV | offdiag MeV | lower-L component | higher-L component |
+|---|---:|---:|---:|---:|---:|
+| `2^3S_1` | 10.004 | 10.004 |    -0.6 |  +1.000 |  +0.005 |
+| `1^3D_1` | 10.141 | 10.141 |    -0.6 |  +0.005 |  -1.000 |
+| `3^3S_1` | 10.353 | 10.353 |    +0.3 |  +1.000 |  -0.004 |
+| `2^3D_1` | 10.444 | 10.444 |    +0.3 |  +0.004 |  +1.000 |
+| `4^3S_1` | 10.632 | 10.632 |    +0.2 |  +1.000 |  -0.003 |
+| `3^3D_1` | 10.701 | 10.701 |    +0.2 |  +0.003 |  +1.000 |
+| `2^3P_2` | 10.255 | 10.255 |    +0.1 |  +1.000 |  -0.001 |
+| `1^3F_2` | 10.352 | 10.352 |    +0.1 |  +0.001 |  +1.000 |
+
 Mean absolute residual: 4.3 MeV.
 Max absolute residual: 12.1 MeV.
 

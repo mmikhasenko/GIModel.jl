@@ -10,38 +10,28 @@ function _same_grid_rmax(r::AbstractVector{<:Real})
     return h * (length(r) + 1)
 end
 
-function _s_wave_singlet_predictions_on_grid(
+function _s_wave_singlet_predictions_from_cache(
     params::GIParameters,
     masses::ConstituentMasses,
-    template::ChannelRadialSolution,
+    sol::ChannelRadialSolution,
     nlevels::Integer;
     contact_hyperfine::Bool,
 )
-    ev, vecs, r = channel_solution(
-        params,
-        masses,
-        0;
-        nlevels = nlevels,
-        ngrid = length(template.r),
-        rmax = _same_grid_rmax(template.r),
-        kinetic = :relativistic,
-    )
-    predictions = collect(Float64, ev)
+    predictions = collect(Float64, sol.eigenvalues_GeV[1:min(nlevels, length(sol.eigenvalues_GeV))])
     if contact_hyperfine
         levels = contact_hyperfine_nonperturbative_levels(
             params,
             masses,
             "S",
             1,
-            r,
+            sol.r,
             nlevels,
         )
         if !isempty(levels)
             predictions = levels
         else
-            radial_solution = ChannelRadialSolution(ev, vecs, r)
             for n in 1:nlevels
-                wave = RadialWaveOnUniformMesh(radial_solution, n)
+                wave = RadialWaveOnUniformMesh(sol, n)
                 predictions[n] += contact_hyperfine_shift_active(
                     params,
                     masses,
@@ -54,14 +44,31 @@ function _s_wave_singlet_predictions_on_grid(
     return predictions
 end
 
-function _apply_isoscalar_pseudoscalar_annihilation(
+"""
+    ComparisonContext(params, channel_cache)
+
+Read-only context for assigning post-fixed-sector mixing at the comparison
+layer. It deliberately contains cached radial solutions rather than invoking
+new numerical solves.
+"""
+struct ComparisonContext
+    params::GIParameters
+    channel_cache::Dict{RadialChannelKey,ChannelRadialSolution}
+end
+
+ComparisonContext(computed::SectorComputation) =
+    ComparisonContext(computed.params, computed.channel_cache)
+
+function assign_mixed_rows(
+    ::IsoscalarAnnihilation,
     rows::Vector,
-    computed::SectorComputation;
+    ctx::ComparisonContext;
+    enabled::Bool,
     contact_hyperfine::Bool,
     scheme::Symbol,
     strange_mass_GeV,
 )
-    scheme == :none && return rows
+    (!enabled || scheme == :none) && return rows
     scheme in (:calibrated_p1, :p1) ||
         throw(ArgumentError("unsupported isoscalar pseudoscalar annihilation scheme `$scheme`"))
     isnothing(strange_mass_GeV) &&
@@ -82,19 +89,15 @@ function _apply_isoscalar_pseudoscalar_annihilation(
     end
     haskey(q_by_n, 1) && haskey(q_by_n, 2) || return rows
 
-    template = nothing
-    for (key, sol) in computed.channel_cache
-        if key.L_label == "S"
-            template = sol
-            break
-        end
-    end
-    isnothing(template) && return rows
     strange_masses = ConstituentMasses(strange_mass_GeV, strange_mass_GeV)
-    ss = _s_wave_singlet_predictions_on_grid(
-        computed.params,
+    strange_key = RadialChannelKey(strange_masses, "S")
+    haskey(ctx.channel_cache, strange_key) || throw(ArgumentError(
+        "isoscalar annihilation requires the strange S-wave channel in SectorComputation; call compute_sector(...; extra_channel_masses=[ConstituentMasses(strange_mass_GeV,strange_mass_GeV)])",
+    ))
+    ss = _s_wave_singlet_predictions_from_cache(
+        ctx.params,
         strange_masses,
-        template,
+        ctx.channel_cache[strange_key],
         2;
         contact_hyperfine = contact_hyperfine,
     )
@@ -112,6 +115,8 @@ function _apply_isoscalar_pseudoscalar_annihilation(
             (
                 annihilation_shift_GeV = annihilation_shift,
                 annihilation_scheme = String(scheme),
+                isoscalar_annihilation_scheme = String(scheme),
+                isoscalar_annihilation_unmixed_GeV = row.predicted_GeV,
                 predicted_GeV = predicted,
                 residual_MeV = 1000 * (predicted - row.reference_GeV),
             ),
@@ -140,13 +145,32 @@ function _same_j_mixing_candidate(row)
            !isapprox(row.m1_GeV, row.m2_GeV; rtol = 0.0, atol = 1.0e-12)
 end
 
-function _apply_antisymmetric_spin_orbit_mixing(
+function _tensor_group_key(row)
+    return (row.sector, row.J, row.m1_GeV, row.m2_GeV)
+end
+
+function _tensor_mixing_candidate(row)
+    row.multiplicity == 3 || return false
+    haskey(L_SYMBOLS, row.L) || return false
+    J = row.J
+    J > 0 || return false
+    L = L_SYMBOLS[row.L]
+    return L == J - 1 || L == J + 1
+end
+
+function _tensor_partner_level(row)
+    L = L_SYMBOLS[row.L]
+    return L == row.J - 1 ? row.n - 1 : row.n
+end
+
+function assign_mixed_rows(
+    ::AntisymmetricSpinOrbit,
     rows::Vector,
-    computed::SectorComputation;
+    ctx::ComparisonContext;
     enabled::Bool,
     use_fine_structure::Bool,
 )
-    (!enabled || !use_fine_structure || !computed.params.fine_structure) && return rows
+    (!enabled || !use_fine_structure || !ctx.params.fine_structure) && return rows
 
     groups = Dict{Any,Vector{Int}}()
     for (i, row) in pairs(rows)
@@ -167,17 +191,17 @@ function _apply_antisymmetric_spin_orbit_mixing(
         triplet = rows[itriplet]
         masses = ConstituentMasses(singlet.m1_GeV, singlet.m2_GeV)
         key = RadialChannelKey(masses, singlet.L)
-        haskey(computed.channel_cache, key) || continue
-        sol = computed.channel_cache[key]
+        haskey(ctx.channel_cache, key) || continue
+        sol = ctx.channel_cache[key]
         singlet.n <= length(sol.eigenvalues_GeV) || continue
         radial = RadialWaveOnUniformMesh(sol, singlet.n)
         offdiag = spin_orbit_mixing_components(
-            computed.params,
+            ctx.params,
             masses,
             singlet.L,
             radial;
             enabled = true,
-            k_spin_orbit = computed.params.k_spin_orbit,
+            k_spin_orbit = ctx.params.k_spin_orbit,
         )
         mix = same_j_mixing(singlet.predicted_GeV, triplet.predicted_GeV, offdiag.total)
         ordered_indices = sort([isinglet, itriplet]; by = i -> rows[i].reference_GeV)
@@ -205,6 +229,87 @@ function _apply_antisymmetric_spin_orbit_mixing(
     return out
 end
 
+function assign_mixed_rows(
+    ::TensorMixing,
+    rows::Vector,
+    ctx::ComparisonContext;
+    enabled::Bool,
+    use_fine_structure::Bool,
+)
+    (!enabled || !use_fine_structure || !ctx.params.fine_structure) && return rows
+
+    groups = Dict{Any,Vector{Int}}()
+    for (i, row) in pairs(rows)
+        _tensor_mixing_candidate(row) || continue
+        partner_level = _tensor_partner_level(row)
+        partner_level >= 1 || continue
+        push!(get!(groups, (_tensor_group_key(row)..., partner_level), Int[]), i)
+    end
+
+    out = copy(rows)
+    for indices in values(groups)
+        length(indices) == 2 || continue
+        low_idx = findfirst(i -> L_SYMBOLS[rows[i].L] == rows[i].J - 1, indices)
+        high_idx = findfirst(i -> L_SYMBOLS[rows[i].L] == rows[i].J + 1, indices)
+        (isnothing(low_idx) || isnothing(high_idx)) && continue
+
+        ilow = indices[low_idx]
+        ihigh = indices[high_idx]
+        low = rows[ilow]
+        high = rows[ihigh]
+        masses = ConstituentMasses(low.m1_GeV, low.m2_GeV)
+        low_key = RadialChannelKey(masses, low.L)
+        high_key = RadialChannelKey(masses, high.L)
+        haskey(ctx.channel_cache, low_key) && haskey(ctx.channel_cache, high_key) || continue
+        low_sol = ctx.channel_cache[low_key]
+        high_sol = ctx.channel_cache[high_key]
+        low.n <= length(low_sol.eigenvalues_GeV) || continue
+        high.n <= length(high_sol.eigenvalues_GeV) || continue
+        low_radial = RadialWaveOnUniformMesh(low_sol, low.n)
+        high_radial = RadialWaveOnUniformMesh(high_sol, high.n)
+        offdiag = tensor_mixing_components(
+            ctx.params,
+            masses,
+            low_radial,
+            high_radial,
+            low.J;
+            enabled = true,
+            k_tensor = ctx.params.k_tensor,
+        )
+        basis = [
+            BasisState(low.n, low.L, 3, low.J; label = @sprintf("%d^3%s_%d", low.n, low.L, low.J)),
+            BasisState(high.n, high.L, 3, high.J; label = @sprintf("%d^3%s_%d", high.n, high.L, high.J)),
+        ]
+        block = MixingBlock(
+            "same-J tensor triplet L/L'",
+            basis,
+            [low.predicted_GeV offdiag.total; offdiag.total high.predicted_GeV];
+            mechanism = "tensor_mixing",
+        )
+        mix = diagonalize_mixing_block(block)
+        ordered_indices = sort([ilow, ihigh]; by = i -> rows[i].reference_GeV)
+        for level in eachindex(ordered_indices)
+            irow = ordered_indices[level]
+            row = rows[irow]
+            predicted = mix.masses[level]
+            vec = mix.vectors[:, level]
+            out[irow] = merge(
+                row,
+                (
+                    tensor_mixing_scheme = "tensor_mixing",
+                    tensor_unmixed_GeV = row.predicted_GeV,
+                    tensor_offdiag_GeV = offdiag.total,
+                    tensor_component_lowL = vec[1],
+                    tensor_component_highL = vec[2],
+                    predicted_GeV = predicted,
+                    residual_MeV = 1000 * (predicted - row.reference_GeV),
+                ),
+            )
+        end
+    end
+    return out
+end
+
 """
     compute_sector(params, annotated::AbstractVector; …)
 
@@ -213,6 +318,9 @@ cache eigenpairs in [`SectorComputation`](@ref), return it for [`compare`](@ref)
 
 `annotated` is normally `Vector{ReferenceStateWithMasses}` from [`attach_constituent_masses`](@ref); each
 element must have `.constituent_masses` and `.state` (with `.L`, `.n`, …) like [`ReferenceStateWithMasses`](@ref).
+`extra_channel_masses` lets the computation layer cache companion flavor
+channels needed by comparison-layer mixing, e.g. `s sbar` S waves for calibrated
+isoscalar pseudoscalar annihilation.
 """
 function compute_sector(
     params::GIParameters,
@@ -221,14 +329,23 @@ function compute_sector(
     rmax::Real = 24.0,
     kinetic::Symbol = :relativistic,
     eigensolver::Symbol = :full,
+    extra_channel_masses::AbstractVector{ConstituentMasses} = ConstituentMasses[],
 )
     channel_cache = Dict{RadialChannelKey,ChannelRadialSolution}()
+    requested = Tuple{ConstituentMasses,String}[]
     for row in annotated
-        masses = row.constituent_masses
-        state = row.state
-        key = RadialChannelKey(masses, state.L)
+        push!(requested, (row.constituent_masses, row.state.L))
+    end
+    observed_L = sort(unique(row.state.L for row in annotated))
+    for masses in extra_channel_masses
+        for L_label in observed_L
+            push!(requested, (masses, L_label))
+        end
+    end
+    for (masses, L_label) in requested
+        key = RadialChannelKey(masses, L_label)
         if !haskey(channel_cache, key)
-            Lval = L_SYMBOLS[state.L]
+            Lval = L_SYMBOLS[L_label]
             ev, vecs, r = channel_solution(
                 params,
                 masses,
@@ -251,6 +368,7 @@ function compare(
     contact_hyperfine::Bool = true,
     use_fine_structure::Bool = true,
     antisymmetric_spin_orbit_mixing::Bool = true,
+    tensor_mixing::Bool = true,
     isoscalar_pseudoscalar_annihilation::Symbol = :none,
     strange_mass_GeV = nothing,
 )
@@ -344,21 +462,38 @@ function compare(
                 same_j_mixing_angle_deg = 0.0,
                 same_j_component_singlet = NaN,
                 same_j_component_triplet = NaN,
+                tensor_mixing_scheme = "none",
+                tensor_unmixed_GeV = predicted,
+                tensor_offdiag_GeV = 0.0,
+                tensor_component_lowL = NaN,
+                tensor_component_highL = NaN,
+                isoscalar_annihilation_scheme = "none",
+                isoscalar_annihilation_unmixed_GeV = predicted,
                 predicted_GeV = predicted,
                 residual_MeV = 1000 * (predicted - state.mass_GeV),
                 confidence = state.confidence,
             ),
         )
     end
-    rows = _apply_antisymmetric_spin_orbit_mixing(
+    rows = assign_mixed_rows(
+        AntisymmetricSpinOrbit(),
         rows,
-        computed;
+        ComparisonContext(computed);
         enabled = antisymmetric_spin_orbit_mixing,
         use_fine_structure = use_fine_structure,
     )
-    return _apply_isoscalar_pseudoscalar_annihilation(
+    rows = assign_mixed_rows(
+        TensorMixing(),
         rows,
-        computed;
+        ComparisonContext(computed);
+        enabled = tensor_mixing,
+        use_fine_structure = use_fine_structure,
+    )
+    return assign_mixed_rows(
+        IsoscalarAnnihilation(),
+        rows,
+        ComparisonContext(computed);
+        enabled = isoscalar_pseudoscalar_annihilation != :none,
         contact_hyperfine = contact_hyperfine,
         scheme = isoscalar_pseudoscalar_annihilation,
         strange_mass_GeV = strange_mass_GeV,
@@ -422,6 +557,10 @@ function mixing_prone_state(row)
     if hasproperty(row, :same_j_mixing_scheme) &&
        getproperty(row, :same_j_mixing_scheme) == "antisymmetric_spin_orbit"
         return _tensor_sd_prone(row)
+    end
+    if hasproperty(row, :tensor_mixing_scheme) &&
+       getproperty(row, :tensor_mixing_scheme) == "tensor_mixing"
+        return false
     end
     if _open_flavor_like(row)
         _same_j_singlet_triplet_prone(row) && return true
@@ -628,6 +767,70 @@ function write_residual_report(
                         row.same_j_mixing_angle_deg,
                         row.same_j_component_singlet,
                         row.same_j_component_triplet,
+                    ),
+                )
+            end
+        end
+
+        if !isempty(rows) &&
+           hasproperty(rows[1], :tensor_mixing_scheme) &&
+           any(row.tensor_mixing_scheme == "tensor_mixing" for row in rows)
+            println(io)
+            println(io, "## Same-J Tensor Mixing")
+            println(io)
+            println(
+                io,
+                "Rows below use the mixed eigenvalues from triplet `L=J-1` / `L=J+1` tensor blocks. Components are ordered as lower-`L`/higher-`L` in the unmixed basis.",
+            )
+            println(io)
+            println(
+                io,
+                "| state | unmixed GeV | mixed GeV | offdiag MeV | lower-L component | higher-L component |",
+            )
+            println(io, "|---|---:|---:|---:|---:|---:|")
+            for row in rows
+                row.tensor_mixing_scheme == "tensor_mixing" || continue
+                label = @sprintf("%d^%d%s_%d", row.n, row.multiplicity, row.L, row.J)
+                println(
+                    io,
+                    @sprintf(
+                        "| `%s` | %.3f | %.3f | %+7.1f | %+7.3f | %+7.3f |",
+                        label,
+                        row.tensor_unmixed_GeV,
+                        row.predicted_GeV,
+                        1000 * row.tensor_offdiag_GeV,
+                        row.tensor_component_lowL,
+                        row.tensor_component_highL,
+                    ),
+                )
+            end
+        end
+
+        if !isempty(rows) &&
+           hasproperty(rows[1], :isoscalar_annihilation_scheme) &&
+           any(row.isoscalar_annihilation_scheme != "none" for row in rows)
+            println(io)
+            println(io, "## Isoscalar Annihilation Mixing")
+            println(io)
+            println(
+                io,
+                "Rows below use the calibrated isoscalar pseudoscalar annihilation control. Literal paper P1/P2 formulas remain separate modes.",
+            )
+            println(io)
+            println(io, "| state | scheme | unmixed GeV | mixed GeV | shift MeV |")
+            println(io, "|---|---|---:|---:|---:|")
+            for row in rows
+                row.isoscalar_annihilation_scheme == "none" && continue
+                label = @sprintf("%d^%d%s_%d", row.n, row.multiplicity, row.L, row.J)
+                println(
+                    io,
+                    @sprintf(
+                        "| `%s` | `%s` | %.3f | %.3f | %+7.1f |",
+                        label,
+                        row.isoscalar_annihilation_scheme,
+                        row.isoscalar_annihilation_unmixed_GeV,
+                        row.predicted_GeV,
+                        1000 * row.annihilation_shift_GeV,
                     ),
                 )
             end

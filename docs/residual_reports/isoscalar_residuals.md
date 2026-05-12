@@ -110,6 +110,17 @@ All shifts below are relative to the central FD eigenvalue (the spin-independent
 | `1^3G_5` | 2.334 |    +0.0 |   +24.0 |   -37.9 |   -14.0 |    -1.4 |    +0.0 |   -15.3 | 2.318 |
 | `1^3G_5` | 2.334 |    +0.0 |   +24.0 |   -37.9 |   -14.0 |    -1.4 |    +0.0 |   -15.3 | 2.318 |
 
+## Isoscalar Annihilation Mixing
+
+Rows below use the calibrated isoscalar pseudoscalar annihilation control. Literal paper P1/P2 formulas remain separate modes.
+
+| state | scheme | unmixed GeV | mixed GeV | shift MeV |
+|---|---|---:|---:|---:|
+| `1^1S_0` | `calibrated_p1` | 0.095 | 0.520 |  +425.0 |
+| `1^1S_0` | `calibrated_p1` | 0.095 | 0.960 |  +865.0 |
+| `2^1S_0` | `calibrated_p1` | 1.279 | 1.440 |  +161.3 |
+| `2^1S_0` | `calibrated_p1` | 1.279 | 1.630 |  +351.3 |
+
 Mean absolute residual: 101.2 MeV.
 Max absolute residual: 259.9 MeV.
 

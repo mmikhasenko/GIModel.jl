@@ -7,8 +7,8 @@ Model: finite-difference + `relativistic` kinetic, with GI momentum-sandwiched s
 | `1^1S_0` | 1.880 | 1.860 |   -20.2 | high |
 | `2^1S_0` | 2.580 | 2.575 |    -5.2 | high |
 | `1^3S_1` | 2.040 | 2.039 |    -0.9 | high |
-| `2^3S_1` | 2.640 | 2.648 |    +7.6 | high |
-| `1^3D_1` | 2.820 | 2.840 |   +19.6 | high |
+| `2^3S_1` | 2.640 | 2.647 |    +7.4 | high |
+| `1^3D_1` | 2.820 | 2.840 |   +19.9 | high |
 | `1^3P_0` | 2.400 | 2.412 |   +11.8 | high |
 | `1^1P_1` | 2.440 | 2.474 |   +34.2 | high |
 | `1^3P_1` | 2.490 | 2.480 |    -9.7 | high |
@@ -18,8 +18,8 @@ Model: finite-difference + `relativistic` kinetic, with GI momentum-sandwiched s
 | `1^1S_0` | 1.980 | 1.962 |   -18.0 | high |
 | `2^1S_0` | 2.670 | 2.667 |    -3.1 | high |
 | `1^3S_1` | 2.130 | 2.125 |    -4.7 | high |
-| `2^3S_1` | 2.730 | 2.737 |    +6.8 | high |
-| `1^3D_1` | 2.900 | 2.908 |    +7.7 | high |
+| `2^3S_1` | 2.730 | 2.737 |    +6.6 | high |
+| `1^3D_1` | 2.900 | 2.908 |    +7.9 | high |
 | `1^3P_0` | 2.480 | 2.498 |   +18.2 | high |
 | `1^1P_1` | 2.530 | 2.564 |   +34.0 | high |
 | `1^3P_1` | 2.570 | 2.569 |    -0.8 | high |
@@ -36,7 +36,7 @@ All shifts below are relative to the central FD eigenvalue (the spin-independent
 | `1^1S_0` | 2.001 |  -141.5 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |  -141.5 | 1.860 |
 | `2^1S_0` | 2.629 |   -54.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |   -54.0 | 2.575 |
 | `1^3S_1` | 2.001 |   +37.8 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |   +37.8 | 2.039 |
-| `2^3S_1` | 2.629 |   +18.8 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |   +18.8 | 2.648 |
+| `2^3S_1` | 2.629 |   +18.8 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |   +18.8 | 2.647 |
 | `1^3D_1` | 2.831 |    +0.0 |   -84.6 |  +100.9 |   +16.3 |    -7.5 |    +0.0 |    +8.8 | 2.840 |
 | `1^3P_0` | 2.475 |    +0.0 |  -148.8 |  +121.0 |   -27.8 |   -35.7 |    +0.0 |   -63.5 | 2.412 |
 | `1^1P_1` | 2.475 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 | 2.474 |
@@ -96,6 +96,17 @@ Rows below use the mixed eigenvalues from the `(^1L_J, ^3L_J)` mass block. Compo
 | `1^1P_1` | 2.564 | 2.564 |    +1.2 |  -14.15 |  +0.970 |  -0.244 |
 | `1^3P_1` | 2.569 | 2.569 |    +1.2 |  -14.15 |  +0.244 |  +0.970 |
 
+## Same-J Tensor Mixing
+
+Rows below use the mixed eigenvalues from triplet `L=J-1` / `L=J+1` tensor blocks. Components are ordered as lower-`L`/higher-`L` in the unmixed basis.
+
+| state | unmixed GeV | mixed GeV | offdiag MeV | lower-L component | higher-L component |
+|---|---:|---:|---:|---:|---:|
+| `2^3S_1` | 2.648 | 2.647 |    -6.9 |  +0.999 |  +0.036 |
+| `1^3D_1` | 2.840 | 2.840 |    -6.9 |  +0.036 |  -0.999 |
+| `2^3S_1` | 2.737 | 2.737 |    +5.9 |  +0.999 |  -0.035 |
+| `1^3D_1` | 2.908 | 2.908 |    +5.9 |  +0.035 |  +0.999 |
+
 Mean absolute residual: 12.4 MeV.
 Max absolute residual: 34.2 MeV.
 
@@ -105,10 +116,10 @@ Weighted by `2J+1` within each available `(n, L)` group.
 
 | multiplet | states | reference GeV | baseline GeV | residual MeV |
 |---|---:|---:|---:|---:|
-| `1D` | 4 | 2.870 | 2.867 |    -3.9 |
+| `1D` | 4 | 2.870 | 2.867 |    -3.8 |
 | `1F` | 2 | 3.150 | 3.141 |    -8.5 |
 | `1P` | 8 | 2.518 | 2.520 |    +2.3 |
 | `1S` | 4 | 2.046 | 2.039 |    -6.9 |
-| `2S` | 4 | 2.670 | 2.674 |    +4.4 |
+| `2S` | 4 | 2.670 | 2.674 |    +4.2 |
 
 The spin-independent central path is the current GI reproduction candidate. Remaining heavy-quarkonium residuals should be read mainly as spin-dependent/operator-ordering and extraction-audit targets.

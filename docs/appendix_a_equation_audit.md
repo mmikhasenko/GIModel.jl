@@ -25,7 +25,7 @@ Primary sources used here:
 | (A12)-(A14) closed-form `G~`, `S~`, and `tau_k` | clear | active FD analogue | `smeared_coulomb_G_closed`, `smeared_confinement_S_closed`, and `appendix_a_closed_central_values` implement these formulas; tests compare behavior and derivatives. |
 | Coulomb momentum factor after (A14) | clear | active FD analogue | `appendix_a_momentum_sandwich_matrix` builds `A(p) G~ A(p)` on the FD `p^2` eigenbasis. |
 | Spin-dependent `m/E` factor after (A14) | clear | active FD analogue | Contact, tensor, vector spin-orbit, and scalar spin-orbit use the two-sided `1/2 + epsilon_i` sandwich when the corresponding switches are enabled. |
-| (A15) effective Coulomb-side spin operators | mostly clear | partial | Diagonal fine-structure kernels are present, and active kernels use smeared `G~` derivatives. Off-diagonal tensor mixing is not yet wired into sector comparison. |
+| (A15) effective Coulomb-side spin operators | mostly clear | assigned FD analogue | Diagonal fine-structure kernels are present, active kernels use smeared `G~` derivatives, and partnered same-`J` tensor blocks are wired into sector comparison. |
 | (A16) scalar/Thomas spin-orbit operator | mostly clear | partial | The equal-mass radial convention is implemented; unequal-mass antisymmetric spin-orbit mixing is now folded into open-flavor same-`J` physical assignment in the FD comparison path. |
 | (A17) HO matrix-element factorization | clear | central basis comparison complete | `HarmonicOscillatorBasis` projects radial and momentum operators. The focused central comparison in `docs/residual_reports/appendix_a_ho_comparison.md` finds sub-MeV FD/HO agreement for the active Appendix-A central operator; post-diagonalization tensor/annihilation blocks and HO-order validation of the antisymmetric block remain separate stages. |
 
@@ -48,7 +48,8 @@ Primary sources used here:
    `docs/residual_reports/appendix_a_ho_comparison.md`.
 3. Use the HO basis next for paper-order spin-dependent checks, rather than
    reopening A5/A6.
-4. Wire tensor same-`J` mixing into sector comparison; the unequal-mass
-   antisymmetric spin-orbit block is now assigned for open-flavor partner rows.
-5. Treat isoscalar annihilation/P1/P2 as a separate stage using the Eq. (16)-(18)
+4. Tensor same-`J` mixing is now assigned through
+   `assign_mixed_rows(::TensorMixing, ...)`; the unequal-mass antisymmetric
+   spin-orbit block is also assigned for open-flavor partner rows.
+5. Treat literal isoscalar annihilation/P1/P2 as a separate stage using the Eq. (16)-(18)
    ledger in `docs/formula_map.md`.

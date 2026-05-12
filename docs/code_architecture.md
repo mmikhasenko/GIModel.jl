@@ -15,9 +15,11 @@ Includes are grouped intentionally:
    `QuarkMassTable` (`quark_mass_table.jl`).
 3. **Numerics** — potentials through Appendix-A status (`running_coupling.jl` … `appendix_a_status.jl`),
    Hamiltonian, `channel_solution`, contact / fine structure.
-4. **State mixing layer** — **`state_mixing.jl`** (`BasisState`, `MixingBlock`,
-   `MixingResult`, `diagonalize_mixing_block`) owns generic mass-matrix
-   bookkeeping for same-`J`, tensor, flavor, or radial mixing blocks.
+4. **State mixing layer** — **`state_mixing.jl`** (`MixingMechanism`,
+   `AntisymmetricSpinOrbit`, `TensorMixing`, `IsoscalarAnnihilation`,
+   `BasisState`, `MixingBlock`, `MixingResult`, `diagonalize_mixing_block`)
+   owns generic mass-matrix bookkeeping for same-`J`, tensor, flavor, or radial
+   mixing blocks.
 5. **Sector cache types + diagnostic sweep** — **`sector_solver.jl`** (`RadialChannelKey`,
    **`ChannelRadialSolution`**, **`SectorComputation`**, **`solve_sector`**).
 6. **Sector batch solves + comparison + reports** — **`sector_comparison.jl`**
@@ -70,21 +72,33 @@ information is already on each **`ReferenceStateWithMasses`**.
 
 ## Mixing layer (`src/state_mixing.jl`)
 
-Mixing is intentionally above the pure radial/basis-state calculations. A
-**`MixingBlock`** stores a list of **`BasisState`** labels and an arbitrary-size
+Mixing is intentionally above the pure radial/basis-state calculations. The
+marker supertype **`MixingMechanism`** names paper post-diagonalization
+mechanisms; current concrete markers are **`AntisymmetricSpinOrbit`**,
+**`TensorMixing`**, and **`IsoscalarAnnihilation`**. These are comparison-layer
+concepts, not alternate radial solver paths.
+
+A **`MixingBlock`** stores a list of **`BasisState`** labels and an arbitrary-size
 Hermitian mass matrix in GeV; **`diagonalize_mixing_block`** returns sorted
 eigenmasses and eigenvectors with stable phases for reports. This keeps
-mechanism-specific matrix construction separate from the linear algebra:
+mechanism-specific matrix construction separate from the linear algebra.
 
-- unequal-mass antisymmetric spin-orbit can build `^1L_L`/`^3L_L` blocks;
-- tensor interactions can later build same-`J`, different-`L` blocks such as
-  `^3S_1`/`^3D_1`;
-- isoscalar or radial mixings can use the same block/eigenstate reporting path.
+**`sector_comparison.jl`** adds a read-only **`ComparisonContext`** containing
+`GIParameters` and the already-computed **`ChannelRadialSolution`** cache. It
+does not start new radial solves. Current assignment is dispatched through
+`assign_mixed_rows(::AntisymmetricSpinOrbit, rows, ctx; ...)`, which folds
+open-flavor unequal-mass `^1L_J`/`^3L_J` blocks into `compare` when both partner
+rows are present.
 
-The current `same_j_mixing` helper in `spin_fine_structure.jl` is a two-state
-convenience wrapper around this generic layer. The gap is not the absence of a
-mixing layer; it is wiring mechanism-specific block builders into `compare`
-and physical sector assignment.
+The implemented assignment methods are:
+
+- `assign_mixed_rows(::AntisymmetricSpinOrbit, rows, ctx; ...)` for open-flavor
+  `^1L_J`/`^3L_J` pairs;
+- `assign_mixed_rows(::TensorMixing, rows, ctx; ...)` for triplet
+  `L=J-1`/`L=J+1` pairs such as `^3S_1`/`^3D_1`;
+- `assign_mixed_rows(::IsoscalarAnnihilation, rows, ctx; ...)` for the current
+  calibrated isoscalar pseudoscalar P1 control. Literal paper P1/P2 formulas
+  should extend this mechanism rather than adding solver-side logic.
 
 ## Radial and central-potential API
 

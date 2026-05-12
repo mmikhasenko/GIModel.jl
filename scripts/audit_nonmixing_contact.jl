@@ -64,7 +64,14 @@ for fn in sort(readdir(data_dir))
     flavor = get(FLAVOR, fn, "q")
     reference = load_reference_spectrum(joinpath(data_dir, fn))
     annotated = attach_constituent_masses(mq, reference, mq[flavor])
-    computed = compute_sector(params, annotated; kinetic = :relativistic)
+    extra_masses =
+        base == "isoscalar" ? [ConstituentMasses(mq["s"], mq["s"])] : ConstituentMasses[]
+    computed = compute_sector(
+        params,
+        annotated;
+        kinetic = :relativistic,
+        extra_channel_masses = extra_masses,
+    )
     rows = compare(
         computed,
         annotated;
@@ -136,7 +143,7 @@ open(joinpath(report_dir, "nonmixing_scorecard.md"), "w") do io
     println(io)
     println(
         io,
-        "Rows marked as likely to require still-missing explicit mixing are excluded: isoscalar flavor mixing and triplet `S`/`D`, `J=1` tensor/radial candidates. Open-flavor same-`J` `^1L_J`/`^3L_J` rows are included once the antisymmetric spin-orbit block is assigned.",
+        "Rows marked as likely to require still-missing explicit mixing are excluded: isoscalar flavor mixing and any same-`J` tensor/radial candidates that do not yet have an assigned partner block. Open-flavor `^1L_J`/`^3L_J` rows and assigned triplet `L/L'` tensor pairs are included once their mixing blocks are assigned.",
     )
     println(io)
     println(io, "| sector | included | excluded | mean abs deviation MeV | max abs deviation MeV |")

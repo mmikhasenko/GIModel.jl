@@ -21,10 +21,12 @@ handoff/autonomous planning notes.
   finite-difference path.
 - Equal-mass spin-orbit and tensor diagonal shifts are implemented as active
   sector diagnostics.
-- The generic mixing layer exists: `MixingBlock`,
-  `diagonalize_mixing_block`, and same-`J` antisymmetric spin-orbit blocks are
-  implemented and tested. `compare` now assigns open-flavor `^1L_J`/`^3L_J`
-  same-`J` pairs when both partner rows are present.
+- The generic mixing layer exists: `MixingMechanism`, `MixingBlock`,
+  `diagonalize_mixing_block`, and comparison-layer assignment methods for
+  `AntisymmetricSpinOrbit`, `TensorMixing`, and the calibrated
+  `IsoscalarAnnihilation` control. `compare` now assigns open-flavor
+  `^1L_J`/`^3L_J` same-`J` pairs and triplet tensor `L/L'` pairs when partner
+  rows are present.
 - Top-level spectrum CSVs cover Figs. 3-9, and promoted clean mass/mixing data
   now exists under `data/clean/`.
 
@@ -45,10 +47,12 @@ FD; the HO path is used mainly for basis-comparison audits.
 
 Why it matters: the claim that "HO is missing" is wrong. The central
 Appendix-A FD/HO comparison is now complete at the sub-MeV level. The
-open-flavor antisymmetric spin-orbit block is wired into the FD comparison path;
-the remaining gap is paper-order staging after the fixed-sector solve: explicit
-tensor and annihilation mass-matrix stages, plus HO-order validation of the
-spin/mixing blocks.
+open-flavor antisymmetric spin-orbit and triplet tensor blocks are wired into
+the FD comparison path, and the calibrated isoscalar pseudoscalar annihilation
+control is routed through the same mixing layer. The remaining gap is
+paper-order staging after the fixed-sector solve: literal paper P1/P2
+annihilation, broader Table III flavor/radial mixing, and HO-order validation
+of the spin/mixing blocks.
 
 Acceptance check: keep the existing FD-vs-HO scorecards, then add a paper-order
 comparison mode that starts from HO fixed-sector eigenvectors and applies the
@@ -83,18 +87,18 @@ What the paper does: the tensor part of the hyperfine interaction mixes
 `^3L_J` and `^3L'_J` states with the same `J` after the first fixed-sector
 diagonalization.
 
-What the repo does: the generic mixing level is already present and tested.
-Tensor diagonal shifts and angular factors are tested, but there is not yet a
-tensor-specific block builder that feeds `MixingBlock` for physical same-`J`
-sector assignment.
+What the repo does: the generic mixing level is present and tested. Tensor
+diagonal shifts, the same-`J` off-diagonal angular factor, cross-radial
+matrix elements, and `assign_mixed_rows(::TensorMixing, ...)` are implemented.
+Partnered triplet `L=J-1`/`L=J+1` rows are assigned in the comparison reports.
 
 Why it matters: this affects states such as triplet S/D candidates and can move
-assignments, not just masses. Current reports mark these rows as mixing-prone
-rather than judging them as final.
+assignments, not just masses. Partnered tensor rows are now judged in the main
+scorecards instead of being excluded as unresolved.
 
-Acceptance check: add an explicit tensor block builder on top of the existing
-`MixingBlock` layer, expose eigenvectors, and exclude fewer rows from the
-non-mixing scorecard only after the block has tests.
+Acceptance check: complete for available partnered rows. Residual reports now
+include same-`J` tensor mixing tables and the non-mixing scorecard includes
+assigned tensor pairs.
 
 ### 4. Unequal-Mass Antisymmetric Spin-Orbit Mixing
 
@@ -125,10 +129,11 @@ the general matrix element; Eq. (18a) and Eq. (18b) replace the pseudoscalar
 bracket for P1 and P2.
 
 What the repo does: formulas and Table III pseudoscalar rows are audited.
-`:calibrated_p1` is a rank-one diagnostic that reproduces the four isoscalar
-pseudoscalar masses. Literal `:paper_p1` and `:paper_p2` modes do not exist,
-and their constants/mode switches are not yet represented in `GIParameters` or
-the TOML parameter files.
+`:calibrated_p1` is routed through `assign_mixed_rows(::IsoscalarAnnihilation, ...)`
+as a rank-one control that reproduces the four isoscalar pseudoscalar masses.
+Literal `:paper_p1` and `:paper_p2` modes do not exist, and their
+constants/mode switches are not yet represented in `GIParameters` or the TOML
+parameter files.
 
 Why it matters: calibrated P1 proves the missing physics is localized, but it
 is not a paper implementation. P2 is especially different because the paper
@@ -192,9 +197,9 @@ implicitly.
 Close items 1-5 before spending time on 6-8. The most direct implementation
 order is:
 
-1. Add tensor off-diagonal block builders for same-`J` triplet `L/L'` pairs and
-   feed them through `MixingBlock`.
-2. Add annihilation/P1/P2 parameter fields to `GIParameters` and TOML.
-3. Implement literal `:paper_p1` using Eq. (16), Eq. (17), and Eq. (18a).
+1. Add annihilation/P1/P2 parameter fields to `GIParameters` and TOML.
+2. Implement literal `:paper_p1` using Eq. (16), Eq. (17), and Eq. (18a),
+   then expose it through `assign_mixed_rows(::IsoscalarAnnihilation, ...)`.
+3. Implement literal `:paper_p2` with the paper's mass-dependent pole term.
 4. Revisit Appendix-A/HO paper-order staging with the now-explicit mixing
    blocks.

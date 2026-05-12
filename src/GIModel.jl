@@ -49,7 +49,14 @@ include("channel_solver.jl")
 export spin_dot
 include("contact_hyperfine.jl")
 
-export BasisState, MixingBlock, MixingResult, diagonalize_mixing_block
+export MixingMechanism,
+    AntisymmetricSpinOrbit,
+    TensorMixing,
+    IsoscalarAnnihilation,
+    BasisState,
+    MixingBlock,
+    MixingResult,
+    diagonalize_mixing_block
 include("state_mixing.jl")
 
 export isoscalar_pseudoscalar_annihilation_solution
@@ -58,9 +65,11 @@ include("pseudoscalar_annihilation.jl")
 export fine_structure_split,
     fine_structure_components,
     spin_orbit_mixing_components,
+    tensor_mixing_components,
     same_j_mixing,
     LdotS,
-    tensor_triplet_LJ
+    tensor_triplet_LJ,
+    tensor_triplet_offdiag_sameJ
 include("spin_fine_structure.jl")
 
 export CentralPotentialPath, central_potential_path

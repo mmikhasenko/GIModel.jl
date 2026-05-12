@@ -37,12 +37,12 @@ the checked markdown under `paper/vision_ocr/pages/`; see
 - **(A15)** and **(A16)** – Effective spin-dependent operators are partially
   represented. Diagonal contact/fine-structure paths use GI-style momentum
   sandwiches and smeared kernels, and open-flavor same-`J` antisymmetric
-  spin-orbit assignment is active. Off-diagonal tensor mixing is still a
-  follow-up stage.
+  spin-orbit assignment plus partnered tensor assignment are active in the FD
+  comparison path.
 - **(A17)** – The HO matrix-element factorization is available as a basis path,
   but the physical comparison path still needs paper-order staging: fixed-sector
-  HO diagonalization followed by tensor and annihilation mass-matrix blocks,
-  plus HO-order validation of the antisymmetric spin-orbit block.
+  HO diagonalization followed by the same mixing mechanisms, plus literal
+  annihilation mass-matrix blocks.
 
 **Repository consequence:** the flag `appendix_a_smearing` remains the older
 experimental (A7)–(A8) 3D blur of pointwise `G` and `S`; keep it as a diagnostic
@@ -50,7 +50,8 @@ branch. The active central reproduction branch is
 `appendix_a_momentum_sandwich`, which uses closed-form `G~`, `S~`, plus
 `A(p)G~A(p)`. The remaining serious milestone is no longer "get A12-A13 into
 code"; it is to compare the FD analogue against the paper's HO matrix-element
-ordering and wire the post-diagonalization mixing blocks.
+ordering, then add tensor and literal annihilation blocks through the
+post-diagonalization mixing layer.
 
 ## Quick PDF map
 

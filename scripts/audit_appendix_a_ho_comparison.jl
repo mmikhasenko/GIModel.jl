@@ -249,7 +249,7 @@ open(report_path, "w") do io
     )
     println(
         io,
-        "- This completes the current Appendix-A central comparison stage: the remaining work is not another central-potential transcription, but wiring post-diagonalization mixing blocks and, later, literal annihilation modes.",
+        "- This completes the current Appendix-A central comparison stage: the remaining work is not another central-potential transcription, but tensor post-diagonalization mixing, HO-order validation of the now-assigned antisymmetric block, and later literal annihilation modes.",
     )
 end
 

@@ -39,7 +39,14 @@ for fn in readdir(data_dir)
     title = @sprintf("Residuals: %s (GI-style)", base)
     reference = load_reference_spectrum(ref_path)
     annotated = attach_constituent_masses(mq, reference, mq[flavor])
-    computed = compute_sector(params, annotated; kinetic = :relativistic)
+    extra_masses =
+        base == "isoscalar" ? [ConstituentMasses(mq["s"], mq["s"])] : ConstituentMasses[]
+    computed = compute_sector(
+        params,
+        annotated;
+        kinetic = :relativistic,
+        extra_channel_masses = extra_masses,
+    )
     rows = compare(
         computed,
         annotated;
