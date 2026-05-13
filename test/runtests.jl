@@ -1020,6 +1020,13 @@ end
     end
 end
 
+@testset "GI momentum-space alpha_s profile" begin
+    @test GIModel.alpha_s_q(0.0) ≈ sum(GIModel.ALPHA_COEFFS)
+    @test GIModel.alpha_s_q(1.0) ≈
+          sum(a * exp(-1.0^2 / (4g^2)) for (a, g) in zip(GIModel.ALPHA_COEFFS, GIModel.ALPHA_GAMMAS))
+    @test GIModel.alpha_s_q(3.0) < GIModel.alpha_s_q(1.0) < GIModel.alpha_s_q(0.0)
+end
+
 @testset "GI erf profile second derivative consistency" begin
     for x in (0.1, 0.4, 1.1, 1.8)
         δ = 1e-6 * max(1.0, x)
@@ -1716,4 +1723,27 @@ end
     @test [row.predicted_GeV for row in p1] != [row.predicted_GeV for row in p2]
     @test [row.predicted_GeV for row in p1_short] ≈ [row.predicted_GeV for row in p1]
     @test [row.predicted_GeV for row in p2_short] ≈ [row.predicted_GeV for row in p2]
+
+    qkey = GIModel.RadialChannelKey(mq["q"], mq["q"], "S")
+    qsol = computed.channel_cache[qkey]
+    qlevels = GIModel.contact_hyperfine_nonperturbative_levels(
+        params,
+        ConstituentMasses(mq["q"], mq["q"]),
+        "S",
+        1,
+        qsol.r,
+        1,
+    )
+    qbasis = pseudoscalar_annihilation_basis_input(
+        "1 ns",
+        mq["q"],
+        qlevels[1],
+        RadialWaveOnUniformMesh(qsol, 1),
+    )
+    legacy = GIModel._s0_smearing_factor(FDOriginP2Smearing(), qbasis)
+    exact = GIModel._s0_smearing_factor(FDMomentumIntegralSmearing(180), qbasis)
+    coherent = GIModel._annihilation_overlap_factor(FDMomentumIntegralSmearing(180), qbasis)
+    @test isfinite(exact)
+    @test abs(coherent) ≈ sqrt(2) * abs(exact) rtol = 1e-12
+    @test abs(exact) != legacy
 end

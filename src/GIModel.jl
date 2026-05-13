@@ -62,6 +62,8 @@ include("state_mixing.jl")
 export CalibratedP1Annihilation,
     PaperP1Annihilation,
     PaperP2Annihilation,
+    FDOriginP2Smearing,
+    FDMomentumIntegralSmearing,
     pseudoscalar_annihilation_basis_input,
     isoscalar_pseudoscalar_annihilation_solution
 include("pseudoscalar_annihilation.jl")

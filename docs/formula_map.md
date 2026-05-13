@@ -312,8 +312,8 @@ Appendix A, use the checked split markdown pages and
 | Eq. (7), Thomas/scalar spin-orbit | exact equal-mass radial convention; approximate unequal-mass handling | Thomas term uses `(1/2r)dH_conf/dr`, with smeared `G~+S~` derivatives in the active branch. Table II `epsilon_so(S)=+0.055` is now loaded from audited input. |
 | Eq. (12)-(13) and Fig. 2, running `alpha_s` | exact for fitted GI ansatz | `alpha_s(Q^2)` coefficients map to `alpha_s(r)=sum alpha_k erf(gamma_k*r)` with `gamma=(1,sqrt(10),sqrt(1000))/2` GeV. Derivatives are regression-tested. |
 | Eq. (14), staged diagonalization | central basis comparison complete; mixing stages partial | Fixed-sector diagonalization exists in FD and HO basis paths. The central FD/HO comparison is documented in `appendix_a_ho_comparison.md`. The generic `MixingBlock` layer, open-flavor antisymmetric spin-orbit assignment, partnered tensor assignment, calibrated isoscalar pseudoscalar control, and paper P1/P2 pseudoscalar modes are active in the FD comparison path; HO-order validation remains. |
-| Eq. (16), general annihilation matrix element | pseudoscalar FD formula mode implemented | OCR/page pass confirms the `4*pi*(2L+1)`, `alpha_s(M_i^2)alpha_s(M_j^2)`, `S_L(Psi_j)S_L(Psi_i)`, and `1/(m_i m_j)` factors. `IsoscalarAnnihilation` now offers the calibrated control plus `:p1`/`:p2` paper formula modes for `^1S_0`. |
-| Eq. (17), `S_L(Psi)` wavefunction factor | S-wave FD proxy implemented | OCR/page pass confirms the momentum-space normalized-wavefunction factor `(2*pi)^(-3/2) * integral d^3p/sqrt(4*pi) * Phi_i(p) * (p/E_i)^L * (m_i/E_i)`. The current FD `^1S_0` implementation uses the coordinate-space origin value with a cached radial `<p^2>` relativistic factor; exact HO momentum-space matrix elements remain an audit target. |
+| Eq. (16), general annihilation matrix element | pseudoscalar FD formula mode implemented | OCR/page pass confirms the `4*pi*(2L+1)`, `alpha_s(M_i^2)alpha_s(M_j^2)`, `S_L(Psi_j)S_L(Psi_i)`, and `1/(m_i m_j)` factors. `IsoscalarAnnihilation` now offers the calibrated control plus `:p1`/`:p2` paper formula modes for `^1S_0`; the formula modes evaluate the paper's momentum-space `alpha_s(Q^2)` profile and include the coherent `sqrt(2)` factor for the normalized `ns=(u ubar+d dbar)/sqrt(2)` basis state. |
+| Eq. (17), `S_L(Psi)` wavefunction factor | S-wave FD momentum integral implemented | OCR/page pass confirms the momentum-space normalized-wavefunction factor `(2*pi)^(-3/2) * integral d^3p/sqrt(4*pi) * Phi_i(p) * (p/E_i)^L * (m_i/E_i)`. The active FD `^1S_0` implementation evaluates this S-wave momentum integral from the cached radial wavefunction. `FDOriginP2Smearing` remains as a named legacy diagnostic; exact HO momentum-space matrix elements remain an audit target. |
 | Eq. (18a), pseudoscalar P1 replacement | implemented as `:p1` / `PaperP1Annihilation` | OCR/page pass confirms the bracket replacement `A_np*exp(-(m_i^2+m_j^2)/m_eta^2) + (2*pi/3)(ln2-1) alpha_s(M_j^2)alpha_s(M_i^2)/pi^2`. Table III constants are loaded from `[annihilation]` in `data/parameters.provisional.toml`. |
 | Eq. (18b), pseudoscalar P2 replacement | implemented as `:p2` / `PaperP2Annihilation` | OCR/page pass confirms the mass-dependent sign-changing term `A_np*(1-(M/M0)^4)*exp(-(m_i^2+m_j^2)/M0^2 - M^4/(4M0^4))` plus the perturbative `(alpha_s(M^2)/pi)^2` term. The implementation solves each pole as a mass-dependent fixed point, so the vectors are not treated as orthogonal. |
 | Table II parameters | audited for active solver inputs | CSV/TOML sync is tested. The latest audited correction is `epsilon_so(S)=+0.055`. Remaining low-confidence labels should still be promoted only after image/PDF checks. |
@@ -331,8 +331,9 @@ Appendix A, use the checked split markdown pages and
   couplings against the original HO-basis perturbation workflow.
 - HO-order validation of the now-active antisymmetric spin-orbit and tensor
   blocks.
-- Table III eigenvector fidelity. Literal P1/P2 modes exist, but
-  `docs/residual_reports/table_iii_mixing_audit.md` shows that the current FD
-  Eq. (17) proxy produces too little light/radial mixing compared with the
-  published amplitudes. The next target is matrix-element fidelity, not another
+- Table III eigenvector fidelity. Literal P1/P2 modes exist and now use the
+  paper-facing momentum `alpha_s(Q^2)`, coherent `ns` factor, and FD Eq. (17)
+  momentum integral, but `docs/residual_reports/table_iii_mixing_audit.md`
+  still shows too little light/radial mixing compared with the published
+  amplitudes. The next target is paper-order basis fidelity, not another
   calibrated mass-only control.

@@ -8,14 +8,31 @@ const PSEUDOSCALAR_PERTURBATIVE_COEFF = 2π / 3 * (log(2) - 1)
 
 abstract type PseudoscalarAnnihilationModel end
 
+abstract type PseudoscalarSmearingScheme end
+
+"""Legacy FD proxy: coordinate-space origin times one averaged relativistic factor."""
+struct FDOriginP2Smearing <: PseudoscalarSmearingScheme end
+
+"""FD evaluation of the Eq. (17) S-wave momentum integral."""
+struct FDMomentumIntegralSmearing <: PseudoscalarSmearingScheme
+    npoints::Int
+end
+FDMomentumIntegralSmearing() = FDMomentumIntegralSmearing(900)
+
 """Calibrated rank-one control matching the digitized GI Fig. 5/Table III masses."""
 struct CalibratedP1Annihilation <: PseudoscalarAnnihilationModel end
 
 """Paper Eq. (18a) pseudoscalar annihilation model."""
-struct PaperP1Annihilation <: PseudoscalarAnnihilationModel end
+struct PaperP1Annihilation{S<:PseudoscalarSmearingScheme} <: PseudoscalarAnnihilationModel
+    smearing::S
+end
+PaperP1Annihilation() = PaperP1Annihilation(FDMomentumIntegralSmearing())
 
 """Paper Eq. (18b) mass-dependent pseudoscalar annihilation model."""
-struct PaperP2Annihilation <: PseudoscalarAnnihilationModel end
+struct PaperP2Annihilation{S<:PseudoscalarSmearingScheme} <: PseudoscalarAnnihilationModel
+    smearing::S
+end
+PaperP2Annihilation() = PaperP2Annihilation(FDMomentumIntegralSmearing())
 
 struct PseudoscalarAnnihilationBasisInput
     label::String
@@ -75,7 +92,7 @@ end
 
 function _alpha_s_mass_scale(mass_GeV::Real)
     q = max(float(mass_GeV), 1.0e-9)
-    return alpha_s_r(1 / q)
+    return alpha_s_q(q)
 end
 
 function _reduced_p2_expectation(radial::RadialWaveOnUniformMesh)
@@ -92,12 +109,53 @@ function _reduced_p2_expectation(radial::RadialWaveOnUniformMesh)
     return accum / norm
 end
 
-function _s0_smearing_factor(input::PseudoscalarAnnihilationBasisInput)
+function _s0_smearing_factor(::FDOriginP2Smearing, input::PseudoscalarAnnihilationBasisInput)
     wave = input.radial
     origin_R = abs(wave.u[1] / wave.r[1])
     p2 = _reduced_p2_expectation(wave)
     rel = input.constituent_mass_GeV / sqrt(input.constituent_mass_GeV^2 + p2)
     return origin_R * rel / sqrt(4π)
+end
+
+function _j0(x::Real)
+    abs(x) < 1.0e-8 && return 1.0 - x^2 / 6
+    return sin(x) / x
+end
+
+function _momentum_radial_swave(radial::RadialWaveOnUniformMesh, p::Real)
+    accum = 0.0
+    for k in eachindex(radial.r)
+        accum += radial.r[k] * radial.u[k] * _j0(p * radial.r[k])
+    end
+    return sqrt(2 / π) * accum * radial.h
+end
+
+function _s0_smearing_factor(scheme::FDMomentumIntegralSmearing, input::PseudoscalarAnnihilationBasisInput)
+    wave = input.radial
+    mass = input.constituent_mass_GeV
+    npoints = max(scheme.npoints, 32)
+    pmax = π / wave.h
+    dp = pmax / (npoints - 1)
+    accum = 0.0
+    for k in 1:npoints
+        p = (k - 1) * dp
+        weight = (k == 1 || k == npoints) ? 0.5 : 1.0
+        Φ = _momentum_radial_swave(wave, p)
+        accum += weight * p^2 * Φ * mass / sqrt(mass^2 + p^2)
+    end
+    return sqrt(2 / π) * accum * dp / sqrt(4π)
+end
+
+function _flavor_coherence_factor(input::PseudoscalarAnnihilationBasisInput)
+    label = lowercase(input.label)
+    return (occursin("ns", label) || occursin("n nbar", label)) ? sqrt(2.0) : 1.0
+end
+
+function _annihilation_overlap_factor(
+    scheme::PseudoscalarSmearingScheme,
+    input::PseudoscalarAnnihilationBasisInput,
+)
+    return _flavor_coherence_factor(input) * _s0_smearing_factor(scheme, input)
 end
 
 function _paper_p1_bracket(
@@ -135,13 +193,13 @@ function _paper_p2_bracket(
 end
 
 function _paper_annihilation_matrix(
-    ::PaperP1Annihilation,
+    model::PaperP1Annihilation,
     params::GIParameters,
     basis::AbstractVector{PseudoscalarAnnihilationBasisInput},
 )
     n = length(basis)
     matrix = Matrix(Diagonal([state.diagonal_GeV for state in basis]))
-    factors = [_s0_smearing_factor(state) for state in basis]
+    factors = [_annihilation_overlap_factor(model.smearing, state) for state in basis]
     for j in 1:n, i in 1:n
         mi = basis[i].constituent_mass_GeV
         mj = basis[j].constituent_mass_GeV
@@ -154,14 +212,14 @@ function _paper_annihilation_matrix(
 end
 
 function _paper_annihilation_matrix(
-    ::PaperP2Annihilation,
+    model::PaperP2Annihilation,
     params::GIParameters,
     basis::AbstractVector{PseudoscalarAnnihilationBasisInput};
     pole_mass_GeV::Real,
 )
     n = length(basis)
     matrix = Matrix(Diagonal([state.diagonal_GeV for state in basis]))
-    factors = [_s0_smearing_factor(state) for state in basis]
+    factors = [_annihilation_overlap_factor(model.smearing, state) for state in basis]
     for j in 1:n, i in 1:n
         mi = basis[i].constituent_mass_GeV
         mj = basis[j].constituent_mass_GeV
@@ -261,7 +319,7 @@ function isoscalar_pseudoscalar_annihilation_solution(
         matrix;
         mechanism = "paper_p1_pseudoscalar_annihilation",
         source = "GI Eq. (16) with Eq. (18a) and Table III P1 constants",
-        notes = "Uses cached FD radial waves for the Eq. (17) S-wave smearing proxy.",
+        notes = "Uses cached FD radial waves in the Eq. (17) S-wave momentum integral.",
     )
     return (
         block = block,
@@ -306,7 +364,7 @@ function isoscalar_pseudoscalar_annihilation_solution(
         matrices[1];
         mechanism = "paper_p2_pseudoscalar_annihilation",
         source = "GI Eq. (16) with Eq. (18b) and Table III P2 constants",
-        notes = "Each pole is solved as a fixed point of the mass-dependent Eq. (18b) matrix, so eigenvectors are not expected to be orthogonal.",
+        notes = "Each pole is solved as a fixed point of the mass-dependent Eq. (18b) matrix using the Eq. (17) S-wave momentum integral, so eigenvectors are not expected to be orthogonal.",
     )
     return (
         block = block,

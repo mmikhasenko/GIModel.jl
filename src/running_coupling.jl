@@ -1,6 +1,7 @@
 # Public API (exported from GIModel.jl): (none — use `GIModel.fn` in tests/scripts)
 
-# Godfrey–Isgur parameterizes α_s(r) as a sum of erf pieces; derivatives stay here for reuse.
+# Godfrey–Isgur parameterizes α_s(Q²) as a sum of Gaussians. The coordinate-space
+# erf profile is the corresponding Coulomb kernel representation.
 function erf_prime(x::AbstractFloat)
     2 / sqrt(π) * exp(-x^2)
 end
@@ -10,6 +11,8 @@ function erf_second(x::AbstractFloat)
 end
 
 alpha_s_r(r::Real) = sum(a * erf(g * r) for (a, g) in zip(ALPHA_COEFFS, ALPHA_GAMMAS))
+
+alpha_s_q(Q::Real) = sum(a * exp(-(Q^2) / (4g^2)) for (a, g) in zip(ALPHA_COEFFS, ALPHA_GAMMAS))
 
 function central_potential(r::Real, params::GIParameters)
     params.b * r - (4 / 3) * alpha_s_r(r) / r + params.c

@@ -133,17 +133,23 @@ What the repo does: formulas and Table III rows are audited.
 `:calibrated_p1` is routed through `assign_mixed_rows(::IsoscalarAnnihilation, ...)`
 as a rank-one control that reproduces the four isoscalar pseudoscalar masses.
 Literal `:paper_p1` and `:paper_p2` modes exist and their constants are
-represented in `GIParameters` and the TOML parameter file. The current FD
-Eq. (17) proxy does not reproduce the Table III eigenvectors; see
-`docs/residual_reports/table_iii_mixing_audit.md`.
+represented in `GIParameters` and the TOML parameter file. The formula path now
+uses the paper's momentum-space `alpha_s(Q^2)`, evaluates the S-wave Eq. (17)
+momentum integral on the FD radial wavefunction, and includes the coherent
+`sqrt(2)` factor for the normalized `ns` flavor state. These local corrections
+still do not reproduce the Table III eigenvectors; see
+`docs/residual_reports/table_iii_mixing_audit.md` and
+`docs/residual_reports/table_iii_suspect_investigation.md`.
 
 Why it matters: calibrated P1 proves the missing physics is localized, but it
 is not a paper implementation. P2 is especially different because the paper
 expects mass-dependent, non-orthogonal poles.
 
-Acceptance check: partially complete. The modes and parameters exist; the
-remaining acceptance criterion is eigenvector/mass-splitting fidelity against
-Table III.
+Acceptance check: partially complete. The modes, parameters, momentum-coupling
+convention, FD Eq. (17) integral, and `ns` flavor factor exist; the remaining
+acceptance criterion is eigenvector/mass-splitting fidelity against Table III,
+likely requiring paper-order HO basis inputs or a sharper reconstruction of the
+pseudoscalar phenomenological prescription.
 
 ### 6. General Table III Isoscalar Mixing, Later Than 1-5
 

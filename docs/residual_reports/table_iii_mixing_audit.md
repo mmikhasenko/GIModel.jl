@@ -8,31 +8,31 @@ This audit compares the implemented literal FD pseudoscalar P1/P2 modes with the
 
 ## Current Conclusion
 
-The current literal FD Eq. (18a,b) modes do **not** reproduce the Table III amplitudes. They generate small annihilation-driven admixtures, while Table III's light pseudoscalars have large `ns`/`ss` and radial components. This confirms that the calibrated mass-control path is not yet a Table-III eigenvector reproduction, and that the next technical step is matching the paper-order annihilation matrix elements/wavefunction factor, not retuning comparison residuals.
+The current literal FD Eq. (18a,b) modes do **not** reproduce the Table III amplitudes. They now use the paper-facing momentum `alpha_s(Q^2)`, a direct FD S-wave Eq. (17) momentum integral, and coherent `ns` flavor normalization, but still generate small annihilation-driven admixtures while Table III's light pseudoscalars have large `ns`/`ss` and radial components. This confirms that the calibrated mass-control path is not yet a Table-III eigenvector reproduction, and that the next technical step is paper-order basis/matrix-element fidelity rather than retuning comparison residuals.
 
 ## `P1`
 
 | state | pole / column | mass GeV | Table Δ MeV | vector RMS | max | largest model components |
 |---|---:|---:|---:|---:|---:|---|
-| `eta(548)` | 1 | 0.135 | 370 | 0.291 | 0.680 | `1 ns`=+0.998, `1 ss`=-0.050, `2 ns`=-0.032 |
-| `eta_c(2980)` | 5 | 2.957 | n/a | 0.004 | 0.008 | `1 cc`=+1.000, `2 cc`=+0.000, `2 ss`=-0.000 |
-| `eta_prime(958)` | 2 | 0.644 | 810 | 0.317 | 0.531 | `1 ss`=+0.998, `1 ns`=+0.049, `2 ns`=-0.037 |
-| `eta_r(?)` | 3 | 1.312 | n/a | 0.207 | 0.360 | `2 ns`=+0.996, `2 ss`=-0.080, `1 ss`=+0.034 |
-| `eta_r_prime(?)` | 4 | 1.579 | n/a | 0.120 | 0.188 | `2 ss`=+0.997, `2 ns`=+0.079, `1 ns`=+0.018 |
+| `eta(548)` | 2 | 0.637 | 370 | 0.264 | 0.629 | `1 ss`=-0.999, `1 ns`=+0.041, `2 ns`=-0.018 |
+| `eta_c(2980)` | 5 | 2.957 | n/a | 0.004 | 0.008 | `1 cc`=+1.000, `1 ns`=+0.000, `1 ss`=-0.000 |
+| `eta_prime(958)` | 1 | 0.141 | 810 | 0.332 | 0.579 | `1 ns`=+0.999, `1 ss`=+0.041, `2 ns`=-0.022 |
+| `eta_r(?)` | 3 | 1.292 | n/a | 0.213 | 0.415 | `2 ns`=+0.999, `2 ss`=-0.025, `1 ns`=+0.023 |
+| `eta_r_prime(?)` | 4 | 1.568 | n/a | 0.129 | 0.235 | `2 ss`=+1.000, `2 ns`=+0.025, `1 ns`=+0.009 |
 
-Mean vector RMS for `P1`: `0.188`; max vector RMS: `0.317`.
+Mean vector RMS for `P1`: `0.188`; max vector RMS: `0.332`.
 
 ## `P2`
 
 | state | pole / column | mass GeV | Table Δ MeV | vector RMS | max | largest model components |
 |---|---:|---:|---:|---:|---:|---|
-| `eta(548)` | 1 | 0.149 | 340 | 0.273 | 0.633 | `1 ns`=+0.994, `1 ss`=-0.097, `2 ns`=-0.042 |
-| `eta_c(2980)` | 5 | 2.957 | n/a | 0.001 | 0.003 | `1 cc`=+1.000, `2 cc`=+0.001, `2 ss`=-0.000 |
-| `eta_prime(958)` | 2 | 0.668 | 780 | 0.239 | 0.406 | `1 ss`=+0.994, `1 ns`=+0.082, `2 ns`=-0.066 |
-| `eta_r(?)` | 3 | 1.264 | n/a | 0.051 | 0.102 | `2 ns`=+0.999, `2 ss`=+0.039, `1 ss`=-0.022 |
-| `eta_r_prime(?)` | 4 | 1.538 | n/a | 0.064 | 0.115 | `2 ss`=+0.992, `2 ns`=-0.120, `1 ss`=-0.034 |
+| `eta(548)` | 2 | 0.652 | 340 | 0.256 | 0.607 | `1 ss`=-0.997, `1 ns`=+0.073, `2 ns`=-0.034 |
+| `eta_c(2980)` | 5 | 2.957 | n/a | 0.001 | 0.002 | `1 cc`=+1.000, `2 cc`=-0.000, `1 ns`=+0.000 |
+| `eta_prime(958)` | 1 | 0.159 | 780 | 0.361 | 0.696 | `1 ns`=+0.996, `1 ss`=+0.084, `2 ns`=-0.031 |
+| `eta_r(?)` | 3 | 1.272 | n/a | 0.045 | 0.080 | `2 ns`=+1.000, `2 ss`=+0.014, `1 ss`=+0.010 |
+| `eta_r_prime(?)` | 4 | 1.557 | n/a | 0.066 | 0.118 | `2 ss`=+0.999, `2 ns`=-0.042, `1 ns`=-0.015 |
 
-Mean vector RMS for `P2`: `0.126`; max vector RMS: `0.273`.
+Mean vector RMS for `P2`: `0.146`; max vector RMS: `0.361`.
 
 ## Non-Pseudoscalar Rows
 
