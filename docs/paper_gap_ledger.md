@@ -139,7 +139,12 @@ momentum integral on the FD radial wavefunction, and includes the coherent
 `sqrt(2)` factor for the normalized `ns` flavor state. These local corrections
 still do not reproduce the Table III eigenvectors; see
 `docs/residual_reports/table_iii_mixing_audit.md` and
-`docs/residual_reports/table_iii_suspect_investigation.md`.
+`docs/residual_reports/table_iii_suspect_investigation.md`. The inverse probe
+in `docs/residual_reports/table_iii_inverse_matrix.md` shows that the visible
+light-pseudoscalar Table III amplitudes imply an effective annihilation block
+with hundreds-of-MeV diagonal/off-diagonal structure, while the current FD
+Eq. (16)-(18) block is tens of MeV and only partly aligned after phase/scalar
+optimization.
 
 Why it matters: calibrated P1 proves the missing physics is localized, but it
 is not a paper implementation. P2 is especially different because the paper

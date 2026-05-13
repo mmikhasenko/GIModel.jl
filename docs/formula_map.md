@@ -335,5 +335,7 @@ Appendix A, use the checked split markdown pages and
   paper-facing momentum `alpha_s(Q^2)`, coherent `ns` factor, and FD Eq. (17)
   momentum integral, but `docs/residual_reports/table_iii_mixing_audit.md`
   still shows too little light/radial mixing compared with the published
-  amplitudes. The next target is paper-order basis fidelity, not another
-  calibrated mass-only control.
+  amplitudes. `docs/residual_reports/table_iii_inverse_matrix.md` inverts the
+  visible light block and shows that Table III implies a much larger effective
+  annihilation matrix than the current FD Eq. (16)-(18) block. The next target
+  is paper-order basis fidelity, not another calibrated mass-only control.
