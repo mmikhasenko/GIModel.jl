@@ -13,13 +13,22 @@
 
 ## Derived Paper References
 
-- `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`: preferred reference for
-  reading, search, and future agent interaction.
-- `paper/vision_ocr/pages/`: one Markdown transcription per PDF page.
+- `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`: preferred local
+  Markdown reference for reading, search, and future agent interaction. It is
+  currently the most complete OCR-derived text and includes manual improvements,
+  especially around tables.
+- `paper/vision_ocr/pages/`: archived historical one-file-per-page OCR output.
+  These files remain in place for provenance links, but they are not an
+  independent source of truth.
 - `paper/vision_ocr/page_images/` and `paper/vision_ocr/column_crops/`: rendered
   provenance images for equation/table audit.
 - `paper/vision_ocr/usage.jsonl`: API usage/provenance log for the vision OCR
   run.
+
+The next preferred cleanup is chapter/block based rather than page based: keep
+chapters as manageable Markdown includes and store long objects (tables,
+full-width equations, captions, and figures) as separate named blocks that
+Quarto can assemble into the full paper view.
 
 The previous `pdftotext` references were removed because they damaged equation
 typography. The PDF and rendered vision-OCR crops remain the authority for

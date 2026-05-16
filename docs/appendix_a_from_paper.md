@@ -1,10 +1,11 @@
 # Appendix A: structure from the 1985 paper (navigation)
 
 This note orients the repository toward the **original** Godfrey–Isgur
-implementation of relativistic smearing. The current local equation source is
-the checked markdown under `paper/vision_ocr/pages/`; see
-`docs/appendix_a_equation_audit.md` for the source-status ledger. The combined
-`paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` remains useful for search.
+implementation of relativistic smearing. The current best local OCR source is
+`paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`; see
+`docs/appendix_a_equation_audit.md` for the equation-status ledger. The older
+per-page files under `paper/vision_ocr/pages/` are archived historical OCR
+outputs and should only be used for provenance comparison.
 
 ## Smearing setup
 

@@ -72,6 +72,13 @@ promotion.
   authoritative. The known Appendix-A (A13) drift from the pilot was manually
   corrected against the saved crop in `page-037.md` and the aggregate.
 
+Later source-policy update: the aggregate
+`paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` is now the preferred local
+Markdown source because it contains manual improvements, especially around
+tables. The original `paper/vision_ocr/pages/*.md` files are archived historical
+OCR output from a page/column strategy that was not fully successful for
+full-width objects.
+
 ## 2026-04-25 Figures 4-9 Label Digitization
 
 - Added first-pass model-state label CSVs for Figures 4-9 under

@@ -2,8 +2,10 @@
 
 Use this as a fast map into the Godfrey-Isgur paper while coding or extracting
 tables. For reading and search, start with
-`paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`. Always verify equations and
-table values against `paper/Godfrey-Isgur-1985.pdf` or the saved
+`paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`; it is the most complete
+current OCR-derived Markdown source and has better table cleanup than the
+initial page files. Always verify equations and table values against
+`paper/Godfrey-Isgur-1985.pdf` or the saved `paper/vision_ocr/page_images/` and
 `paper/vision_ocr/column_crops/`.
 
 ## Core Model
@@ -50,6 +52,9 @@ Digitized spectrum labels begin under `data/raw/digitized_figures/`.
 
 - Markdown references are convenient for search but not reliable enough for
   final numbers.
+- `paper/vision_ocr/pages/` is archived historical page OCR from a layout pass
+  that was not fully successful. Prefer the full-paper Markdown unless auditing
+  OCR history.
 - The vision-OCR pass is much better than the removed `pdftotext` artifacts, but
   dense equations and crowded tables still need crop-level audit.
 - The paper uses isospin symmetry for heavy-light `Q qbar` doublets; precision

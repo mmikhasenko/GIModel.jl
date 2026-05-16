@@ -1,11 +1,13 @@
 # Appendix A Equation Audit
 
-This ledger records the current equation source status for Appendix A using the
-checked markdown pages under `paper/vision_ocr/pages/`. It is intentionally
-separate from the OCR workflow: the markdown pages are the local audit source,
-and implementation claims below should be updated only when those files change.
+This ledger records the current equation source status for Appendix A. The best
+current OCR-derived text is `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`;
+the older split files under `paper/vision_ocr/pages/` are archived historical
+OCR output and remain useful for provenance comparison only. Implementation
+claims below should be updated only after checking against the PDF or page
+images.
 
-Primary sources used here:
+Historical page references used when this ledger was first written:
 
 - `paper/vision_ocr/pages/page-036.md` for (A1)-(A9).
 - `paper/vision_ocr/pages/page-037.md` for (A10)-(A15).
