@@ -145,6 +145,11 @@ light-pseudoscalar Table III amplitudes imply an effective annihilation block
 with hundreds-of-MeV diagonal/off-diagonal structure, while the current FD
 Eq. (16)-(18) block is tens of MeV and only partly aligned after phase/scalar
 optimization.
+The method audit in `docs/residual_reports/annihilation_method_audit.md` uses
+the cleaner non-pseudoscalar `1^3S_1` omega/phi row and finds the same scale
+problem without invoking the pseudoscalar anomaly: the FD Eq. (16) off-diagonal
+is about `0.7 MeV` versus a Table-implied `5 MeV`, while the existing HO
+wavefunction path gives the right order of magnitude.
 
 Why it matters: calibrated P1 proves the missing physics is localized, but it
 is not a paper implementation. P2 is especially different because the paper

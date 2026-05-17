@@ -339,3 +339,7 @@ Appendix A, use the checked split markdown pages and
   visible light block and shows that Table III implies a much larger effective
   annihilation matrix than the current FD Eq. (16)-(18) block. The next target
   is paper-order basis fidelity, not another calibrated mass-only control.
+  `docs/residual_reports/annihilation_method_audit.md` confirms this with the
+  simpler non-pseudoscalar `1^3S_1` benchmark: FD wavefunctions under-mix
+  omega/phi by about a factor seven in the off-diagonal block, while the
+  existing HO wavefunctions move the scale to the correct order.
