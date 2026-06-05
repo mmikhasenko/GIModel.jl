@@ -1772,6 +1772,10 @@ end
     s0_ho = abs(GIModel._s0_smearing_factor(FDMomentumIntegralSmearing(180), ho_basis))
     s0_fd = abs(GIModel._s0_smearing_factor(FDMomentumIntegralSmearing(180), fd_basis))
     @test s0_ho > s0_fd
+    # Physical sign convention: all HO n=1 eigenvectors must be positive at small r
+    # so S_L factors are consistent across quark masses (off-diagonals positive).
+    @test ho_sol.eigenvectors[1, 1] > 0
+    @test computed.ho_wave_cache[skey].eigenvectors[1, 1] > 0
 end
 
 @testset "isoscalar general_s1 annihilation splits omega/phi" begin

@@ -496,6 +496,21 @@ function compute_sector(
                     rmax = rmax,
                     kinetic = kinetic,
                 )
+                # Enforce u(r_min) > 0 so wavefunction-at-origin factors have
+                # consistent sign across different quark masses.
+                for col in eachcol(vecs)
+                    col[1] < 0 && (col .*= -1)
+                end
+                # Enforce u(r_min) > 0 on all HO eigenvectors so that
+                # wavefunction-at-origin factors have the physical sign
+                # (ψ(0) > 0 for the ground state of a confining potential).
+                # The eigensolver returns arbitrary-sign columns; without this
+                # fix the S_L smearing factor can be negative for some quark
+                # masses and positive for others, flipping signs of off-diagonal
+                # annihilation matrix elements.
+                for col in eachcol(vecs)
+                    col[1] < 0 && (col .*= -1)
+                end
                 ho_wave_cache[key] = ChannelRadialSolution(ev, vecs, r)
             end
         end
