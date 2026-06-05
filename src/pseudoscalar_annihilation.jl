@@ -294,6 +294,50 @@ function isoscalar_pseudoscalar_annihilation_solution(
     )
 end
 
+"""
+    isoscalar_general_s1_solution(params, basis; smearing)
+
+Two-state isoscalar `^3S_1` annihilation block over the `[1 n nbar, 1 s sbar]` basis
+using general Eq. (16) with the perturbative OGE bracket and Table III A(^3S_1) amplitude.
+`basis` should be built with HO radial wavefunctions for paper-consistent matrix elements.
+"""
+function isoscalar_general_s1_solution(
+    params::GIParameters,
+    basis::AbstractVector{PseudoscalarAnnihilationBasisInput};
+    smearing::PseudoscalarSmearingScheme = FDMomentumIntegralSmearing(),
+)
+    n = length(basis)
+    matrix = Matrix(Diagonal([state.diagonal_GeV for state in basis]))
+    factors = [_annihilation_overlap_factor(smearing, state) for state in basis]
+    for j in 1:n, i in 1:n
+        mi = basis[i].constituent_mass_GeV
+        mj = basis[j].constituent_mass_GeV
+        alpha_i = alpha_s_q(basis[i].diagonal_GeV)
+        alpha_j = alpha_s_q(basis[j].diagonal_GeV)
+        matrix[j, i] += 4π * params.annihilation_s1_A *
+                         (alpha_i * alpha_j / π^2) *
+                         factors[j] * factors[i] / (mj * mi)
+    end
+    fact = eigen(Symmetric(matrix))
+    vectors = _phase_fix_by_largest_component!(Matrix(fact.vectors))
+    basis_states = [BasisState(1, "S", 3, 1; label = state.label) for state in basis]
+    block = MixingBlock(
+        "isoscalar ^3S_1 annihilation",
+        basis_states,
+        matrix;
+        mechanism = "general_eq16_s1_annihilation",
+        source = "GI Eq. (16) with Table III A(^3S_1)=$(params.annihilation_s1_A)",
+        notes = "Uses HO radial waves for paper-consistent wavefunction-at-origin scale.",
+    )
+    return (
+        block = block,
+        masses = collect(Float64, fact.values),
+        vectors = vectors,
+        diagonal_GeV = [state.diagonal_GeV for state in basis],
+        annihilation_matrix_GeV = matrix - Diagonal([state.diagonal_GeV for state in basis]),
+    )
+end
+
 function isoscalar_pseudoscalar_annihilation_solution(
     diagonal::AbstractVector{<:Real};
     targets = GI_PSEUDOSCALAR_FIG5_TARGETS_GEV,

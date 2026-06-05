@@ -8,8 +8,8 @@ Model: finite-difference + `relativistic` kinetic, with GI momentum-sandwiched s
 | `1^1S_0` | 0.960 | 0.960 |    +0.0 | medium |
 | `2^1S_0` | 1.440 | 1.440 |    -0.0 | medium |
 | `2^1S_0` | 1.630 | 1.630 |    -0.0 | medium |
-| `1^3S_1` | 0.780 | 0.760 |   -19.9 | medium |
-| `1^3S_1` | 1.020 | 0.760 |  -259.9 | medium |
+| `1^3S_1` | 0.780 | 0.834 |   +54.5 | medium |
+| `1^3S_1` | 1.020 | 1.053 |   +33.2 | medium |
 | `2^3S_1` | 1.460 | 1.460 |    -0.4 | medium |
 | `1^3D_1` | 1.660 | 1.665 |    +4.6 | medium |
 | `2^3S_1` | 1.690 | 1.460 |  -230.4 | medium |
@@ -64,8 +64,8 @@ All shifts below are relative to the central FD eigenvalue (the spin-independent
 | `1^1S_0` | 0.655 |  -559.5 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |  +865.0 |  +305.5 | 0.960 |
 | `2^1S_0` | 1.411 |  -132.6 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |  +161.3 |   +28.7 | 1.440 |
 | `2^1S_0` | 1.411 |  -132.6 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |  +351.3 |  +218.7 | 1.630 |
-| `1^3S_1` | 0.655 |  +105.6 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |  +105.6 | 0.760 |
-| `1^3S_1` | 0.655 |  +105.6 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |  +105.6 | 0.760 |
+| `1^3S_1` | 0.655 |  +105.6 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |   +74.3 |  +179.9 | 0.834 |
+| `1^3S_1` | 0.655 |  +105.6 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |  +293.1 |  +398.7 | 1.053 |
 | `2^3S_1` | 1.411 |   +48.4 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |   +48.4 | 1.460 |
 | `1^3D_1` | 1.687 |    +0.0 |   -71.8 |   +63.8 |    -8.0 |   -14.4 |    +0.0 |   -22.5 | 1.665 |
 | `2^3S_1` | 1.411 |   +48.4 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |   +48.4 | 1.460 |
@@ -120,9 +120,11 @@ Rows below use the selected isoscalar pseudoscalar annihilation mode. `calibrate
 | `1^1S_0` | `calibrated_p1` | 0.095 | 0.960 |  +865.0 |
 | `2^1S_0` | `calibrated_p1` | 1.279 | 1.440 |  +161.3 |
 | `2^1S_0` | `calibrated_p1` | 1.279 | 1.630 |  +351.3 |
+| `1^3S_1` | `general_s1` | 0.760 | 0.834 |   +74.3 |
+| `1^3S_1` | `general_s1` | 0.760 | 1.053 |  +293.1 |
 
-Mean absolute residual: 101.2 MeV.
-Max absolute residual: 259.9 MeV.
+Mean absolute residual: 97.3 MeV.
+Max absolute residual: 249.3 MeV.
 
 ## Spin-Averaged Diagnostics
 
@@ -136,7 +138,7 @@ Weighted by `2J+1` within each available `(n, L)` group.
 | `1G` | 8 | 2.419 | 2.334 |   -85.0 |
 | `1P` | 8 | 1.364 | 1.258 |  -106.1 |
 | `2P` | 8 | 1.916 | 1.807 |  -109.1 |
-| `1S` | 4 | 0.860 | 0.755 |  -104.9 |
+| `1S` | 4 | 0.860 | 0.893 |   +32.9 |
 | `2S` | 4 | 1.565 | 1.478 |   -86.5 |
 
 The spin-independent central path is the current GI reproduction candidate. Remaining heavy-quarkonium residuals should be read mainly as spin-dependent/operator-ordering and extraction-audit targets.

@@ -81,7 +81,11 @@ Container filled by [`compute_sector`](@ref) (`sector_comparison.jl`): precomput
 struct SectorComputation
     params::GIParameters
     channel_cache::Dict{RadialChannelKey,ChannelRadialSolution}
+    ho_wave_cache::Dict{RadialChannelKey,ChannelRadialSolution}
 end
+
+SectorComputation(params, cache) =
+    SectorComputation(params, cache, Dict{RadialChannelKey,ChannelRadialSolution}())
 
 """
     solve_sector(params, equal_mass_GeV; …)

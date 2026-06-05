@@ -1747,3 +1747,59 @@ end
     @test abs(coherent) ≈ sqrt(2) * abs(exact) rtol = 1e-12
     @test abs(exact) != legacy
 end
+
+@testset "compute_sector builds HO wave cache for S-wave channels" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    reference = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_isoscalar.csv"))
+    sub = [r for r in reference if r.L == "S" && r.n == 1 && r.multiplicity == 1 && r.J == 0][1:2]
+    ann = attach_constituent_masses(mq, sub, mq["q"])
+    computed = compute_sector(
+        params, ann;
+        ngrid = 80, rmax = 8.0, kinetic = :relativistic,
+        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
+        annihilation_wave_basis = :ho,
+    )
+    qkey = GIModel.RadialChannelKey(mq["q"], mq["q"], "S")
+    skey = GIModel.RadialChannelKey(mq["s"], mq["s"], "S")
+    @test haskey(computed.ho_wave_cache, qkey)
+    @test haskey(computed.ho_wave_cache, skey)
+    # HO wavefunction should give a larger S0 factor than FD (paper basis effect)
+    ho_sol = computed.ho_wave_cache[qkey]
+    fd_sol = computed.channel_cache[qkey]
+    levels = GIModel.contact_hyperfine_nonperturbative_levels(params, ConstituentMasses(mq["q"], mq["q"]), "S", 1, fd_sol.r, 1)
+    ho_basis = pseudoscalar_annihilation_basis_input("1 ns", mq["q"], levels[1], RadialWaveOnUniformMesh(ho_sol, 1))
+    fd_basis = pseudoscalar_annihilation_basis_input("1 ns", mq["q"], levels[1], RadialWaveOnUniformMesh(fd_sol, 1))
+    s0_ho = abs(GIModel._s0_smearing_factor(FDMomentumIntegralSmearing(180), ho_basis))
+    s0_fd = abs(GIModel._s0_smearing_factor(FDMomentumIntegralSmearing(180), fd_basis))
+    @test s0_ho > s0_fd
+end
+
+@testset "isoscalar general_s1 annihilation splits omega/phi" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    reference = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_isoscalar.csv"))
+    sub = [r for r in reference if r.L == "S" && r.n == 1 && r.multiplicity == 3 && r.J == 1]
+    @test length(sub) == 2
+    ann = attach_constituent_masses(mq, sub, mq["q"])
+    computed = compute_sector(
+        params, ann;
+        ngrid = 120, rmax = 12.0, kinetic = :relativistic,
+        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
+        annihilation_wave_basis = :ho,
+    )
+    plain = compare(computed, ann; contact_hyperfine = true, use_fine_structure = false)
+    mixed = compare(
+        computed, ann;
+        contact_hyperfine = true, use_fine_structure = false,
+        isoscalar_pseudoscalar_annihilation = :general_s1,
+        strange_mass_GeV = mq["s"],
+    )
+    @test length(plain) == 2
+    @test length(mixed) == 2
+    @test all(row.annihilation_scheme == "none" for row in plain)
+    @test all(row.annihilation_scheme == "general_s1" for row in mixed)
+    # mixing must produce a real splitting
+    @test abs(mixed[1].predicted_GeV - mixed[2].predicted_GeV) >
+          abs(plain[1].predicted_GeV - plain[2].predicted_GeV)
+    # sum of masses is conserved under the rank-two update (trace of matrix)
+    @test sum(row.predicted_GeV for row in mixed) ≈ sum(row.predicted_GeV for row in plain) + sum(row.annihilation_shift_GeV for row in mixed) atol = 1e-10
+end

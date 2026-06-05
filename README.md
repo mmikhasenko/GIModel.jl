@@ -20,6 +20,8 @@ OCR Markdown and extracted CSVs are navigation/provenance aids.
   scorecards.
 - `docs/formula_map.md` maps active code paths to paper equations.
 - `docs/paper_gap_ledger.md` is the current “what remains vs the paper” list.
+- `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` is the preferred
+  searchable Markdown rendering of the paper.
 - `docs/code_architecture.md`, `docs/conventions.md`, and
   `docs/appendix_a_from_paper.md` describe the implementation conventions.
 
@@ -60,6 +62,8 @@ bash scripts/verify_project.sh
 ## Authority Rules
 
 - The 1985 paper is authoritative.
-- OCR Markdown is searchable context, not authority.
+- `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` is the preferred OCR
+  Markdown context; archived page OCR under `paper/vision_ocr/pages/` is
+  historical provenance only.
 - Raw extraction and clean physics data stay separate.
 - Every promoted numerical value should retain provenance and confidence.

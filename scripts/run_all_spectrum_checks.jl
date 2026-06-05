@@ -53,7 +53,7 @@ for fn in readdir(data_dir)
         contact_hyperfine = true,
         use_fine_structure = params.fine_structure,
         isoscalar_pseudoscalar_annihilation =
-            base == "isoscalar" ? :calibrated_p1 : :none,
+            base == "isoscalar" ? :p1_and_s1 : :none,
         strange_mass_GeV = mq["s"],
     )
     write_residual_report(

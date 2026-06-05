@@ -76,3 +76,5 @@ p1_m_eta_GeV = 0.548
 # P2 uses Eq. (18b): a mass-dependent nonperturbative term with zero at M0.
 p2_A_np = 0.55
 p2_M0_GeV = 1.17
+# Table III A(^3S_1) amplitude for general isoscalar vector annihilation Eq. (16).
+s1_A = 2.5

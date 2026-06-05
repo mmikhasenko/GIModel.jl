@@ -10,11 +10,12 @@ function _same_grid_rmax(r::AbstractVector{<:Real})
     return h * (length(r) + 1)
 end
 
-function _s_wave_singlet_predictions_from_cache(
+function _s_wave_predictions_from_cache(
     params::GIParameters,
     masses::ConstituentMasses,
     sol::ChannelRadialSolution,
-    nlevels::Integer;
+    nlevels::Integer,
+    multiplicity::Integer;
     contact_hyperfine::Bool,
 )
     predictions = collect(Float64, sol.eigenvalues_GeV[1:min(nlevels, length(sol.eigenvalues_GeV))])
@@ -23,10 +24,11 @@ function _s_wave_singlet_predictions_from_cache(
             params,
             masses,
             "S",
-            1,
+            multiplicity,
             sol.r,
             nlevels,
         )
+        J = multiplicity == 3 ? 1 : 0
         if !isempty(levels)
             predictions = levels
         else
@@ -35,7 +37,7 @@ function _s_wave_singlet_predictions_from_cache(
                 predictions[n] += contact_hyperfine_shift_active(
                     params,
                     masses,
-                    FineStructureMultiplet("S", 1, 0),
+                    FineStructureMultiplet("S", multiplicity, J),
                     wave,
                 )
             end
@@ -43,6 +45,10 @@ function _s_wave_singlet_predictions_from_cache(
     end
     return predictions
 end
+
+# Backward-compatible singlet alias used by the pseudoscalar path.
+_s_wave_singlet_predictions_from_cache(params, masses, sol, nlevels; contact_hyperfine) =
+    _s_wave_predictions_from_cache(params, masses, sol, nlevels, 1; contact_hyperfine)
 
 """
     ComparisonContext(params, channel_cache)
@@ -54,10 +60,11 @@ new numerical solves.
 struct ComparisonContext
     params::GIParameters
     channel_cache::Dict{RadialChannelKey,ChannelRadialSolution}
+    ho_wave_cache::Dict{RadialChannelKey,ChannelRadialSolution}
 end
 
 ComparisonContext(computed::SectorComputation) =
-    ComparisonContext(computed.params, computed.channel_cache)
+    ComparisonContext(computed.params, computed.channel_cache, computed.ho_wave_cache)
 
 function assign_mixed_rows(
     ::IsoscalarAnnihilation,
@@ -69,8 +76,16 @@ function assign_mixed_rows(
     strange_mass_GeV,
 )
     (!enabled || scheme == :none) && return rows
-    scheme in (:calibrated_p1, :p1, :paper_p1, :p2, :paper_p2) ||
-        throw(ArgumentError("unsupported isoscalar pseudoscalar annihilation scheme `$scheme`"))
+    scheme in (:calibrated_p1, :p1, :paper_p1, :p2, :paper_p2, :general_s1, :p1_and_s1) ||
+        throw(ArgumentError("unsupported isoscalar annihilation scheme `$scheme`"))
+    scheme == :general_s1 && return _assign_isoscalar_s1_rows(rows, ctx; contact_hyperfine, strange_mass_GeV)
+    if scheme == :p1_and_s1
+        rows = assign_mixed_rows(
+            IsoscalarAnnihilation(), rows, ctx;
+            enabled = true, contact_hyperfine, scheme = :calibrated_p1, strange_mass_GeV,
+        )
+        return _assign_isoscalar_s1_rows(rows, ctx; contact_hyperfine, strange_mass_GeV)
+    end
     isnothing(strange_mass_GeV) &&
         throw(ArgumentError("strange_mass_GeV is required for isoscalar pseudoscalar annihilation"))
     matches = [
@@ -111,8 +126,8 @@ function assign_mixed_rows(
         if scheme == :calibrated_p1
             isoscalar_pseudoscalar_annihilation_solution(diagonal; targets = targets)
         else
-            q_sol = ctx.channel_cache[q_key]
-            s_sol = ctx.channel_cache[strange_key]
+            q_sol = get(ctx.ho_wave_cache, q_key, ctx.channel_cache[q_key])
+            s_sol = get(ctx.ho_wave_cache, strange_key, ctx.channel_cache[strange_key])
             basis = [
                 pseudoscalar_annihilation_basis_input(
                     "1 n nbar",
@@ -165,6 +180,62 @@ function assign_mixed_rows(
                 annihilation_shift_GeV = annihilation_shift,
                 annihilation_scheme = String(scheme),
                 isoscalar_annihilation_scheme = String(scheme),
+                isoscalar_annihilation_unmixed_GeV = row.predicted_GeV,
+                predicted_GeV = predicted,
+                residual_MeV = 1000 * (predicted - row.reference_GeV),
+            ),
+        )
+    end
+    return out
+end
+
+function _assign_isoscalar_s1_rows(rows::Vector, ctx::ComparisonContext; contact_hyperfine::Bool, strange_mass_GeV)
+    isnothing(strange_mass_GeV) &&
+        throw(ArgumentError("strange_mass_GeV required for :general_s1 annihilation"))
+    matches = [
+        (i, row) for (i, row) in pairs(rows) if
+        row.sector == "isoscalar" &&
+        row.L == "S" &&
+        row.multiplicity == 3 &&
+        row.J == 1 &&
+        row.n == 1
+    ]
+    length(matches) == 2 || return rows
+
+    q_row = matches[1][2]
+    q_masses = ConstituentMasses(q_row.m1_GeV, q_row.m2_GeV)
+    q_key = RadialChannelKey(q_masses, "S")
+    haskey(ctx.channel_cache, q_key) || return rows
+    strange_masses = ConstituentMasses(strange_mass_GeV, strange_mass_GeV)
+    strange_key = RadialChannelKey(strange_masses, "S")
+    haskey(ctx.channel_cache, strange_key) || throw(ArgumentError(
+        ":general_s1 requires the strange S-wave channel in SectorComputation; call compute_sector(...; extra_channel_masses=[ConstituentMasses(strange_mass_GeV,strange_mass_GeV)])",
+    ))
+
+    q_sol = get(ctx.ho_wave_cache, q_key, ctx.channel_cache[q_key])
+    s_sol = get(ctx.ho_wave_cache, strange_key, ctx.channel_cache[strange_key])
+
+    q_triplet = _s_wave_predictions_from_cache(ctx.params, q_masses, ctx.channel_cache[q_key], 1, 3; contact_hyperfine)
+    s_triplet = _s_wave_predictions_from_cache(ctx.params, strange_masses, ctx.channel_cache[strange_key], 1, 3; contact_hyperfine)
+    diagonal = [q_triplet[1], s_triplet[1]]
+
+    basis = [
+        pseudoscalar_annihilation_basis_input("1 ns", q_masses.m1_GeV, diagonal[1], RadialWaveOnUniformMesh(q_sol, 1)),
+        pseudoscalar_annihilation_basis_input("1 ss", strange_masses.m1_GeV, diagonal[2], RadialWaveOnUniformMesh(s_sol, 1)),
+    ]
+    solution = isoscalar_general_s1_solution(ctx.params, basis)
+
+    out = copy(rows)
+    ordered_matches = sort(matches; by = item -> item[2].reference_GeV)
+    for (level, (i, row)) in enumerate(ordered_matches)
+        predicted = solution.masses[level]
+        annihilation_shift = predicted - row.predicted_GeV
+        out[i] = merge(
+            row,
+            (
+                annihilation_shift_GeV = annihilation_shift,
+                annihilation_scheme = "general_s1",
+                isoscalar_annihilation_scheme = "general_s1",
                 isoscalar_annihilation_unmixed_GeV = row.predicted_GeV,
                 predicted_GeV = predicted,
                 residual_MeV = 1000 * (predicted - row.reference_GeV),
@@ -379,6 +450,7 @@ function compute_sector(
     kinetic::Symbol = :relativistic,
     eigensolver::Symbol = :full,
     extra_channel_masses::AbstractVector{ConstituentMasses} = ConstituentMasses[],
+    annihilation_wave_basis::Symbol = :ho,
 )
     channel_cache = Dict{RadialChannelKey,ChannelRadialSolution}()
     requested = Tuple{ConstituentMasses,String}[]
@@ -408,7 +480,27 @@ function compute_sector(
             channel_cache[key] = ChannelRadialSolution(ev, vecs, r)
         end
     end
-    return SectorComputation(params, channel_cache)
+    ho_wave_cache = Dict{RadialChannelKey,ChannelRadialSolution}()
+    if annihilation_wave_basis == :ho
+        ho_params = with_basis(params, HarmonicOscillatorBasis)
+        for (masses, L_label) in requested
+            L_label == "S" || continue
+            key = RadialChannelKey(masses, L_label)
+            if !haskey(ho_wave_cache, key)
+                ev, vecs, r = channel_solution(
+                    ho_params,
+                    masses,
+                    0;
+                    nlevels = 2,
+                    ngrid = ngrid,
+                    rmax = rmax,
+                    kinetic = kinetic,
+                )
+                ho_wave_cache[key] = ChannelRadialSolution(ev, vecs, r)
+            end
+        end
+    end
+    return SectorComputation(params, channel_cache, ho_wave_cache)
 end
 
 function compare(
