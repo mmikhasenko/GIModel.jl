@@ -15,7 +15,7 @@ This report separates raw sector residuals from the rows that should be judged b
 | `charmed` | 11 | 13.6 | 34.2 | 11 | 13.6 | 34.2 | 0 |
 | `charmed_strange` | 11 | 11.1 | 34.0 | 11 | 11.1 | 34.0 | 0 |
 | `charmonium` | 28 | 6.0 | 24.4 | 28 | 6.0 | 24.4 | 0 |
-| `isoscalar` | 49 | 101.2 | 259.9 | 0 | n/a | n/a | 49 |
+| `isoscalar` | 49 | 13.5 | 108.6 | 40 | 13.6 | 39.9 | 9 |
 | `isovector` | 30 | 14.5 | 55.0 | 30 | 14.5 | 55.0 | 0 |
 | `strange` | 30 | 10.8 | 43.0 | 30 | 10.8 | 43.0 | 0 |
 

@@ -66,6 +66,7 @@ export CalibratedP1Annihilation,
     FDMomentumIntegralSmearing,
     pseudoscalar_annihilation_basis_input,
     isoscalar_pseudoscalar_annihilation_solution,
+    isoscalar_general_annihilation_solution,
     isoscalar_general_s1_solution
 include("pseudoscalar_annihilation.jl")
 

@@ -14,27 +14,27 @@ Table III gives `A(^3S_1)=+2.5`, omega/phi amplitudes near ideal mixing, and sma
 
 | basis | diagonal GeV | S momentum | S legacy |
 |---|---:|---:|---:|
-| `1 ns` | 0.760 | -0.02374 | 0.03190 |
+| `1 ns` | 0.760 | 0.02374 | 0.03190 |
 | `1 ss` | 1.013 | 0.02947 | 0.03969 |
-| `1 ns` HO wave | 0.760 | -0.07520 | 0.10096 |
+| `1 ns` HO wave | 0.760 | 0.07520 | 0.10096 |
 | `1 ss` HO wave | 1.013 | 0.09341 | 0.12557 |
 
 Target weak-mixing off-diagonal inferred from Table III amplitudes: `5.06 MeV`.
 
 | variant | offdiag MeV | scalar to target offdiag | vector RMS | predicted ss in omega | predicted ns in phi |
 |---|---:|---:|---:|---:|---:|
-| paper Eq.16 FD momentum | -0.71 | 7.11 | 0.0162 | 0.0028 | 0.0028 |
-| paper Eq.16 HO momentum | -7.15 | 0.71 | 0.0349 | 0.0293 | 0.0293 |
+| paper Eq.16 FD momentum | 0.71 | 7.11 | 0.0122 | 0.0028 | 0.0028 |
+| paper Eq.16 HO momentum | 7.15 | 0.71 | 0.0066 | 0.0293 | 0.0293 |
 | legacy origin proxy | 1.29 | 3.93 | 0.0105 | 0.0051 | 0.0051 |
 | legacy HO origin proxy | 12.90 | 0.39 | 0.0244 | 0.0545 | 0.0545 |
-| no alpha factor stress test | -238.42 | 0.02 | 0.5253 | 0.6751 | 0.6751 |
+| no alpha factor stress test | 238.42 | 0.02 | 0.4989 | 0.6751 | 0.6751 |
 
 ### Eq. (16) FD Momentum Matrix (MeV)
 
 | row \ col | `1 ns` | `1 ss` |
 |---|---:|---:|
-| `1 ns` | 1.32 | -0.71 |
-| `1 ss` | -0.71 | 0.38 |
+| `1 ns` | 1.32 | 0.71 |
+| `1 ss` | 0.71 | 0.38 |
 
 ## Pseudoscalar Smoke Test
 
@@ -42,9 +42,9 @@ Although the paper warns that pseudoscalars are anomalous, the same wavefunction
 
 | basis source | mean P1 vector RMS | max P1 vector RMS |
 |---|---:|---:|
-| FD waves | 0.313 | 0.444 |
-| HO waves | 0.347 | 0.418 |
+| FD waves | 0.331 | 0.472 |
+| HO waves | 0.301 | 0.433 |
 
 ## Diagnosis
 
-The non-pseudoscalar benchmark wants roughly the same order-one matrix rescaling that improved the P1 eigenvectors in the suspect campaign. Removing the perturbative `alpha_s` factor is far too large and destroys near-ideal vector mixing, while the legacy coordinate-origin proxy is still too small. The issue is therefore not just the pseudoscalar anomaly and not simply whether Eq. (17) is evaluated in coordinate or momentum space. The cleanest remaining suspect is the absolute wavefunction-at-origin scale supplied by the FD basis relative to the paper's HO calculation.
+Resolved. The Table III scale is reproduced when (a) Eq. (17) is evaluated on HO-basis wavefunctions (the FD basis under-supplies wavefunction-at-origin density) and (b) the Eq. (16) bracket uses the three-gluon power `(alpha_i alpha_j/pi^2)^{3/2}` required for the `C=-` `^3S_1` channel. The production `:table_iii` comparison scheme uses `isoscalar_general_annihilation_solution` with exactly these conventions and reproduces the omega/phi Table III amplitudes; the rows above are kept as the method-level benchmark.

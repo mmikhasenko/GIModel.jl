@@ -46,6 +46,7 @@ for fn in readdir(data_dir)
         annotated;
         kinetic = :relativistic,
         extra_channel_masses = extra_masses,
+        ho_wave_L = base == "isoscalar" ? ("S", "P") : ("S",),
     )
     rows = compare(
         computed,
@@ -53,7 +54,7 @@ for fn in readdir(data_dir)
         contact_hyperfine = true,
         use_fine_structure = params.fine_structure,
         isoscalar_pseudoscalar_annihilation =
-            base == "isoscalar" ? :p1_and_s1 : :none,
+            base == "isoscalar" ? :table_iii : :none,
         strange_mass_GeV = mq["s"],
     )
     write_residual_report(
@@ -126,6 +127,6 @@ open(joinpath(report_dir, "scorecard.md"), "w") do io
     println(io)
     println(
         io,
-        "Interpretation: heavy-heavy and heavy-light sectors are useful solver diagnostics. The isoscalar `^1S_0` rows now use the calibrated GI P1-style annihilation block; remaining raw isoscalar residuals mostly reflect the still-missing general `n nbar`/`s sbar` flavor mixing machinery.",
+        "Interpretation: heavy-heavy and heavy-light sectors are useful solver diagnostics. The isoscalar sector uses the `:table_iii` scheme: calibrated P1 for the `^1S_0` rows, general Eq. (16) blocks for `^3S_1` (A=+2.5, three gluons) and `^3P_2` (A=-0.8, two gluons), and ideal `n nbar`/`s sbar` mixing for every other channel, as prescribed by Table III. Remaining isoscalar residuals track the corresponding isovector-channel residuals plus one unpaired low-confidence `2^3D_2` digitization.",
     )
 end

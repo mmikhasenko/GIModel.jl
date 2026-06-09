@@ -25,7 +25,11 @@ handoff/autonomous planning notes.
   `diagonalize_mixing_block`, and comparison-layer assignment methods for
   `AntisymmetricSpinOrbit`, `TensorMixing`, and the calibrated
   `IsoscalarAnnihilation` control. `IsoscalarAnnihilation` also has paper
-  pseudoscalar P1/P2 modes driven by the `[annihilation]` TOML constants.
+  pseudoscalar P1/P2 modes driven by the `[annihilation]` TOML constants, the
+  general non-pseudoscalar Eq. (16) block
+  (`isoscalar_general_annihilation_solution`), and the `:table_iii` scheme
+  that combines calibrated P1, general `^3S_1`/`^3P_2` blocks, and ideal
+  mixing for all other isoscalar channels.
   `compare` now assigns open-flavor `^1L_J`/`^3L_J` same-`J` pairs and triplet
   tensor `L/L'` pairs when partner rows are present.
 - Top-level spectrum CSVs cover Figs. 3-9, and promoted clean mass/mixing data
@@ -129,74 +133,65 @@ mass matrix after the fixed-sector diagonalization. Eq. (16)-Eq. (17) define
 the general matrix element; Eq. (18a) and Eq. (18b) replace the pseudoscalar
 bracket for P1 and P2.
 
-What the repo does: formulas and Table III rows are audited.
-`:calibrated_p1` is routed through `assign_mixed_rows(::IsoscalarAnnihilation, ...)`
-as a rank-one control that reproduces the four isoscalar pseudoscalar masses.
-Literal `:paper_p1` and `:paper_p2` modes exist and their constants are
-represented in `GIParameters` and the TOML parameter file. The formula path now
-uses the paper's momentum-space `alpha_s(Q^2)`, evaluates the S-wave Eq. (17)
-momentum integral on the FD radial wavefunction, and includes the coherent
-`sqrt(2)` factor for the normalized `ns` flavor state. These local corrections
-still do not reproduce the Table III eigenvectors; see
-`docs/residual_reports/table_iii_mixing_audit.md` and
-`docs/residual_reports/table_iii_suspect_investigation.md`. The inverse probe
-in `docs/residual_reports/table_iii_inverse_matrix.md` shows that the visible
-light-pseudoscalar Table III amplitudes imply an effective annihilation block
-with hundreds-of-MeV diagonal/off-diagonal structure, while the current FD
-Eq. (16)-(18) block is tens of MeV and only partly aligned after phase/scalar
-optimization.
-The method audit in `docs/residual_reports/annihilation_method_audit.md` uses
-the cleaner non-pseudoscalar `1^3S_1` omega/phi row and finds the same scale
-problem without invoking the pseudoscalar anomaly: the FD Eq. (16) off-diagonal
-is about `0.7 MeV` versus a Table-implied `5 MeV`, while the existing HO
-wavefunction path gives the right order of magnitude.
+What the repo does: the general Eq. (16) machinery now exists
+(`isoscalar_general_annihilation_solution`) with the `4π(2L+1)` prefactor, the
+`(α_s(M_j²)α_s(M_i²)/π²)^{n/2}` bracket with `n = 2`/`3` for `C = +`/`−`, and
+the Eq. (17) `S_L` smearing evaluated by a `j_L` momentum transform on
+HO-basis radial wavefunctions. The earlier "scale problem" had two causes,
+both fixed: the FD wavefunction-at-origin scale (resolved by the HO wave
+cache) and a wrong two-gluon bracket in the `^3S_1` channel (resolved by the
+`n = 3` power for `C = −`). With Table II inputs and `A(^3S_1) = +2.5` the
+omega/phi block reproduces Table III: amplitudes `(+1.000, -0.029)` vs
+`(+0.999, -0.02)` and an omega shift of `+13 MeV` vs the paper's `+10 MeV`.
+`A(^3P_2) = -0.8` reproduces the f2/f2' row, `(+0.997, +0.080)` vs
+`(+0.997, +0.06)`. The literal pseudoscalar `:paper_p1`/`:paper_p2` modes on
+HO waves now also reproduce the qualitative Table III structure (P2: third and
+fourth poles at 1.24/1.53 GeV with `2 ns`/`2 ss` amplitudes `+0.99`/`+0.98`
+vs the paper's 1.27/1.55 GeV and `+0.99`/`+0.97`); mean amplitude RMS is
+0.180 (P1) and 0.114 (P2), dominated by the eta-prime row.
 
-Why it matters: calibrated P1 proves the missing physics is localized, but it
-is not a paper implementation. P2 is especially different because the paper
-expects mass-dependent, non-orthogonal poles.
+Why it matters: this was the last hundreds-of-MeV gap in the isoscalar
+spectrum reproduction.
 
-Acceptance check: partially complete. The modes, parameters, momentum-coupling
-convention, FD Eq. (17) integral, and `ns` flavor factor exist; the remaining
-acceptance criterion is eigenvector/mass-splitting fidelity against Table III,
-likely requiring paper-order HO basis inputs or a sharper reconstruction of the
-pseudoscalar phenomenological prescription.
+Acceptance check: complete for the non-pseudoscalar channels (eigenvectors and
+splittings). Pseudoscalar literal modes are tracked in
+`docs/residual_reports/table_iii_mixing_audit.md`; the calibrated P1 control
+still carries the headline mass scoring while the eta-prime amplitude row
+remains the largest literal-mode discrepancy.
 
-### 6. General Table III Isoscalar Mixing, Later Than 1-5
+### 6. General Table III Isoscalar Mixing
 
 What the paper does: Table III gives approximate isoscalar compositions beyond
 the pseudoscalar rows, including non-pseudoscalar sectors with predicted and
-observed splittings.
+observed splittings, and assumes ideal mixing for every channel it does not
+list.
 
-What the repo does: `data/clean/mixings.csv` promotes the visually checked
-pseudoscalar P1/P2 rows plus the visible `1^3S_1` and `1^3P_2` rows from
-page 11.
+What the repo does: the `:table_iii` comparison scheme implements exactly that
+prescription: calibrated P1 for `^1S_0`, general Eq. (16) blocks for `^3S_1`
+and `^3P_2`, and ideal `n nbar`/`s sbar` mixing for every other isoscalar
+channel, with full contact + fine-structure diagonals for the `s sbar`
+partner rows. The isoscalar residual report now scores all paired rows: the
+sector mean dropped from 97.3 MeV to 13.5 MeV and the non-mixing scorecard
+includes 40 isoscalar rows at 13.6 MeV mean — in line with the isovector
+sector, whose channel residuals the isoscalar rows now track.
 
-Why it matters: once general annihilation is added, non-pseudoscalar isoscalar
-rows should become validation targets instead of being treated as unexplained
-duplicates in the isoscalar residual report.
+Acceptance check: complete. Remaining isoscalar-specific residual is the
+single unpaired low-confidence `2^3D_2` digitized row (crop audit pending).
 
-Acceptance check: clean-data promotion is complete for the visible rows.
-Remaining work is a validation report for the non-pseudoscalar Eq. (16)
-composition and mass splitting.
-
-### 7. Eigenvector Fidelity Scoring, Later Than 1-5
+### 7. Eigenvector Fidelity Scoring
 
 What the paper gives: Table III amplitudes are eigenvector/composition targets,
 not just mass targets.
 
-What the repo does: `docs/residual_reports/annihilation_model_scorecard.md`
-scores formula provenance, clean targets, implementation modes, and
-pseudoscalar mass residuals. `docs/residual_reports/table_iii_mixing_audit.md`
-now computes RMS amplitude error for literal P1/P2 against the promoted
-Table III pseudoscalar rows.
+What the repo does: `docs/residual_reports/table_iii_mixing_audit.md` computes
+the amplitude RMS for literal P1/P2 on HO waves against the promoted Table III
+rows, and `data_checks.py score-annihilation` folds that RMS into the
+annihilation scorecard as mixing points (`:paper_p1` and `:paper_p2` now score
+80/100, equal with the calibrated control which carries the spectral points
+instead).
 
-Why it matters: a model can fit the four pseudoscalar masses while producing
-the wrong flavor/radial composition. The next score must prevent that false
-positive.
-
-Acceptance check: amplitude comparison exists. Next, fold that RMS into the
-annihilation scorecard and fix the matrix-element path until the score is
-acceptable.
+Acceptance check: complete as a scoring mechanism. Remaining quality work is
+the eta-prime amplitude row and literal-mode spectral scoring.
 
 ### 8. Observables Outside The Mass Spectrum, Later Than 1-5
 
@@ -215,13 +210,16 @@ implicitly.
 
 ## Next Clean Implementation Step
 
-The most direct implementation order is:
+Items 3-7 are now implemented (general Eq. (16), `:table_iii` ideal-mixing
+prescription, eigenvector scoring). The most direct remaining order is:
 
-1. Use `table_iii_mixing_audit.md` to debug why literal FD P1/P2 under-mix
-   compared with Table III.
-2. Implement the general non-pseudoscalar Eq. (16) model for `1^3S_1` and
-   `1^3P_2`.
-3. Fold Table III eigenvector/mass-shift scoring into
-   `annihilation_model_scorecard.md`.
-4. Revisit Appendix-A/HO paper-order staging with the now-explicit mixing
-   blocks.
+1. Improve the literal pseudoscalar P1/P2 eta-prime amplitude row and add
+   literal-mode spectral scoring against the digitized Fig. 5 targets, so the
+   calibrated P1 control can be retired from the headline reports.
+2. Audit the unpaired isoscalar `2^3D_2` digitization (crop audit) that is the
+   current isoscalar max residual.
+3. Revisit Appendix-A/HO paper-order staging with the now-explicit mixing
+   blocks (items 1-2 above): start from HO fixed-sector eigenvectors and apply
+   the post-diagonalization mixing blocks before assigning physical rows.
+4. Reduce the shared light-sector P-wave residuals (`1^1P_1`, `1^3P_0`,
+   `2^3P_0`) that now dominate both the isovector and isoscalar scorecards.

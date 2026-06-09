@@ -32,6 +32,9 @@ function hidden_s_basis(params, mq, spin; wave_basis = :fd, ngrid = 220, rmax = 
             rmax = rmax,
             kinetic = :relativistic,
         )
+        for col in eachcol(vecs)
+            col[1] < 0 && (col .*= -1)
+        end
         sol = GIModel.ChannelRadialSolution(ev, vecs, r)
         levels = GIModel.contact_hyperfine_nonperturbative_levels(
             params,
@@ -101,6 +104,9 @@ function pseudoscalar_basis(params, mq; wave_basis = :fd, ngrid = 220, rmax = 22
             rmax = rmax,
             kinetic = :relativistic,
         )
+        for col in eachcol(vecs)
+            col[1] < 0 && (col .*= -1)
+        end
         sol = GIModel.ChannelRadialSolution(ev, vecs, r)
         levels = GIModel.contact_hyperfine_nonperturbative_levels(
             params,
@@ -316,7 +322,7 @@ function main()
         println(io)
         println(io, "## Diagnosis")
         println(io)
-        println(io, "The non-pseudoscalar benchmark wants roughly the same order-one matrix rescaling that improved the P1 eigenvectors in the suspect campaign. Removing the perturbative `alpha_s` factor is far too large and destroys near-ideal vector mixing, while the legacy coordinate-origin proxy is still too small. The issue is therefore not just the pseudoscalar anomaly and not simply whether Eq. (17) is evaluated in coordinate or momentum space. The cleanest remaining suspect is the absolute wavefunction-at-origin scale supplied by the FD basis relative to the paper's HO calculation.")
+        println(io, "Resolved. The Table III scale is reproduced when (a) Eq. (17) is evaluated on HO-basis wavefunctions (the FD basis under-supplies wavefunction-at-origin density) and (b) the Eq. (16) bracket uses the three-gluon power `(alpha_i alpha_j/pi^2)^{3/2}` required for the `C=-` `^3S_1` channel. The production `:table_iii` comparison scheme uses `isoscalar_general_annihilation_solution` with exactly these conventions and reproduces the omega/phi Table III amplitudes; the rows above are kept as the method-level benchmark.")
     end
     println("wrote ", REPORT)
 end

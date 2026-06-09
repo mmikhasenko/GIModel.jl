@@ -122,15 +122,46 @@ function _j0(x::Real)
     return sin(x) / x
 end
 
-function _momentum_radial_swave(radial::RadialWaveOnUniformMesh, p::Real)
+function _spherical_bessel_j(L::Integer, x::Real)
+    L == 0 && return _j0(x)
+    if abs(x) < 1.0e-4
+        # j_L(x) ≈ x^L / (2L+1)!! for small argument.
+        dfact = prod(1:2:(2L+1))
+        return x^L / dfact
+    end
+    jm1 = _j0(x)
+    j = sin(x) / x^2 - cos(x) / x
+    for l in 1:(L-1)
+        jp1 = (2l + 1) / x * j - jm1
+        jm1 = j
+        j = jp1
+    end
+    return j
+end
+
+function _momentum_radial_wave(radial::RadialWaveOnUniformMesh, p::Real, L::Integer)
     accum = 0.0
     for k in eachindex(radial.r)
-        accum += radial.r[k] * radial.u[k] * _j0(p * radial.r[k])
+        accum += radial.r[k] * radial.u[k] * _spherical_bessel_j(L, p * radial.r[k])
     end
     return sqrt(2 / π) * accum * radial.h
 end
 
-function _s0_smearing_factor(scheme::FDMomentumIntegralSmearing, input::PseudoscalarAnnihilationBasisInput)
+_momentum_radial_swave(radial::RadialWaveOnUniformMesh, p::Real) =
+    _momentum_radial_wave(radial, p, 0)
+
+"""
+    _sL_smearing_factor(scheme, input, L)
+
+Eq. (17) smearing of the wavefunction at the origin for orbital `L`:
+`S_L(Ψ) = (2π)^(-3/2) ∫ d³p (4π)^(-1/2) Φ(p) [p/E]^L (m/E)` with `Φ(p)` the
+normalized radial momentum wavefunction obtained from the `j_L` transform.
+"""
+function _sL_smearing_factor(
+    scheme::FDMomentumIntegralSmearing,
+    input::PseudoscalarAnnihilationBasisInput,
+    L::Integer,
+)
     wave = input.radial
     mass = input.constituent_mass_GeV
     npoints = max(scheme.npoints, 32)
@@ -140,11 +171,15 @@ function _s0_smearing_factor(scheme::FDMomentumIntegralSmearing, input::Pseudosc
     for k in 1:npoints
         p = (k - 1) * dp
         weight = (k == 1 || k == npoints) ? 0.5 : 1.0
-        Φ = _momentum_radial_swave(wave, p)
-        accum += weight * p^2 * Φ * mass / sqrt(mass^2 + p^2)
+        Φ = _momentum_radial_wave(wave, p, L)
+        E = sqrt(mass^2 + p^2)
+        accum += weight * p^2 * Φ * (p / E)^L * mass / E
     end
     return sqrt(2 / π) * accum * dp / sqrt(4π)
 end
+
+_s0_smearing_factor(scheme::FDMomentumIntegralSmearing, input::PseudoscalarAnnihilationBasisInput) =
+    _sL_smearing_factor(scheme, input, 0)
 
 function _flavor_coherence_factor(input::PseudoscalarAnnihilationBasisInput)
     label = lowercase(input.label)
@@ -156,6 +191,14 @@ function _annihilation_overlap_factor(
     input::PseudoscalarAnnihilationBasisInput,
 )
     return _flavor_coherence_factor(input) * _s0_smearing_factor(scheme, input)
+end
+
+function _annihilation_overlap_factor(
+    scheme::FDMomentumIntegralSmearing,
+    input::PseudoscalarAnnihilationBasisInput,
+    L::Integer,
+)
+    return _flavor_coherence_factor(input) * _sL_smearing_factor(scheme, input, L)
 end
 
 function _paper_p1_bracket(
@@ -295,38 +338,51 @@ function isoscalar_pseudoscalar_annihilation_solution(
 end
 
 """
-    isoscalar_general_s1_solution(params, basis; smearing)
+    isoscalar_general_annihilation_solution(params, basis; amplitude_A, L, multiplicity, J, smearing)
 
-Two-state isoscalar `^3S_1` annihilation block over the `[1 n nbar, 1 s sbar]` basis
-using general Eq. (16) with the perturbative OGE bracket and Table III A(^3S_1) amplitude.
-`basis` should be built with HO radial wavefunctions for paper-consistent matrix elements.
+General non-pseudoscalar Eq. (16) annihilation block in the channel
+`^{2S+1}L_J`. The matrix element from `q_i q̄_i → q_j q̄_j` is
+
+`4π(2L+1) A(^{2S+1}L_J) [α_s(M_j²)α_s(M_i²)/π²]^{n/2} S_L(Ψ_j)S_L(Ψ_i)/(m_i m_j)`
+
+with `n = 2` for `C = +` and `n = 3` for `C = −` (`C = (−1)^{L+S}`) and the
+Eq. (17) smearing `S_L`. `basis` should be built with HO radial wavefunctions
+for paper-consistent wavefunction-at-origin scale.
 """
-function isoscalar_general_s1_solution(
+function isoscalar_general_annihilation_solution(
     params::GIParameters,
     basis::AbstractVector{PseudoscalarAnnihilationBasisInput};
-    smearing::PseudoscalarSmearingScheme = FDMomentumIntegralSmearing(),
+    amplitude_A::Real,
+    L::Integer,
+    multiplicity::Integer,
+    J::Integer,
+    smearing::FDMomentumIntegralSmearing = FDMomentumIntegralSmearing(),
 )
     n = length(basis)
+    S = multiplicity == 3 ? 1 : 0
+    c_even = iseven(L + S)
+    n_gluons = c_even ? 2 : 3
     matrix = Matrix(Diagonal([state.diagonal_GeV for state in basis]))
-    factors = [_annihilation_overlap_factor(smearing, state) for state in basis]
+    factors = [_annihilation_overlap_factor(smearing, state, L) for state in basis]
     for j in 1:n, i in 1:n
         mi = basis[i].constituent_mass_GeV
         mj = basis[j].constituent_mass_GeV
         alpha_i = alpha_s_q(basis[i].diagonal_GeV)
         alpha_j = alpha_s_q(basis[j].diagonal_GeV)
-        matrix[j, i] += 4π * params.annihilation_s1_A *
-                         (alpha_i * alpha_j / π^2) *
+        matrix[j, i] += 4π * (2L + 1) * amplitude_A *
+                         (alpha_i * alpha_j / π^2)^(n_gluons / 2) *
                          factors[j] * factors[i] / (mj * mi)
     end
     fact = eigen(Symmetric(matrix))
     vectors = _phase_fix_by_largest_component!(Matrix(fact.vectors))
-    basis_states = [BasisState(1, "S", 3, 1; label = state.label) for state in basis]
+    basis_states = [BasisState(1, "S", multiplicity, J; label = state.label) for state in basis]
+    channel = @sprintf("^%d%s_%d", multiplicity, L_LABELS[L], J)
     block = MixingBlock(
-        "isoscalar ^3S_1 annihilation",
+        "isoscalar $channel annihilation",
         basis_states,
         matrix;
-        mechanism = "general_eq16_s1_annihilation",
-        source = "GI Eq. (16) with Table III A(^3S_1)=$(params.annihilation_s1_A)",
+        mechanism = "general_eq16_annihilation",
+        source = "GI Eq. (16) with Table III A($channel)=$(amplitude_A), n=$(n_gluons) gluons",
         notes = "Uses HO radial waves for paper-consistent wavefunction-at-origin scale.",
     )
     return (
@@ -335,6 +391,29 @@ function isoscalar_general_s1_solution(
         vectors = vectors,
         diagonal_GeV = [state.diagonal_GeV for state in basis],
         annihilation_matrix_GeV = matrix - Diagonal([state.diagonal_GeV for state in basis]),
+    )
+end
+
+"""
+    isoscalar_general_s1_solution(params, basis; smearing)
+
+`^3S_1` special case of [`isoscalar_general_annihilation_solution`](@ref) with
+the Table III amplitude `A(^3S_1)` from the parameters (three-gluon bracket,
+`C = −`).
+"""
+function isoscalar_general_s1_solution(
+    params::GIParameters,
+    basis::AbstractVector{PseudoscalarAnnihilationBasisInput};
+    smearing::FDMomentumIntegralSmearing = FDMomentumIntegralSmearing(),
+)
+    return isoscalar_general_annihilation_solution(
+        params,
+        basis;
+        amplitude_A = params.annihilation_s1_A,
+        L = 0,
+        multiplicity = 3,
+        J = 1,
+        smearing = smearing,
     )
 end
 

@@ -40,6 +40,8 @@ function with_contact_momentum_sandwich(params::GIParameters{Basis}, enabled::Bo
         params.annihilation_p1_m_eta,
         params.annihilation_p2_A_np,
         params.annihilation_p2_M0,
+        params.annihilation_s1_A,
+        params.annihilation_3p2_A,
     )
 end
 
@@ -75,6 +77,7 @@ for fn in sort(readdir(data_dir))
         annotated;
         kinetic = :relativistic,
         extra_channel_masses = extra_masses,
+        ho_wave_L = base == "isoscalar" ? ("S", "P") : ("S",),
     )
     rows = compare(
         computed,
@@ -82,7 +85,7 @@ for fn in sort(readdir(data_dir))
         contact_hyperfine = true,
         use_fine_structure = params.fine_structure,
         isoscalar_pseudoscalar_annihilation =
-            base == "isoscalar" ? :calibrated_p1 : :none,
+            base == "isoscalar" ? :table_iii : :none,
         strange_mass_GeV = mq["s"],
     )
     append!(all_rows, rows)
@@ -147,7 +150,7 @@ open(joinpath(report_dir, "nonmixing_scorecard.md"), "w") do io
     println(io)
     println(
         io,
-        "Rows marked as likely to require still-missing explicit mixing are excluded: isoscalar flavor mixing and any same-`J` tensor/radial candidates that do not yet have an assigned partner block. Open-flavor `^1L_J`/`^3L_J` rows and assigned triplet `L/L'` tensor pairs are included once their mixing blocks are assigned.",
+        "Rows marked as likely to require still-missing explicit mixing are excluded: unassigned same-`J` tensor/radial candidates, calibrated (fitted) pseudoscalar rows, and isoscalar rows without an assigned flavor partner. Open-flavor `^1L_J`/`^3L_J` rows, assigned triplet `L/L'` tensor pairs, and isoscalar rows assigned by the `:table_iii` scheme (ideal mixing or general Eq. (16)) are included.",
     )
     println(io)
     println(io, "| sector | included | excluded | mean abs deviation MeV | max abs deviation MeV |")

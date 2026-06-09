@@ -420,11 +420,33 @@ def annihilation_score(_args: argparse.Namespace) -> int:
     mean_abs = sum(residuals) / len(residuals) if len(residuals) == 4 else None
     spectral_points = 20 if mean_abs is not None and mean_abs <= 25 else 10 if mean_abs is not None and mean_abs <= 50 else 0
 
+    # Table III eigenvector fidelity from the mixing audit: mean amplitude RMS
+    # per literal model ("Mean vector RMS for `P1`: `0.180`; ...").
+    mixing_rms: dict[str, float] = {}
+    audit_path = REPORTS / "table_iii_mixing_audit.md"
+    if audit_path.exists():
+        for line in read_text(audit_path).splitlines():
+            m = re.search(r"Mean vector RMS for `(P[12])`: `([0-9.]+)`", line)
+            if m:
+                mixing_rms[m.group(1)] = float(m.group(2))
+
+    def mixing_points_for(rms: float | None) -> int:
+        if rms is None:
+            return 0
+        if rms <= 0.20:
+            return 20
+        if rms <= 0.35:
+            return 10
+        return 0
+
+    model_rms = {":paper_p1": mixing_rms.get("P1"), ":paper_p2": mixing_rms.get("P2")}
+
     rows = []
     for model in modes:
         model_spectral = spectral_points if model == ":calibrated_p1" else 0
-        total = formula_points + clean_points + implementation_points + model_spectral
-        rows.append((model, formula_points, clean_points, implementation_points, model_spectral, 0, total))
+        model_mixing = mixing_points_for(model_rms.get(model))
+        total = formula_points + clean_points + implementation_points + model_spectral + model_mixing
+        rows.append((model, formula_points, clean_points, implementation_points, model_spectral, model_mixing, total))
 
     REPORTS.mkdir(parents=True, exist_ok=True)
     with (REPORTS / "annihilation_model_scorecard.md").open("w", encoding="utf-8") as f:
@@ -434,10 +456,12 @@ def annihilation_score(_args: argparse.Namespace) -> int:
         f.write("|---|---:|---:|---:|---:|---:|---:|---:|---:|\n")
         for model, fp, cp, ip, sp, mp, total in rows:
             mean = f"{mean_abs:.1f}" if model == ":calibrated_p1" and mean_abs is not None else "n/a"
-            f.write(f"| {model} | {fp} | {cp} | {ip} | {sp} | {mp} | {total} | {mean} | n/a |\n")
+            rms = model_rms.get(model)
+            rms_text = f"{rms:.3f}" if rms is not None else "n/a"
+            f.write(f"| {model} | {fp} | {cp} | {ip} | {sp} | {mp} | {total} | {mean} | {rms_text} |\n")
         f.write("\n## Missing Points\n\n")
-        f.write("- Table III eigenvector RMS is now reported in `table_iii_mixing_audit.md`, but not yet folded into this point score.\n")
-        f.write("- Literal P1/P2 spectral scoring should be added once the FD Eq. (17) proxy is corrected or benchmarked against the paper-order HO matrix elements.\n")
+        f.write("- Mixing points come from the mean Table III amplitude RMS in `table_iii_mixing_audit.md` (20 if <= 0.20, 10 if <= 0.35), evaluated on HO-basis wavefunctions.\n")
+        f.write("- Literal P1/P2 spectral scoring (mass residuals against the digitized Fig. 5 targets) is still pending; the calibrated control carries the spectral points.\n")
     print("wrote docs/residual_reports/annihilation_model_scorecard.md")
     print("top score:", max(row[-1] for row in rows), "/ 100")
     return 0

@@ -78,3 +78,5 @@ p2_A_np = 0.55
 p2_M0_GeV = 1.17
 # Table III A(^3S_1) amplitude for general isoscalar vector annihilation Eq. (16).
 s1_A = 2.5
+# Table III A(^3P_2) amplitude for the f2/f2' tensor-channel annihilation Eq. (16).
+a_3p2 = -0.8

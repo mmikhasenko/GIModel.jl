@@ -48,6 +48,7 @@ struct GIParameters{Basis<:GIBasis}
     annihilation_p2_A_np::Float64
     annihilation_p2_M0::Float64
     annihilation_s1_A::Float64
+    annihilation_3p2_A::Float64
 end
 
 function GIParameters(args...)
@@ -82,6 +83,7 @@ function with_basis(params::GIParameters, ::Type{Basis}) where {Basis<:GIBasis}
         params.annihilation_p2_A_np,
         params.annihilation_p2_M0,
         params.annihilation_s1_A,
+        params.annihilation_3p2_A,
     )
 end
 
@@ -101,6 +103,7 @@ function gi_parameters_from_raw(raw)::GIParameters
     p2_A = isnothing(ann) ? 0.55 : get(ann, "p2_A_np", 0.55)
     p2_M0 = isnothing(ann) ? 1.17 : get(ann, "p2_M0_GeV", 1.17)
     s1_A = isnothing(ann) ? 2.5 : get(ann, "s1_A", 2.5)
+    a_3p2 = isnothing(ann) ? -0.8 : get(ann, "a_3p2", -0.8)
     return GIParameters(
         raw["potential"]["b_GeV2"],
         raw["potential"]["c_MeV"] / 1000,
@@ -126,6 +129,7 @@ function gi_parameters_from_raw(raw)::GIParameters
         float(p2_A),
         float(p2_M0),
         float(s1_A),
+        float(a_3p2),
     )
 end
 

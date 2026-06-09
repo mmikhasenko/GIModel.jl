@@ -74,9 +74,10 @@ function assign_mixed_rows(
     contact_hyperfine::Bool,
     scheme::Symbol,
     strange_mass_GeV,
+    use_fine_structure::Bool = true,
 )
     (!enabled || scheme == :none) && return rows
-    scheme in (:calibrated_p1, :p1, :paper_p1, :p2, :paper_p2, :general_s1, :p1_and_s1) ||
+    scheme in (:calibrated_p1, :p1, :paper_p1, :p2, :paper_p2, :general_s1, :p1_and_s1, :table_iii) ||
         throw(ArgumentError("unsupported isoscalar annihilation scheme `$scheme`"))
     scheme == :general_s1 && return _assign_isoscalar_s1_rows(rows, ctx; contact_hyperfine, strange_mass_GeV)
     if scheme == :p1_and_s1
@@ -85,6 +86,19 @@ function assign_mixed_rows(
             enabled = true, contact_hyperfine, scheme = :calibrated_p1, strange_mass_GeV,
         )
         return _assign_isoscalar_s1_rows(rows, ctx; contact_hyperfine, strange_mass_GeV)
+    end
+    if scheme == :table_iii
+        rows = assign_mixed_rows(
+            IsoscalarAnnihilation(), rows, ctx;
+            enabled = true, contact_hyperfine, scheme = :calibrated_p1, strange_mass_GeV,
+        )
+        return _assign_isoscalar_table_iii_rows(
+            rows,
+            ctx;
+            contact_hyperfine,
+            use_fine_structure,
+            strange_mass_GeV,
+        )
     end
     isnothing(strange_mass_GeV) &&
         throw(ArgumentError("strange_mass_GeV is required for isoscalar pseudoscalar annihilation"))
@@ -241,6 +255,210 @@ function _assign_isoscalar_s1_rows(rows::Vector, ctx::ComparisonContext; contact
                 residual_MeV = 1000 * (predicted - row.reference_GeV),
             ),
         )
+    end
+    return out
+end
+
+"""
+    _channel_prediction(ctx, masses, L_label, n, multiplicity, J; contact_hyperfine, use_fine_structure)
+
+Full fixed-sector prediction (central + contact + fine structure) for radial
+level `n` of the cached `(masses, L_label)` channel. Mirrors the per-row
+pipeline of [`compare`](@ref) so isoscalar `s sbar` partner diagonals match the
+`n nbar` convention.
+"""
+function _channel_prediction(
+    ctx::ComparisonContext,
+    masses::ConstituentMasses,
+    L_label::AbstractString,
+    n::Integer,
+    multiplicity::Integer,
+    J::Integer;
+    contact_hyperfine::Bool,
+    use_fine_structure::Bool,
+)
+    key = RadialChannelKey(masses, L_label)
+    haskey(ctx.channel_cache, key) || return nothing
+    sol = ctx.channel_cache[key]
+    n <= length(sol.eigenvalues_GeV) || return nothing
+    central = sol.eigenvalues_GeV[n]
+    wave = RadialWaveOnUniformMesh(sol, n)
+    contact_shift = 0.0
+    if contact_hyperfine
+        levels = contact_hyperfine_nonperturbative_levels(
+            ctx.params,
+            masses,
+            String(L_label),
+            multiplicity,
+            sol.r,
+            n,
+        )
+        if !isempty(levels) && n <= length(levels)
+            contact_shift = levels[n] - central
+        else
+            contact_shift = contact_hyperfine_shift_active(
+                ctx.params,
+                masses,
+                FineStructureMultiplet(L_label, multiplicity, J),
+                wave,
+            )
+        end
+    end
+    so_vector = 0.0
+    so_thomas = 0.0
+    so_total = 0.0
+    tensor = 0.0
+    fs_total = 0.0
+    if use_fine_structure && ctx.params.fine_structure
+        comp = fine_structure_components(
+            ctx.params,
+            masses,
+            FineStructureMultiplet(L_label, multiplicity, J),
+            wave;
+            enabled = true,
+            k_spin_orbit = ctx.params.k_spin_orbit,
+            k_tensor = ctx.params.k_tensor,
+        )
+        so_vector = comp.spin_orbit_vector
+        so_thomas = comp.spin_orbit_thomas
+        so_total = comp.spin_orbit
+        tensor = comp.tensor
+        fs_total = comp.total
+    end
+    return (
+        central_GeV = central,
+        contact_shift_GeV = contact_shift,
+        spin_orbit_vector_shift_GeV = so_vector,
+        spin_orbit_thomas_shift_GeV = so_thomas,
+        spin_orbit_shift_GeV = so_total,
+        tensor_shift_GeV = tensor,
+        fine_structure_shift_GeV = fs_total,
+        predicted_GeV = central + contact_shift + fs_total,
+    )
+end
+
+# Table III general annihilation amplitudes: only `^3S_1` and `^3P_2` carry a
+# nonzero `A`; the pseudoscalars use P1/P2, and every other channel is ideally
+# mixed ("Other states ... have been assumed for now to be ideally mixed").
+function _table_iii_amplitude(params::GIParameters, L_label::AbstractString, multiplicity::Integer, J::Integer)
+    multiplicity == 3 || return nothing
+    L_label == "S" && J == 1 && return params.annihilation_s1_A
+    L_label == "P" && J == 2 && return params.annihilation_3p2_A
+    return nothing
+end
+
+function _assign_isoscalar_table_iii_rows(
+    rows::Vector,
+    ctx::ComparisonContext;
+    contact_hyperfine::Bool,
+    use_fine_structure::Bool,
+    strange_mass_GeV,
+)
+    isnothing(strange_mass_GeV) &&
+        throw(ArgumentError("strange_mass_GeV is required for :table_iii isoscalar annihilation"))
+    strange_masses = ConstituentMasses(strange_mass_GeV, strange_mass_GeV)
+
+    groups = Dict{Any,Vector{Int}}()
+    for (i, row) in pairs(rows)
+        row.sector == "isoscalar" || continue
+        # Pseudoscalar rows were already assigned by the P1 block.
+        row.isoscalar_annihilation_scheme == "none" || continue
+        push!(get!(groups, (row.n, row.multiplicity, row.L, row.J), Int[]), i)
+    end
+
+    out = copy(rows)
+    for ((n, multiplicity, L_label, J), indices) in groups
+        length(indices) == 2 || continue
+        ordered = sort(indices; by = i -> rows[i].reference_GeV)
+        ns_row = rows[ordered[1]]
+        ns_pred = ns_row.predicted_GeV
+        ss = _channel_prediction(
+            ctx,
+            strange_masses,
+            L_label,
+            n,
+            multiplicity,
+            J;
+            contact_hyperfine,
+            use_fine_structure,
+        )
+        isnothing(ss) && continue
+        ss_pred = ss.predicted_GeV
+
+        amplitude = _table_iii_amplitude(ctx.params, L_label, multiplicity, J)
+        if isnothing(amplitude)
+            predicted = [ns_pred, ss_pred]
+            scheme = "ideal"
+            components = [(1.0, 0.0), (0.0, 1.0)]
+        else
+            ns_masses = ConstituentMasses(ns_row.m1_GeV, ns_row.m2_GeV)
+            Lval = L_SYMBOLS[L_label]
+            key_ns = RadialChannelKey(ns_masses, L_label)
+            key_ss = RadialChannelKey(strange_masses, L_label)
+            sol_ns = get(ctx.ho_wave_cache, key_ns, ctx.channel_cache[key_ns])
+            sol_ss = get(ctx.ho_wave_cache, key_ss, ctx.channel_cache[key_ss])
+            basis = [
+                pseudoscalar_annihilation_basis_input(
+                    "$n ns",
+                    ns_masses.m1_GeV,
+                    ns_pred,
+                    RadialWaveOnUniformMesh(sol_ns, n),
+                ),
+                pseudoscalar_annihilation_basis_input(
+                    "$n ss",
+                    strange_masses.m1_GeV,
+                    ss_pred,
+                    RadialWaveOnUniformMesh(sol_ss, n),
+                ),
+            ]
+            solution = isoscalar_general_annihilation_solution(
+                ctx.params,
+                basis;
+                amplitude_A = amplitude,
+                L = Lval,
+                multiplicity = multiplicity,
+                J = J,
+            )
+            predicted = solution.masses
+            scheme = "general_eq16"
+            components = [
+                (solution.vectors[1, 1], solution.vectors[2, 1]),
+                (solution.vectors[1, 2], solution.vectors[2, 2]),
+            ]
+        end
+
+        for (level, irow) in enumerate(ordered)
+            row = rows[irow]
+            unmixed = level == 1 ? ns_pred : ss_pred
+            # The heavier row is dominantly `s sbar`: rewrite its fixed-sector
+            # breakdown columns from the strange channel so reports stay truthful.
+            diag_update = level == 2 ?
+                (
+                    m1_GeV = strange_masses.m1_GeV,
+                    m2_GeV = strange_masses.m2_GeV,
+                    central_GeV = ss.central_GeV,
+                    contact_shift_GeV = ss.contact_shift_GeV,
+                    spin_orbit_vector_shift_GeV = ss.spin_orbit_vector_shift_GeV,
+                    spin_orbit_thomas_shift_GeV = ss.spin_orbit_thomas_shift_GeV,
+                    spin_orbit_shift_GeV = ss.spin_orbit_shift_GeV,
+                    tensor_shift_GeV = ss.tensor_shift_GeV,
+                    fine_structure_shift_GeV = ss.fine_structure_shift_GeV,
+                ) : NamedTuple()
+            out[irow] = merge(
+                row,
+                diag_update,
+                (
+                    annihilation_shift_GeV = predicted[level] - unmixed,
+                    annihilation_scheme = scheme,
+                    isoscalar_annihilation_scheme = scheme,
+                    isoscalar_annihilation_unmixed_GeV = unmixed,
+                    isoscalar_component_ns = components[level][1],
+                    isoscalar_component_ss = components[level][2],
+                    predicted_GeV = predicted[level],
+                    residual_MeV = 1000 * (predicted[level] - row.reference_GeV),
+                ),
+            )
+        end
     end
     return out
 end
@@ -451,6 +669,7 @@ function compute_sector(
     eigensolver::Symbol = :full,
     extra_channel_masses::AbstractVector{ConstituentMasses} = ConstituentMasses[],
     annihilation_wave_basis::Symbol = :ho,
+    ho_wave_L::Tuple{Vararg{String}} = ("S",),
 )
     channel_cache = Dict{RadialChannelKey,ChannelRadialSolution}()
     requested = Tuple{ConstituentMasses,String}[]
@@ -484,23 +703,18 @@ function compute_sector(
     if annihilation_wave_basis == :ho
         ho_params = with_basis(params, HarmonicOscillatorBasis)
         for (masses, L_label) in requested
-            L_label == "S" || continue
+            L_label in ho_wave_L || continue
             key = RadialChannelKey(masses, L_label)
             if !haskey(ho_wave_cache, key)
                 ev, vecs, r = channel_solution(
                     ho_params,
                     masses,
-                    0;
+                    L_SYMBOLS[L_label];
                     nlevels = 2,
                     ngrid = ngrid,
                     rmax = rmax,
                     kinetic = kinetic,
                 )
-                # Enforce u(r_min) > 0 so wavefunction-at-origin factors have
-                # consistent sign across different quark masses.
-                for col in eachcol(vecs)
-                    col[1] < 0 && (col .*= -1)
-                end
                 # Enforce u(r_min) > 0 on all HO eigenvectors so that
                 # wavefunction-at-origin factors have the physical sign
                 # (ψ(0) > 0 for the ground state of a confining potential).
@@ -653,6 +867,7 @@ function compare(
         contact_hyperfine = contact_hyperfine,
         scheme = isoscalar_pseudoscalar_annihilation,
         strange_mass_GeV = strange_mass_GeV,
+        use_fine_structure = use_fine_structure,
     )
 end
 
@@ -709,7 +924,16 @@ antisymmetric spin-orbit block has been applied.
 """
 function mixing_prone_state(row)
     sector = _row_sector(row)
-    sector == "isoscalar" && return true
+    if sector == "isoscalar"
+        scheme =
+            hasproperty(row, :isoscalar_annihilation_scheme) ?
+            String(getproperty(row, :isoscalar_annihilation_scheme)) : "none"
+        # Ideal-mixing and general-Eq.(16) rows are genuine predictions; the
+        # calibrated pseudoscalar control is a fit and unassigned rows still
+        # lack their flavor partner, so both stay excluded.
+        scheme in ("ideal", "general_eq16") || return true
+        return _tensor_sd_prone(row)
+    end
     if hasproperty(row, :same_j_mixing_scheme) &&
        getproperty(row, :same_j_mixing_scheme) == "antisymmetric_spin_orbit"
         return _tensor_sd_prone(row)
@@ -970,7 +1194,7 @@ function write_residual_report(
             println(io)
             println(
                 io,
-                "Rows below use the selected isoscalar pseudoscalar annihilation mode. `calibrated_p1` is the Fig. 5/Table III control; `p1` and `p2` are the paper Eq. (18a,b) formula modes.",
+                "Rows below use the selected isoscalar annihilation scheme. `calibrated_p1` is the Fig. 5/Table III pseudoscalar control; `p1`/`p2` are the paper Eq. (18a,b) formula modes; `general_eq16` is the literal Eq. (16) block (`^3S_1`, `^3P_2`); `ideal` assigns the heavier row to the `s sbar` channel prediction per the Table III ideal-mixing prescription.",
             )
             println(io)
             println(io, "| state | scheme | unmixed GeV | mixed GeV | shift MeV |")
