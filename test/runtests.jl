@@ -1774,10 +1774,15 @@ end
     s0_ho = abs(GIModel._s0_smearing_factor(FDMomentumIntegralSmearing(180), ho_basis))
     s0_fd = abs(GIModel._s0_smearing_factor(FDMomentumIntegralSmearing(180), fd_basis))
     @test s0_ho > s0_fd
-    # Physical sign convention: all HO n=1 eigenvectors must be positive at small r
-    # so S_L factors are consistent across quark masses (off-diagonals positive).
+    # GI annihilation phase convention: Φ(0) ∝ ∫ r u(r) dr > 0 for every level
+    # (Table III amplitude signs follow this; for the nodeless ground state it
+    # coincides with u(r_min) > 0).
+    phase(sol, n) = sum(sol.r .* view(sol.eigenvectors, :, n))
     @test ho_sol.eigenvectors[1, 1] > 0
-    @test computed.ho_wave_cache[skey].eigenvectors[1, 1] > 0
+    @test phase(ho_sol, 1) > 0
+    @test phase(ho_sol, 2) > 0
+    @test phase(computed.ho_wave_cache[skey], 1) > 0
+    @test phase(computed.ho_wave_cache[skey], 2) > 0
 end
 
 @testset "isoscalar general_s1 annihilation splits omega/phi" begin

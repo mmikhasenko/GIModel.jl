@@ -8,31 +8,33 @@ This audit compares the implemented literal pseudoscalar P1/P2 modes (Eq. 18a,b 
 
 ## Current Conclusion
 
-With HO-basis wavefunctions in the Eq. (17) smearing, the literal Eq. (18a,b) modes now reproduce the qualitative Table III structure: large positive `ns`/`ss` mixing in the eta, dominant `ss` eta-prime with significant `1 ns`/`2 ns` admixtures, and in P2 the third/fourth poles near 1.24/1.53 GeV with dominant `2 ns`/`2 ss` content matching the paper's eta(1.28)/iota(1440) discussion (paper: 1.27/1.55 GeV with amplitudes +0.99/+0.97). Remaining amplitude RMS is dominated by the eta-prime row; the headline residual reports keep the calibrated P1 control for mass scoring while these literal modes are tracked here.
+With HO-basis wavefunctions in the Eq. (17) smearing and the GI annihilation phase convention `Φ(0) > 0` (which makes the radially excited `2 ns`/`2 ss` couplings negative), the literal Eq. (18a,b) modes reproduce the Table III sign structure in every pseudoscalar row. The remaining amplitude error is magnitude-level (under-mixed radial components in the eta-prime), and the remaining mass error tracks the light-sector unperturbed diagonals (the FD pi sits ~55 MeV below the paper's 0.15 GeV). The headline residual reports keep the calibrated P1 control for mass scoring while these literal modes are tracked here.
 
 ## `P1`
 
-| state | pole / column | mass GeV | Table Δ MeV | vector RMS | max | largest model components |
-|---|---:|---:|---:|---:|---:|---|
-| `eta(548)` | 1 | 0.407 | 370 | 0.154 | 0.272 | `1 ns`=+0.846, `1 ss`=-0.504, `2 ns`=-0.162 |
-| `eta_c(2980)` | 5 | 2.955 | n/a | 0.004 | 0.006 | `1 cc`=+1.000, `1 ns`=-0.004, `2 ns`=-0.002 |
-| `eta_prime(958)` | 2 | 0.774 | 810 | 0.324 | 0.784 | `1 ss`=+0.839, `1 ns`=+0.434, `2 ns`=-0.314 |
-| `eta_r(?)` | 3 | 1.451 | n/a | 0.211 | 0.450 | `2 ns`=+0.787, `2 ss`=-0.571, `1 ns`=+0.190 |
-| `eta_r_prime(?)` | 4 | 1.685 | n/a | 0.207 | 0.415 | `2 ss`=+0.813, `2 ns`=+0.505, `1 ns`=+0.245 |
+| state | pole / column | mass GeV | target GeV | mass Δ MeV | Table Δ MeV | vector RMS | max | largest model components |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `eta(548)` | 1 | 0.407 | 0.520 | -113 | 370 | 0.110 | 0.226 | `1 ns`=+0.846, `1 ss`=-0.504, `2 ns`=+0.162 |
+| `eta_c(2980)` | 5 | 2.955 | 2.970 | -15 | n/a | 0.002 | 0.004 | `1 cc`=+1.000, `1 ns`=-0.004, `2 ns`=+0.002 |
+| `eta_prime(958)` | 2 | 0.774 | 0.960 | -186 | 810 | 0.117 | 0.219 | `1 ss`=+0.839, `1 ns`=+0.434, `2 ns`=+0.314 |
+| `eta_r(?)` | 3 | 1.451 | 1.440 | +11 | n/a | 0.058 | 0.131 | `2 ns`=+0.787, `2 ss`=-0.571, `1 ns`=-0.190 |
+| `eta_r_prime(?)` | 4 | 1.685 | 1.630 | +55 | n/a | 0.101 | 0.245 | `2 ss`=+0.813, `2 ns`=+0.505, `1 ns`=-0.245 |
 
-Mean vector RMS for `P1`: `0.180`; max vector RMS: `0.324`.
+Mean vector RMS for `P1`: `0.078`; max vector RMS: `0.117`.
+Mean abs mass residual for `P1`: `76 MeV` against the paper-model targets.
 
 ## `P2`
 
-| state | pole / column | mass GeV | Table Δ MeV | vector RMS | max | largest model components |
-|---|---:|---:|---:|---:|---:|---|
-| `eta(548)` | 1 | 0.395 | 340 | 0.117 | 0.229 | `1 ns`=+0.785, `1 ss`=-0.600, `2 ns`=-0.139 |
-| `eta_c(2980)` | 5 | 2.955 | n/a | 0.002 | 0.004 | `1 cc`=+1.000, `2 cc`=+0.002, `1 ns`=-0.001 |
-| `eta_prime(958)` | 2 | 0.853 | 780 | 0.294 | 0.718 | `1 ss`=+0.817, `1 ns`=+0.408, `2 ns`=-0.378 |
-| `eta_r(?)` | 3 | 1.241 | n/a | 0.075 | 0.149 | `2 ns`=+0.993, `2 ss`=+0.076, `1 ss`=-0.069 |
-| `eta_r_prime(?)` | 4 | 1.530 | n/a | 0.082 | 0.157 | `2 ss`=+0.976, `2 ns`=-0.197, `1 ns`=-0.067 |
+| state | pole / column | mass GeV | target GeV | mass Δ MeV | Table Δ MeV | vector RMS | max | largest model components |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `eta(548)` | 1 | 0.395 | 0.490 | -95 | 340 | 0.066 | 0.130 | `1 ns`=+0.785, `1 ss`=-0.600, `2 ns`=+0.139 |
+| `eta_c(2980)` | 5 | 2.955 | 2.970 | -15 | n/a | 0.000 | 0.001 | `1 cc`=+1.000, `2 cc`=-0.002, `1 ns`=-0.001 |
+| `eta_prime(958)` | 2 | 0.853 | 0.930 | -77 | 780 | 0.034 | 0.072 | `1 ss`=+0.817, `1 ns`=+0.408, `2 ns`=+0.378 |
+| `eta_r(?)` | 3 | 1.241 | 1.270 | -29 | n/a | 0.006 | 0.011 | `2 ns`=+0.993, `2 ss`=+0.076, `1 ss`=+0.069 |
+| `eta_r_prime(?)` | 4 | 1.530 | 1.550 | -20 | n/a | 0.018 | 0.037 | `2 ss`=+0.976, `2 ns`=-0.197, `1 ns`=+0.067 |
 
-Mean vector RMS for `P2`: `0.114`; max vector RMS: `0.294`.
+Mean vector RMS for `P2`: `0.025`; max vector RMS: `0.066`.
+Mean abs mass residual for `P2`: `47 MeV` against the paper-model targets.
 
 ## Non-Pseudoscalar Rows
 

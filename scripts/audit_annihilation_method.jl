@@ -32,9 +32,7 @@ function hidden_s_basis(params, mq, spin; wave_basis = :fd, ngrid = 220, rmax = 
             rmax = rmax,
             kinetic = :relativistic,
         )
-        for col in eachcol(vecs)
-            col[1] < 0 && (col .*= -1)
-        end
+        fix_annihilation_phase!(vecs, r)
         sol = GIModel.ChannelRadialSolution(ev, vecs, r)
         levels = GIModel.contact_hyperfine_nonperturbative_levels(
             params,
@@ -104,9 +102,7 @@ function pseudoscalar_basis(params, mq; wave_basis = :fd, ngrid = 220, rmax = 22
             rmax = rmax,
             kinetic = :relativistic,
         )
-        for col in eachcol(vecs)
-            col[1] < 0 && (col .*= -1)
-        end
+        fix_annihilation_phase!(vecs, r)
         sol = GIModel.ChannelRadialSolution(ev, vecs, r)
         levels = GIModel.contact_hyperfine_nonperturbative_levels(
             params,

@@ -715,16 +715,12 @@ function compute_sector(
                     rmax = rmax,
                     kinetic = kinetic,
                 )
-                # Enforce u(r_min) > 0 on all HO eigenvectors so that
-                # wavefunction-at-origin factors have the physical sign
-                # (ψ(0) > 0 for the ground state of a confining potential).
-                # The eigensolver returns arbitrary-sign columns; without this
-                # fix the S_L smearing factor can be negative for some quark
-                # masses and positive for others, flipping signs of off-diagonal
-                # annihilation matrix elements.
-                for col in eachcol(vecs)
-                    col[1] < 0 && (col .*= -1)
-                end
+                # The eigensolver returns arbitrary-sign columns; without a
+                # fixed phase the S_L smearing factor can flip sign between
+                # quark masses and radial levels, randomizing off-diagonal
+                # annihilation matrix elements. The GI Table III convention is
+                # Φ(0) > 0 in momentum space (see fix_annihilation_phase!).
+                fix_annihilation_phase!(vecs, r)
                 ho_wave_cache[key] = ChannelRadialSolution(ev, vecs, r)
             end
         end

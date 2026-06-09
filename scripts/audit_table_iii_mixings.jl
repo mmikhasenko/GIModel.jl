@@ -15,6 +15,28 @@ using GIModel
 const TARGET_BASIS = ["1 ns", "1 ss", "1 cc", "1 bb", "2 ns", "2 ss", "2 cc"]
 const REPORT = joinpath(root, "docs", "residual_reports", "table_iii_mixing_audit.md")
 
+# Paper mass targets for the literal modes. P1 masses are the digitized Fig. 5
+# isoscalar pseudoscalar labels (and Fig. 6 for the eta_c). P2 masses follow
+# the Table III Δm column relative to the isovector pi(0.15)/pi'(1.30) for the
+# eta/eta', and the Sec. VA text (1.27 and 1.55 GeV) for the third and fourth
+# poles.
+const MASS_TARGETS_GEV = Dict(
+    "P1" => Dict(
+        "eta(548)" => 0.52,
+        "eta_prime(958)" => 0.96,
+        "eta_r(?)" => 1.44,
+        "eta_r_prime(?)" => 1.63,
+        "eta_c(2980)" => 2.97,
+    ),
+    "P2" => Dict(
+        "eta(548)" => 0.49,
+        "eta_prime(958)" => 0.93,
+        "eta_r(?)" => 1.27,
+        "eta_r_prime(?)" => 1.55,
+        "eta_c(2980)" => 2.97,
+    ),
+)
+
 function s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
     # Annihilation wavefunctions use the HO basis (paper-consistent
     # wavefunction-at-origin scale); diagonal masses use the FD contact levels.
@@ -40,9 +62,7 @@ function s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
             rmax = rmax,
             kinetic = :relativistic,
         )
-        for col in eachcol(vecs)
-            col[1] < 0 && (col .*= -1)
-        end
+        fix_annihilation_phase!(vecs, r_ho)
         sol = GIModel.ChannelRadialSolution(ev, vecs, r_ho)
         levels = GIModel.contact_hyperfine_nonperturbative_levels(
             params,
@@ -135,9 +155,11 @@ function write_model_section(io, title, solution, targets, shifts)
 
     println(io, "## `$model`")
     println(io)
-    println(io, "| state | pole / column | mass GeV | Table Δ MeV | vector RMS | max | largest model components |")
-    println(io, "|---|---:|---:|---:|---:|---:|---|")
+    println(io, "| state | pole / column | mass GeV | target GeV | mass Δ MeV | Table Δ MeV | vector RMS | max | largest model components |")
+    println(io, "|---|---:|---:|---:|---:|---:|---:|---:|---|")
     rms_values = Float64[]
+    mass_residuals = Float64[]
+    mass_targets = get(MASS_TARGETS_GEV, model, Dict{String,Float64}())
     for (i, key) in enumerate(target_keys)
         col = cols[i]
         pred = signs[i] .* solution.vectors[:, col]
@@ -153,13 +175,23 @@ function write_model_section(io, title, solution, targets, shifts)
         largest_text = join([@sprintf("`%s`=%+.3f", label, amp) for (label, amp) in largest], ", ")
         shift = get(shifts, key, missing)
         shift_text = ismissing(shift) ? "n/a" : @sprintf("%.0f", shift)
+        mass_target = get(mass_targets, key[1], missing)
+        mass_target_text = ismissing(mass_target) ? "n/a" : @sprintf("%.3f", mass_target)
+        mass_delta_text = "n/a"
+        if !ismissing(mass_target)
+            delta = 1000 * (solution.masses[col] - mass_target)
+            push!(mass_residuals, abs(delta))
+            mass_delta_text = @sprintf("%+.0f", delta)
+        end
         println(
             io,
             @sprintf(
-                "| `%s` | %d | %.3f | %s | %.3f | %.3f | %s |",
+                "| `%s` | %d | %.3f | %s | %s | %s | %.3f | %.3f | %s |",
                 key[1],
                 col,
                 solution.masses[col],
+                mass_target_text,
+                mass_delta_text,
                 shift_text,
                 rms,
                 maxerr,
@@ -177,6 +209,16 @@ function write_model_section(io, title, solution, targets, shifts)
             maximum(rms_values),
         ),
     )
+    if !isempty(mass_residuals)
+        println(
+            io,
+            @sprintf(
+                "Mean abs mass residual for `%s`: `%.0f MeV` against the paper-model targets.",
+                model,
+                sum(mass_residuals) / length(mass_residuals),
+            ),
+        )
+    end
     println(io)
 end
 
@@ -199,7 +241,7 @@ function main()
         println(io)
         println(io, "## Current Conclusion")
         println(io)
-        println(io, "With HO-basis wavefunctions in the Eq. (17) smearing, the literal Eq. (18a,b) modes now reproduce the qualitative Table III structure: large positive `ns`/`ss` mixing in the eta, dominant `ss` eta-prime with significant `1 ns`/`2 ns` admixtures, and in P2 the third/fourth poles near 1.24/1.53 GeV with dominant `2 ns`/`2 ss` content matching the paper's eta(1.28)/iota(1440) discussion (paper: 1.27/1.55 GeV with amplitudes +0.99/+0.97). Remaining amplitude RMS is dominated by the eta-prime row; the headline residual reports keep the calibrated P1 control for mass scoring while these literal modes are tracked here.")
+        println(io, "With HO-basis wavefunctions in the Eq. (17) smearing and the GI annihilation phase convention `Φ(0) > 0` (which makes the radially excited `2 ns`/`2 ss` couplings negative), the literal Eq. (18a,b) modes reproduce the Table III sign structure in every pseudoscalar row. The remaining amplitude error is magnitude-level (under-mixed radial components in the eta-prime), and the remaining mass error tracks the light-sector unperturbed diagonals (the FD pi sits ~55 MeV below the paper's 0.15 GeV). The headline residual reports keep the calibrated P1 control for mass scoring while these literal modes are tracked here.")
         println(io)
         write_model_section(io, "P1", p1, targets, shifts)
         write_model_section(io, "P2", p2, targets, shifts)

@@ -65,6 +65,7 @@ export CalibratedP1Annihilation,
     FDOriginP2Smearing,
     FDMomentumIntegralSmearing,
     pseudoscalar_annihilation_basis_input,
+    fix_annihilation_phase!,
     isoscalar_pseudoscalar_annihilation_solution,
     isoscalar_general_annihilation_solution,
     isoscalar_general_s1_solution

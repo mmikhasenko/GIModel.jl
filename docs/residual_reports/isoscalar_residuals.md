@@ -36,7 +36,6 @@ Model: finite-difference + `relativistic` kinetic, with GI momentum-sandwiched s
 | `1^1D_2` | 1.890 | 1.898 |    +7.6 | medium |
 | `1^3D_2` | 1.700 | 1.699 |    -1.2 | medium |
 | `1^3D_2` | 1.910 | 1.908 |    -1.7 | medium |
-| `2^3D_2` | 2.260 | 2.151 |  -108.6 | low |
 | `1^3D_3` | 1.680 | 1.688 |    +8.3 | medium |
 | `1^3D_3` | 1.900 | 1.898 |    -2.2 | medium |
 | `1^3G_3` | 2.370 | 2.348 |   -21.6 | medium |
@@ -92,7 +91,6 @@ All shifts below are relative to the central FD eigenvalue (the spin-independent
 | `1^1D_2` | 1.898 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 |    +0.0 | 1.898 |
 | `1^3D_2` | 1.687 |    +0.0 |   -23.9 |   +21.3 |    -2.7 |   +14.4 |    +0.0 |   +11.8 | 1.699 |
 | `1^3D_2` | 1.898 |    +0.0 |   -19.1 |   +17.2 |    -1.9 |   +12.7 |    +0.0 |   +10.8 | 1.908 |
-| `2^3D_2` | 2.142 |    +0.0 |   -15.3 |   +16.3 |    +1.0 |    +8.3 |    +0.0 |    +9.3 | 2.151 |
 | `1^3D_3` | 1.687 |    +0.0 |   +47.8 |   -42.5 |    +5.3 |    -4.1 |    +0.0 |    +1.2 | 1.688 |
 | `1^3D_3` | 1.898 |    +0.0 |   +38.3 |   -34.4 |    +3.9 |    -3.6 |    +0.0 |    +0.3 | 1.898 |
 | `1^3G_3` | 2.334 |    +0.0 |   -29.9 |   +47.4 |   +17.5 |    -2.7 |    +0.0 |   +14.8 | 2.348 |
@@ -165,8 +163,8 @@ Rows below use the selected isoscalar annihilation scheme. `calibrated_p1` is th
 | `1^3G_5` | `ideal` | 2.318 | 2.318 |    +0.0 |
 | `1^3G_5` | `ideal` | 2.493 | 2.493 |    +0.0 |
 
-Mean absolute residual: 13.5 MeV.
-Max absolute residual: 108.6 MeV.
+Mean absolute residual: 11.5 MeV.
+Max absolute residual: 39.9 MeV.
 
 ## Spin-Averaged Diagnostics
 
@@ -175,7 +173,6 @@ Weighted by `2J+1` within each available `(n, L)` group.
 | multiplet | states | reference GeV | baseline GeV | residual MeV |
 |---|---:|---:|---:|---:|
 | `1D` | 8 | 1.789 | 1.792 |    +2.8 |
-| `2D` | 1 | 2.260 | 2.151 |  -108.6 |
 | `1F` | 8 | 2.126 | 2.129 |    +3.3 |
 | `1G` | 8 | 2.419 | 2.420 |    +1.9 |
 | `1P` | 8 | 1.364 | 1.367 |    +3.6 |

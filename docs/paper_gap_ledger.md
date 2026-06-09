@@ -145,19 +145,23 @@ omega/phi block reproduces Table III: amplitudes `(+1.000, -0.029)` vs
 `(+0.999, -0.02)` and an omega shift of `+13 MeV` vs the paper's `+10 MeV`.
 `A(^3P_2) = -0.8` reproduces the f2/f2' row, `(+0.997, +0.080)` vs
 `(+0.997, +0.06)`. The literal pseudoscalar `:paper_p1`/`:paper_p2` modes on
-HO waves now also reproduce the qualitative Table III structure (P2: third and
-fourth poles at 1.24/1.53 GeV with `2 ns`/`2 ss` amplitudes `+0.99`/`+0.98`
-vs the paper's 1.27/1.55 GeV and `+0.99`/`+0.97`); mean amplitude RMS is
-0.180 (P1) and 0.114 (P2), dominated by the eta-prime row.
+HO waves reproduce the Table III sign structure in every row once the GI
+annihilation phase convention `Φ(0) > 0` is enforced
+(`fix_annihilation_phase!`): the radially excited `2 ns`/`2 ss` couplings are
+then negative, which is what makes the published all-positive eta-prime row
+possible. Mean amplitude RMS is 0.078 (P1) and 0.025 (P2) — the P2 eta_r row
+`(+0.993, +0.076, +0.069)` vs the paper's `(+0.99, +0.07, +0.08)` is
+essentially exact. Literal-mode masses sit 47 MeV (P2) / 76 MeV (P1) mean
+from the paper-model targets, inherited mostly from the light unperturbed
+diagonals (the FD pi is ~55 MeV below the paper's 0.15 GeV).
 
 Why it matters: this was the last hundreds-of-MeV gap in the isoscalar
 spectrum reproduction.
 
 Acceptance check: complete for the non-pseudoscalar channels (eigenvectors and
-splittings). Pseudoscalar literal modes are tracked in
-`docs/residual_reports/table_iii_mixing_audit.md`; the calibrated P1 control
-still carries the headline mass scoring while the eta-prime amplitude row
-remains the largest literal-mode discrepancy.
+splittings) and for the literal pseudoscalar eigenvectors. The calibrated P1
+control still carries the headline mass scoring; retiring it requires fixing
+the shared light-sector diagonal residuals, not the annihilation block.
 
 ### 6. General Table III Isoscalar Mixing
 
@@ -175,8 +179,11 @@ sector mean dropped from 97.3 MeV to 13.5 MeV and the non-mixing scorecard
 includes 40 isoscalar rows at 13.6 MeV mean — in line with the isovector
 sector, whose channel residuals the isoscalar rows now track.
 
-Acceptance check: complete. Remaining isoscalar-specific residual is the
-single unpaired low-confidence `2^3D_2` digitized row (crop audit pending).
+Acceptance check: complete. The previously unpaired `2^3D_2` digitized row at
+2.26 GeV was crop-audited (400 dpi, page 8) and rejected: the Fig. 5 `2--`
+column contains only `1^3D_2(1.70)` and `1^3D_2(1.91)`; the 2.26 value was
+contamination from the Fig. 4 strange `2^3D_2(2.26)` label and has been
+removed from the reference spectrum.
 
 ### 7. Eigenvector Fidelity Scoring
 
@@ -185,13 +192,14 @@ not just mass targets.
 
 What the repo does: `docs/residual_reports/table_iii_mixing_audit.md` computes
 the amplitude RMS for literal P1/P2 on HO waves against the promoted Table III
-rows, and `data_checks.py score-annihilation` folds that RMS into the
-annihilation scorecard as mixing points (`:paper_p1` and `:paper_p2` now score
-80/100, equal with the calibrated control which carries the spectral points
-instead).
+rows plus the literal-mode mass residuals against the paper-model targets
+(Fig. 5 labels for P1; Table III Δm + Sec. VA pole masses for P2), and
+`data_checks.py score-annihilation` folds both into the annihilation
+scorecard as mixing and spectral points with shared thresholds.
 
-Acceptance check: complete as a scoring mechanism. Remaining quality work is
-the eta-prime amplitude row and literal-mode spectral scoring.
+Acceptance check: complete as a scoring mechanism, including literal-mode
+spectral scoring. Remaining quality work is the shared light-sector
+unperturbed diagonal that caps the literal-mode mass points.
 
 ### 8. Observables Outside The Mass Spectrum, Later Than 1-5
 
@@ -211,15 +219,18 @@ implicitly.
 ## Next Clean Implementation Step
 
 Items 3-7 are now implemented (general Eq. (16), `:table_iii` ideal-mixing
-prescription, eigenvector scoring). The most direct remaining order is:
+prescription, the `Φ(0) > 0` annihilation phase convention, eigenvector and
+literal-mode spectral scoring, and the `2^3D_2` crop audit). The most direct
+remaining order is:
 
-1. Improve the literal pseudoscalar P1/P2 eta-prime amplitude row and add
-   literal-mode spectral scoring against the digitized Fig. 5 targets, so the
-   calibrated P1 control can be retired from the headline reports.
-2. Audit the unpaired isoscalar `2^3D_2` digitization (crop audit) that is the
-   current isoscalar max residual.
-3. Revisit Appendix-A/HO paper-order staging with the now-explicit mixing
+1. Reduce the shared light-sector unperturbed residuals that now cap both the
+   light scorecards and the literal pseudoscalar masses: the FD pi sits
+   ~55 MeV below the paper's 0.15 GeV, and the P-wave singlets (`1^1P_1`,
+   `1^3P_0`, `2^3P_0`) carry +25..40 MeV in both isovector and isoscalar.
+2. Revisit Appendix-A/HO paper-order staging with the now-explicit mixing
    blocks (items 1-2 above): start from HO fixed-sector eigenvectors and apply
    the post-diagonalization mixing blocks before assigning physical rows.
-4. Reduce the shared light-sector P-wave residuals (`1^1P_1`, `1^3P_0`,
-   `2^3P_0`) that now dominate both the isovector and isoscalar scorecards.
+3. Once 1-2 settle, retire the calibrated P1 control from the headline
+   isoscalar report in favor of the literal P1 mode.
+4. Open the observables layer (item 8): create the separate observable ledger
+   and begin encoding the Table V strong-decay amplitude matrix elements.

@@ -181,6 +181,29 @@ end
 _s0_smearing_factor(scheme::FDMomentumIntegralSmearing, input::PseudoscalarAnnihilationBasisInput) =
     _sL_smearing_factor(scheme, input, 0)
 
+"""
+    fix_annihilation_phase!(vecs, r)
+
+Enforce the GI annihilation phase convention on radial eigenvector columns:
+the momentum-space wave at the origin, `Φ(0) ∝ ∫ r u(r) dr`, is positive for
+every level. For nodeless ground states this coincides with `u(r_min) > 0`;
+for radially excited states the outer lobe dominates the integral, so the
+sign alternates relative to the small-`r` convention. Table III amplitude
+signs follow this convention: with it, all four literal-P1 pseudoscalar
+eigenvectors match the published sign structure, while the small-`r`
+convention flips the `2 ns`/`2 ss` couplings and doubles the amplitude RMS.
+"""
+function fix_annihilation_phase!(vecs::AbstractMatrix{<:Real}, r::AbstractVector{<:Real})
+    for col in eachcol(vecs)
+        accum = 0.0
+        for k in eachindex(r)
+            accum += r[k] * col[k]
+        end
+        accum < 0 && (col .*= -1)
+    end
+    return vecs
+end
+
 function _flavor_coherence_factor(input::PseudoscalarAnnihilationBasisInput)
     label = lowercase(input.label)
     return (occursin("ns", label) || occursin("n nbar", label)) ? sqrt(2.0) : 1.0

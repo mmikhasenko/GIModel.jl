@@ -42,8 +42,8 @@ Although the paper warns that pseudoscalars are anomalous, the same wavefunction
 
 | basis source | mean P1 vector RMS | max P1 vector RMS |
 |---|---:|---:|
-| FD waves | 0.331 | 0.472 |
-| HO waves | 0.301 | 0.433 |
+| FD waves | 0.309 | 0.408 |
+| HO waves | 0.127 | 0.156 |
 
 ## Diagnosis
 
