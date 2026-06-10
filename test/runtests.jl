@@ -1877,3 +1877,29 @@ end
     @test !GIModel.mixing_prone_state(h1[2])
     @test !GIModel.mixing_prone_state(omega)
 end
+
+@testset "Table V strong-decay model (light 1S+1P)" begin
+    q_rho = decay_momentum(0.769, 0.138, 0.138)
+    q_B = decay_momentum(1.231, 0.7826, 0.138)
+    model = calibrate_strong_decay_model(q_rho, q_B)
+    # the two fit rows are exact by construction
+    @test strong_decay_amplitude(model, sqrt(4 / 3), :A, 1, q_rho) ≈ 12.4 atol = 1e-9
+    @test strong_decay_amplitude(model, -sqrt(2 / 9), :S, 0, q_B) ≈ -11.0 atol = 1e-9
+    # predictions against the paper's numeric column (2 significant figures)
+    q_kstar = decay_momentum(0.8921, 0.4957, 0.138)
+    @test isapprox(strong_decay_amplitude(model, 1.0, :A, 1, q_kstar), 7.9; rtol = 0.05)
+    q_a2 = decay_momentum(1.318, 0.5488, 0.138)
+    @test isapprox(strong_decay_amplitude(model, sqrt(1 / 30), :A, 2, q_a2), 4.5; rtol = 0.05)
+    q_f = decay_momentum(1.273, 0.138, 0.138)
+    @test isapprox(strong_decay_amplitude(model, -sqrt(1 / 10), :A, 2, q_f), -11.0; rtol = 0.05)
+    # below threshold: zero momentum and zero amplitude
+    @test decay_momentum(1.0, 0.6, 0.6) == 0.0
+    @test strong_decay_amplitude(model, 1.0, :A, 1, 0.0) == 0.0
+    # reduced-amplitude classes
+    @test reduced_decay_amplitude(model, :A0, 1.0) == model.A
+    @test reduced_decay_amplitude(model, :Aprime, 2.0) == model.A
+    @test reduced_decay_amplitude(model, :S, 1.0) ≈ model.S0 - 0.5 * model.A
+    @test reduced_decay_amplitude(model, :D, 1.0) ≈ model.S0 - 0.3 * model.A
+    @test reduced_decay_amplitude(model, :P, 1.0) ≈ model.S0 - 0.75 * model.A
+    @test_throws ArgumentError reduced_decay_amplitude(model, :bogus, 1.0)
+end

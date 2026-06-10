@@ -201,20 +201,29 @@ Acceptance check: complete as a scoring mechanism, including literal-mode
 spectral scoring. Remaining quality work is the shared light-sector
 unperturbed diagonal that caps the literal-mode mass points.
 
-### 8. Observables Outside The Mass Spectrum, Later Than 1-5
+### 8. Observables Outside The Mass Spectrum
 
-What the paper includes: leptonic, two-photon, gluonic decay amplitudes, charge
+What the paper includes: strong decay amplitudes (Sec. IV, Tables IV-V,
+Appendices B-C), leptonic, two-photon, gluonic decay amplitudes, charge
 radii, and decay-model discussion beyond the mass spectrum.
 
-What the repo does: current scope is masses, residual reports, and the inputs
-needed for the mass Hamiltonian.
+What the repo does: `docs/observable_ledger.md` (the acceptance artifact)
+tracks decay conventions separately from the mass code. The Table IV/V
+two-parameter strong-decay model is implemented in `src/strong_decays.jl`
+(`A = 1.665` from `rho -> pi pi`, `S0 = 3.918` from `B -> [omega pi]_S`,
+`beta = 0.40 GeV`), the light `1S`+`1P` block of Table V is digitized in
+`data/raw/digitized_tables/table_v_strong_decays/`, and
+`scripts/audit_table_v_decays.jl` reproduces the paper's numeric amplitude
+column at 6% median deviation on the 33 clean-convention rows, with the
+open conventions (K1 mixing angle, quasi-two-body lineshapes, strange
+recoil factors) itemized in the audit and the observable ledger.
 
 Why it matters: these observables test wavefunctions, not only eigenvalues.
-They should be a later validation layer after mass-spectrum mechanics settle.
 
-Acceptance check: create a separate observable ledger before implementing them,
-so mass-reproduction code does not absorb decay/charge-radius conventions
-implicitly.
+Acceptance check: observable ledger exists and the first Table V block is
+scored. Remaining: wire the model K1 mixing angle into the decay audit,
+resolve the strange-parent recoil normalization via Appendix B, extract the
+later Table V sections, and start Table VI/VII electromagnetic observables.
 
 ## Next Clean Implementation Step
 
@@ -232,5 +241,6 @@ remaining order is:
    the post-diagonalization mixing blocks before assigning physical rows.
 3. Once 1-2 settle, retire the calibrated P1 control from the headline
    isoscalar report in favor of the literal P1 mode.
-4. Open the observables layer (item 8): create the separate observable ledger
-   and begin encoding the Table V strong-decay amplitude matrix elements.
+4. Observables layer (item 8, started): wire the model K1 mixing angle into
+   the Table V decay audit, resolve the strange-parent recoil normalization
+   from Appendix B, then extract the remaining Table V sections.

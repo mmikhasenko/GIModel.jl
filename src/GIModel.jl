@@ -92,6 +92,13 @@ include("sector_solver.jl")
 # Sector batch solves, comparison vs reference rows, residual markdown
 # =============================================================================
 
+export StrongDecayModel,
+    decay_momentum,
+    reduced_decay_amplitude,
+    strong_decay_amplitude,
+    calibrate_strong_decay_model
+include("strong_decays.jl")
+
 export ReferenceState, ReferenceStateWithMasses, load_reference_spectrum
 include("reference_state.jl")
 

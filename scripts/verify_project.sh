@@ -10,6 +10,7 @@ julia --project=. scripts/audit_table_iii_mixings.jl
 julia --project=. scripts/investigate_table_iii_suspects.jl
 julia --project=. scripts/infer_table_iii_mass_matrix.jl
 julia --project=. scripts/audit_annihilation_method.jl
+julia --project=. scripts/audit_table_v_decays.jl
 # `test/runtests.jl` expects the GIModel environment.
 julia --project=. test/runtests.jl
 julia --project=. scripts/analyze_heavy_quarkonium.jl
