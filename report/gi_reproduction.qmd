@@ -60,6 +60,20 @@ the central Hamiltonian, Appendix-A smearing and momentum sandwiches, the
 spin-dependent operators, and the isoscalar mixing/annihilation blocks --- is a
 separately testable stage with a documented map to the paper's equations.
 
+A second motivation is practical. Despite the model's four-decade role as the
+community's default $q\bar q$ baseline, we are aware of no open-source software
+package that implements it --- or, more broadly, that performs constituent
+quark-model meson spectroscopy. A survey of the public ecosystem turns up only
+general-purpose building blocks: numerical libraries (SciPy, PETSc/SLEPc,
+Eigen) and generic one-dimensional Schr\"odinger/Salpeter solvers, none of which
+encode the GI Hamiltonian, its mass-dependent smearing and momentum-factor
+operators, or its tensor, antisymmetric spin--orbit, and annihilation mixing.
+No canonical reference implementation tied to the 1985 paper appears to exist
+publicly, so each reproduction must reconstruct the Hamiltonian and its
+numerical conventions from the paper trail. The package described here is, to
+our knowledge, the first openly auditable and tested implementation of the GI
+spectrum, and is intended to fill that gap.
+
 This report mirrors the organization of the original paper. Section
 @sec-model corresponds to GI Sec. II: the soft-QCD Hamiltonian, the
 relativization and smearing prescription, the running coupling, the
@@ -495,6 +509,86 @@ anticipated for their $10$--$25$ MeV accuracy budget. The natural next step,
 and the subject of the following report, is GI Sec. IV: the analysis of meson
 couplings (the strong-decay amplitudes of Tables IV--V), which tests the model
 wavefunctions rather than only the eigenvalues.
+
+# Outlook: developments beyond the 1985 model {#sec-outlook}
+
+The reproduction above is deliberately confined to the *bare, quenched,
+single-channel* spectrum of the 1985 paper. In the four decades since, the GI
+baseline has not been replaced so much as layered upon. We sketch the principal
+post-1985 directions, both to place this work in context and to delimit the
+physics it does not yet address.
+
+## Strong decays: flux-tube breaking and the $^3P_0$ model
+
+GI wavefunctions were quickly paired with dynamical decay operators. Flux-tube
+breaking [@kokoski1987] and the closely related $^3P_0$ pair-creation model
+became the standard companions for OZI-allowed strong widths and underlie the
+strong-decay amplitudes of GI Sec. IV. A recurring practical subtlety is that
+many "GI-based" decay studies replace the exact model wavefunctions by
+harmonic-oscillator surrogates matched through rms radii [@barnes2005]; tracking
+that choice is essential when comparing widths across calculations.
+
+## Heavy-quark symmetry and heavy--light mesons
+
+For mesons with one heavy quark, heavy-quark symmetry [@isgurwise1991]
+reorganizes the GI $L$-$S$ output into $j_\ell$ doublets and fixes the $P$-wave
+mixing angles in the $m_Q\to\infty$ limit ($35.3^\circ$, $-54.7^\circ$). The
+systematic GI heavy--light $P$-wave spectra [@godfrey1991] and the relativistic
+heavy--light studies with chiral transitions [@dipierro2001] are the natural
+reproduction targets immediately beyond the present spectrum, and the cleanest
+test of the unequal-mass antisymmetric spin--orbit mixing used here.
+
+## Unquenching: hadronic loops and coupled channels
+
+The bare valence picture coexists with large continuum effects through
+systematic cancellations [@geiger1993; @barnes2008]: loop shifts are nearly
+uniform within an $(n,L)$ multiplet, so much of their effect is absorbed into
+the fitted parameters --- which is also why explicit unquenching generally
+demands a refit to avoid double counting. Near open-flavor $S$-wave thresholds
+this picture breaks down and explicit coupled channels become indispensable, as
+for $X(3872)$ [@eichten2004; @ortega2010], in the unquenched quark model for
+heavy quarkonia [@ferretti2014], and in the modern $D_s$ program that bridges
+quark model and lattice QCD [@yang2022].
+
+## Screened potentials
+
+A cheaper, effective route to string breaking replaces the linear term with a
+screened form, lowering higher radial and orbital excitations and improving
+their global placement [@li2009] --- effective rather than explicitly unitary,
+but a useful diagnostic for whether a misplaced state reflects global string
+breaking or a delicate threshold singularity.
+
+## Effective field theory and lattice connections
+
+Potential NRQCD [@brambilla2000; @brambilla2005] provides a scale-separated
+definition of the quark--antiquark potential, and lattice QCD now extracts the
+spin-dependent and $O(1/m)$ potentials nonperturbatively [@koma2006]. Together
+they give the GI spin-dependent ans\"atze a firmer QCD footing and pinpoint
+where the phenomenological smearing-and-momentum-factor prescription matches or
+departs from nonperturbative QCD, especially for the fine and hyperfine
+splittings that dominate our residuals.
+
+## Experimental drivers
+
+The model-building agenda was reshaped by experiment. The narrow
+$D_{s0}^*(2317)$ [@babar2003] and $D_{s1}(2460)$ [@cleo2003], and $X(3872)$ on
+the $D^0\bar D^{*0}$ threshold [@belle2003], sat far from naive GI expectations
+and forced threshold-dressed descriptions; cleaner states such as $h_c$,
+$\chi_{c2}(2P)$, $\eta_b$, and $h_b$ instead reinforced potential-model
+spectroscopy away from thresholds. Comprehensive reviews
+[@eichten2008; @godfrey2008xyz] map where conventional GI-style spectroscopy
+succeeds and where exotic and continuum dynamics take over.
+
+## What this report does not address
+
+In short, this report reproduces the seed from which all of the above grow: the
+bare GI Hamiltonian, masses, and wavefunctions. It does not include hadronic
+loops, coupled channels, screening, or parameter refitting, and it defers the
+strong, electromagnetic, and weak couplings of GI Sec. IV. The bare spectrum
+remains the right first description below open-flavor thresholds and the
+indispensable input to the dressed and decay calculations that build on it
+[@barnes2005; @godfrey2004]; making it openly and transparently reproducible is
+the prerequisite for that program.
 
 # References {.unnumbered}
 
