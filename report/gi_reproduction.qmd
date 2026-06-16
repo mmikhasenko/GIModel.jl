@@ -114,11 +114,12 @@ $$ {#eq-hyp}
 and the spin--orbit interaction splits into a color-magnetic (one-gluon) part
 and a Thomas-precession part,
 $$
-H^{\text{so}}_{ij} = H^{\text{so(cm)}}_{ij} + H^{\text{so(tp)}}_{ij},
-\qquad
-H^{\text{so(tp)}}_{ij} = -\frac{1}{2r}\,
+\begin{aligned}
+H^{\text{so}}_{ij} &= H^{\text{so(cm)}}_{ij} + H^{\text{so(tp)}}_{ij}, \\
+H^{\text{so(tp)}}_{ij} &= -\frac{1}{2r}\,
   \frac{\partial H^{\text{conf}}_{ij}}{\partial r}\,
   \Big[\frac{\mathbf{S}_i}{m_i^2}+\frac{\mathbf{S}_j}{m_j^2}\Big]\!\cdot\!\mathbf{L}.
+\end{aligned}
 $$ {#eq-so}
 Finally $H_A$ is the gluon-annihilation interaction, which contributes only in
 self-conjugate isoscalar channels (Sec. @sec-isoscalar).
@@ -212,9 +213,11 @@ $C=+$, $n=3$ for $C=-$). GI parametrize the diagonal contribution as
 $A_{Q\bar Q}\sim \alpha_s^n |\Psi(0)|^2/M_Q^2$ [their Eq. (15)] and the full
 channel-coupling element as
 $$
-A(^{2S+1}L_J)_{ji} = 4\pi(2L{+}1)\,A(^{2S+1}L_J)
-  \Big[\tfrac{\alpha_s(M_j^2)\alpha_s(M_i^2)}{\pi^2}\Big]^{n/2}
+\begin{aligned}
+A(^{2S+1}L_J)_{ji} = {}& 4\pi(2L{+}1)\,A(^{2S+1}L_J) \\
+  &\times \Big[\frac{\alpha_s(M_j^2)\alpha_s(M_i^2)}{\pi^2}\Big]^{n/2}
   \frac{S_L(\Psi_j)S_L(\Psi_i)}{m_i m_j},
+\end{aligned}
 $$ {#eq-ann16}
 with the origin-smeared wavefunction factor $S_L(\Psi_i)$ [their Eq. (17)]
 evaluated by a $j_L$ momentum transform of the HO radial wavefunction. The
