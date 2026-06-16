@@ -7,12 +7,43 @@ Pkg.activate(joinpath(@__DIR__, ".."))
 
 using CairoMakie
 using DataFrames
+using LaTeXStrings
 using Printf
 
 root = dirname(@__DIR__)
 using GIModel
 
 const OUTDIR = joinpath(@__DIR__, "spectrum_plots")
+
+# Wong2 colorblind-safe palette (Okabe-Ito, black last) and a boxed,
+# Computer-Modern theme to match the report style.
+const WONG2 = [
+    "#E69F00", "#56B4E9", "#009E73", "#F0E442",
+    "#0072B2", "#D55E00", "#CC79A7", "#000000",
+]
+const PAPER_COLOR = "#0072B2"     # wong2 blue
+const COMPUTED_COLOR = "#D55E00"  # wong2 vermillion
+
+set_theme!(
+    merge(
+        theme_latexfonts(),
+        Theme(
+            fontsize = 16,
+            Axis = (
+                xticksmirrored = true,
+                yticksmirrored = true,
+                xtickalign = 1,
+                ytickalign = 1,
+                xminortickalign = 1,
+                yminortickalign = 1,
+                topspinevisible = true,
+                rightspinevisible = true,
+                xgridvisible = true,
+                ygridvisible = true,
+            ),
+        ),
+    ),
+)
 
 const SPECTRUM_FILES = [
     ("isovector", joinpath(root, "data", "reference_spectrum_isovector.csv"), "u"),
@@ -87,6 +118,13 @@ end
 
 function j_labels(rows)
     return unique(spectroscopic_column(row) for row in rows)
+end
+
+"""Render a `J^{PC}` column string such as `"1--"` as a LaTeX tick label."""
+function latexify_column(s::AbstractString)
+    m = match(r"^(\d+)([+-]+)$", s)
+    m === nothing && return latexstring(s)
+    return latexstring(m.captures[1], "^{", m.captures[2], "}")
 end
 
 function axis_title(label)
@@ -179,7 +217,8 @@ function plot_sector_grid(all_rows, path; title, mixed_mode = false)
     panel_width = length(panels) == 1 ? max(760, 35 * max_labels + 180) : 520
     panel_height = length(panels) == 1 ? 520 : 390
     fig = Figure(size = (panel_width * ncols, panel_height * nrows))
-    palette = Makie.wong_colors()
+    palette = WONG2
+    single_panel = length(panels) == 1
 
     for (pi, panel) in enumerate(panels)
         prow = (pi - 1) ÷ ncols + 1
@@ -193,10 +232,10 @@ function plot_sector_grid(all_rows, path; title, mixed_mode = false)
 
         ax = Axis(
             fig[prow, pcol];
-            title = axis_title(panel),
-            xlabel = "J^P(C)",
-            ylabel = "Mass (GeV)",
-            xticks = (1:length(labels), labels),
+            title = single_panel ? "" : axis_title(panel),
+            xlabel = L"J^{P(C)}",
+            ylabel = L"\mathrm{Mass~(GeV)}",
+            xticks = (1:length(labels), latexify_column.(labels)),
             xticklabelrotation = deg2rad(40),
             yminorticksvisible = true,
             yminorgridvisible = true,
@@ -239,9 +278,9 @@ function plot_sector_grid(all_rows, path; title, mixed_mode = false)
                 ax,
                 xmax,
                 ymin;
-                text = string(key[1], key[2]),
+                text = latexstring(key[1], key[2]),
                 align = (:center, :center),
-                fontsize = 12,
+                fontsize = 14,
                 color = :black,
             )
         end
@@ -260,8 +299,8 @@ function plot_sector_grid(all_rows, path; title, mixed_mode = false)
             xs_center .- δ,
             y_ref;
             label = "paper",
-            markersize = 8,
-            color = (:steelblue4, 0.9),
+            markersize = 9,
+            color = (PAPER_COLOR, 0.9),
             strokewidth = 0.45,
             strokecolor = :white,
         )
@@ -270,8 +309,8 @@ function plot_sector_grid(all_rows, path; title, mixed_mode = false)
             xs_center .+ δ,
             y_pred;
             label = mixed_mode ? "computed + mix" : "computed",
-            markersize = 8,
-            color = (:darkorange, 0.95),
+            markersize = 9,
+            color = (COMPUTED_COLOR, 0.95),
             strokewidth = 0.45,
             strokecolor = :white,
         )
@@ -298,7 +337,11 @@ function plot_sector_grid(all_rows, path; title, mixed_mode = false)
         end
         pi == 1 && axislegend(ax; position = :rt)
     end
-    Label(fig[0, :], title; fontsize = 22, font = :bold)
+    # Multi-panel grids keep per-axis sector titles for identification; the
+    # single-panel report figures carry no title (described in the caption).
+    if !single_panel
+        Label(fig[0, :], title; fontsize = 22, font = :bold)
+    end
     save(path, fig)
 end
 

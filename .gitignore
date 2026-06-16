@@ -20,3 +20,10 @@ paper/vision_ocr/godfrey_isgur_1985_vision_ocr.tex
 paper/vision_ocr/tag-display-math.lua
 paper/vision_ocr/godfrey_isgur_1985_vision_ocr.aux
 paper/vision_ocr/godfrey_isgur_1985_vision_ocr.html
+
+# Quarto report build artifacts (PDF + curated figures are tracked).
+report/*.tex
+report/*_files/
+
+# Regenerable sector plots; curated copies are tracked under report/figures/.
+scripts/spectrum_plots/
