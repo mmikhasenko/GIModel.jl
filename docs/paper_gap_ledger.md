@@ -216,14 +216,25 @@ two-parameter strong-decay model is implemented in `src/strong_decays.jl`
 `scripts/audit_table_v_decays.jl` reproduces the paper's numeric amplitude
 column at 6% median deviation on the 33 clean-convention rows, with the
 open conventions (K1 mixing angle, quasi-two-body lineshapes, strange
-recoil factors) itemized in the audit and the observable ledger.
+recoil factors) itemized in the audit and the observable ledger. Table VI
+photon decays are now started: `scripts/audit_table_vi_photon_decays.jl`
+evaluates the Appendix-D mock-meson overlaps `I_i(x,y)` / `E_n^i(x,y)` on
+the model's own FD wavefunctions and reproduces 28 mixing-free M1/E1 rows
+with no new fitted constants — quarkonium and open-flavor M1 at the 0.1-4%
+level, E1 chi triplets at 3-7% (see the observable ledger for the two
+open q-convention rows and the OCR column-shift caveat).
 
 Why it matters: these observables test wavefunctions, not only eigenvalues.
+The Table VI agreement is direct evidence that the FD wavefunctions — not
+just the eigenvalues — match the paper's, including the contact-distorted
+S waves (the hindered `psi' -> eta_c gamma` row only exists through the
+singlet/triplet wavefunction difference).
 
-Acceptance check: observable ledger exists and the first Table V block is
-scored. Remaining: wire the model K1 mixing angle into the decay audit,
-resolve the strange-parent recoil normalization via Appendix B, extract the
-later Table V sections, and start Table VI/VII electromagnetic observables.
+Acceptance check: observable ledger exists; the first Table V block and the
+first 28 Table VI rows are scored. Remaining: wire the model K1 mixing angle
+into the decay audit, resolve the strange-parent recoil normalization via
+Appendix B, extract the later Table V and Table VI sections, fold Table III
+mixings into the isoscalar Table VI rows, and start Table VII.
 
 ## Next Clean Implementation Step
 
@@ -241,6 +252,9 @@ remaining order is:
    the post-diagonalization mixing blocks before assigning physical rows.
 3. Once 1-2 settle, retire the calibrated P1 control from the headline
    isoscalar report in favor of the literal P1 mode.
-4. Observables layer (item 8, started): wire the model K1 mixing angle into
-   the Table V decay audit, resolve the strange-parent recoil normalization
-   from Appendix B, then extract the remaining Table V sections.
+4. Observables layer (item 8, started): promote the Table VI overlap kernels
+   from `scripts/audit_table_vi_photon_decays.jl` into `src/` with tests,
+   fold Table III mixings into the isoscalar photon rows, wire the model K1
+   mixing angle into the Table V decay audit, resolve the strange-parent
+   recoil normalization from Appendix B, then extract the remaining Table V
+   and Table VI sections.

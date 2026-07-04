@@ -79,7 +79,64 @@ electromagnetic conventions are tracked here before/while they are encoded.
    sectors with `A_c`, `S_c`, `beta_c`) are not yet extracted.
 5. "Realistic factor" column (SHO -> realistic wavefunction correction
    ratios) is recorded but not modeled.
-6. Table VI/VII electromagnetic amplitudes and charge radii: not started.
+6. Table VI/VII electromagnetic amplitudes and charge radii: Table VI is
+   started, see the section below. Table VII (leptonic, two-photon, gluonic
+   decays, charge radii) is not started.
+
+## Photon Decays `M* -> M gamma` (Sec. IV B, Table VI, Appendix D)
+
+### Model structure
+
+- Appendix D mock-meson matrix elements, evaluated on the model's own
+  wavefunctions (unlike Table V's single-`beta` SHO limit):
+  `I_i(x,y)` is a momentum-space overlap with weight
+  `(1/m_i)(m_i/E_i)^0.7`, `E_n^i(x,y)` is a position-space `r^n` moment with
+  prefactor `|m_i / sqrt(<E_i>_x <E_i>_y)|^0.5`, and the mock mass is
+  `M~ = <E_1> + <E_2>`. The exponents 0.7/0.5 are the paper's, fitted there
+  to `rho -> pi gamma` and `A2 -> pi gamma` — so no new fitted constants
+  enter on our side.
+- M1 moments are listed in units of `e/2`, hence `mu/mu_N = coeff * I * M_N`.
+- E1 amplitudes are `formula * sqrt(alpha q)` in `MeV^(1/2)` with the
+  q-dependence explicit in the formula column.
+- Open-flavor M1 coefficients follow `mu = e_q I_q - e_qbar I_qbar` (the
+  antiquark charge enters flipped), which reproduces every printed
+  quarkonium coefficient (`+4/3 I_c` for `psi`, `-2/3 I_b` for `Upsilon`).
+
+### Encoded so far
+
+- `scripts/audit_table_vi_photon_decays.jl` writes
+  `docs/residual_reports/table_vi_photon_decays.md`: 28 mixing-free rows
+  computed from the FD solver wavefunctions (contact-distorted S waves,
+  central P waves). Quarkonium M1 rows land at the 0.1-2% level
+  (`psi -> eta_c gamma` +0.684 vs +0.69, `psi' -> eta_c' gamma` +0.680 vs
+  +0.68, `Upsilon` family -0.121/-0.121/-0.120 vs -0.13/-0.12/-0.12),
+  open-flavor M1 at 1-4% (`D*+` -0.347 vs -0.35, `F*` -0.132 vs -0.13,
+  `B*+` +1.360 vs +1.37, `F_b*` -0.550 vs -0.55), light rows at ~6%
+  (`rho -> pi gamma` +0.650 vs the +0.69 fit target — the known
+  light-sector wavefunction residual), and the hindered
+  `psi' -> eta_c gamma` with the recoil term gets sign and magnitude
+  (-0.067 vs -0.056). E1 `chi_c`/`chi_b` triplets reproduce at 3-7%; the
+  two `2S -> chi_0` rows sit 20-30% high (largest q, node cancellation).
+
+### Open conventions / next steps
+
+1. The vision-OCR predicted column in the open-flavor M1 block is displaced
+   by one row against the decay labels; the audit uses shift-corrected
+   values (confirmed by 0.1-2% matches on four independent rows, and the
+   orphaned `-0.55` landing exactly on the computed `F_b*`), but a crop
+   audit of the printed PDF column should confirm the alignment.
+2. `2S -> chi_0` E1 rows: check whether the paper used model masses rather
+   than measured 1984 masses for the photon momentum `q`.
+3. Isoscalar rows (`phi -> eta gamma`, `eta' -> rho gamma`, ...) need the
+   Table III mixing amplitudes folded in — the mixing layer already
+   provides them.
+4. Remaining Table VI blocks: light E1/M2 rows (`A2 -> pi gamma` is the 0.5
+   exponent fit row), strange/charmed P-wave rows, hindered bottomonium
+   rows, and the `psi/Upsilon -> (light) gamma` order-of-magnitude rows
+   (footnote d).
+5. Promote the overlap kernels (`I_i`, `E_n^i`, mock mass, momentum waves)
+   from the audit script into `src/` with regression tests once the
+   conventions above settle.
 
 ## Acceptance
 
@@ -87,3 +144,8 @@ A Table V section counts as reproduced when every row with an unambiguous
 kinematic convention matches the paper's numeric amplitude to ~10% (the
 paper itself rounds to 2 significant figures), with the two fit rows exact by
 construction.
+
+A Table VI block counts as reproduced when every mixing-free row matches the
+paper's moment/amplitude to ~10% with conventions itemized, and
+mixing-dependent rows additionally use the Table III amplitudes from the
+mixing layer.
