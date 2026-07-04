@@ -259,15 +259,28 @@ function radial_cross_expect_momentum_sandwich(
 ) where {F<:Function}
     length(r) == length(u_left) == length(u_right) ||
         throw(ArgumentError("radial_cross_expect_momentum_sandwich: vector lengths differ"))
+    # Uniform-mesh guardrails (return discarded; see physical_u_norm).
     physical_u_norm(r, h, u_left)
     physical_u_norm(r, h, u_right)
+    # Normalization-invariant cross expectation. Unlike the diagonal path,
+    # which divides by ⟨u|u⟩ via `euclidean_expectation`, the bare cross product
+    # dot(u_left, B K B u_right) scales with the norms of *both* inputs. The FD
+    # solver returns Euclidean-normalized eigenvectors (‖u‖₂ = 1) while the HO
+    # path returns physically-normalized reconstructions (‖u‖₂ = 1/√h), so an
+    # unnormalized cross element inflated the HO off-diagonal mixing by ≈ 1/h.
+    # Dividing by ‖u_left‖₂ ‖u_right‖₂ makes the element basis-independent and
+    # matches the diagonal Rayleigh-quotient convention (the explicit `h` in the
+    # non-sandwich `radial_cross_expect_udr` cancels to the same expression).
+    nl = sqrt(dot(u_left, u_left))
+    nr = sqrt(dot(u_right, u_right))
+    (nl == 0.0 || nr == 0.0) && return 0.0
     p2_left = eigen(p2_operator(params, masses.m1_GeV, L_left, r, h))
     p2_right = eigen(p2_operator(params, masses.m1_GeV, L_right, r, h))
     side_exponent = gi_spin_dependent_side_exponent(epsilon)
     B_left = momentum_relativization_matrix(masses.m1_GeV, masses.m2_GeV, side_exponent, p2_left)
     B_right = momentum_relativization_matrix(masses.m1_GeV, masses.m2_GeV, side_exponent, p2_right)
     kernel = Diagonal([f(float(ri), i) for (i, ri) in enumerate(r)])
-    return dot(u_left, B_left * kernel * B_right * u_right)
+    return dot(u_left, B_left * kernel * B_right * u_right) / (nl * nr)
 end
 
 function fine_structure_components(
