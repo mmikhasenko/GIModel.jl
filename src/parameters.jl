@@ -133,6 +133,15 @@ function gi_parameters_from_raw(raw)::GIParameters
     )
 end
 
+"""
+    load_parameters(path) -> GIParameters{FiniteDifferenceBasis}
+
+Read a solver-parameter TOML file (`data/parameters.provisional.toml` layout:
+`[potential]`, `[relativistic_smearing]`, `[relativistic_factors]`, optional
+`[annihilation]`). Missing switches default to `false`/paper values. Use
+[`load_parameters_and_quark_masses`](@ref) to also get the `[masses]` table,
+and [`with_basis`](@ref GIModel.with_basis) to move to [`HarmonicOscillatorBasis`](@ref).
+"""
 function load_parameters(path::AbstractString)
     return gi_parameters_from_raw(TOML.parsefile(path))
 end

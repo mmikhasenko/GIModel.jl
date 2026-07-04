@@ -18,6 +18,13 @@ function contact_smearing_sigma(params::GIParameters, m1::Real, m2::Real)
     )
 end
 
+"""
+    spin_dot(multiplicity)
+    spin_dot(multiplet::FineStructureMultiplet)
+
+`⟨S₁·S₂⟩` for a `q q̄` pair with total-spin multiplicity `2S+1`:
+`-3/4` for the singlet (`multiplicity = 1`), `+1/4` for the triplet (`3`).
+"""
 function spin_dot(multiplicity::Integer)
     S = (multiplicity - 1) / 2
     0.5 * (S * (S + 1) - 1.5)

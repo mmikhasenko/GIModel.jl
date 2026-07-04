@@ -1,6 +1,14 @@
 # Public API (exported from GIModel.jl):
 #   central_potential_mode, central_potential_values
 
+"""
+    central_potential_mode(params) -> Symbol
+
+Which central-potential evaluation path the parameter switches select, in
+precedence order: `:appendix_a_momentum_sandwich`, `:appendix_a_closed_form`,
+`:appendix_a_derivative_g`, `:appendix_a_3d_a7a8`, `:coulomb_1d`, else
+`:pointwise`. See [`CentralPotentialPath`](@ref) for the audit-facing summary.
+"""
 function central_potential_mode(params::GIParameters)::Symbol
     if params.appendix_a_momentum_sandwich
         return :appendix_a_momentum_sandwich
@@ -16,6 +24,17 @@ function central_potential_mode(params::GIParameters)::Symbol
     return :pointwise
 end
 
+"""
+    central_potential_values(params, m1, m2, r; mode = central_potential_mode(params))
+    central_potential_values(params, masses::ConstituentMasses, r; kwargs...)
+
+Diagonal central potential `V(r)` (GeV) on the mesh `r` for the given
+constituent masses, evaluated through the path chosen by `mode`. Pass `mode`
+explicitly to compare paths on identical inputs (as the Appendix-A audit
+scripts do). Note the `:appendix_a_momentum_sandwich` mode returns the same
+closed-form diagonal as `:appendix_a_closed_form`; the nonlocal sandwich part
+lives in the Hamiltonian builder, not in these pointwise values.
+"""
 function central_potential_values(
     params::GIParameters,
     m1::Real,
