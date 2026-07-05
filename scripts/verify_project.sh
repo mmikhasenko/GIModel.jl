@@ -1,18 +1,17 @@
 #!/usr/bin/env bash
-# Full project verification.
+# Full project verification: GIModel (pure computation, repo root) and
+# GIPaper (paper comparison sub-package, GIPaper/).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-python3 scripts/data_checks.py validate
-python3 scripts/data_checks.py score-annihilation
-julia --project=. scripts/audit_table_iii_mixings.jl
-julia --project=. scripts/investigate_table_iii_suspects.jl
-julia --project=. scripts/infer_table_iii_mass_matrix.jl
-julia --project=. scripts/audit_annihilation_method.jl
-julia --project=. scripts/audit_table_v_decays.jl
-# `test/runtests.jl` expects the GIModel environment.
-julia --project=. test/runtests.jl
-julia --project=. scripts/analyze_heavy_quarkonium.jl
-julia --project=. scripts/run_all_spectrum_checks.jl
+python3 GIPaper/scripts/data_checks.py validate
+python3 GIPaper/scripts/data_checks.py score-annihilation
+# FiniteDifferences lives in the test target, so run the suites through Pkg.test.
+julia --project=. -e 'using Pkg; Pkg.test()'
+julia --project=GIPaper -e 'using Pkg; Pkg.test()'
+julia GIPaper/scripts/audit_table_iii_mixings.jl
+julia GIPaper/scripts/audit_table_v_decays.jl
+julia GIPaper/scripts/analyze_heavy_quarkonium.jl
+julia GIPaper/scripts/run_all_spectrum_checks.jl
 echo "verify_project.sh: all checks passed."

@@ -4,20 +4,35 @@ Local reproduction of the Godfrey-Isgur relativized quark model for meson
 masses. The original paper at `paper/Godfrey-Isgur-1985.pdf` is the authority;
 OCR Markdown and extracted CSVs are navigation/provenance aids.
 
+The repository holds two Julia packages:
+
+- **GIModel** (repository root) — pure computation. Mesons are specified by
+  quark flavors (`Meson(mq, :c, :b)`), levels to compute by explicit
+  `n^{2S+1}L_J` multiplets (`spectrum_levels`), and `compute_spectrum` returns
+  an organized `Spectrum` with contribution breakdowns and intra-meson mixing.
+  It knows nothing about the paper comparison.
+- **GIPaper** (`GIPaper/`) — the comparison layer. It owns the digitized paper
+  data, maps reference CSV rows to mesons (`reference_meson`, no fallback
+  masses), runs `compare_reference`, applies the Table III annihilation
+  prescriptions, and writes residual reports.
+
 ## Current Map
 
-- `src/GIModel.jl` is the Julia package entry point.
-- `test/runtests.jl` is the main correctness gate.
-- `scripts/verify_project.sh` runs the current full gate.
-- `scripts/data_checks.py` is the only Python data/check entry point:
-  - `python3 scripts/data_checks.py promote-clean`
-  - `python3 scripts/data_checks.py validate`
-  - `python3 scripts/data_checks.py score-annihilation`
-- `scripts/run_all_spectrum_checks.jl` regenerates sector residual reports and
-  the compact scorecard.
-- `scripts/analyze_heavy_quarkonium.jl` regenerates heavy-quarkonium diagnostics.
-- `scripts/audit_nonmixing_contact.jl` regenerates the non-mixing/contact
-  scorecards.
+- `src/GIModel.jl` is the computation package entry point.
+- `GIPaper/src/GIPaper.jl` is the comparison package entry point.
+- `test/runtests.jl` gates the pure numerics; `GIPaper/test/runtests.jl` gates
+  the reference comparison.
+- `scripts/verify_project.sh` runs the current full gate (both packages).
+- `GIPaper/scripts/data_checks.py` is the only Python data/check entry point:
+  - `python3 GIPaper/scripts/data_checks.py promote-clean`
+  - `python3 GIPaper/scripts/data_checks.py validate`
+  - `python3 GIPaper/scripts/data_checks.py score-annihilation`
+- `GIPaper/scripts/run_all_spectrum_checks.jl` regenerates sector residual
+  reports and the compact scorecard.
+- `GIPaper/scripts/analyze_heavy_quarkonium.jl` regenerates heavy-quarkonium
+  diagnostics.
+- `GIPaper/scripts/audit_nonmixing_contact.jl` regenerates the
+  non-mixing/contact scorecards.
 - `docs/formula_map.md` maps active code paths to paper equations.
 - `docs/paper_gap_ledger.md` is the current “what remains vs the paper” list.
 - `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` is the preferred
@@ -26,31 +41,47 @@ OCR Markdown and extracted CSVs are navigation/provenance aids.
   `docs/appendix_a_from_paper.md` describe the implementation conventions.
 
 Extraction utilities are intentionally separate from the core gate:
-`scripts/vision_ocr_paper.py`, `scripts/plot_figure3_digitization.py`, and
-`scripts/plot_spectrum_digitizations.py`.
+`GIPaper/scripts/vision_ocr_paper.py`, `GIPaper/scripts/plot_figure3_digitization.py`,
+and `GIPaper/scripts/plot_spectrum_digitizations.py`.
+
+Concluded material from the reproduction phase (poster, Quarto report, Table III
+forensics, early research notes) lives under `archive/` — see
+[archive/README.md](archive/README.md).
 
 ## Data
 
-Working solver inputs:
+Model configuration (GIModel):
 
 - `data/parameters.provisional.toml`
-- `data/reference_spectrum_*.csv`
+
+Paper reference data (GIPaper):
+
+- `GIPaper/data/reference_spectrum_*.csv`
 
 Promoted audited data:
 
-- `data/clean/masses.csv`
-- `data/clean/mixings.csv`
-- `data/clean/parameters.toml`
+- `GIPaper/data/clean/masses.csv`
+- `GIPaper/data/clean/mixings.csv`
+- `GIPaper/data/clean/parameters.toml`
 
-Raw provenance stays under `data/raw/` and `paper/vision_ocr/`.
+Raw provenance stays under `GIPaper/data/raw/` and `paper/vision_ocr/`.
 
 ## Common Commands
 
 ```bash
-python3 scripts/data_checks.py validate
-julia --project=. test/runtests.jl
-julia scripts/run_all_spectrum_checks.jl
-julia scripts/analyze_heavy_quarkonium.jl
+python3 GIPaper/scripts/data_checks.py validate
+julia --project=. -e 'using Pkg; Pkg.test()'
+julia --project=GIPaper -e 'using Pkg; Pkg.test()'
+julia GIPaper/scripts/run_all_spectrum_checks.jl
+julia GIPaper/scripts/analyze_heavy_quarkonium.jl
+```
+
+Pure-model usage without any reference data:
+
+```julia
+using GIModel
+params, mq = load_parameters_and_quark_masses("data/parameters.provisional.toml")
+spec = compute_spectrum(params, Meson(mq, :c, :c); levels = spectrum_levels(2))
 ```
 
 Full local gate:

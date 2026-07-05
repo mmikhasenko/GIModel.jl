@@ -4,15 +4,15 @@
 #   RadialChannelKey, ChannelRadialSolution, SectorComputation, solve_sector
 #   RadialWaveOnUniformMesh(solution::ChannelRadialSolution, radial_level)
 #
-# Batching reference rows into [`SectorComputation`](@ref) is [`compute_sector`](@ref) in
-# `sector_comparison.jl`.
+# [`compute_spectrum`](@ref) (`spectrum.jl`) fills [`SectorComputation`](@ref) with one
+# solve per distinct orbital channel.
 
 """
     RadialChannelKey(masses, L_label)
     RadialChannelKey(m1_GeV, m2_GeV, L_label)
 
 Dict key for one **spin-independent radial channel**: [`ConstituentMasses`](@ref) and orbital
-label (`S`, `P`, …), same convention as `ReferenceState.L`. Mass rounding lives in
+label (`S`, `P`, …), same convention as `SpectrumState.L`. Mass rounding lives in
 [`ConstituentMasses`](@ref) so distinct finite-difference solves that share the same physics
 collapse to one cache entry.
 
@@ -52,7 +52,7 @@ end
     RadialWaveOnUniformMesh(solution::ChannelRadialSolution, radial_level::Integer)
 
 Build [`RadialWaveOnUniformMesh`](@ref) for eigenvector column `radial_level` of `solution`
-(shared mesh `solution.r`, spacing ``h = r_2 - r_1``). Use this in [`compare`](@ref) /
+(shared mesh `solution.r`, spacing ``h = r_2 - r_1``). Use this in spectrum/comparison
 tooling when you already hold cached [`ChannelRadialSolution`](@ref) data instead of raw `(u, r)` vectors.
 """
 function RadialWaveOnUniformMesh(sol::ChannelRadialSolution, radial_level::Integer)
@@ -71,12 +71,12 @@ end
 """
     SectorComputation(params, channel_cache)
 
-Container filled by [`compute_sector`](@ref) (`sector_comparison.jl`): precomputed radial FD solves per distinct channel.
+Container filled by [`compute_spectrum`](@ref) (`spectrum.jl`): precomputed radial FD solves per distinct channel.
 
   - `params`: [`GIParameters`](@ref) used to build each central Hamiltonian.
   - `channel_cache`: map `RadialChannelKey` → `ChannelRadialSolution`.
 
-[`compare`](@ref) expects the same [`ReferenceStateWithMasses`](@ref) rows used to build the cache.
+[`Spectrum`](@ref) keeps this alive so two-meson flavor mixing can reuse the cached solves.
 """
 struct SectorComputation
     params::GIParameters

@@ -3,7 +3,6 @@
 # Public API (exported from GIModel.jl):
 #   isoscalar_pseudoscalar_annihilation_solution
 
-const GI_PSEUDOSCALAR_FIG5_TARGETS_GEV = (0.520, 0.960, 1.440, 1.630)
 const PSEUDOSCALAR_PERTURBATIVE_COEFF = 2π / 3 * (log(2) - 1)
 
 abstract type PseudoscalarAnnihilationModel end
@@ -305,20 +304,19 @@ function _basis_states_from_inputs(basis::AbstractVector{PseudoscalarAnnihilatio
 end
 
 """
-    isoscalar_pseudoscalar_annihilation_solution(diagonal; targets=GI_PSEUDOSCALAR_FIG5_TARGETS_GEV)
+    isoscalar_pseudoscalar_annihilation_solution(diagonal; targets)
 
 Build the calibrated rank-one `^1S_0` isoscalar annihilation block over the
-`[1 n nbar, 1 s sbar, 2 n nbar, 2 s sbar]` basis.
-
-This is a narrow Table-III/Fig.-5 reproduction path: the target masses are the
-digitized GI isoscalar pseudoscalar masses. It deliberately labels the operation
-as an annihilation block rather than changing contact hyperfine or central
-potential parameters.
+`[1 n nbar, 1 s sbar, 2 n nbar, 2 s sbar]` basis, targeting the four masses in
+`targets` (GeV). The digitized GI Fig. 5 values live in the GIPaper comparison
+package — this function only performs the calibration. It deliberately labels
+the operation as an annihilation block rather than changing contact hyperfine
+or central potential parameters.
 """
 function isoscalar_pseudoscalar_annihilation_solution(
     ::CalibratedP1Annihilation,
     diagonal::AbstractVector{<:Real};
-    targets = GI_PSEUDOSCALAR_FIG5_TARGETS_GEV,
+    targets,
 )
     diag = collect(Float64, diagonal)
     targ = sort(collect(Float64, targets))
@@ -442,7 +440,7 @@ end
 
 function isoscalar_pseudoscalar_annihilation_solution(
     diagonal::AbstractVector{<:Real};
-    targets = GI_PSEUDOSCALAR_FIG5_TARGETS_GEV,
+    targets,
 )
     return isoscalar_pseudoscalar_annihilation_solution(
         CalibratedP1Annihilation(),

@@ -1,0 +1,33 @@
+name = "GIPaper"
+uuid = "49ec1c8d-b0ea-4dff-ad2d-05293f1534fc"
+version = "0.1.0"
+
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+GIModel = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
+LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
+
+[sources]
+GIModel = {path = ".."}
+
+[compat]
+CSV = "0.10.16"
+CairoMakie = "0.15.10"
+DataFrames = "1.8.2"
+GIModel = "0.1.0, 0.2"
+LaTeXStrings = "1.4.0"
+LinearAlgebra = "1.11.0"
+Printf = "1.11.0"
+TOML = "1.0.3"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

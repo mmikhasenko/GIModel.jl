@@ -3,7 +3,6 @@ module GIModel
 using LinearAlgebra
 using Printf
 using TOML
-using CSV
 using KrylovKit: eigsolve
 using SpecialFunctions: erf, gamma
 
@@ -25,6 +24,9 @@ include("parameters.jl")
 
 export QuarkMassTable, load_quark_masses, load_parameters_and_quark_masses
 include("quark_mass_table.jl")
+
+export Meson, is_equal_flavor, flavor_label
+include("meson.jl")
 
 # =============================================================================
 # Numerics: potentials, Hamiltonian, radial solves, spin-dependent corrections
@@ -87,9 +89,14 @@ include("appendix_a_status.jl")
 export RadialChannelKey, ChannelRadialSolution, SectorComputation, solve_sector
 include("sector_solver.jl")
 
+export spectrum_levels, StateMixing, SpectrumState, Spectrum, compute_spectrum, spectrum_state
+include("spectrum.jl")
+
+export annihilation_basis_input, isoscalar_annihilation_block, pseudoscalar_annihilation_block
+include("flavor_mixing.jl")
+
 # =============================================================================
-# IO: reference catalog types, CSV loader, string→mass resolution, attach
-# Sector batch solves, comparison vs reference rows, residual markdown
+# Strong decays: Table IV/V amplitude model
 # =============================================================================
 
 export StrongDecayModel,
@@ -98,14 +105,5 @@ export StrongDecayModel,
     strong_decay_amplitude,
     calibrate_strong_decay_model
 include("strong_decays.jl")
-
-export ReferenceState, ReferenceStateWithMasses, load_reference_spectrum
-include("reference_state.jl")
-
-export compute_sector, compare, mixing_prone_state, nonmixing_deviation_summary, write_residual_report
-include("sector_comparison.jl")
-
-export parse_quark_masses, resolve_constituent_masses, attach_constituent_masses
-include("masses_from_content.jl")
 
 end

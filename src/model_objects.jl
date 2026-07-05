@@ -1,5 +1,5 @@
 # Core layout types: constituent masses, spin multiplet labels, radial FD samples.
-# Experimental/catalog row types live in reference_state.jl (included with IO at end of GIModel.jl).
+# Experimental/catalog row types live in the GIPaper comparison package.
 
 """
     ConstituentMasses(m1_GeV, m2_GeV)
@@ -40,7 +40,7 @@ Spectroscopic spin/orbital labels shared by spin-dependent corrections:
   - [`fine_structure_components`](@ref) uses `L_label`, `multiplicity`, and `J`.
   - [`contact_hyperfine_shift`](@ref) uses only `L_label` and `multiplicity` (`J` is ignored).
 
-Overload `FineStructureMultiplet(::ReferenceState)` lives in `reference_state.jl`.
+The comparison layer (GIPaper) adds an overload for its reference-catalog rows.
 """
 struct FineStructureMultiplet
     L_label::String

@@ -10,14 +10,7 @@ using GIModel
 
 root = dirname(@__DIR__)
 
-@testset "data CSV checks" begin
-    script = joinpath(root, "scripts", "data_checks.py")
-    p = run(`python3 $script validate`, wait = false)
-    wait(p)
-    @test success(p)
-end
-
-@testset "reference loading" begin
+@testset "parameter loading" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     @test mq["c"] ≈ 1.628
     @test mq["b"] ≈ 4.977
@@ -31,16 +24,6 @@ end
     @test params.epsilon_so_scalar ≈ 0.055
     @test params.fine_structure == true
     @test params.k_spin_orbit > 0.0
-
-    ccbar =
-        load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
-    bbbar = load_reference_spectrum(
-        joinpath(root, "data", "reference_spectrum_bottomonium.csv"),
-    )
-    @test length(ccbar) == 28
-    @test length(bbbar) == 30
-    @test ccbar[1].quark_content == "c cbar"
-    @test ccbar[1].composition == "1^1S_0"
 end
 
 @testset "baseline solver shape" begin
@@ -173,22 +156,6 @@ end
 @testset "reduced_mass" begin
     @test reduced_mass(ConstituentMasses(1.5, 0.3)) ≈ (1.5 * 0.3) / (1.5 + 0.3)
     @test reduced_mass(ConstituentMasses(2.0, 2.0)) ≈ 1.0
-end
-
-@testset "quark mass resolution" begin
-    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    m1, m2 = parse_quark_masses(mq, "ccbar", "ignore")
-    @test m1 ≈ m2 ≈ mq["c"]
-    m1, m2 = parse_quark_masses(mq, "charmonium", "c cbar")
-    @test m1 ≈ m2 ≈ mq["c"]
-    m1, m2 = parse_quark_masses(mq, "charmed", "-c dbar; c ubar")
-    @test m1 ≈ mq["c"] && m2 ≈ mq["d"]
-    m1, m2 = parse_quark_masses(mq, "charmed_strange", "c sbar")
-    @test m1 ≈ mq["c"] && m2 ≈ mq["s"]
-    m1, m2 = parse_quark_masses(mq, "bottom_light", "b ubar; -b dbar")
-    @test m1 ≈ mq["b"] && m2 ≈ mq["u"]
-    m1, m2 = parse_quark_masses(mq, "isoscalar", "ignore")
-    @test m1 ≈ m2 ≈ 0.5 * (mq["u"] + mq["d"])
 end
 
 @testset "appendix_a_smearing code path (finite S-wave energy)" begin
@@ -1336,546 +1303,10 @@ end
     @test c1.total ≈ c2.total rtol = 1e-12 atol = 0.0
 end
 
-@testset "compute_sector + compare return shift breakdown fields" begin
-    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    reference =
-        load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
-    sub = reference[1:1]
-    ann = attach_constituent_masses(mq, sub, mq["c"])
-    computed = compute_sector(
-        params,
-        ann;
-        ngrid = 120,
-        rmax = 12.0,
-        kinetic = :relativistic,
-        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
-    )
-    rows = compare(computed, ann; contact_hyperfine = true, use_fine_structure = true)
-    @test length(rows) == 1
-    row = rows[1]
-    @test hasproperty(row, :central_GeV)
-    @test hasproperty(row, :contact_shift_GeV)
-    @test hasproperty(row, :spin_orbit_shift_GeV)
-    @test hasproperty(row, :tensor_shift_GeV)
-    @test hasproperty(row, :fine_structure_shift_GeV)
-    @test hasproperty(row, :annihilation_shift_GeV)
-    @test hasproperty(row, :annihilation_scheme)
-    @test hasproperty(row, :m1_GeV)
-    @test hasproperty(row, :m2_GeV)
-    @test hasproperty(row, :fine_structure_mass_convention)
-    @test isfinite(row.m1_GeV) && isfinite(row.m2_GeV)
-    @test row.fine_structure_mass_convention in
-          ("equal_mass", "unequal_mass_equal_share_LdotS", "disabled")
-    @test row.fine_structure_shift_GeV ≈ row.spin_orbit_shift_GeV + row.tensor_shift_GeV atol =
-        1e-12
-    @test row.predicted_GeV ≈
-          row.central_GeV + row.contact_shift_GeV + row.fine_structure_shift_GeV +
-          row.annihilation_shift_GeV atol =
-        1e-12
-end
-
 @testset "mixing mechanisms are comparison-layer markers" begin
     @test GIModel.AntisymmetricSpinOrbit() isa GIModel.MixingMechanism
     @test GIModel.TensorMixing() isa GIModel.MixingMechanism
     @test GIModel.IsoscalarAnnihilation() isa GIModel.MixingMechanism
-end
-
-@testset "compare applies unequal-mass same-J antisymmetric spin-orbit mixing" begin
-    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    reference = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_strange.csv"))
-    sub = [
-        row for row in reference if
-        row.n == 1 && row.L == "P" && row.J == 1 && row.multiplicity in (1, 3)
-    ]
-    @test length(sub) == 2
-    ann = attach_constituent_masses(mq, sub, mq["q"])
-    computed = compute_sector(
-        params,
-        ann;
-        ngrid = 120,
-        rmax = 12.0,
-        kinetic = :relativistic,
-        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
-    )
-    plain = compare(
-        computed,
-        ann;
-        contact_hyperfine = true,
-        use_fine_structure = true,
-        antisymmetric_spin_orbit_mixing = false,
-    )
-    mixed = compare(
-        computed,
-        ann;
-        contact_hyperfine = true,
-        use_fine_structure = true,
-        antisymmetric_spin_orbit_mixing = true,
-    )
-    @test length(plain) == 2
-    @test length(mixed) == 2
-    @test all(row.same_j_mixing_scheme == "none" for row in plain)
-    @test all(row.same_j_mixing_scheme == "antisymmetric_spin_orbit" for row in mixed)
-    @test all(row.fine_structure_mass_convention == "unequal_mass_same_j_mixed" for row in mixed)
-    @test any(abs(row.same_j_offdiag_GeV) > 0 for row in mixed)
-    @test sum(row.predicted_GeV for row in mixed) ≈ sum(row.predicted_GeV for row in plain) rtol =
-        1e-12
-    @test all(!GIModel.mixing_prone_state(row) for row in mixed)
-    @test any(abs(mixed[i].predicted_GeV - plain[i].predicted_GeV) > 1e-6 for i in eachindex(mixed))
-end
-
-@testset "compare applies tensor same-J triplet L/L' mixing" begin
-    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    reference = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_isovector.csv"))
-    sub = [
-        row for row in reference if
-        (row.n == 2 && row.L == "S" && row.J == 1 && row.multiplicity == 3) ||
-        (row.n == 1 && row.L == "D" && row.J == 1 && row.multiplicity == 3)
-    ]
-    @test length(sub) == 2
-    ann = attach_constituent_masses(mq, sub, mq["q"])
-    computed = compute_sector(
-        params,
-        ann;
-        ngrid = 120,
-        rmax = 12.0,
-        kinetic = :relativistic,
-        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
-    )
-    plain = compare(
-        computed,
-        ann;
-        contact_hyperfine = true,
-        use_fine_structure = true,
-        tensor_mixing = false,
-    )
-    mixed = compare(
-        computed,
-        ann;
-        contact_hyperfine = true,
-        use_fine_structure = true,
-        tensor_mixing = true,
-    )
-    @test length(plain) == 2
-    @test length(mixed) == 2
-    @test all(row.tensor_mixing_scheme == "none" for row in plain)
-    @test all(row.tensor_mixing_scheme == "tensor_mixing" for row in mixed)
-    @test any(abs(row.tensor_offdiag_GeV) > 0 for row in mixed)
-    @test sum(row.predicted_GeV for row in mixed) ≈ sum(row.predicted_GeV for row in plain) rtol =
-        1e-12
-    @test all(!GIModel.mixing_prone_state(row) for row in mixed)
-end
-
-@testset "nonmixing deviation summary excludes mixing-prone rows" begin
-    rows = [
-        (
-            sector = "charmed",
-            L = "S",
-            n = 1,
-            J = 0,
-            multiplicity = 1,
-            residual_MeV = -30.0,
-        ),
-        (
-            sector = "charmed",
-            L = "P",
-            n = 1,
-            J = 1,
-            multiplicity = 1,
-            residual_MeV = 500.0,
-        ),
-        (
-            sector = "charmed",
-            L = "P",
-            n = 1,
-            J = 1,
-            multiplicity = 3,
-            residual_MeV = -400.0,
-        ),
-        (
-            sector = "charmonium",
-            L = "D",
-            n = 1,
-            J = 1,
-            multiplicity = 3,
-            residual_MeV = 300.0,
-        ),
-        (
-            sector = "charmonium",
-            L = "P",
-            n = 1,
-            J = 2,
-            multiplicity = 3,
-            residual_MeV = 10.0,
-        ),
-        (
-            sector = "isoscalar",
-            L = "S",
-            n = 1,
-            J = 0,
-            multiplicity = 1,
-            residual_MeV = 900.0,
-        ),
-    ]
-    @test GIModel.mixing_prone_state(rows[2])
-    @test GIModel.mixing_prone_state(rows[3])
-    @test GIModel.mixing_prone_state(rows[4])
-    @test GIModel.mixing_prone_state(rows[6])
-    summary = GIModel.nonmixing_deviation_summary(rows)
-    by_sector = Dict(row.sector => row for row in summary)
-    @test by_sector["charmed"].n_included == 1
-    @test by_sector["charmed"].n_excluded_mixing_prone == 2
-    @test by_sector["charmed"].mean_abs_deviation_MeV ≈ 30.0
-    @test by_sector["charmed"].max_abs_deviation_MeV ≈ 30.0
-    @test by_sector["charmonium"].n_included == 1
-    @test by_sector["charmonium"].n_excluded_mixing_prone == 1
-    @test by_sector["isoscalar"].n_included == 0
-    @test isnan(by_sector["isoscalar"].mean_abs_deviation_MeV)
-end
-
-@testset "ReferenceStateWithMasses stable across compute_sector" begin
-    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    reference =
-        load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
-    sub = reference[1:min(4, length(reference))]
-    ann = attach_constituent_masses(mq, sub, mq["c"])
-    computed = compute_sector(params, ann; ngrid = 100, rmax = 10.0, kinetic = :relativistic)
-    rows_ann =
-        compare(computed, ann; contact_hyperfine = true, use_fine_structure = true)
-
-    computed_ann2 =
-        compute_sector(params, ann; ngrid = 100, rmax = 10.0, kinetic = :relativistic)
-    rows_ann2 =
-        compare(computed_ann2, ann; contact_hyperfine = true, use_fine_structure = true)
-    @test length(rows_ann2) == length(rows_ann)
-    for i in eachindex(rows_ann)
-        @test rows_ann[i].predicted_GeV ≈ rows_ann2[i].predicted_GeV rtol = 0.0 atol = 1e-14
-        @test rows_ann[i].central_GeV ≈ rows_ann2[i].central_GeV rtol = 0.0 atol = 1e-14
-    end
-end
-
-@testset "compute_sector: empty reference" begin
-    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    empty_ann = ReferenceStateWithMasses[]
-    computed = compute_sector(
-        params,
-        empty_ann;
-        ngrid = 80,
-        rmax = 8.0,
-        kinetic = :relativistic,
-    )
-    @test isempty(computed.channel_cache)
-    @test isempty(compare(computed, empty_ann))
-end
-
-@testset "compare reuses SectorComputation (stable + superset cache)" begin
-    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    reference =
-        load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
-    prefix = reference[1:min(4, length(reference))]
-    isempty(prefix) && error("charmonium reference unexpectedly empty")
-    prefix_ann = attach_constituent_masses(mq, prefix, mq["c"])
-    computed = compute_sector(
-        params,
-        prefix_ann;
-        ngrid = 100,
-        rmax = 10.0,
-        kinetic = :relativistic,
-    )
-    r1 = compare(computed, prefix_ann; contact_hyperfine = true, use_fine_structure = true)
-    r2 = compare(computed, prefix_ann; contact_hyperfine = true, use_fine_structure = true)
-    @test length(r1) == length(prefix_ann)
-    @test length(r2) == length(prefix_ann)
-    for i = 1:length(r1)
-        @test r1[i].predicted_GeV ≈ r2[i].predicted_GeV rtol = 0.0 atol = 1e-15
-        @test r1[i].residual_MeV ≈ r2[i].residual_MeV rtol = 0.0 atol = 1e-12
-    end
-
-    short_ann = prefix_ann[1:min(2, length(prefix_ann))]
-    from_superset =
-        compare(computed, short_ann; contact_hyperfine = true, use_fine_structure = true)
-    computed_short = compute_sector(
-        params,
-        short_ann;
-        ngrid = 100,
-        rmax = 10.0,
-        kinetic = :relativistic,
-    )
-    direct =
-        compare(computed_short, short_ann; contact_hyperfine = true, use_fine_structure = true)
-    @test length(from_superset) == length(direct)
-    for i = 1:length(direct)
-        @test from_superset[i].predicted_GeV ≈ direct[i].predicted_GeV rtol = 1e-12 atol =
-            0.0
-        @test from_superset[i].central_GeV ≈ direct[i].central_GeV rtol = 1e-12 atol = 0.0
-    end
-end
-
-@testset "compare(contact_hyperfine=false) drops contact shift for covered states" begin
-    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    reference =
-        load_reference_spectrum(joinpath(root, "data", "reference_spectrum_charmonium.csv"))
-    sub = reference[1:1]
-    ann = attach_constituent_masses(mq, sub, mq["c"])
-    computed = compute_sector(
-        params,
-        ann;
-        ngrid = 120,
-        rmax = 12.0,
-        kinetic = :relativistic,
-        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
-    )
-    with_hf = compare(computed, ann; contact_hyperfine = true, use_fine_structure = false)
-    no_hf = compare(computed, ann; contact_hyperfine = false, use_fine_structure = false)
-    @test length(with_hf) == 1 && length(no_hf) == 1
-    @test no_hf[1].contact_shift_GeV ≈ 0.0 atol = 1e-15
-    @test with_hf[1].central_GeV ≈ no_hf[1].central_GeV rtol = 1e-12 atol = 0.0
-    @test with_hf[1].predicted_GeV - no_hf[1].predicted_GeV ≈ with_hf[1].contact_shift_GeV atol =
-        1e-12
-end
-
-@testset "finite-difference S waves diagonalize contact hyperfine" begin
-    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    reference =
-        load_reference_spectrum(joinpath(root, "data", "reference_spectrum_isovector.csv"))
-    ann = attach_constituent_masses(mq, reference[1:1], mq["q"])
-    computed =
-        compute_sector(params, ann; ngrid = 120, rmax = 12.0, kinetic = :relativistic)
-    row = compare(computed, ann; contact_hyperfine = true, use_fine_structure = false)[1]
-    sol = only(values(computed.channel_cache))
-    wave = GIModel.RadialWaveOnUniformMesh(sol, 1)
-    multiplet = GIModel.FineStructureMultiplet("S", 1, 0)
-    first_order =
-        sol.eigenvalues_GeV[1] +
-        GIModel.contact_hyperfine_shift_active(params, ann[1].constituent_masses, multiplet, wave)
-    @test row.predicted_GeV < first_order
-    @test abs(row.residual_MeV) < abs(1000 * (first_order - ann[1].state.mass_GeV))
-end
-
-@testset "isoscalar pseudoscalar annihilation block is opt-in" begin
-    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    reference =
-        load_reference_spectrum(joinpath(root, "data", "reference_spectrum_isoscalar.csv"))
-    sub = reference[1:4]
-    ann = attach_constituent_masses(mq, sub, mq["q"])
-    computed = compute_sector(
-        params,
-        ann;
-        ngrid = 120,
-        rmax = 12.0,
-        kinetic = :relativistic,
-        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
-    )
-    plain = compare(computed, ann; contact_hyperfine = true, use_fine_structure = false)
-    mixed = compare(
-        computed,
-        ann;
-        contact_hyperfine = true,
-        use_fine_structure = false,
-        isoscalar_pseudoscalar_annihilation = :calibrated_p1,
-        strange_mass_GeV = mq["s"],
-    )
-    @test maximum(abs(row.residual_MeV) for row in plain) > 0.3e3
-    @test maximum(abs(row.residual_MeV) for row in mixed) < 1e-8
-    @test all(row.annihilation_scheme == "calibrated_p1" for row in mixed)
-    @test any(abs(row.annihilation_shift_GeV) > 0.1 for row in mixed)
-
-    solution = GIModel.isoscalar_pseudoscalar_annihilation_solution(
-        [0.095, 0.630, 1.279, 1.565];
-        targets = [row.mass_GeV for row in sub],
-    )
-    @test all(solution.weights_GeV .>= 0.0)
-    @test solution.block.mechanism == "rank_one_calibrated_pseudoscalar_annihilation"
-
-    p1 = compare(
-        computed,
-        ann;
-        contact_hyperfine = true,
-        use_fine_structure = false,
-        isoscalar_pseudoscalar_annihilation = :paper_p1,
-        strange_mass_GeV = mq["s"],
-    )
-    p2 = compare(
-        computed,
-        ann;
-        contact_hyperfine = true,
-        use_fine_structure = false,
-        isoscalar_pseudoscalar_annihilation = :paper_p2,
-        strange_mass_GeV = mq["s"],
-    )
-    p1_short = compare(
-        computed,
-        ann;
-        contact_hyperfine = true,
-        use_fine_structure = false,
-        isoscalar_pseudoscalar_annihilation = :p1,
-        strange_mass_GeV = mq["s"],
-    )
-    p2_short = compare(
-        computed,
-        ann;
-        contact_hyperfine = true,
-        use_fine_structure = false,
-        isoscalar_pseudoscalar_annihilation = :p2,
-        strange_mass_GeV = mq["s"],
-    )
-    @test all(row.annihilation_scheme == "paper_p1" for row in p1)
-    @test all(row.annihilation_scheme == "paper_p2" for row in p2)
-    @test all(isfinite(row.predicted_GeV) for row in p1)
-    @test all(isfinite(row.predicted_GeV) for row in p2)
-    @test [row.predicted_GeV for row in p1] != [row.predicted_GeV for row in p2]
-    @test [row.predicted_GeV for row in p1_short] ≈ [row.predicted_GeV for row in p1]
-    @test [row.predicted_GeV for row in p2_short] ≈ [row.predicted_GeV for row in p2]
-
-    qkey = GIModel.RadialChannelKey(mq["q"], mq["q"], "S")
-    qsol = computed.channel_cache[qkey]
-    qlevels = GIModel.contact_hyperfine_nonperturbative_levels(
-        params,
-        ConstituentMasses(mq["q"], mq["q"]),
-        "S",
-        1,
-        qsol.r,
-        1,
-    )
-    qbasis = pseudoscalar_annihilation_basis_input(
-        "1 ns",
-        mq["q"],
-        qlevels[1],
-        RadialWaveOnUniformMesh(qsol, 1),
-    )
-    legacy = GIModel._s0_smearing_factor(FDOriginP2Smearing(), qbasis)
-    exact = GIModel._s0_smearing_factor(FDMomentumIntegralSmearing(180), qbasis)
-    coherent = GIModel._annihilation_overlap_factor(FDMomentumIntegralSmearing(180), qbasis)
-    @test isfinite(exact)
-    @test abs(coherent) ≈ sqrt(2) * abs(exact) rtol = 1e-12
-    @test abs(exact) != legacy
-end
-
-@testset "compute_sector builds HO wave cache for S-wave channels" begin
-    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    reference = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_isoscalar.csv"))
-    sub = [r for r in reference if r.L == "S" && r.n == 1 && r.multiplicity == 1 && r.J == 0][1:2]
-    ann = attach_constituent_masses(mq, sub, mq["q"])
-    computed = compute_sector(
-        params, ann;
-        ngrid = 80, rmax = 8.0, kinetic = :relativistic,
-        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
-        annihilation_wave_basis = :ho,
-    )
-    qkey = GIModel.RadialChannelKey(mq["q"], mq["q"], "S")
-    skey = GIModel.RadialChannelKey(mq["s"], mq["s"], "S")
-    @test haskey(computed.ho_wave_cache, qkey)
-    @test haskey(computed.ho_wave_cache, skey)
-    # HO wavefunction should give a larger S0 factor than FD (paper basis effect)
-    ho_sol = computed.ho_wave_cache[qkey]
-    fd_sol = computed.channel_cache[qkey]
-    levels = GIModel.contact_hyperfine_nonperturbative_levels(params, ConstituentMasses(mq["q"], mq["q"]), "S", 1, fd_sol.r, 1)
-    ho_basis = pseudoscalar_annihilation_basis_input("1 ns", mq["q"], levels[1], RadialWaveOnUniformMesh(ho_sol, 1))
-    fd_basis = pseudoscalar_annihilation_basis_input("1 ns", mq["q"], levels[1], RadialWaveOnUniformMesh(fd_sol, 1))
-    s0_ho = abs(GIModel._s0_smearing_factor(FDMomentumIntegralSmearing(180), ho_basis))
-    s0_fd = abs(GIModel._s0_smearing_factor(FDMomentumIntegralSmearing(180), fd_basis))
-    @test s0_ho > s0_fd
-    # GI annihilation phase convention: Φ(0) ∝ ∫ r u(r) dr > 0 for every level
-    # (Table III amplitude signs follow this; for the nodeless ground state it
-    # coincides with u(r_min) > 0).
-    phase(sol, n) = sum(sol.r .* view(sol.eigenvectors, :, n))
-    @test ho_sol.eigenvectors[1, 1] > 0
-    @test phase(ho_sol, 1) > 0
-    @test phase(ho_sol, 2) > 0
-    @test phase(computed.ho_wave_cache[skey], 1) > 0
-    @test phase(computed.ho_wave_cache[skey], 2) > 0
-end
-
-@testset "isoscalar general_s1 annihilation splits omega/phi" begin
-    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    reference = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_isoscalar.csv"))
-    sub = [r for r in reference if r.L == "S" && r.n == 1 && r.multiplicity == 3 && r.J == 1]
-    @test length(sub) == 2
-    ann = attach_constituent_masses(mq, sub, mq["q"])
-    computed = compute_sector(
-        params, ann;
-        ngrid = 120, rmax = 12.0, kinetic = :relativistic,
-        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
-        annihilation_wave_basis = :ho,
-    )
-    plain = compare(computed, ann; contact_hyperfine = true, use_fine_structure = false)
-    mixed = compare(
-        computed, ann;
-        contact_hyperfine = true, use_fine_structure = false,
-        isoscalar_pseudoscalar_annihilation = :general_s1,
-        strange_mass_GeV = mq["s"],
-    )
-    @test length(plain) == 2
-    @test length(mixed) == 2
-    @test all(row.annihilation_scheme == "none" for row in plain)
-    @test all(row.annihilation_scheme == "general_s1" for row in mixed)
-    # mixing must produce a real splitting
-    @test abs(mixed[1].predicted_GeV - mixed[2].predicted_GeV) >
-          abs(plain[1].predicted_GeV - plain[2].predicted_GeV)
-    # sum of masses is conserved under the rank-two update (trace of matrix)
-    @test sum(row.predicted_GeV for row in mixed) ≈ sum(row.predicted_GeV for row in plain) + sum(row.annihilation_shift_GeV for row in mixed) atol = 1e-10
-end
-
-@testset "table_iii isoscalar scheme: ideal mixing + general Eq.(16)" begin
-    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    reference = load_reference_spectrum(joinpath(root, "data", "reference_spectrum_isoscalar.csv"))
-    sub = [
-        r for r in reference if r.n == 1 && (
-            (r.L == "S" && r.multiplicity == 3 && r.J == 1) ||  # omega/phi
-            (r.L == "P" && r.multiplicity == 3 && r.J == 2) ||  # f2/f2'
-            (r.L == "P" && r.multiplicity == 1 && r.J == 1)     # h1/h1' (ideal)
-        )
-    ]
-    @test length(sub) == 6
-    ann = attach_constituent_masses(mq, sub, mq["q"])
-    computed = compute_sector(
-        params, ann;
-        ngrid = 120, rmax = 12.0, kinetic = :relativistic,
-        extra_channel_masses = [ConstituentMasses(mq["s"], mq["s"])],
-        ho_wave_L = ("S", "P"),
-    )
-    skey_p = GIModel.RadialChannelKey(mq["s"], mq["s"], "P")
-    @test haskey(computed.ho_wave_cache, skey_p)
-    rows = compare(
-        computed, ann;
-        contact_hyperfine = true, use_fine_structure = true,
-        isoscalar_pseudoscalar_annihilation = :table_iii,
-        strange_mass_GeV = mq["s"],
-    )
-    @test length(rows) == 6
-    by_ref(pred) = sort([r for r in rows if pred(r)]; by = r -> r.reference_GeV)
-
-    # omega/phi: general Eq. (16) with A(^3S_1)=+2.5 and the three-gluon bracket.
-    s1 = by_ref(r -> r.L == "S")
-    @test all(r.isoscalar_annihilation_scheme == "general_eq16" for r in s1)
-    omega, phi = s1
-    # near-ideal mixing with a small ss admixture in the omega (Table III: -0.02)
-    @test abs(omega.isoscalar_component_ns) > 0.99
-    @test -0.15 < omega.isoscalar_component_ss < 0.0
-    # the annihilation shift on the omega is small and positive (paper: +10 MeV)
-    @test 0.0 < omega.annihilation_shift_GeV < 0.05
-    # phi sits near the strange-channel diagonal, well above the omega
-    @test phi.predicted_GeV - omega.predicted_GeV > 0.15
-
-    # f2/f2': general Eq. (16) with A(^3P_2)=-0.8 and the two-gluon bracket.
-    p2 = by_ref(r -> r.L == "P" && r.multiplicity == 3)
-    @test all(r.isoscalar_annihilation_scheme == "general_eq16" for r in p2)
-    f2, f2p = p2
-    # negative amplitude pushes the f2 down and gives it a positive ss component
-    @test f2.annihilation_shift_GeV < 0.0
-    @test 0.0 < f2.isoscalar_component_ss < 0.2
-    @test abs(f2p.isoscalar_component_ss) > 0.97
-
-    # h1/h1': ideally mixed, heavier row gets the strange-channel prediction.
-    h1 = by_ref(r -> r.L == "P" && r.multiplicity == 1)
-    @test all(r.isoscalar_annihilation_scheme == "ideal" for r in h1)
-    @test h1[1].annihilation_shift_GeV == 0.0
-    @test h1[1].isoscalar_component_ns == 1.0
-    @test h1[2].isoscalar_component_ss == 1.0
-    @test 0.15 < h1[2].predicted_GeV - h1[1].predicted_GeV < 0.35
-    @test h1[2].m1_GeV ≈ mq["s"]
-    # assigned isoscalar rows become scoreable in the non-mixing summary
-    @test !GIModel.mixing_prone_state(h1[2])
-    @test !GIModel.mixing_prone_state(omega)
 end
 
 @testset "Table V strong-decay model (light 1S+1P)" begin
@@ -1902,4 +1333,155 @@ end
     @test reduced_decay_amplitude(model, :D, 1.0) ≈ model.S0 - 0.3 * model.A
     @test reduced_decay_amplitude(model, :P, 1.0) ≈ model.S0 - 0.75 * model.A
     @test_throws ArgumentError reduced_decay_amplitude(model, :bogus, 1.0)
+end
+
+@testset "Meson construction and flavor resolution" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    cc = Meson(mq, :c, :c)
+    @test cc.constituent_masses.m1_GeV ≈ mq["c"]
+    @test is_equal_flavor(cc)
+    @test reduced_mass(cc) ≈ mq["c"] / 2
+    bu = Meson(mq, :b, :u)
+    @test !is_equal_flavor(bu)
+    @test bu.constituent_masses.m1_GeV ≈ mq["b"]
+    @test bu.constituent_masses.m2_GeV ≈ mq["u"]
+    # :n aliases the light average :q, matching the paper's n nbar notation
+    nn = Meson(mq, :n, :n)
+    qq = Meson(mq, :q, :q)
+    @test nn == qq
+    @test nn.constituent_masses.m1_GeV ≈ 0.5 * (mq["u"] + mq["d"])
+    # unknown flavor fails loudly - no silent fallback masses
+    @test_throws ArgumentError Meson(mq, :t, :t)
+    @test_throws ArgumentError Meson(mq, :cbar, :c)
+    # explicit-mass constructor for parameter scans
+    scan = Meson(:c, :c, ConstituentMasses(1.5, 1.5))
+    @test scan.constituent_masses.m1_GeV ≈ 1.5
+end
+
+@testset "spectrum_levels enumerates n^(2S+1)L_J multiplets" begin
+    levels = spectrum_levels(2)
+    # per n: S gives {1S0, 3S1}, P and D give {singlet + 3 triplets}
+    @test length(levels) == 2 * (2 + 4 + 4)
+    s_triplets = [l for l in levels if l.L_label == "S" && l.multiplicity == 3]
+    @test all(l.J == 1 for l in s_triplets)
+    p_triplets = [l for l in levels if l.L_label == "P" && l.multiplicity == 3 && l.n == 1]
+    @test sort([l.J for l in p_triplets]) == [0, 1, 2]
+    p_singlets = [l for l in levels if l.L_label == "P" && l.multiplicity == 1]
+    @test all(l.J == 1 for l in p_singlets)
+    @test_throws ArgumentError spectrum_levels(0)
+    @test_throws ArgumentError spectrum_levels(2; L_labels = ("X",))
+    only_s = spectrum_levels(3; L_labels = ("S",))
+    @test length(only_s) == 6
+end
+
+@testset "compute_spectrum breakdown and tensor mixing (no reference data)" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    meson = Meson(mq, :c, :c)
+    levels = [
+        BasisState(1, "S", 3, 1),
+        BasisState(2, "S", 3, 1),
+        BasisState(1, "D", 3, 1),
+        BasisState(1, "P", 3, 2),
+    ]
+    spec = compute_spectrum(params, meson; levels = levels, ngrid = 120, rmax = 12.0)
+    @test length(spec.states) == 4
+    for s in spec.states
+        if isempty(s.mixings)
+            @test s.mass_GeV ≈ s.central_GeV + s.contact_shift_GeV + s.fine_structure_shift_GeV atol = 1e-12
+        end
+        @test s.fine_structure_shift_GeV ≈ s.spin_orbit_shift_GeV + s.tensor_shift_GeV atol = 1e-12
+    end
+    # 2^3S_1 and 1^3D_1 form a tensor block; trace is conserved
+    mixed = [s for s in spec.states if !isempty(s.mixings)]
+    @test length(mixed) == 2
+    @test all(m.mechanism == "tensor_mixing" for s in mixed for m in s.mixings)
+    @test sum(s.mass_GeV for s in mixed) ≈
+          sum(s.mixings[end].unmixed_GeV for s in mixed) atol = 1e-10
+    @test mixed[1].mixings[end].partner_masses_GeV == mixed[2].mixings[end].partner_masses_GeV
+    # lookup by quantum numbers
+    s = spectrum_state(spec, 1, "P", 3, 2)
+    @test s.label == "1^3P_2"
+    @test_throws ArgumentError spectrum_state(spec, 3, "S", 1, 0)
+    # level beyond the per-channel budget fails loudly
+    @test_throws ArgumentError compute_spectrum(
+        params, meson;
+        levels = [BasisState(7, "S", 1, 0)], ngrid = 80, rmax = 8.0,
+    )
+end
+
+@testset "compute_spectrum same-J mixing gated by flavor content" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    pair = [BasisState(1, "P", 1, 1), BasisState(1, "P", 3, 1)]
+    us = compute_spectrum(params, Meson(mq, :u, :s); levels = pair, ngrid = 120, rmax = 12.0)
+    so_mixed = [s for s in us.states if any(m.mechanism == "antisymmetric_spin_orbit" for m in s.mixings)]
+    @test length(so_mixed) == 2
+    @test all(s.fine_structure_mass_convention == "unequal_mass_same_j_mixed" for s in so_mixed)
+    @test sum(s.mass_GeV for s in so_mixed) ≈
+          sum(s.mixings[end].unmixed_GeV for s in so_mixed) atol = 1e-10
+    @test any(abs(s.mixings[end].offdiag_GeV) > 0 for s in so_mixed)
+    # equal flavor: the antisymmetric matrix element vanishes, no block forms
+    cc = compute_spectrum(params, Meson(mq, :c, :c); levels = pair, ngrid = 120, rmax = 12.0)
+    @test all(isempty(s.mixings) for s in cc.states)
+end
+
+@testset "annihilation blocks built from two spectra (no reference data)" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    ps_levels = [BasisState(1, "S", 1, 0), BasisState(2, "S", 1, 0)]
+    nn = compute_spectrum(params, Meson(mq, :q, :q);
+        levels = ps_levels, ngrid = 120, rmax = 12.0, use_fine_structure = false)
+    ss = compute_spectrum(params, Meson(mq, :s, :s);
+        levels = ps_levels, ngrid = 120, rmax = 12.0, use_fine_structure = false)
+
+    # the calibrated rank-one block reproduces its targets by construction
+    targets = (0.520, 0.960, 1.440, 1.630)
+    cal = pseudoscalar_annihilation_block(CalibratedP1Annihilation(), params, nn, ss;
+        targets = targets)
+    @test sort(cal.masses) ≈ sort(collect(targets)) atol = 1e-10
+    @test all(cal.weights_GeV .>= 0.0)
+    # explicit targets are mandatory - the digitized values live in GIPaper
+    @test_throws ArgumentError pseudoscalar_annihilation_block(
+        CalibratedP1Annihilation(), params, nn, ss)
+
+    p1 = pseudoscalar_annihilation_block(PaperP1Annihilation(), params, nn, ss)
+    p2 = pseudoscalar_annihilation_block(PaperP2Annihilation(), params, nn, ss)
+    @test all(isfinite, p1.masses)
+    @test all(isfinite, p2.masses)
+    @test p1.masses != p2.masses
+    # light nn̄ inputs carry the sqrt(2) flavor-coherence label
+    input = annihilation_basis_input(nn, ps_levels[1])
+    @test input.label == "1 ns"
+    @test annihilation_basis_input(ss, ps_levels[2]).label == "2 ss"
+
+    # general Eq. (16) block for one channel across the two flavors
+    s1 = BasisState(1, "S", 3, 1)
+    nn3 = compute_spectrum(params, Meson(mq, :q, :q);
+        levels = [s1], ngrid = 120, rmax = 12.0, use_fine_structure = false)
+    ss3 = compute_spectrum(params, Meson(mq, :s, :s);
+        levels = [s1], ngrid = 120, rmax = 12.0, use_fine_structure = false)
+    block = isoscalar_annihilation_block(params, nn3, ss3, s1;
+        amplitude_A = params.annihilation_s1_A)
+    @test length(block.masses) == 2
+    @test all(isfinite, block.masses)
+    # trace conservation: eigenvalue sum equals diagonal sum plus block trace
+    diag_sum = spectrum_state(nn3, s1).mass_GeV + spectrum_state(ss3, s1).mass_GeV
+    @test sum(block.masses) ≈ diag_sum + sum(diag(block.annihilation_matrix_GeV)) atol = 1e-10
+end
+
+@testset "compute_spectrum builds phase-fixed HO wave caches" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    spec = compute_spectrum(params, Meson(mq, :q, :q);
+        levels = [BasisState(1, "S", 1, 0)], ngrid = 80, rmax = 8.0)
+    key = RadialChannelKey(spec.meson.constituent_masses, "S")
+    @test haskey(spec.computation.ho_wave_cache, key)
+    ho_sol = spec.computation.ho_wave_cache[key]
+    # GI annihilation phase convention: Φ(0) ∝ ∫ r u(r) dr > 0 for every level
+    phase(sol, n) = sum(sol.r .* view(sol.eigenvectors, :, n))
+    @test ho_sol.eigenvectors[1, 1] > 0
+    @test phase(ho_sol, 1) > 0
+    @test phase(ho_sol, 2) > 0
+    # opt out of the HO basis entirely
+    fd_only = compute_spectrum(params, Meson(mq, :q, :q);
+        levels = [BasisState(1, "S", 1, 0)], ngrid = 80, rmax = 8.0,
+        annihilation_wave_basis = :fd)
+    @test isempty(fd_only.computation.ho_wave_cache)
 end

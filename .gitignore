@@ -22,8 +22,8 @@ paper/vision_ocr/godfrey_isgur_1985_vision_ocr.aux
 paper/vision_ocr/godfrey_isgur_1985_vision_ocr.html
 
 # Quarto report build artifacts (PDF + curated figures are tracked).
-report/*.tex
-report/*_files/
+archive/report/*.tex
+archive/report/*_files/
 
-# Regenerable sector plots; curated copies are tracked under report/figures/.
-scripts/spectrum_plots/
+# Regenerable sector plots; curated copies are tracked under archive/report/figures/.
+GIPaper/scripts/spectrum_plots/
