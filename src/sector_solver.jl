@@ -71,15 +71,17 @@ end
 """
     SectorComputation(params, channel_cache)
 
-Container filled by [`compute_spectrum`](@ref) (`spectrum.jl`): precomputed radial FD solves per distinct channel.
+Container filled by [`central_spectrum`](@ref) (`spectrum.jl`): precomputed radial FD solves per distinct channel.
 
-  - `params`: [`GIParameters`](@ref) used to build each central Hamiltonian.
+  - `params`: [`GIParameters`](@ref) used to build each central Hamiltonian
+    (concrete via the type parameter).
   - `channel_cache`: map `RadialChannelKey` → `ChannelRadialSolution`.
 
-[`Spectrum`](@ref) keeps this alive so two-meson flavor mixing can reuse the cached solves.
+[`Spectrum`](@ref) keeps this alive so later stages and two-meson flavor mixing
+can reuse the cached solves.
 """
-struct SectorComputation
-    params::GIParameters
+struct SectorComputation{P<:GIParameters}
+    params::P
     channel_cache::Dict{RadialChannelKey,ChannelRadialSolution}
     ho_wave_cache::Dict{RadialChannelKey,ChannelRadialSolution}
 end

@@ -6,22 +6,19 @@
 
 const L_SYMBOLS = GIModel.L_SYMBOLS
 
-_pre_mixing_GeV(s::SpectrumState) =
-    s.central_GeV + s.contact_shift_GeV + s.fine_structure_shift_GeV
+# The base comparison row wants the pre-mixing values, which are exactly the
+# wrapped corrected-stage state (the same-J assignment below re-applies the
+# mixed convention note under reference ordering).
+_pre_mixing_GeV(s::MixedState) = s.corrected.mass_GeV
 
-# The state's convention field is rewritten by same-J mixing inside
-# compute_spectrum; the base comparison row wants the pre-mixing value (the
-# same-J assignment below re-applies the mixed note under reference ordering).
-_pre_mixing_convention(s::SpectrumState) =
-    s.fine_structure_mass_convention == "unequal_mass_same_j_mixed" ?
-    "unequal_mass_equal_share_LdotS" : s.fine_structure_mass_convention
+_pre_mixing_convention(s::MixedState) = s.corrected.fine_structure_mass_convention
 
-function _mixing_of(s::SpectrumState, mechanism::AbstractString)
+function _mixing_of(s::MixedState, mechanism::AbstractString)
     idx = findfirst(m -> m.mechanism == mechanism, s.mixings)
     return isnothing(idx) ? nothing : s.mixings[idx]
 end
 
-function _base_row(row::ReferenceState, meson::Meson, s::SpectrumState)
+function _base_row(row::ReferenceState, meson::Meson, s::MixedState)
     predicted = _pre_mixing_GeV(s)
     return (
         sector = row.sector,
@@ -66,7 +63,7 @@ end
 # states: the member with the lower final mass carries the lower-eigenvalue
 # column (compute_spectrum assigns ascending mixed mass to ascending unmixed
 # diagonal, and each StateMixing stores its own column).
-function _block_columns(s1::SpectrumState, s2::SpectrumState, mechanism::AbstractString)
+function _block_columns(s1::MixedState, s2::MixedState, mechanism::AbstractString)
     m1 = _mixing_of(s1, mechanism)
     m2 = _mixing_of(s2, mechanism)
     (isnothing(m1) || isnothing(m2)) && return nothing
@@ -90,7 +87,7 @@ end
 function _assign_same_j_rows!(
     rows::Vector{NamedTuple},
     group_rows::Vector{Int},
-    states::Vector{SpectrumState},
+    states::Vector{MixedState},
     mixed_assignment::Symbol,
 )
     pairs_by_key = Dict{Tuple{Int,String,Int},Vector{Int}}()
@@ -134,7 +131,7 @@ end
 function _assign_tensor_rows!(
     rows::Vector{NamedTuple},
     group_rows::Vector{Int},
-    states::Vector{SpectrumState},
+    states::Vector{MixedState},
     mixed_assignment::Symbol,
 )
     pairs_by_key = Dict{Tuple{Int,Int},Vector{Int}}()
@@ -427,8 +424,8 @@ function compare_reference(
         push!(group_rows[g], i)
         meson_of[i] = g
     end
-    specs = Vector{Spectrum}(undef, length(mesons))
-    states = Vector{SpectrumState}(undef, length(kept))
+    specs = Vector{MixedSpectrum}(undef, length(mesons))
+    states = Vector{MixedState}(undef, length(kept))
     for g in eachindex(mesons)
         levels = [
             BasisState(kept[i].n, kept[i].L, kept[i].multiplicity, kept[i].J) for

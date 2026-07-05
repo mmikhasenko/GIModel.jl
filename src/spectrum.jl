@@ -1,10 +1,14 @@
-# Pure model spectrum for one meson: explicit level specification, cached radial
-# solves, contribution breakdown, and intra-meson (same-J spin-orbit, tensor)
-# mixing applied on the model's own eigenvalues — no reference data involved.
+# Pure model spectrum for one meson, staged: (1) spin-independent central
+# solve, (2) contact-hyperfine + fine-structure shifts, (3) intra-meson
+# (same-J spin-orbit, tensor) mixing on the model's own eigenvalues — no
+# reference data involved. Each stage is a first-class value; the stage is
+# carried by the element type of `Spectrum.states`, not by a tag.
 #
 # Public API (exported from GIModel.jl):
-#   spectrum_levels, StateMixing, SpectrumState, Spectrum, compute_spectrum,
-#   spectrum_state, parameters
+#   spectrum_levels, StateMixing, CentralState, CorrectedState, MixedState,
+#   Spectrum, CentralSpectrum, CorrectedSpectrum, MixedSpectrum,
+#   central_spectrum, add_spin_corrections, add_intra_meson_mixing,
+#   compute_spectrum, spectrum_state, parameters
 
 """
     spectrum_levels(nmax; L_labels=("S", "P", "D")) -> Vector{BasisState}
@@ -35,7 +39,7 @@ end
 """
     StateMixing
 
-Provenance of one intra-meson mixing applied to a [`SpectrumState`](@ref):
+Provenance of one intra-meson mixing applied to a [`MixedState`](@ref):
 which mechanism, the block basis labels, this state's eigenvector `components`
 (in block-basis order), and `partner_masses_GeV` — **all** block eigenvalues in
 ascending order, so downstream consumers can reassign eigenvalues under a
@@ -53,19 +57,32 @@ struct StateMixing
 end
 
 """
-    SpectrumState
+    CentralState
 
-One ``n\\,^{2S+1}L_J`` model state: contribution breakdown relative to the
-central eigenvalue (contact hyperfine, spin-orbit vector/Thomas, tensor), the
-mixings applied (empty for unmixed states), and the final `mass_GeV`.
+One ``n\\,^{2S+1}L_J`` level after the spin-independent central solve only:
+the quantum labels and the central eigenvalue `central_GeV`. Element type of
+[`CentralSpectrum`](@ref); no spin-dependent data exists at this stage.
 """
-struct SpectrumState
+struct CentralState
     n::Int
     L::String
     multiplicity::Int
     J::Int
     label::String
     central_GeV::Float64
+end
+
+"""
+    CorrectedState
+
+A [`CentralState`](@ref) plus the spin-dependent first-order shifts (contact
+hyperfine, spin-orbit vector/Thomas, tensor) and the corrected
+`mass_GeV = central + contact + fine structure`. Element type of
+[`CorrectedSpectrum`](@ref). Properties of the wrapped `central` state
+(`n`, `L`, `central_GeV`, …) forward transparently.
+"""
+struct CorrectedState
+    central::CentralState
     contact_shift_GeV::Float64
     spin_orbit_vector_shift_GeV::Float64
     spin_orbit_thomas_shift_GeV::Float64
@@ -73,51 +90,89 @@ struct SpectrumState
     tensor_shift_GeV::Float64
     fine_structure_shift_GeV::Float64
     fine_structure_mass_convention::String
-    mixings::Vector{StateMixing}
     mass_GeV::Float64
 end
 
+Base.getproperty(s::CorrectedState, name::Symbol) =
+    hasfield(CorrectedState, name) ? getfield(s, name) :
+    getproperty(getfield(s, :central), name)
+Base.propertynames(::CorrectedState) =
+    Tuple(union(fieldnames(CorrectedState), fieldnames(CentralState)))
+
+"""
+    MixedState
+
+A [`CorrectedState`](@ref) plus the intra-meson `mixings` applied to it (empty
+for unmixed states) and the final `mass_GeV`. `fine_structure_mass_convention`
+is the mixing-stage view: same-J mixing overrides it to
+`"unequal_mass_same_j_mixed"` while the wrapped `corrected` state keeps the
+pre-mixing convention. Element type of [`MixedSpectrum`](@ref). Properties of
+the wrapped stages forward transparently.
+"""
+struct MixedState
+    corrected::CorrectedState
+    mixings::Vector{StateMixing}
+    fine_structure_mass_convention::String
+    mass_GeV::Float64
+end
+
+Base.getproperty(s::MixedState, name::Symbol) =
+    hasfield(MixedState, name) ? getfield(s, name) :
+    getproperty(getfield(s, :corrected), name)
+Base.propertynames(::MixedState) = Tuple(
+    union(fieldnames(MixedState), fieldnames(CorrectedState), fieldnames(CentralState)),
+)
+
 # Immutable update helper: append one mixing and set the mixed mass (and
-# optionally the fine-structure convention note).
+# optionally the mixing-stage fine-structure convention note). The wrapped
+# corrected state is provenance and never changes.
 function _with_mixing(
-    state::SpectrumState,
+    state::MixedState,
     mixing::StateMixing,
     mass_GeV::Real;
     fine_structure_mass_convention::AbstractString = state.fine_structure_mass_convention,
 )
-    return SpectrumState(
-        state.n,
-        state.L,
-        state.multiplicity,
-        state.J,
-        state.label,
-        state.central_GeV,
-        state.contact_shift_GeV,
-        state.spin_orbit_vector_shift_GeV,
-        state.spin_orbit_thomas_shift_GeV,
-        state.spin_orbit_shift_GeV,
-        state.tensor_shift_GeV,
-        state.fine_structure_shift_GeV,
-        String(fine_structure_mass_convention),
+    return MixedState(
+        getfield(state, :corrected),
         vcat(state.mixings, [mixing]),
+        String(fine_structure_mass_convention),
         float(mass_GeV),
     )
 end
 
 """
-    Spectrum
+    Spectrum{S}
 
-Output of [`compute_spectrum`](@ref): the input `meson`, the computed `states`
-(in `levels` order), and the underlying [`SectorComputation`](@ref) (kept so
-two-meson flavor mixing can reuse the cached radial solves; see
-`flavor_mixing.jl`). The [`GIParameters`](@ref) that produced the spectrum live
-in `computation.params`; use [`parameters`](@ref) to retrieve them.
+Staged model spectrum for one meson: the `meson`, the `states` (in the request
+`levels` order), and the underlying [`SectorComputation`](@ref) (kept so later
+stages and two-meson flavor mixing reuse the cached radial solves; see
+`flavor_mixing.jl`). The stage is the element type `S` of `states`:
+
+  - [`CentralSpectrum`](@ref)` = Spectrum{CentralState}` — [`central_spectrum`](@ref)
+  - [`CorrectedSpectrum`](@ref)` = Spectrum{CorrectedState}` — [`add_spin_corrections`](@ref)
+  - [`MixedSpectrum`](@ref)` = Spectrum{MixedState}` — [`add_intra_meson_mixing`](@ref)
+
+[`compute_spectrum`](@ref) composes the three stages. The [`GIParameters`](@ref)
+that produced the spectrum live in `computation.params`; use [`parameters`](@ref)
+to retrieve them.
 """
-struct Spectrum
+struct Spectrum{S,C<:SectorComputation}
     meson::Meson
-    states::Vector{SpectrumState}
-    computation::SectorComputation
+    states::Vector{S}
+    computation::C
 end
+
+"""[`Spectrum`](@ref) after the central solve: `Spectrum{CentralState}`."""
+const CentralSpectrum = Spectrum{CentralState}
+
+"""[`Spectrum`](@ref) with spin-dependent shifts attached: `Spectrum{CorrectedState}`."""
+const CorrectedSpectrum = Spectrum{CorrectedState}
+
+"""[`Spectrum`](@ref) with intra-meson mixing applied: `Spectrum{MixedState}`."""
+const MixedSpectrum = Spectrum{MixedState}
+
+# Stages that carry a spin-resolved `mass_GeV` per state (annihilation-block inputs).
+const SpinResolvedSpectrum = Union{CorrectedSpectrum,MixedSpectrum}
 
 """
     parameters(spec::Spectrum) -> GIParameters
@@ -128,24 +183,18 @@ solves in [`SectorComputation`](@ref)).
 parameters(spec::Spectrum) = spec.computation.params
 
 """
-    compute_spectrum(params, meson; levels=spectrum_levels(2), ...) -> Spectrum
+    central_spectrum(params, meson; levels=spectrum_levels(2), ...) -> CentralSpectrum
 
-Solve the spin-independent radial problem once per distinct orbital in `levels`,
-attach contact-hyperfine and fine-structure shifts per state, apply intra-meson
-same-`J` antisymmetric spin-orbit mixing (unequal flavor only) and triplet
-tensor `L = J∓1` mixing on the model's own eigenvalues, and return a
-[`Spectrum`](@ref).
-
-Mixed eigenvalues are assigned order-preservingly: ascending mixed mass to
-ascending unmixed diagonal. Each state's [`StateMixing`](@ref) records the full
-block so other orderings can be reconstructed downstream.
+Stage 1: solve the spin-independent radial problem once per distinct orbital in
+`levels` and return the central eigenvalues as [`CentralState`](@ref)s together
+with the filled [`SectorComputation`](@ref).
 
 `nlevels_per_channel` bounds the radial levels kept per channel; a level with
 `n` beyond it throws `ArgumentError`. The HO wave cache (`annihilation_wave_basis
 = :ho`, orbitals in `ho_wave_L`) stores phase-fixed harmonic-oscillator waves for
 annihilation matrix elements, exactly as the paper path requires.
 """
-function compute_spectrum(
+function central_spectrum(
     params::GIParameters,
     meson::Meson;
     levels::AbstractVector{BasisState} = spectrum_levels(2),
@@ -154,20 +203,16 @@ function compute_spectrum(
     kinetic::Symbol = :relativistic,
     eigensolver::Symbol = :full,
     nlevels_per_channel::Integer = 6,
-    contact_hyperfine::Bool = true,
-    use_fine_structure::Bool = params.fine_structure.enabled,
-    same_j_spin_orbit_mixing::Bool = true,
-    tensor_mixing::Bool = true,
     annihilation_wave_basis::Symbol = :ho,
     ho_wave_L::Tuple{Vararg{String}} = ("S",),
 )
-    isempty(levels) && throw(ArgumentError("compute_spectrum: empty `levels`"))
+    isempty(levels) && throw(ArgumentError("central_spectrum: empty `levels`"))
     masses = meson.constituent_masses
     for level in levels
         haskey(L_SYMBOLS, level.L_label) ||
-            throw(ArgumentError("compute_spectrum: unknown orbital label `$(level.L_label)`"))
+            throw(ArgumentError("central_spectrum: unknown orbital label `$(level.L_label)`"))
         1 <= level.n <= nlevels_per_channel || throw(ArgumentError(
-            "compute_spectrum: level $(level.label) has n=$(level.n) outside 1:$nlevels_per_channel (raise nlevels_per_channel)",
+            "central_spectrum: level $(level.label) has n=$(level.n) outside 1:$nlevels_per_channel (raise nlevels_per_channel)",
         ))
     end
 
@@ -215,32 +260,62 @@ function compute_spectrum(
     end
     computation = SectorComputation(params, channel_cache, ho_wave_cache)
 
-    # Fixed-sector breakdown per requested level.
-    contact_level_cache = Dict{Tuple{RadialChannelKey,Int},Vector{Float64}}()
-    states = SpectrumState[]
-    for level in levels
-        key = RadialChannelKey(masses, level.L_label)
-        sol = channel_cache[key]
+    states = map(collect(levels)) do level
+        sol = channel_cache[RadialChannelKey(masses, level.L_label)]
         level.n <= length(sol.eigenvalues_GeV) || throw(ArgumentError(
-            "compute_spectrum: channel `$(level.L_label)` returned only $(length(sol.eigenvalues_GeV)) levels; requested n=$(level.n)",
+            "central_spectrum: channel `$(level.L_label)` returned only $(length(sol.eigenvalues_GeV)) levels; requested n=$(level.n)",
         ))
-        central = sol.eigenvalues_GeV[level.n]
-        multiplet = FineStructureMultiplet(level.L_label, level.multiplicity, level.J)
-        wave = RadialWaveOnUniformMesh(sol, level.n)
+        CentralState(
+            level.n,
+            level.L_label,
+            level.multiplicity,
+            level.J,
+            level.label,
+            sol.eigenvalues_GeV[level.n],
+        )
+    end
+    return Spectrum(meson, states, computation)
+end
+
+"""
+    add_spin_corrections(spec::CentralSpectrum; contact_hyperfine=true,
+                         use_fine_structure=parameters(spec).fine_structure.enabled)
+        -> CorrectedSpectrum
+
+Stage 2: attach the contact-hyperfine and fine-structure shifts per state on
+the cached radial waves and set each state's corrected mass. With a switch
+off, the corresponding shifts are zero (and the fine-structure convention is
+`"disabled"`), so the corrected mass falls back to the central eigenvalue.
+"""
+function add_spin_corrections(
+    spec::CentralSpectrum;
+    contact_hyperfine::Bool = true,
+    use_fine_structure::Bool = parameters(spec).fine_structure.enabled,
+)
+    params = parameters(spec)
+    masses = spec.meson.constituent_masses
+    channel_cache = spec.computation.channel_cache
+    fine_structure_active = use_fine_structure && params.fine_structure.enabled
+    contact_level_cache = Dict{Tuple{RadialChannelKey,Int},Vector{Float64}}()
+    states = map(spec.states) do state
+        key = RadialChannelKey(masses, state.L)
+        sol = channel_cache[key]
+        multiplet = FineStructureMultiplet(state.L, state.multiplicity, state.J)
+        wave = RadialWaveOnUniformMesh(sol, state.n)
         contact_shift = 0.0
         if contact_hyperfine
-            nonperturbative = get!(contact_level_cache, (key, level.multiplicity)) do
+            nonperturbative = get!(contact_level_cache, (key, state.multiplicity)) do
                 contact_hyperfine_nonperturbative_levels(
                     params,
                     masses,
-                    level.L_label,
-                    level.multiplicity,
+                    state.L,
+                    state.multiplicity,
                     sol.r,
                     length(sol.eigenvalues_GeV),
                 )
             end
-            if !isempty(nonperturbative) && level.n <= length(nonperturbative)
-                contact_shift = nonperturbative[level.n] - central
+            if !isempty(nonperturbative) && state.n <= length(nonperturbative)
+                contact_shift = nonperturbative[state.n] - state.central_GeV
             else
                 contact_shift = contact_hyperfine_shift_active(params, masses, multiplet, wave)
             end
@@ -251,7 +326,7 @@ function compute_spectrum(
         tensor = 0.0
         fs_total = 0.0
         fs_convention = "disabled"
-        if use_fine_structure && params.fine_structure.enabled
+        if fine_structure_active
             comp = fine_structure_components(
                 params,
                 masses,
@@ -270,43 +345,111 @@ function compute_spectrum(
                 isapprox(masses.m1_GeV, masses.m2_GeV; rtol = 0.0, atol = 0.0) ?
                 "equal_mass" : "unequal_mass_equal_share_LdotS"
         end
-        push!(
-            states,
-            SpectrumState(
-                level.n,
-                level.L_label,
-                level.multiplicity,
-                level.J,
-                level.label,
-                central,
-                contact_shift,
-                so_vector,
-                so_thomas,
-                so_total,
-                tensor,
-                fs_total,
-                fs_convention,
-                StateMixing[],
-                central + contact_shift + fs_total,
-            ),
+        CorrectedState(
+            state,
+            contact_shift,
+            so_vector,
+            so_thomas,
+            so_total,
+            tensor,
+            fs_total,
+            fs_convention,
+            state.central_GeV + contact_shift + fs_total,
         )
     end
+    return Spectrum(spec.meson, states, spec.computation)
+end
 
-    fine_structure_active = use_fine_structure && params.fine_structure.enabled
-    if same_j_spin_orbit_mixing && fine_structure_active && !is_equal_flavor(meson)
+"""
+    add_intra_meson_mixing(spec::CorrectedSpectrum;
+                           same_j_spin_orbit_mixing=true, tensor_mixing=true)
+        -> MixedSpectrum
+
+Stage 3: apply intra-meson same-`J` antisymmetric spin-orbit mixing (unequal
+flavor only) and triplet tensor `L = J∓1` mixing on the corrected masses.
+Mixing needs the fine-structure operators, so it only acts when stage 2
+actually applied them (any state with a convention other than `"disabled"`);
+otherwise every state passes through with empty `mixings`.
+
+Mixed eigenvalues are assigned order-preservingly: ascending mixed mass to
+ascending unmixed diagonal. Each state's [`StateMixing`](@ref) records the full
+block so other orderings can be reconstructed downstream.
+"""
+function add_intra_meson_mixing(
+    spec::CorrectedSpectrum;
+    same_j_spin_orbit_mixing::Bool = true,
+    tensor_mixing::Bool = true,
+)
+    params = parameters(spec)
+    masses = spec.meson.constituent_masses
+    channel_cache = spec.computation.channel_cache
+    states = [
+        MixedState(s, StateMixing[], s.fine_structure_mass_convention, s.mass_GeV) for
+        s in spec.states
+    ]
+    fine_structure_applied =
+        any(s -> s.fine_structure_mass_convention != "disabled", spec.states)
+    if same_j_spin_orbit_mixing && fine_structure_applied && !is_equal_flavor(spec.meson)
         _apply_same_j_spin_orbit_mixing!(states, params, masses, channel_cache)
     end
-    if tensor_mixing && fine_structure_active
+    if tensor_mixing && fine_structure_applied
         _apply_tensor_mixing!(states, params, masses, channel_cache)
     end
+    return Spectrum(spec.meson, states, spec.computation)
+end
 
-    return Spectrum(meson, states, computation)
+"""
+    compute_spectrum(params, meson; levels=spectrum_levels(2), ...) -> MixedSpectrum
+
+Run all three stages: [`central_spectrum`](@ref) →
+[`add_spin_corrections`](@ref) → [`add_intra_meson_mixing`](@ref). Keyword
+arguments are forwarded to the stage they belong to; call the stages directly
+to inspect the intermediate [`CentralSpectrum`](@ref) / [`CorrectedSpectrum`](@ref).
+"""
+function compute_spectrum(
+    params::GIParameters,
+    meson::Meson;
+    levels::AbstractVector{BasisState} = spectrum_levels(2),
+    ngrid::Integer = 450,
+    rmax::Real = 24.0,
+    kinetic::Symbol = :relativistic,
+    eigensolver::Symbol = :full,
+    nlevels_per_channel::Integer = 6,
+    contact_hyperfine::Bool = true,
+    use_fine_structure::Bool = params.fine_structure.enabled,
+    same_j_spin_orbit_mixing::Bool = true,
+    tensor_mixing::Bool = true,
+    annihilation_wave_basis::Symbol = :ho,
+    ho_wave_L::Tuple{Vararg{String}} = ("S",),
+)
+    central = central_spectrum(
+        params,
+        meson;
+        levels = levels,
+        ngrid = ngrid,
+        rmax = rmax,
+        kinetic = kinetic,
+        eigensolver = eigensolver,
+        nlevels_per_channel = nlevels_per_channel,
+        annihilation_wave_basis = annihilation_wave_basis,
+        ho_wave_L = ho_wave_L,
+    )
+    corrected = add_spin_corrections(
+        central;
+        contact_hyperfine = contact_hyperfine,
+        use_fine_structure = use_fine_structure,
+    )
+    return add_intra_meson_mixing(
+        corrected;
+        same_j_spin_orbit_mixing = same_j_spin_orbit_mixing,
+        tensor_mixing = tensor_mixing,
+    )
 end
 
 # Assign ascending block eigenvalues to block members ordered by ascending
 # unmixed mass, recording full-block provenance on each member.
 function _assign_block_members!(
-    states::Vector{SpectrumState},
+    states::Vector{MixedState},
     member_indices::Vector{Int},
     mechanism::AbstractString,
     block_label::AbstractString,
@@ -347,7 +490,7 @@ function _assign_block_members!(
 end
 
 function _apply_same_j_spin_orbit_mixing!(
-    states::Vector{SpectrumState},
+    states::Vector{MixedState},
     params::GIParameters,
     masses::ConstituentMasses,
     channel_cache::Dict{RadialChannelKey,ChannelRadialSolution},
@@ -395,7 +538,7 @@ function _apply_same_j_spin_orbit_mixing!(
 end
 
 function _apply_tensor_mixing!(
-    states::Vector{SpectrumState},
+    states::Vector{MixedState},
     params::GIParameters,
     masses::ConstituentMasses,
     channel_cache::Dict{RadialChannelKey,ChannelRadialSolution},
@@ -459,10 +602,11 @@ function _apply_tensor_mixing!(
 end
 
 """
-    spectrum_state(spectrum, n, L_label, multiplicity, J) -> SpectrumState
-    spectrum_state(spectrum, level::BasisState) -> SpectrumState
+    spectrum_state(spectrum, n, L_label, multiplicity, J)
+    spectrum_state(spectrum, level::BasisState)
 
-Look up one state by quantum numbers; throws `ArgumentError` when absent.
+Look up one state by quantum numbers at any stage; throws `ArgumentError` when
+absent. The return type is the spectrum's state type.
 """
 function spectrum_state(
     spec::Spectrum,

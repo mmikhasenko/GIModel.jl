@@ -1333,3 +1333,59 @@ end
         annihilation_wave_basis = :fd)
     @test isempty(fd_only.computation.ho_wave_cache)
 end
+
+@testset "staged spectrum: central -> corrected -> mixed" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    us = Meson(mq, :u, :s)
+    levels = spectrum_levels(2; L_labels = ("S", "P"))
+    kwargs = (ngrid = 250, rmax = 16.0)
+
+    central = central_spectrum(params, us; levels = levels, kwargs...)
+    @test central isa CentralSpectrum
+    @test eltype(central.states) === CentralState
+    @test parameters(central) === central.computation.params
+    @test all(isfinite(s.central_GeV) for s in central.states)
+
+    corrected = add_spin_corrections(central)
+    @test corrected isa CorrectedSpectrum
+    @test corrected.computation === central.computation
+    for s in corrected.states
+        # property forwarding into the wrapped central state
+        @test s.central_GeV == s.central.central_GeV
+        @test s.mass_GeV ≈ s.central_GeV + s.contact_shift_GeV + s.fine_structure_shift_GeV
+    end
+
+    mixed = add_intra_meson_mixing(corrected)
+    @test mixed isa MixedSpectrum
+    @test mixed.computation === central.computation
+
+    # composition is compute_spectrum
+    direct = compute_spectrum(params, us; levels = levels, kwargs...)
+    @test [s.mass_GeV for s in direct.states] == [s.mass_GeV for s in mixed.states]
+    @test [s.fine_structure_mass_convention for s in direct.states] ==
+          [s.fine_structure_mass_convention for s in mixed.states]
+
+    # mixing overrides the stage view, never the corrected provenance
+    so_mixed = [
+        s for s in mixed.states if
+        any(m.mechanism == "antisymmetric_spin_orbit" for m in s.mixings)
+    ]
+    @test !isempty(so_mixed)
+    for s in so_mixed
+        @test s.fine_structure_mass_convention == "unequal_mass_same_j_mixed"
+        @test s.corrected.fine_structure_mass_convention == "unequal_mass_equal_share_LdotS"
+        @test s.mixings[end].unmixed_GeV == s.corrected.mass_GeV
+    end
+
+    # stage skipping: no corrections means no fine structure and no mixing blocks
+    bare = add_intra_meson_mixing(
+        add_spin_corrections(central; contact_hyperfine = false, use_fine_structure = false),
+    )
+    @test all(s.mass_GeV == s.central_GeV for s in bare.states)
+    @test all(isempty(s.mixings) for s in bare.states)
+    @test all(s.fine_structure_mass_convention == "disabled" for s in bare.states)
+
+    # stage order is enforced by dispatch
+    @test !hasmethod(add_spin_corrections, Tuple{MixedSpectrum})
+    @test !hasmethod(add_intra_meson_mixing, Tuple{CentralSpectrum})
+end

@@ -20,7 +20,7 @@ function _annihilation_flavor_tag(m::Meson)
 end
 
 function _annihilation_wave(
-    spec::Spectrum,
+    spec::SpinResolvedSpectrum,
     L_label::AbstractString,
     n::Integer;
     wave_basis::Symbol = :ho,
@@ -47,7 +47,7 @@ pre-annihilation model mass as the diagonal, and the cached radial wave
 difference otherwise — the same fallback rule the paper audits use).
 """
 function annihilation_basis_input(
-    spec::Spectrum,
+    spec::SpinResolvedSpectrum,
     level::BasisState;
     wave_basis::Symbol = :ho,
 )
@@ -72,8 +72,8 @@ channel amplitude `A(^{2S+1}L_J)`.
 """
 function isoscalar_annihilation_block(
     params::GIParameters,
-    nn::Spectrum,
-    ss::Spectrum,
+    nn::SpinResolvedSpectrum,
+    ss::SpinResolvedSpectrum,
     level::BasisState;
     amplitude_A::Real,
     wave_basis::Symbol = :ho,
@@ -92,7 +92,7 @@ function isoscalar_annihilation_block(
     )
 end
 
-function _pseudoscalar_block_basis(nn::Spectrum, ss::Spectrum; wave_basis::Symbol)
+function _pseudoscalar_block_basis(nn::SpinResolvedSpectrum, ss::SpinResolvedSpectrum; wave_basis::Symbol)
     return [
         annihilation_basis_input(nn, BasisState(1, "S", 1, 0); wave_basis = wave_basis),
         annihilation_basis_input(ss, BasisState(1, "S", 1, 0); wave_basis = wave_basis),
@@ -115,8 +115,8 @@ formulas with the cached waves.
 function pseudoscalar_annihilation_block(
     ::CalibratedP1Annihilation,
     params::GIParameters,
-    nn::Spectrum,
-    ss::Spectrum;
+    nn::SpinResolvedSpectrum,
+    ss::SpinResolvedSpectrum;
     targets = nothing,
     wave_basis::Symbol = :ho,
 )
@@ -135,8 +135,8 @@ end
 function pseudoscalar_annihilation_block(
     model::PaperP1Annihilation,
     params::GIParameters,
-    nn::Spectrum,
-    ss::Spectrum;
+    nn::SpinResolvedSpectrum,
+    ss::SpinResolvedSpectrum;
     targets = nothing,
     wave_basis::Symbol = :ho,
 )
@@ -147,8 +147,8 @@ end
 function pseudoscalar_annihilation_block(
     model::PaperP2Annihilation,
     params::GIParameters,
-    nn::Spectrum,
-    ss::Spectrum;
+    nn::SpinResolvedSpectrum,
+    ss::SpinResolvedSpectrum;
     targets = nothing,
     wave_basis::Symbol = :ho,
 )

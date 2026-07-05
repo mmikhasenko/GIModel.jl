@@ -101,7 +101,20 @@ export RadialChannelKey, ChannelRadialSolution, SectorComputation, solve_sector
 include("sector_solver.jl")
 
 export spectrum_levels,
-    StateMixing, SpectrumState, Spectrum, compute_spectrum, spectrum_state, parameters
+    StateMixing,
+    CentralState,
+    CorrectedState,
+    MixedState,
+    Spectrum,
+    CentralSpectrum,
+    CorrectedSpectrum,
+    MixedSpectrum,
+    central_spectrum,
+    add_spin_corrections,
+    add_intra_meson_mixing,
+    compute_spectrum,
+    spectrum_state,
+    parameters
 include("spectrum.jl")
 
 export annihilation_basis_input, isoscalar_annihilation_block, pseudoscalar_annihilation_block
