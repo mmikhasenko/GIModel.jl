@@ -13,12 +13,6 @@ solver, Appendix-A smearing, spin-dependent operators, results), with images
 and theme. Superseded as documentation by `docs/` and the residual reports;
 kept as a self-contained narrative of the project as of mid-2026.
 
-## report/
-
-Quarto/LaTeX report (`gi_reproduction.qmd` → `.pdf`) with curated sector
-figures. A snapshot of the reproduction status; regenerate figures with
-`GIPaper/scripts/plot_all_sector_spectra.jl` if a new edition is ever needed.
-
 ## docs/
 
 - `deep-research-report.md` — early literature/context survey used to plan the

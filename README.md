@@ -4,7 +4,7 @@ Local reproduction of the Godfrey-Isgur relativized quark model for meson
 masses. The original paper at `paper/Godfrey-Isgur-1985.pdf` is the authority;
 OCR Markdown and extracted CSVs are navigation/provenance aids.
 
-The repository holds two Julia packages:
+The repository has three first-class deliverables:
 
 - **GIModel** (repository root) — pure computation. Mesons are specified by
   quark flavors (`Meson(mq, :c, :b)`), levels to compute by explicit
@@ -15,6 +15,12 @@ The repository holds two Julia packages:
   data, maps reference CSV rows to mesons (`reference_meson`, no fallback
   masses), runs `compare_reference`, applies the Table III annihilation
   prescriptions, and writes residual reports.
+- **Report** (`report/`) — the code-free, high-level account:
+  [gi_reproduction.qmd](report/gi_reproduction.qmd) walks the physics of the
+  original paper section by section, teaching the quantum-mechanical
+  computations and showcasing the reproducibility sector by sector. The
+  rendered PDF is tracked; see [report/README.md](report/README.md) for the
+  build and figure-regeneration flow.
 
 ## Current Map
 
@@ -44,8 +50,8 @@ Extraction utilities are intentionally separate from the core gate:
 `GIPaper/scripts/vision_ocr_paper.py`, `GIPaper/scripts/plot_figure3_digitization.py`,
 and `GIPaper/scripts/plot_spectrum_digitizations.py`.
 
-Concluded material from the reproduction phase (poster, Quarto report, Table III
-forensics, early research notes) lives under `archive/` — see
+Concluded material from the reproduction phase (poster, Table III forensics,
+early research notes) lives under `archive/` — see
 [archive/README.md](archive/README.md).
 
 ## Data
