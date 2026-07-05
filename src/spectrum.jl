@@ -3,7 +3,8 @@
 # mixing applied on the model's own eigenvalues — no reference data involved.
 #
 # Public API (exported from GIModel.jl):
-#   spectrum_levels, StateMixing, SpectrumState, Spectrum, compute_spectrum
+#   spectrum_levels, StateMixing, SpectrumState, Spectrum, compute_spectrum,
+#   spectrum_state, parameters
 
 """
     spectrum_levels(nmax; L_labels=("S", "P", "D")) -> Vector{BasisState}
@@ -106,17 +107,25 @@ end
 """
     Spectrum
 
-Output of [`compute_spectrum`](@ref): the input `params` and `meson`, the
-computed `states` (in `levels` order), and the underlying [`SectorComputation`](@ref)
-(kept so two-meson flavor mixing can reuse the cached radial solves; see
-`flavor_mixing.jl`).
+Output of [`compute_spectrum`](@ref): the input `meson`, the computed `states`
+(in `levels` order), and the underlying [`SectorComputation`](@ref) (kept so
+two-meson flavor mixing can reuse the cached radial solves; see
+`flavor_mixing.jl`). The [`GIParameters`](@ref) that produced the spectrum live
+in `computation.params`; use [`parameters`](@ref) to retrieve them.
 """
 struct Spectrum
-    params::GIParameters
     meson::Meson
     states::Vector{SpectrumState}
     computation::SectorComputation
 end
+
+"""
+    parameters(spec::Spectrum) -> GIParameters
+
+The parameters used to build `spec` (single copy, stored with the cached radial
+solves in [`SectorComputation`](@ref)).
+"""
+parameters(spec::Spectrum) = spec.computation.params
 
 """
     compute_spectrum(params, meson; levels=spectrum_levels(2), ...) -> Spectrum
@@ -291,7 +300,7 @@ function compute_spectrum(
         _apply_tensor_mixing!(states, params, masses, channel_cache)
     end
 
-    return Spectrum(params, meson, states, computation)
+    return Spectrum(meson, states, computation)
 end
 
 # Assign ascending block eigenvalues to block members ordered by ascending

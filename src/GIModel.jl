@@ -89,7 +89,8 @@ include("appendix_a_status.jl")
 export RadialChannelKey, ChannelRadialSolution, SectorComputation, solve_sector
 include("sector_solver.jl")
 
-export spectrum_levels, StateMixing, SpectrumState, Spectrum, compute_spectrum, spectrum_state
+export spectrum_levels,
+    StateMixing, SpectrumState, Spectrum, compute_spectrum, spectrum_state, parameters
 include("spectrum.jl")
 
 export annihilation_basis_input, isoscalar_annihilation_block, pseudoscalar_annihilation_block
