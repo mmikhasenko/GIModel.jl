@@ -173,7 +173,7 @@ function mixed_rows(rows, params)
                 masses,
                 String(singlet.L),
                 wave;
-                k_spin_orbit = params.k_spin_orbit,
+                k_spin_orbit = params.fine_structure.k_spin_orbit,
             ).total
             isapprox(offdiag, 0.0; atol = 1e-12, rtol = 0.0) && continue
             mix = same_j_mixing(singlet.predicted_GeV, triplet.predicted_GeV, offdiag)
@@ -352,7 +352,7 @@ function compute_all_rows(params, mq)
             mq,
             reference;
             contact_hyperfine = true,
-            use_fine_structure = params.fine_structure,
+            use_fine_structure = params.fine_structure.enabled,
             kinetic = :relativistic,
         )
         append!(all_plain, [merge(row, (mixed = false,)) for row in rows])

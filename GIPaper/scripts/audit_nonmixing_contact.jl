@@ -17,32 +17,22 @@ params, mq = load_parameters_and_quark_masses(params_path)
 params_ho = GIModel.with_basis(params, HarmonicOscillatorBasis)
 
 function with_contact_momentum_sandwich(params::GIParameters{Basis}, enabled::Bool) where {Basis}
+    f = params.factors
     return GIParameters{Basis}(
-        params.b,
-        params.c,
-        params.sigma0,
-        params.smearing_s,
-        params.appendix_a_smearing,
-        params.appendix_a_derivative_g,
-        params.appendix_a_closed_form,
-        params.appendix_a_momentum_sandwich,
-        enabled,
-        params.epsilon_c,
-        params.epsilon_t,
-        params.epsilon_so_vector,
-        params.epsilon_so_scalar,
-        params.fine_structure_momentum_sandwich,
-        params.fine_structure_smeared_kernels,
-        params.fine_structure,
-        params.k_spin_orbit,
-        params.k_tensor,
-        params.coulomb_1d_smear,
-        params.annihilation_p1_A_np,
-        params.annihilation_p1_m_eta,
-        params.annihilation_p2_A_np,
-        params.annihilation_p2_M0,
-        params.annihilation_s1_A,
-        params.annihilation_3p2_A,
+        potential = params.potential,
+        central = params.central,
+        smearing = params.smearing,
+        factors = RelativisticFactors(
+            epsilon_c = f.epsilon_c,
+            epsilon_t = f.epsilon_t,
+            epsilon_so_vector = f.epsilon_so_vector,
+            epsilon_so_scalar = f.epsilon_so_scalar,
+            contact_momentum_sandwich = enabled,
+            fine_structure_momentum_sandwich = f.fine_structure_momentum_sandwich,
+            fine_structure_smeared_kernels = f.fine_structure_smeared_kernels,
+        ),
+        fine_structure = params.fine_structure,
+        annihilation = params.annihilation,
     )
 end
 
@@ -64,7 +54,7 @@ for fn in sort(readdir(data_dir))
         mq,
         reference;
         contact_hyperfine = true,
-        use_fine_structure = params.fine_structure,
+        use_fine_structure = params.fine_structure.enabled,
         kinetic = :relativistic,
         isoscalar_pseudoscalar_annihilation =
             base == "isoscalar" ? :table_iii : :none,
@@ -88,7 +78,7 @@ for fn in sort(readdir(data_dir))
         mq,
         reference;
         contact_hyperfine = true,
-        use_fine_structure = params.fine_structure,
+        use_fine_structure = params.fine_structure.enabled,
         kinetic = :relativistic,
     )
 
@@ -236,7 +226,7 @@ function compare_isoscalar_branch(params, reference, mass)
         levels = levels,
         kinetic = :relativistic,
         contact_hyperfine = true,
-        use_fine_structure = params.fine_structure,
+        use_fine_structure = params.fine_structure.enabled,
     )
     return [
         (

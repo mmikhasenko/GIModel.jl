@@ -232,8 +232,8 @@ function _paper_p1_bracket(
     mj = right.constituent_mass_GeV
     alpha_i = _alpha_s_mass_scale(left.diagonal_GeV)
     alpha_j = _alpha_s_mass_scale(right.diagonal_GeV)
-    nonperturbative = params.annihilation_p1_A_np *
-                      exp(-(mi^2 + mj^2) / params.annihilation_p1_m_eta^2)
+    nonperturbative = params.annihilation.p1_A_np *
+                      exp(-(mi^2 + mj^2) / params.annihilation.p1_m_eta^2)
     perturbative = PSEUDOSCALAR_PERTURBATIVE_COEFF * alpha_i * alpha_j / π^2
     return nonperturbative + perturbative
 end
@@ -247,10 +247,10 @@ function _paper_p2_bracket(
     mi = left.constituent_mass_GeV
     mj = right.constituent_mass_GeV
     M = max(float(pole_mass_GeV), 1.0e-9)
-    M0 = params.annihilation_p2_M0
+    M0 = params.annihilation.p2_M0
     alpha = _alpha_s_mass_scale(M)
     nonperturbative =
-        params.annihilation_p2_A_np *
+        params.annihilation.p2_A_np *
         (1 - (M / M0)^4) *
         exp(-(mi^2 + mj^2) / M0^2 - M^4 / (4M0^4))
     perturbative = PSEUDOSCALAR_PERTURBATIVE_COEFF * (alpha / π)^2
@@ -430,7 +430,7 @@ function isoscalar_general_s1_solution(
     return isoscalar_general_annihilation_solution(
         params,
         basis;
-        amplitude_A = params.annihilation_s1_A,
+        amplitude_A = params.annihilation.s1_A,
         L = 0,
         multiplicity = 3,
         J = 1,

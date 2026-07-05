@@ -42,7 +42,7 @@ function pieces(P)
     _, vD, _ = channel_solution(P, m, 2; nlevels = 6)
     uS = fixsign(vS[:, 1]); uD = fixsign(vD[:, 1])
     h = r[2] - r[1]
-    side = G.gi_spin_dependent_side_exponent(params.epsilon_t)
+    side = G.gi_spin_dependent_side_exponent(params.factors.epsilon_t)
     BS = G.momentum_relativization_matrix(m.m1_GeV, m.m2_GeV, side, eigen(G.p2_operator(params, m.m1_GeV, 0, r, h)))
     BD = G.momentum_relativization_matrix(m.m1_GeV, m.m2_GeV, side, eigen(G.p2_operator(params, m.m1_GeV, 2, r, h)))
     K = [G.tensor_kernel_smeared_coulomb(params, m, ri) for ri in r]

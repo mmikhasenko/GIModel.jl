@@ -13,8 +13,8 @@ function contact_smearing_sigma(params::GIParameters, m1::Real, m2::Real)
     mass_factor = 4 * m1 * m2 / (m1 + m2)^2
     reduced_twice = 2 * m1 * m2 / (m1 + m2)
     sqrt(
-        params.sigma0^2 * (0.5 + 0.5 * mass_factor^4) +
-        params.smearing_s^2 * reduced_twice^2,
+        params.smearing.sigma0^2 * (0.5 + 0.5 * mass_factor^4) +
+        params.smearing.s^2 * reduced_twice^2,
     )
 end
 
@@ -83,7 +83,7 @@ function contact_hyperfine_operator(
     end
     h = r[2] - r[1]
     p2_fact = eigen(p2_operator(params, m1, 0, r, h))
-    side_exponent = gi_spin_dependent_side_exponent(params.epsilon_c)
+    side_exponent = gi_spin_dependent_side_exponent(params.factors.epsilon_c)
     B = momentum_relativization_matrix(m1, m2, side_exponent, p2_fact)
     sigma = contact_smearing_sigma(params, masses)
     kernel = Diagonal([alpha_s_r(ri) * delta_sigma_3d(ri, sigma) for ri in r])
@@ -114,7 +114,7 @@ function _contact_hyperfine_shift_diagonal(
             alpha_s_r(ri) * delta_sigma_3d(ri, sigma)
         end,
     )
-    (1.0 + params.epsilon_c) *
+    (1.0 + params.factors.epsilon_c) *
     (32 * π / (9 * m1 * m2)) *
     expectation *
     spin_dot(multiplicity)
@@ -143,7 +143,7 @@ function contact_hyperfine_nonperturbative_levels(
     r::AbstractVector,
     nlevels::Integer,
 )
-    if !params.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
+    if !params.factors.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
         return Float64[]
     end
     h = r[2] - r[1]
@@ -259,7 +259,7 @@ function contact_hyperfine_shift_active(
     multiplet::FineStructureMultiplet,
     wave::RadialWaveOnUniformMesh,
 )
-    if params.contact_momentum_sandwich
+    if params.factors.contact_momentum_sandwich
         return contact_hyperfine_shift_momentum_sandwich(params, masses, multiplet, wave)
     end
     return contact_hyperfine_shift(params, masses, multiplet, wave)
@@ -275,7 +275,7 @@ function contact_hyperfine_shift_active(
     r::AbstractVector,
 )
     mm = ConstituentMasses(m1, m2)
-    if params.contact_momentum_sandwich
+    if params.factors.contact_momentum_sandwich
         return _contact_hyperfine_shift_momentum_sandwich_diagonal(
             params,
             mm,

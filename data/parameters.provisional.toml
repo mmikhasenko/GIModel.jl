@@ -16,27 +16,22 @@ m_b_MeV = 4977
 b_GeV2 = 0.18
 Lambda_MeV = 200
 c_MeV = -253
-# Experimental: naive 3D Gaussian (A8) of pointwise G and S with the same σ as contact
-# hyperfine (A9) wipes the small-r Coulomb well on a radial grid. The active GI
-# central candidate uses closed-form (A12)–(A14) and the momentum sandwich below,
-# not this path.
-appendix_a_smearing = false
-# Research: first derivative-expansion term for smeared Coulomb G(r), with S(r)
-# pointwise. This is a modular Appendix-A proxy below the closed-form modes. If
-# enabled it takes precedence over the two diagnostic smears below.
-appendix_a_derivative_g = false
-# Research: closed-form Gaussian-smearing of GI G(r) and S(r), using the
-# checked (A12)–(A14) τ_k and smeared-linear formulas. This is diagonal only: it
-# omits the central Coulomb momentum sandwich G' = A(p) G~ A(p).
-appendix_a_closed_form = false
-# Active reproduction path: full spin-independent central GI candidate on the existing FD basis:
-# closed-form G~, S~, plus the nonlocal Coulomb momentum sandwich
-# A(p) G~ A(p), A(p)=sqrt(1+p^2/(E1E2)). If enabled, this takes precedence over
-# the diagonal comparison modes below.
-appendix_a_momentum_sandwich = true
-# Research: 1D Gaussian of G(r) on the mesh only; S(r) pointwise. Same σ as (A9). Not (A12)–(A13).
-# If `appendix_a_derivative_g` or `appendix_a_smearing` is true, this is ignored in `potential_diagonal`.
-coulomb_1d_smear = false
+# Which central-potential construction to use (mutually exclusive by design):
+#   "pointwise"                    — raw V = br - 4α_s/(3r) + c diagnostic baseline.
+#   "coulomb_1d_smear"             — 1D Gaussian of G(r) on the mesh only; S(r) pointwise.
+#                                    Same σ as (A9); not (A12)–(A13).
+#   "appendix_a_smearing"          — naive 3D Gaussian (A8) of pointwise G and S with the
+#                                    contact-hyperfine σ (A9); wipes the small-r Coulomb
+#                                    well on a radial grid.
+#   "appendix_a_derivative_g"      — first derivative-expansion term for smeared Coulomb
+#                                    G(r), with S(r) pointwise; modular Appendix-A proxy.
+#   "appendix_a_closed_form"       — closed-form Gaussian smearing of G(r) and S(r) via
+#                                    the checked (A12)–(A14) τ_k and smeared-linear
+#                                    formulas; diagonal only (no G' momentum sandwich).
+#   "appendix_a_momentum_sandwich" — active reproduction path: closed-form G~, S~, plus
+#                                    the nonlocal Coulomb momentum sandwich A(p) G~ A(p),
+#                                    A(p) = sqrt(1 + p^2/(E1 E2)), on the FD basis.
+central = "appendix_a_momentum_sandwich"
 
 [relativistic_smearing]
 sigma0_GeV = 1.80

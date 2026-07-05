@@ -120,7 +120,7 @@ function smeared_confinement_S_prime_closed(
     expz = exp(-z^2)
     h = ri + 1 / (2 * σ^2 * ri)
     hp = 1 - 1 / (2 * σ^2 * ri^2)
-    params.b *
+    params.potential.b *
     ((-2 * σ * ri / sqrt(π)) * expz + hp * erf(z) + h * (2 * σ / sqrt(π)) * expz)
 end
 
@@ -344,14 +344,14 @@ function fine_structure_components(
     inv2_tp = 0.5 * (1.0 / m1^2 + 1.0 / m2^2)
     inv2_cm = 0.5 * (1.0 / m1^2 + 1.0 / m2^2 + 2.0 / (m1 * m2))
     expect_kernel(epsilon, f) =
-        params.fine_structure_momentum_sandwich ?
+        params.factors.fine_structure_momentum_sandwich ?
         radial_expect_momentum_sandwich(params, masses, Ln, u, r, h, epsilon, f) :
         radial_expect_udr(u, r, h, f)
     Icm = expect_kernel(
-        params.epsilon_so_vector,
+        params.factors.epsilon_so_vector,
         (ri, i) -> begin
             r0 = max(ri, 1.0e-8)
-            if params.fine_structure_smeared_kernels
+            if params.factors.fine_structure_smeared_kernels
                 (1.0 / r0) * smeared_coulomb_G_prime_closed(params, masses, r0)
             else
                 (4.0 / 3.0) * alpha_s_r(r0) / r0^3
@@ -359,16 +359,16 @@ function fine_structure_components(
         end,
     )
     Itp = expect_kernel(
-        params.epsilon_so_scalar,
+        params.factors.epsilon_so_scalar,
         (ri, i) -> begin
             r0 = max(ri, 1.0e-8)
-            if params.fine_structure_smeared_kernels
+            if params.factors.fine_structure_smeared_kernels
                 (1.0 / (2.0 * r0)) * (
                     smeared_confinement_S_prime_closed(params, masses, r0) +
                     smeared_coulomb_G_prime_closed(params, masses, r0)
                 )
             else
-                (1.0 / (2.0 * r0)) * (params.b + dV_coul_central_dr(r0, params))
+                (1.0 / (2.0 * r0)) * (params.potential.b + dV_coul_central_dr(r0, params))
             end
         end,
     )
@@ -376,26 +376,26 @@ function fine_structure_components(
     # derivatives of G~(r). The legacy branch keeps the pointwise running-Coulomb
     # kernel, including the α_s'(r) and α_s''(r) pieces.
     Itk = expect_kernel(
-        params.epsilon_t,
+        params.factors.epsilon_t,
         (ri, i) ->
-            params.fine_structure_smeared_kernels ?
+            params.factors.fine_structure_smeared_kernels ?
             tensor_kernel_smeared_coulomb(params, masses, ri) :
             tensor_kernel_coulomb_running(ri),
     )
     ls = LdotS(Ln, 1, J)
     vec_term =
-        params.fine_structure_momentum_sandwich ? Icm :
-        (1.0 + params.epsilon_so_vector) * Icm
+        params.factors.fine_structure_momentum_sandwich ? Icm :
+        (1.0 + params.factors.epsilon_so_vector) * Icm
     thomas_term =
-        params.fine_structure_momentum_sandwich ? Itp :
-        (1.0 + params.epsilon_so_scalar) * Itp
+        params.factors.fine_structure_momentum_sandwich ? Itp :
+        (1.0 + params.factors.epsilon_so_scalar) * Itp
     spin_orbit_vector = k_spin_orbit * inv2_cm * ls * vec_term
     spin_orbit_thomas = k_spin_orbit * (-inv2_tp) * ls * thomas_term
     spin_orbit = spin_orbit_vector + spin_orbit_thomas
     # Coulomb-limit check: for G(r) = -4 α_s / (3 r) with constant α_s,
     #   (1/r dG/dr - d²G/dr²) = 4 α_s / r³
     # so the tensor prefactor reduces to 4/(3 m1 m2) times ⟨α_s / r³⟩.
-    tensor_scale = params.fine_structure_momentum_sandwich ? 1.0 : (1.0 + params.epsilon_t)
+    tensor_scale = params.factors.fine_structure_momentum_sandwich ? 1.0 : (1.0 + params.factors.epsilon_t)
     tensor =
         tensor_scale *
         k_tensor *
@@ -423,14 +423,14 @@ function spin_orbit_radial_integrals(
     h::Real,
 )
     expect_kernel(epsilon, f) =
-        params.fine_structure_momentum_sandwich ?
+        params.factors.fine_structure_momentum_sandwich ?
         radial_expect_momentum_sandwich(params, masses, L, u, r, h, epsilon, f) :
         radial_expect_udr(u, r, h, f)
     Icm = expect_kernel(
-        params.epsilon_so_vector,
+        params.factors.epsilon_so_vector,
         (ri, i) -> begin
             r0 = max(ri, 1.0e-8)
-            if params.fine_structure_smeared_kernels
+            if params.factors.fine_structure_smeared_kernels
                 (1.0 / r0) * smeared_coulomb_G_prime_closed(params, masses, r0)
             else
                 (4.0 / 3.0) * alpha_s_r(r0) / r0^3
@@ -438,25 +438,25 @@ function spin_orbit_radial_integrals(
         end,
     )
     Itp = expect_kernel(
-        params.epsilon_so_scalar,
+        params.factors.epsilon_so_scalar,
         (ri, i) -> begin
             r0 = max(ri, 1.0e-8)
-            if params.fine_structure_smeared_kernels
+            if params.factors.fine_structure_smeared_kernels
                 (1.0 / (2.0 * r0)) * (
                     smeared_confinement_S_prime_closed(params, masses, r0) +
                     smeared_coulomb_G_prime_closed(params, masses, r0)
                 )
             else
-                (1.0 / (2.0 * r0)) * (params.b + dV_coul_central_dr(r0, params))
+                (1.0 / (2.0 * r0)) * (params.potential.b + dV_coul_central_dr(r0, params))
             end
         end,
     )
     vec_term =
-        params.fine_structure_momentum_sandwich ? Icm :
-        (1.0 + params.epsilon_so_vector) * Icm
+        params.factors.fine_structure_momentum_sandwich ? Icm :
+        (1.0 + params.factors.epsilon_so_vector) * Icm
     thomas_term =
-        params.fine_structure_momentum_sandwich ? Itp :
-        (1.0 + params.epsilon_so_scalar) * Itp
+        params.factors.fine_structure_momentum_sandwich ? Itp :
+        (1.0 + params.factors.epsilon_so_scalar) * Itp
     return (I_cm = Icm, I_tp = Itp, vec_term = vec_term, thomas_term = thomas_term)
 end
 
@@ -527,11 +527,11 @@ function tensor_mixing_components(
         throw(ArgumentError("tensor_mixing_components: radial spacings differ"))
     kernel =
         (ri, i) ->
-            params.fine_structure_smeared_kernels ?
+            params.factors.fine_structure_smeared_kernels ?
             tensor_kernel_smeared_coulomb(params, masses, ri) :
             tensor_kernel_coulomb_running(ri)
     Itk =
-        params.fine_structure_momentum_sandwich ?
+        params.factors.fine_structure_momentum_sandwich ?
         radial_cross_expect_momentum_sandwich(
             params,
             masses,
@@ -541,7 +541,7 @@ function tensor_mixing_components(
             radial_right.u,
             radial_left.r,
             radial_left.h,
-            params.epsilon_t,
+            params.factors.epsilon_t,
             kernel,
         ) :
         radial_cross_expect_udr(
@@ -551,7 +551,7 @@ function tensor_mixing_components(
             radial_left.h,
             kernel,
         )
-    tensor_scale = params.fine_structure_momentum_sandwich ? 1.0 : (1.0 + params.epsilon_t)
+    tensor_scale = params.factors.fine_structure_momentum_sandwich ? 1.0 : (1.0 + params.factors.epsilon_t)
     angular = tensor_triplet_offdiag_sameJ(Jn, 1)
     total = tensor_scale * k_tensor * (1.0 / (3.0 * masses.m1_GeV * masses.m2_GeV)) * Itk * angular
     return (I_tk = Itk, angular = angular, total = total)

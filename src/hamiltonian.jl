@@ -76,7 +76,7 @@ function relativistic_hamiltonian(
     kinetic =
         sqrt_kinetic_matrix_from_eigen(p2_fact, m1) +
         sqrt_kinetic_matrix_from_eigen(p2_fact, m2)
-    potential = if central_potential_mode(params) == :appendix_a_momentum_sandwich
+    potential = if params.central isa AppendixAMomentumSandwich
         appendix_a_momentum_sandwich_matrix(params, masses, r, p2_fact)
     else
         Diagonal(potential_diagonal(params, m1, m2, r))

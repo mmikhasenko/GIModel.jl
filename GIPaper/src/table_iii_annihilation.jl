@@ -24,7 +24,7 @@ function table_iii_amplitude(
     J::Integer,
 )
     multiplicity == 3 || return nothing
-    L_label == "S" && J == 1 && return params.annihilation_s1_A
-    L_label == "P" && J == 2 && return params.annihilation_3p2_A
+    L_label == "S" && J == 1 && return params.annihilation.s1_A
+    L_label == "P" && J == 2 && return params.annihilation.a_3p2
     return nothing
 end

@@ -253,7 +253,7 @@ function _assign_general_s1_rows!(
         nn_spec,
         ss_spec,
         BasisState(1, "S", 3, 1);
-        amplitude_A = params.annihilation_s1_A,
+        amplitude_A = params.annihilation.s1_A,
     )
     ordered = sort(matches; by = item -> item[2].reference_GeV)
     for (level, (i, row)) in enumerate(ordered)

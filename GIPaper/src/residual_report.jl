@@ -103,20 +103,30 @@ function nonmixing_deviation_summary(rows)
     return out
 end
 
+# Report-header sentence for each central-potential construction.
+_central_note(::AppendixAMomentumSandwich) =
+    "closed-form GI G̃(r), S̃(r), plus central Coulomb momentum sandwich `A(p)G̃A(p)` on the FD p² eigenbasis, "
+_central_note(::AppendixAClosedForm) =
+    "closed-form Gaussian-smeared GI G̃(r) and S̃(r), without the central Coulomb momentum sandwich, "
+_central_note(::AppendixADerivativeG) =
+    "Appendix-A derivative proxy for G(r), `G + ∇²G/(4σ²)`, with pointwise S(r); older comparator below the closed-form (A12)–(A14) modes, "
+_central_note(::AppendixASmearing3D) =
+    "experimental (A7)–(A8)-style 3D isotropic smearing of pointwise Coulomb G and confinement S (Table II σ₀, s), "
+_central_note(::Coulomb1DSmearing) =
+    "1D Gaussian renormalization of G(r) only (pointwise S); same σ as contact (A9); diagnostic comparator below the closed-form (A12)–(A14) modes, "
+_central_note(::PointwiseCentral) =
+    "pointwise Coulomb + linear + constant (no Appendix A or 1D G smear), "
+
 function write_residual_report(
     path::AbstractString,
     title::AbstractString,
     rows;
     kinetic::Symbol = :relativistic,
     contact_hyperfine::Bool = true,
-    appendix_a_smearing::Bool = false,
-    appendix_a_derivative_g::Bool = false,
-    appendix_a_closed_form::Bool = false,
-    appendix_a_momentum_sandwich::Bool = false,
+    central::CentralPotentialMethod = PointwiseCentral(),
     contact_momentum_sandwich::Bool = false,
     fine_structure_momentum_sandwich::Bool = false,
     fine_structure_smeared_kernels::Bool = false,
-    coulomb_1d_smear::Bool = false,
     use_fine_structure::Bool = true,
 )
     mkpath(dirname(path))
@@ -144,19 +154,7 @@ function write_residual_report(
             else
                 " no first-order L·S/tensor; "
             end
-        central_note = if appendix_a_momentum_sandwich
-            "closed-form GI G̃(r), S̃(r), plus central Coulomb momentum sandwich `A(p)G̃A(p)` on the FD p² eigenbasis, "
-        elseif appendix_a_closed_form
-            "closed-form Gaussian-smeared GI G̃(r) and S̃(r), without the central Coulomb momentum sandwich, "
-        elseif appendix_a_derivative_g
-            "Appendix-A derivative proxy for G(r), `G + ∇²G/(4σ²)`, with pointwise S(r); older comparator below the closed-form (A12)–(A14) modes, "
-        elseif appendix_a_smearing
-            "experimental (A7)–(A8)-style 3D isotropic smearing of pointwise Coulomb G and confinement S (Table II σ₀, s), "
-        elseif coulomb_1d_smear
-            "1D Gaussian renormalization of G(r) only (pointwise S); same σ as contact (A9); diagnostic comparator below the closed-form (A12)–(A14) modes, "
-        else
-            "pointwise Coulomb + linear + constant (no Appendix A or 1D G smear), "
-        end
+        central_note = _central_note(central)
         println(
             io,
             "Model: finite-difference + `$kinetic` kinetic, $hyperfine_note,$fs_note",
@@ -395,7 +393,7 @@ function write_residual_report(
             )
         end
         println(io)
-        if appendix_a_momentum_sandwich
+        if central isa AppendixAMomentumSandwich
             println(
                 io,
                 "The spin-independent central path is the current GI reproduction candidate. Remaining heavy-quarkonium residuals should be read mainly as spin-dependent/operator-ordering and extraction-audit targets.",

@@ -11,46 +11,41 @@ struct CentralPotentialPath
 end
 
 """Return a short description of which Appendix A construction is in effect for `params`."""
-function central_potential_path(params::GIParameters)::CentralPotentialPath
-    mode = central_potential_mode(params)
-    if mode == :appendix_a_momentum_sandwich
-        return CentralPotentialPath(
-            "appendix_a_momentum_sandwich",
-            "Closed-form smeared G̃(r), S̃(r), plus central Coulomb momentum sandwich G' = A(p)G̃A(p) on the FD p² eigenbasis",
-            "Active spin-independent GI central candidate from the checked Appendix-A source; takes precedence over diagonal comparator modes.",
-        )
-    end
-    if mode == :appendix_a_closed_form
-        return CentralPotentialPath(
-            "appendix_a_closed_form",
-            "Closed-form Gaussian-smeared G̃(r) and S̃(r) using τ_k and smeared-linear formulas; no G' momentum sandwich",
-            "Diagonal bracket path. Use to isolate smearing effects before enabling `appendix_a_momentum_sandwich`.",
-        )
-    end
-    if mode == :appendix_a_derivative_g
-        return CentralPotentialPath(
-            "appendix_a_derivative_g",
-            "First finite-difference derivative term for Gaussian-smearing G(r): G + ∇²G/(4σ²); S(r)=br+c pointwise",
-            "Older comparator path for Appendix-A work. The closed-form A12-A14 and momentum-sandwich modes take precedence.",
-        )
-    end
-    if mode == :appendix_a_3d_a7a8
-        return CentralPotentialPath(
-            "experimental_3d_convl_a7a8",
-            "(A7)–(A8) smearing style via `smear_3d_radial` on pointwise G and S; not (A12)–(A13)",
-            "Can remove small-r binding; default is `appendix_a_smearing = false` in `parameters.provisional.toml`.",
-        )
-    end
-    if mode == :coulomb_1d
-        return CentralPotentialPath(
-            "coulomb_1d_gauss_on_mesh",
-            "1D Gaussian renormalization of G(r) on the radial grid; S(r) = br + c kept pointwise; same σ as contact (A9); not (A12)–(A13)",
-            "Precedence: `appendix_a_derivative_g` then `appendix_a_smearing`; otherwise optional `coulomb_1d_smear` in `[potential]`.",
-        )
-    end
-    return CentralPotentialPath(
-        "pointwise_fd",
-        "Eqs. (11)–(13) orientation: V = b r - 4α_s/(3r) + c on the FD mesh",
-        "Semirelativistic kinetic + this V is the raw diagnostic baseline; the active reproduction candidate is the closed-form Appendix-A momentum-sandwich path.",
-    )
-end
+central_potential_path(params::GIParameters)::CentralPotentialPath =
+    central_potential_path(params.central)
+
+central_potential_path(::AppendixAMomentumSandwich) = CentralPotentialPath(
+    "appendix_a_momentum_sandwich",
+    "Closed-form smeared G̃(r), S̃(r), plus central Coulomb momentum sandwich G' = A(p)G̃A(p) on the FD p² eigenbasis",
+    "Active spin-independent GI central candidate from the checked Appendix-A source; takes precedence over diagonal comparator modes.",
+)
+
+central_potential_path(::AppendixAClosedForm) = CentralPotentialPath(
+    "appendix_a_closed_form",
+    "Closed-form Gaussian-smeared G̃(r) and S̃(r) using τ_k and smeared-linear formulas; no G' momentum sandwich",
+    "Diagonal bracket path. Use to isolate smearing effects before enabling `appendix_a_momentum_sandwich`.",
+)
+
+central_potential_path(::AppendixADerivativeG) = CentralPotentialPath(
+    "appendix_a_derivative_g",
+    "First finite-difference derivative term for Gaussian-smearing G(r): G + ∇²G/(4σ²); S(r)=br+c pointwise",
+    "Older comparator path for Appendix-A work. The closed-form A12-A14 and momentum-sandwich modes take precedence.",
+)
+
+central_potential_path(::AppendixASmearing3D) = CentralPotentialPath(
+    "experimental_3d_convl_a7a8",
+    "(A7)–(A8) smearing style via `smear_3d_radial` on pointwise G and S; not (A12)–(A13)",
+    "Can remove small-r binding; default is `central = \"pointwise\"` in `parameters.provisional.toml`.",
+)
+
+central_potential_path(::Coulomb1DSmearing) = CentralPotentialPath(
+    "coulomb_1d_gauss_on_mesh",
+    "1D Gaussian renormalization of G(r) on the radial grid; S(r) = br + c kept pointwise; same σ as contact (A9); not (A12)–(A13)",
+    "Selected by `central = \"coulomb_1d_smear\"` in `[potential]`.",
+)
+
+central_potential_path(::PointwiseCentral) = CentralPotentialPath(
+    "pointwise_fd",
+    "Eqs. (11)–(13) orientation: V = b r - 4α_s/(3r) + c on the FD mesh",
+    "Semirelativistic kinetic + this V is the raw diagnostic baseline; the active reproduction candidate is the closed-form Appendix-A momentum-sandwich path.",
+)

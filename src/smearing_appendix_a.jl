@@ -86,11 +86,11 @@ function smeared_confinement_S_closed(params::GIParameters, m1::Real, m2::Real, 
     ri = float(r)
     σ = max(contact_smearing_sigma(params, m1, m2), 1.0e-12)
     if abs(ri) < 1.0e-8
-        return 2 * params.b / (sqrt(π) * σ) + params.c
+        return 2 * params.potential.b / (sqrt(π) * σ) + params.potential.c
     end
     z = σ * ri
     bracket = exp(-z^2) / (sqrt(π) * z) + (1 + 1 / (2 * z^2)) * erf(z)
-    params.b * ri * bracket + params.c
+    params.potential.b * ri * bracket + params.potential.c
 end
 
 function appendix_a_closed_central_values(

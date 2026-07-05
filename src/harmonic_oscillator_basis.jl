@@ -88,7 +88,7 @@ function oscillator_hamiltonian_for_beta(
     p2_grid = p2_operator(m1, L, r, h)
     p2_basis = projected_matrix(U, h, p2_grid)
     kinetic = oscillator_kinetic_matrix(p2_basis, m1) + oscillator_kinetic_matrix(p2_basis, m2)
-    potential = if central_potential_mode(params) == :appendix_a_momentum_sandwich
+    potential = if params.central isa AppendixAMomentumSandwich
         A = oscillator_momentum_factor_matrix(p2_basis, m1, m2; power = 0.5)
         g = projected_diagonal(
             U,

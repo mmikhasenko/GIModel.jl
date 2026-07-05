@@ -15,7 +15,7 @@ alpha_s_r(r::Real) = sum(a * erf(g * r) for (a, g) in zip(ALPHA_COEFFS, ALPHA_GA
 alpha_s_q(Q::Real) = sum(a * exp(-(Q^2) / (4g^2)) for (a, g) in zip(ALPHA_COEFFS, ALPHA_GAMMAS))
 
 function central_potential(r::Real, params::GIParameters)
-    params.b * r - (4 / 3) * alpha_s_r(r) / r + params.c
+    params.potential.b * r - (4 / 3) * alpha_s_r(r) / r + params.potential.c
 end
 
 """Coulomb piece G(r) = -4 α_s / (3 r) from the text; independent of the linear + constant term S(r) = b r + c."""
@@ -25,5 +25,5 @@ function static_coulomb_G(r::Real, params::GIParameters)
 end
 
 function static_confinement_S(r::Real, params::GIParameters)
-    params.b * r + params.c
+    params.potential.b * r + params.potential.c
 end

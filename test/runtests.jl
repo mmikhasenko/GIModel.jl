@@ -14,16 +14,14 @@ root = dirname(@__DIR__)
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     @test mq["c"] ≈ 1.628
     @test mq["b"] ≈ 4.977
-    @test params.b ≈ 0.18
-    @test params.appendix_a_smearing == false
-    @test params.appendix_a_derivative_g == false
-    @test params.coulomb_1d_smear == false
-    @test params.epsilon_c ≈ -0.168
-    @test params.epsilon_t ≈ 0.025
-    @test params.epsilon_so_vector ≈ -0.035
-    @test params.epsilon_so_scalar ≈ 0.055
-    @test params.fine_structure == true
-    @test params.k_spin_orbit > 0.0
+    @test params.potential.b ≈ 0.18
+    @test params.central isa AppendixAMomentumSandwich
+    @test params.factors.epsilon_c ≈ -0.168
+    @test params.factors.epsilon_t ≈ 0.025
+    @test params.factors.epsilon_so_vector ≈ -0.035
+    @test params.factors.epsilon_so_scalar ≈ 0.055
+    @test params.fine_structure.enabled == true
+    @test params.fine_structure.k_spin_orbit > 0.0
 end
 
 @testset "baseline solver shape" begin
@@ -108,18 +106,14 @@ end
     @test params isa GIParameters{FiniteDifferenceBasis}
     p = GIModel.central_potential_path(params)
     @test p.name == "appendix_a_momentum_sandwich"
-    @test GIModel.central_potential_mode(params) == :appendix_a_momentum_sandwich
-    @test params.appendix_a_smearing == false
-    @test params.appendix_a_derivative_g == false
-    @test params.appendix_a_closed_form == false
-    @test params.appendix_a_momentum_sandwich == true
-    @test params.coulomb_1d_smear == false
-    @test params.annihilation_p1_A_np ≈ 0.50
-    @test params.annihilation_p1_m_eta ≈ 0.548
-    @test params.annihilation_p2_A_np ≈ 0.55
-    @test params.annihilation_p2_M0 ≈ 1.17
-    @test params.annihilation_s1_A ≈ 2.5
-    @test params.annihilation_3p2_A ≈ -0.8
+    @test params.central isa AppendixAMomentumSandwich
+    @test params.central === central_potential_method("appendix_a_momentum_sandwich")
+    @test params.annihilation.p1_A_np ≈ 0.50
+    @test params.annihilation.p1_m_eta ≈ 0.548
+    @test params.annihilation.p2_A_np ≈ 0.55
+    @test params.annihilation.p2_M0 ≈ 1.17
+    @test params.annihilation.s1_A ≈ 2.5
+    @test params.annihilation.a_3p2 ≈ -0.8
 end
 
 @testset "GIParameters basis dispatch keeps FD p² path explicit" begin
@@ -158,142 +152,44 @@ end
     @test reduced_mass(ConstituentMasses(2.0, 2.0)) ≈ 1.0
 end
 
-@testset "appendix_a_smearing code path (finite S-wave energy)" begin
-    mktempdir() do d
-        p = joinpath(d, "p.toml")
-        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
-        @test occursin("appendix_a_smearing = false", s)
-        s2 = replace(
+# Rewrite the active `central` method in the parameters TOML and reload.
+function load_params_with_central(dir, central_name)
+    p = joinpath(dir, "p.toml")
+    s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
+    @assert occursin("central = \"appendix_a_momentum_sandwich\"", s)
+    write(
+        p,
+        replace(
             s,
-            "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false",
-        )
-        s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
-        write(p, s2)
-        params, mq = load_parameters_and_quark_masses(p)
-        @test params.appendix_a_smearing == true
-        mc = mq["c"]
-        vals, _v, _r = GIModel.channel_solution(
-            params,
-            ConstituentMasses(mc, mc),
-            0;
-            nlevels = 2,
-            ngrid = 120,
-            rmax = 12.0,
-            kinetic = :relativistic,
-        )
-        @test isfinite(vals[1]) && isfinite(vals[2])
-        @test vals[1] < vals[2]
-    end
+            "central = \"appendix_a_momentum_sandwich\"" => "central = \"$central_name\"",
+        ),
+    )
+    return load_parameters_and_quark_masses(p)
 end
 
-@testset "coulomb_1d_smear code path (finite S-wave energy)" begin
+@testset "central method `$name` code path (finite S-wave energy)" for (
+    name,
+    MethodType,
+    ngrid,
+    rmax,
+) in [
+    ("appendix_a_smearing", AppendixASmearing3D, 120, 12.0),
+    ("coulomb_1d_smear", Coulomb1DSmearing, 120, 12.0),
+    ("appendix_a_derivative_g", AppendixADerivativeG, 120, 12.0),
+    ("appendix_a_closed_form", AppendixAClosedForm, 120, 12.0),
+    ("appendix_a_momentum_sandwich", AppendixAMomentumSandwich, 80, 10.0),
+]
     mktempdir() do d
-        p = joinpath(d, "p.toml")
-        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
-        @test occursin("coulomb_1d_smear = false", s)
-        s2 = replace(
-            s,
-            "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false",
-        )
-        s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
-        write(p, s2)
-        params, mq = load_parameters_and_quark_masses(p)
-        @test params.coulomb_1d_smear == true
-        @test params.appendix_a_smearing == false
+        params, mq = load_params_with_central(d, name)
+        @test params.central isa MethodType
         mc = mq["c"]
         vals, _v, _r = GIModel.channel_solution(
             params,
             ConstituentMasses(mc, mc),
             0;
             nlevels = 2,
-            ngrid = 120,
-            rmax = 12.0,
-            kinetic = :relativistic,
-        )
-        @test isfinite(vals[1]) && isfinite(vals[2])
-        @test vals[1] < vals[2]
-    end
-end
-
-@testset "appendix_a_derivative_g code path (finite S-wave energy)" begin
-    mktempdir() do d
-        p = joinpath(d, "p.toml")
-        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
-        @test occursin("appendix_a_derivative_g = false", s)
-        s2 = replace(
-            s,
-            "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false",
-        )
-        s2 = replace(
-            s2,
-            "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true",
-        )
-        write(p, s2)
-        params, mq = load_parameters_and_quark_masses(p)
-        @test params.appendix_a_derivative_g == true
-        @test GIModel.central_potential_mode(params) == :appendix_a_derivative_g
-        mc = mq["c"]
-        vals, _v, _r = GIModel.channel_solution(
-            params,
-            ConstituentMasses(mc, mc),
-            0;
-            nlevels = 2,
-            ngrid = 120,
-            rmax = 12.0,
-            kinetic = :relativistic,
-        )
-        @test isfinite(vals[1]) && isfinite(vals[2])
-        @test vals[1] < vals[2]
-    end
-end
-
-@testset "appendix_a_closed_form code path (finite S-wave energy)" begin
-    mktempdir() do d
-        p = joinpath(d, "p.toml")
-        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
-        @test occursin("appendix_a_closed_form = false", s)
-        s2 = replace(
-            s,
-            "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false",
-        )
-        s2 =
-            replace(s2, "appendix_a_closed_form = false" => "appendix_a_closed_form = true")
-        write(p, s2)
-        params, mq = load_parameters_and_quark_masses(p)
-        @test params.appendix_a_closed_form == true
-        @test GIModel.central_potential_mode(params) == :appendix_a_closed_form
-        mc = mq["c"]
-        vals, _v, _r = GIModel.channel_solution(
-            params,
-            ConstituentMasses(mc, mc),
-            0;
-            nlevels = 2,
-            ngrid = 120,
-            rmax = 12.0,
-            kinetic = :relativistic,
-        )
-        @test isfinite(vals[1]) && isfinite(vals[2])
-        @test vals[1] < vals[2]
-    end
-end
-
-@testset "appendix_a_momentum_sandwich code path (finite S-wave energy)" begin
-    mktempdir() do d
-        p = joinpath(d, "p.toml")
-        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
-        @test occursin("appendix_a_momentum_sandwich = true", s)
-        write(p, s)
-        params, mq = load_parameters_and_quark_masses(p)
-        @test params.appendix_a_momentum_sandwich == true
-        @test GIModel.central_potential_mode(params) == :appendix_a_momentum_sandwich
-        mc = mq["c"]
-        vals, _v, _r = GIModel.channel_solution(
-            params,
-            ConstituentMasses(mc, mc),
-            0;
-            nlevels = 2,
-            ngrid = 80,
-            rmax = 10.0,
+            ngrid = ngrid,
+            rmax = rmax,
             kinetic = :relativistic,
         )
         @test isfinite(vals[1]) && isfinite(vals[2])
@@ -330,20 +226,26 @@ end
     @test abs(out0[1] - 1.0) < 2e-3
 end
 
-@testset "central_potential_values named modes" begin
+@testset "central_potential_values method dispatch" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     mc = mq["c"]
     r, _h = GIModel.radial_grid(80, 8.0)
-    pointwise = GIModel.central_potential_values(params, mc, mc, r; mode = :pointwise)
+    pointwise =
+        GIModel.central_potential_values(params, mc, mc, r; method = PointwiseCentral())
     @test pointwise ≈ [GIModel.central_potential(ri, params) for ri in r]
-    @test GIModel.central_potential_values(params, mc, mc, r; mode = :coulomb_1d) ≈
+    @test GIModel.central_potential_values(params, mc, mc, r; method = Coulomb1DSmearing()) ≈
           GIModel.coulomb_1d_smeared_central_values(params, mc, mc, r)
-    derivative =
-        GIModel.central_potential_values(params, mc, mc, r; mode = :appendix_a_derivative_g)
+    derivative = GIModel.central_potential_values(
+        params,
+        mc,
+        mc,
+        r;
+        method = AppendixADerivativeG(),
+    )
     @test all(isfinite, derivative)
     @test maximum(abs.(derivative .- pointwise)) > 0.0
     closed =
-        GIModel.central_potential_values(params, mc, mc, r; mode = :appendix_a_closed_form)
+        GIModel.central_potential_values(params, mc, mc, r; method = AppendixAClosedForm())
     @test all(isfinite, closed)
     @test maximum(abs.(closed .- pointwise)) > 0.0
     sandwich_view = GIModel.central_potential_values(
@@ -351,7 +253,7 @@ end
         mc,
         mc,
         r;
-        mode = :appendix_a_momentum_sandwich,
+        method = AppendixAMomentumSandwich(),
     )
     @test sandwich_view ≈ closed
     @test GIModel.smeared_coulomb_G_closed(params, mc, mc, 0.0) ≈
@@ -385,76 +287,22 @@ end
     @test GIModel.tensor_kernel_smeared_coulomb(params, mc, mc, rcheck) ≈
           GIModel.smeared_coulomb_G_prime_closed(params, mc, mc, rcheck) / rcheck -
           GIModel.smeared_coulomb_G_second_closed(params, mc, mc, rcheck)
-    @test_throws ErrorException GIModel.central_potential_values(
-        params,
-        mc,
-        mc,
-        r;
-        mode = :unknown_mode,
-    )
 end
 
-@testset "appendix_a_momentum_sandwich wins over diagonal central modes" begin
-    mktempdir() do d
-        p = joinpath(d, "p.toml")
-        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
-        s2 = s
-        s2 =
-            replace(s2, "appendix_a_closed_form = false" => "appendix_a_closed_form = true")
-        s2 = replace(
-            s2,
-            "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true",
-        )
-        s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
-        s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
-        write(p, s2)
-        params, mq = load_parameters_and_quark_masses(p)
-        path = GIModel.central_potential_path(params)
-        @test path.name == "appendix_a_momentum_sandwich"
-    end
-end
-
-@testset "appendix_a_smearing wins over coulomb_1d in central_potential_path" begin
-    mktempdir() do d
-        p = joinpath(d, "p.toml")
-        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
-        s2 = replace(
-            s,
-            "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false",
-        )
-        s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
-        s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
-        write(p, s2)
-        params, mq = load_parameters_and_quark_masses(p)
-        @test params.appendix_a_smearing == true
-        @test params.coulomb_1d_smear == true
-        path = GIModel.central_potential_path(params)
-        @test path.name == "experimental_3d_convl_a7a8"
-    end
-end
-
-@testset "appendix_a_derivative_g wins over older central smearing toggles" begin
-    mktempdir() do d
-        p = joinpath(d, "p.toml")
-        s = read(joinpath(root, "data", "parameters.provisional.toml"), String)
-        s2 = replace(
-            s,
-            "appendix_a_momentum_sandwich = true" => "appendix_a_momentum_sandwich = false",
-        )
-        s2 = replace(
-            s2,
-            "appendix_a_derivative_g = false" => "appendix_a_derivative_g = true",
-        )
-        s2 = replace(s2, "appendix_a_smearing = false" => "appendix_a_smearing = true")
-        s2 = replace(s2, "coulomb_1d_smear = false" => "coulomb_1d_smear = true")
-        write(p, s2)
-        params, mq = load_parameters_and_quark_masses(p)
-        @test params.appendix_a_derivative_g == true
-        @test params.appendix_a_smearing == true
-        @test params.coulomb_1d_smear == true
-        path = GIModel.central_potential_path(params)
-        @test path.name == "appendix_a_derivative_g"
-    end
+@testset "central_potential_method resolves names and rejects unknown ones" begin
+    @test central_potential_method("pointwise") isa PointwiseCentral
+    @test central_potential_method("coulomb_1d_smear") isa Coulomb1DSmearing
+    @test central_potential_method("appendix_a_smearing") isa AppendixASmearing3D
+    @test central_potential_method("appendix_a_derivative_g") isa AppendixADerivativeG
+    @test central_potential_method("appendix_a_closed_form") isa AppendixAClosedForm
+    @test central_potential_method("appendix_a_momentum_sandwich") isa
+          AppendixAMomentumSandwich
+    @test_throws ArgumentError central_potential_method("appendix_a_typo")
+    @test GIModel.central_potential_path(AppendixASmearing3D()).name ==
+          "experimental_3d_convl_a7a8"
+    @test GIModel.central_potential_path(AppendixADerivativeG()).name ==
+          "appendix_a_derivative_g"
+    @test GIModel.central_potential_path(PointwiseCentral()).name == "pointwise_fd"
 end
 
 @testset "radial_laplacian_values constant is zero" begin
@@ -545,8 +393,8 @@ end
         u_s,
         r,
         h;
-        k_spin_orbit = params.k_spin_orbit,
-        k_tensor = params.k_tensor,
+        k_spin_orbit = params.fine_structure.k_spin_orbit,
+        k_tensor = params.fine_structure.k_tensor,
     ) == 0.0
     @test GIModel.fine_structure_split(
         params,
@@ -700,7 +548,7 @@ end
         ConstituentMasses(mc, mc),
         "P",
         radial_cc;
-        k_spin_orbit = params.k_spin_orbit,
+        k_spin_orbit = params.fine_structure.k_spin_orbit,
     )
     @test off_cc.total == 0.0
     mix_cc = GIModel.same_j_mixing(3.5, 3.6, off_cc.total)
@@ -723,7 +571,7 @@ end
         ConstituentMasses(mb, mc),
         "P",
         radial_bc;
-        k_spin_orbit = params.k_spin_orbit,
+        k_spin_orbit = params.fine_structure.k_spin_orbit,
     )
     @test isfinite(off_bc.total)
     @test off_bc.total != 0.0
@@ -733,8 +581,8 @@ end
         ConstituentMasses(mb, mc),
         FineStructureMultiplet("P", 3, 1),
         radial_bc;
-        k_spin_orbit = params.k_spin_orbit,
-        k_tensor = params.k_tensor,
+        k_spin_orbit = params.fine_structure.k_spin_orbit,
+        k_tensor = params.fine_structure.k_tensor,
     )
     mix_bc = GIModel.same_j_mixing(vals_bc[1], vals_bc[1] + triplet_shift, off_bc.total)
     @test isfinite(mix_bc.theta_deg)
@@ -1109,7 +957,7 @@ end
         @test comp.I_cm ≈ I_cm rtol = 1e-12 atol = 0.0
         inv2_cm = 0.5 * (1.0 / m^2 + 1.0 / m^2 + 2.0 / (m * m))
         ls = GIModel.LdotS(1, 1, 2)
-        expected_vec = inv2_cm * ls * (1.0 + params.epsilon_so_vector) * I_cm
+        expected_vec = inv2_cm * ls * (1.0 + params.factors.epsilon_so_vector) * I_cm
         @test comp.spin_orbit_vector ≈ expected_vec rtol = 1e-12 atol = 0.0
 
         I_tp = GIModel.radial_expect_udr(
@@ -1118,12 +966,12 @@ end
             h,
             (ri, i) -> begin
                 r0 = max(ri, 1.0e-8)
-                (1.0 / (2.0 * r0)) * (params.b + GIModel.dV_coul_central_dr(r0, params))
+                (1.0 / (2.0 * r0)) * (params.potential.b + GIModel.dV_coul_central_dr(r0, params))
             end,
         )
         @test comp.I_tp ≈ I_tp rtol = 1e-12 atol = 0.0
         inv2_tp = 0.5 * (1.0 / m^2 + 1.0 / m^2)
-        expected_tp = (-inv2_tp) * ls * (1.0 + params.epsilon_so_scalar) * I_tp
+        expected_tp = (-inv2_tp) * ls * (1.0 + params.factors.epsilon_so_scalar) * I_tp
         @test comp.spin_orbit_thomas ≈ expected_tp rtol = 1e-12 atol = 0.0
     end
 end
@@ -1196,14 +1044,14 @@ end
     mass_factor = 4 * m1 * m2 / (m1 + m2)^2
     reduced_twice = 2 * m1 * m2 / (m1 + m2)
     σ_manual = sqrt(
-        params.sigma0^2 * (0.5 + 0.5 * mass_factor^4) +
-        params.smearing_s^2 * reduced_twice^2,
+        params.smearing.sigma0^2 * (0.5 + 0.5 * mass_factor^4) +
+        params.smearing.s^2 * reduced_twice^2,
     )
     @test σ ≈ σ_manual rtol = 0.0 atol = 0.0
 
     m = mq["c"]
     σ_equal = GIModel.contact_smearing_sigma(params, m, m)
-    σ_equal_manual = sqrt(params.sigma0^2 + params.smearing_s^2 * m^2)
+    σ_equal_manual = sqrt(params.smearing.sigma0^2 + params.smearing.s^2 * m^2)
     @test σ_equal ≈ σ_equal_manual rtol = 0.0 atol = 0.0
 end
 
@@ -1237,7 +1085,7 @@ end
         end,
     )
     manual =
-        (1.0 + params.epsilon_c) *
+        (1.0 + params.factors.epsilon_c) *
         (32 * pi / (9 * m * m)) *
         expectation *
         GIModel.spin_dot(3)
@@ -1459,7 +1307,7 @@ end
     ss3 = compute_spectrum(params, Meson(mq, :s, :s);
         levels = [s1], ngrid = 120, rmax = 12.0, use_fine_structure = false)
     block = isoscalar_annihilation_block(params, nn3, ss3, s1;
-        amplitude_A = params.annihilation_s1_A)
+        amplitude_A = params.annihilation.s1_A)
     @test length(block.masses) == 2
     @test all(isfinite, block.masses)
     # trace conservation: eigenvalue sum equals diagonal sum plus block trace

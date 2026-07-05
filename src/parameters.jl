@@ -1,6 +1,10 @@
-# GI Hamiltonian / smearing / fine-structure switches from the parameters TOML.
+# GI Hamiltonian / smearing / fine-structure parameters from the parameters TOML,
+# grouped by model aspect (one substruct per TOML section).
 #
-# Public API (exported from GIModel.jl): GIParameters, load_parameters
+# Public API (exported from GIModel.jl):
+#   GIParameters, ConfinementPotential, RelativisticSmearing, RelativisticFactors,
+#   FineStructure, AnnihilationAmplitudes, CentralPotentialMethod and its
+#   singletons, load_parameters
 
 abstract type GIBasis end
 
@@ -23,113 +27,276 @@ and reconstructs eigenvectors onto the mesh for common reporting.
 """
 struct HarmonicOscillatorBasis <: GIBasis end
 
-struct GIParameters{Basis<:GIBasis}
+"""
+    ConfinementPotential(; b, c)
+
+Linear-plus-constant confinement from Table II: slope `b` in GeV² and offset
+`c` in GeV (the TOML stores `c_MeV`). The Coulomb part comes from the running
+coupling, not from these constants.
+"""
+Base.@kwdef struct ConfinementPotential
     b::Float64
     c::Float64
-    sigma0::Float64
-    smearing_s::Float64
-    appendix_a_smearing::Bool
-    appendix_a_derivative_g::Bool
-    appendix_a_closed_form::Bool
-    appendix_a_momentum_sandwich::Bool
-    contact_momentum_sandwich::Bool
-    epsilon_c::Float64
-    epsilon_t::Float64
-    epsilon_so_vector::Float64
-    epsilon_so_scalar::Float64
-    fine_structure_momentum_sandwich::Bool
-    fine_structure_smeared_kernels::Bool
-    fine_structure::Bool
-    k_spin_orbit::Float64
-    k_tensor::Float64
-    coulomb_1d_smear::Bool
-    annihilation_p1_A_np::Float64
-    annihilation_p1_m_eta::Float64
-    annihilation_p2_A_np::Float64
-    annihilation_p2_M0::Float64
-    annihilation_s1_A::Float64
-    annihilation_3p2_A::Float64
 end
 
-function GIParameters(args...)
-    return GIParameters{FiniteDifferenceBasis}(args...)
+"""
+    RelativisticSmearing(; sigma0, s)
+
+Appendix A (A9) universal smearing width inputs: `sigma0` in GeV and the
+dimensionless `s`, combined per quark-mass pair by `contact_smearing_sigma`.
+"""
+Base.@kwdef struct RelativisticSmearing
+    sigma0::Float64
+    s::Float64
 end
+
+"""
+    CentralPotentialMethod
+
+Which construction evaluates the spin-independent central potential. One of
+[`PointwiseCentral`](@ref), [`Coulomb1DSmearing`](@ref),
+[`AppendixASmearing3D`](@ref), [`AppendixADerivativeG`](@ref),
+[`AppendixAClosedForm`](@ref), [`AppendixAMomentumSandwich`](@ref).
+Selected by the `central` key of the `[potential]` TOML section; the methods
+are mutually exclusive by construction (no precedence rules).
+"""
+abstract type CentralPotentialMethod end
+
+"""
+    PointwiseCentral
+
+Raw diagnostic baseline: `V = b r - 4α_s/(3r) + c` evaluated pointwise on the
+FD mesh (Eqs. (11)–(13) orientation).
+"""
+struct PointwiseCentral <: CentralPotentialMethod end
+
+"""
+    Coulomb1DSmearing
+
+Research comparator: 1D Gaussian renormalization of `G(r)` on the radial grid
+only; `S(r) = br + c` kept pointwise. Same σ as contact (A9); not (A12)–(A13).
+"""
+struct Coulomb1DSmearing <: CentralPotentialMethod end
+
+"""
+    AppendixASmearing3D
+
+Experimental (A7)–(A8)-style 3D Gaussian smearing of pointwise `G` and `S`
+with the contact-hyperfine σ (A9). Can wipe the small-r Coulomb well on a
+radial grid; kept as a comparator, not the active reproduction path.
+"""
+struct AppendixASmearing3D <: CentralPotentialMethod end
+
+"""
+    AppendixADerivativeG
+
+Research comparator: first derivative-expansion term for the Gaussian-smeared
+Coulomb `G(r)` (`G + ∇²G/(4σ²)`), with `S(r)` pointwise.
+"""
+struct AppendixADerivativeG <: CentralPotentialMethod end
+
+"""
+    AppendixAClosedForm
+
+Closed-form Gaussian smearing of GI `G(r)` and `S(r)` via the checked
+(A12)–(A14) τ_k and smeared-linear formulas. Diagonal only: omits the central
+Coulomb momentum sandwich `G' = A(p) G̃ A(p)`.
+"""
+struct AppendixAClosedForm <: CentralPotentialMethod end
+
+"""
+    AppendixAMomentumSandwich
+
+Active reproduction path: closed-form `G̃`, `S̃` plus the nonlocal Coulomb
+momentum sandwich `A(p) G̃ A(p)`, `A(p) = sqrt(1 + p²/(E₁E₂))`, on the FD basis.
+"""
+struct AppendixAMomentumSandwich <: CentralPotentialMethod end
+
+const CENTRAL_POTENTIAL_METHODS = Dict{String,CentralPotentialMethod}(
+    "pointwise" => PointwiseCentral(),
+    "coulomb_1d_smear" => Coulomb1DSmearing(),
+    "appendix_a_smearing" => AppendixASmearing3D(),
+    "appendix_a_derivative_g" => AppendixADerivativeG(),
+    "appendix_a_closed_form" => AppendixAClosedForm(),
+    "appendix_a_momentum_sandwich" => AppendixAMomentumSandwich(),
+)
+
+"""
+    central_potential_method(name::AbstractString) -> CentralPotentialMethod
+
+Resolve the `central` key of the `[potential]` TOML section to its
+[`CentralPotentialMethod`](@ref) singleton; throws `ArgumentError` for unknown names.
+"""
+function central_potential_method(name::AbstractString)
+    haskey(CENTRAL_POTENTIAL_METHODS, String(name)) || throw(ArgumentError(
+        "unknown central potential method `$name`; expected one of: " *
+        join(sort(collect(keys(CENTRAL_POTENTIAL_METHODS))), ", "),
+    ))
+    return CENTRAL_POTENTIAL_METHODS[String(name)]
+end
+
+"""
+    RelativisticFactors(; epsilon_c=0, epsilon_t=0, epsilon_so_vector=0, epsilon_so_scalar=0,
+                         contact_momentum_sandwich=false,
+                         fine_structure_momentum_sandwich=false,
+                         fine_structure_smeared_kernels=false)
+
+Post-(A14) relativistic ε factors and the switches choosing how they are
+applied: `contact_momentum_sandwich` wraps the smeared contact operator in the
+GI Hermitian momentum-factor sandwich; `fine_structure_momentum_sandwich` does
+the same for first-order spin-orbit/tensor expectations;
+`fine_structure_smeared_kernels` uses derivatives of the closed-form smeared
+`G̃`/`S̃` for those radial kernels instead of the pointwise running-coupling forms.
+"""
+Base.@kwdef struct RelativisticFactors
+    epsilon_c::Float64 = 0.0
+    epsilon_t::Float64 = 0.0
+    epsilon_so_vector::Float64 = 0.0
+    epsilon_so_scalar::Float64 = 0.0
+    contact_momentum_sandwich::Bool = false
+    fine_structure_momentum_sandwich::Bool = false
+    fine_structure_smeared_kernels::Bool = false
+end
+
+"""
+    FineStructure(; enabled=true, k_spin_orbit=0.5, k_tensor=0.4)
+
+Vector + Thomas spin-orbit and OGE-tensor first-order corrections on the FD
+radial `u(r)`: master switch and the global scales aligning with the paper's
+HO result.
+"""
+Base.@kwdef struct FineStructure
+    enabled::Bool = true
+    k_spin_orbit::Float64 = 0.5
+    k_tensor::Float64 = 0.4
+end
+
+"""
+    AnnihilationAmplitudes(; p1_A_np=0.5, p1_m_eta=0.548, p2_A_np=0.55, p2_M0=1.17,
+                            s1_A=2.5, a_3p2=-0.8)
+
+Table III pseudoscalar/vector/tensor annihilation constants: Eq. (18a) `P1`
+(`p1_A_np`, `p1_m_eta` in GeV), Eq. (18b) `P2` (`p2_A_np`, zero at `p2_M0` GeV),
+and the Eq. (16) channel amplitudes `A(^3S_1) = s1_A`, `A(^3P_2) = a_3p2`.
+"""
+Base.@kwdef struct AnnihilationAmplitudes
+    p1_A_np::Float64 = 0.5
+    p1_m_eta::Float64 = 0.548
+    p2_A_np::Float64 = 0.55
+    p2_M0::Float64 = 1.17
+    s1_A::Float64 = 2.5
+    a_3p2::Float64 = -0.8
+end
+
+"""
+    GIParameters{Basis<:GIBasis}
+
+Model parameters grouped by aspect, one field per TOML section:
+
+  - `potential::ConfinementPotential` — `b`, `c` constants.
+  - `central::CentralPotentialMethod` — which central-potential construction runs.
+  - `smearing::RelativisticSmearing` — (A9) σ₀ and s.
+  - `factors::RelativisticFactors` — ε factors and sandwich/kernel switches.
+  - `fine_structure::FineStructure` — spin-orbit/tensor master switch and scales.
+  - `annihilation::AnnihilationAmplitudes` — Table III constants.
+
+Construct via [`load_parameters`](@ref) (TOML) or keywords:
+`GIParameters(potential = ConfinementPotential(b = 0.18, c = -0.253), ...)`.
+The default basis is [`FiniteDifferenceBasis`](@ref); use [`with_basis`](@ref)
+to move to [`HarmonicOscillatorBasis`](@ref).
+"""
+struct GIParameters{Basis<:GIBasis}
+    potential::ConfinementPotential
+    central::CentralPotentialMethod
+    smearing::RelativisticSmearing
+    factors::RelativisticFactors
+    fine_structure::FineStructure
+    annihilation::AnnihilationAmplitudes
+end
+
+function GIParameters{Basis}(;
+    potential::ConfinementPotential,
+    central::CentralPotentialMethod = PointwiseCentral(),
+    smearing::RelativisticSmearing,
+    factors::RelativisticFactors = RelativisticFactors(),
+    fine_structure::FineStructure = FineStructure(),
+    annihilation::AnnihilationAmplitudes = AnnihilationAmplitudes(),
+) where {Basis<:GIBasis}
+    return GIParameters{Basis}(
+        potential,
+        central,
+        smearing,
+        factors,
+        fine_structure,
+        annihilation,
+    )
+end
+
+GIParameters(args...; kwargs...) = GIParameters{FiniteDifferenceBasis}(args...; kwargs...)
 
 basis_type(::GIParameters{Basis}) where {Basis<:GIBasis} = Basis
 
+"""
+    with_basis(params::GIParameters, Basis) -> GIParameters{Basis}
+
+Same parameters on a different [`GIBasis`](@ref).
+"""
 function with_basis(params::GIParameters, ::Type{Basis}) where {Basis<:GIBasis}
     return GIParameters{Basis}(
-        params.b,
-        params.c,
-        params.sigma0,
-        params.smearing_s,
-        params.appendix_a_smearing,
-        params.appendix_a_derivative_g,
-        params.appendix_a_closed_form,
-        params.appendix_a_momentum_sandwich,
-        params.contact_momentum_sandwich,
-        params.epsilon_c,
-        params.epsilon_t,
-        params.epsilon_so_vector,
-        params.epsilon_so_scalar,
-        params.fine_structure_momentum_sandwich,
-        params.fine_structure_smeared_kernels,
+        params.potential,
+        params.central,
+        params.smearing,
+        params.factors,
         params.fine_structure,
-        params.k_spin_orbit,
-        params.k_tensor,
-        params.coulomb_1d_smear,
-        params.annihilation_p1_A_np,
-        params.annihilation_p1_m_eta,
-        params.annihilation_p2_A_np,
-        params.annihilation_p2_M0,
-        params.annihilation_s1_A,
-        params.annihilation_3p2_A,
+        params.annihilation,
     )
 end
 
 function gi_parameters_from_raw(raw)::GIParameters
-    rf = get(raw, "relativistic_factors", nothing)
-    eps_c = isnothing(rf) ? 0.0 : get(rf, "epsilon_c", 0.0)
-    eps_t = isnothing(rf) ? 0.0 : get(rf, "epsilon_t", 0.0)
-    eps_v = isnothing(rf) ? 0.0 : get(rf, "epsilon_so_vector", 0.0)
-    eps_s = isnothing(rf) ? 0.0 : get(rf, "epsilon_so_scalar", 0.0)
-    fs = get(raw, "fine_structure", nothing)
-    fine_on = isnothing(fs) ? true : get(fs, "enabled", true)
-    k_so = isnothing(fs) ? 0.5 : get(fs, "k_spin_orbit", 0.5)
-    k_tn = isnothing(fs) ? 0.4 : get(fs, "k_tensor", 0.4)
-    ann = get(raw, "annihilation", nothing)
-    p1_A = isnothing(ann) ? 0.5 : get(ann, "p1_A_np", 0.5)
-    p1_meta = isnothing(ann) ? 0.548 : get(ann, "p1_m_eta_GeV", 0.548)
-    p2_A = isnothing(ann) ? 0.55 : get(ann, "p2_A_np", 0.55)
-    p2_M0 = isnothing(ann) ? 1.17 : get(ann, "p2_M0_GeV", 1.17)
-    s1_A = isnothing(ann) ? 2.5 : get(ann, "s1_A", 2.5)
-    a_3p2 = isnothing(ann) ? -0.8 : get(ann, "a_3p2", -0.8)
+    pot = raw["potential"]
+    rf = get(raw, "relativistic_factors", Dict{String,Any}())
+    fs = get(raw, "fine_structure", Dict{String,Any}())
+    ann = get(raw, "annihilation", Dict{String,Any}())
     return GIParameters(
-        raw["potential"]["b_GeV2"],
-        raw["potential"]["c_MeV"] / 1000,
-        raw["relativistic_smearing"]["sigma0_GeV"],
-        raw["relativistic_smearing"]["s"],
-        get(raw["potential"], "appendix_a_smearing", false),
-        get(raw["potential"], "appendix_a_derivative_g", false),
-        get(raw["potential"], "appendix_a_closed_form", false),
-        get(raw["potential"], "appendix_a_momentum_sandwich", false),
-        get(raw["relativistic_factors"], "contact_momentum_sandwich", false),
-        float(eps_c),
-        float(eps_t),
-        float(eps_v),
-        float(eps_s),
-        get(raw["relativistic_factors"], "fine_structure_momentum_sandwich", false),
-        get(raw["relativistic_factors"], "fine_structure_smeared_kernels", false),
-        fine_on,
-        float(k_so),
-        float(k_tn),
-        get(raw["potential"], "coulomb_1d_smear", false),
-        float(p1_A),
-        float(p1_meta),
-        float(p2_A),
-        float(p2_M0),
-        float(s1_A),
-        float(a_3p2),
+        potential = ConfinementPotential(
+            b = pot["b_GeV2"],
+            c = pot["c_MeV"] / 1000,
+        ),
+        central = central_potential_method(get(pot, "central", "pointwise")),
+        smearing = RelativisticSmearing(
+            sigma0 = raw["relativistic_smearing"]["sigma0_GeV"],
+            s = raw["relativistic_smearing"]["s"],
+        ),
+        factors = RelativisticFactors(
+            epsilon_c = float(get(rf, "epsilon_c", 0.0)),
+            epsilon_t = float(get(rf, "epsilon_t", 0.0)),
+            epsilon_so_vector = float(get(rf, "epsilon_so_vector", 0.0)),
+            epsilon_so_scalar = float(get(rf, "epsilon_so_scalar", 0.0)),
+            contact_momentum_sandwich = get(rf, "contact_momentum_sandwich", false),
+            fine_structure_momentum_sandwich = get(
+                rf,
+                "fine_structure_momentum_sandwich",
+                false,
+            ),
+            fine_structure_smeared_kernels = get(
+                rf,
+                "fine_structure_smeared_kernels",
+                false,
+            ),
+        ),
+        fine_structure = FineStructure(
+            enabled = get(fs, "enabled", true),
+            k_spin_orbit = float(get(fs, "k_spin_orbit", 0.5)),
+            k_tensor = float(get(fs, "k_tensor", 0.4)),
+        ),
+        annihilation = AnnihilationAmplitudes(
+            p1_A_np = float(get(ann, "p1_A_np", 0.5)),
+            p1_m_eta = float(get(ann, "p1_m_eta_GeV", 0.548)),
+            p2_A_np = float(get(ann, "p2_A_np", 0.55)),
+            p2_M0 = float(get(ann, "p2_M0_GeV", 1.17)),
+            s1_A = float(get(ann, "s1_A", 2.5)),
+            a_3p2 = float(get(ann, "a_3p2", -0.8)),
+        ),
     )
 end
 
@@ -137,8 +304,9 @@ end
     load_parameters(path) -> GIParameters{FiniteDifferenceBasis}
 
 Read a solver-parameter TOML file (`data/parameters.provisional.toml` layout:
-`[potential]`, `[relativistic_smearing]`, `[relativistic_factors]`, optional
-`[annihilation]`). Missing switches default to `false`/paper values. Use
+`[potential]` with a `central` method name, `[relativistic_smearing]`,
+`[relativistic_factors]`, `[fine_structure]`, optional `[annihilation]`).
+Missing switches default to `false`/paper values. Use
 [`load_parameters_and_quark_masses`](@ref) to also get the `[masses]` table,
 and [`with_basis`](@ref GIModel.with_basis) to move to [`HarmonicOscillatorBasis`](@ref).
 """

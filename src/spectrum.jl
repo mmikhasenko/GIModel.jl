@@ -155,7 +155,7 @@ function compute_spectrum(
     eigensolver::Symbol = :full,
     nlevels_per_channel::Integer = 6,
     contact_hyperfine::Bool = true,
-    use_fine_structure::Bool = params.fine_structure,
+    use_fine_structure::Bool = params.fine_structure.enabled,
     same_j_spin_orbit_mixing::Bool = true,
     tensor_mixing::Bool = true,
     annihilation_wave_basis::Symbol = :ho,
@@ -251,15 +251,15 @@ function compute_spectrum(
         tensor = 0.0
         fs_total = 0.0
         fs_convention = "disabled"
-        if use_fine_structure && params.fine_structure
+        if use_fine_structure && params.fine_structure.enabled
             comp = fine_structure_components(
                 params,
                 masses,
                 multiplet,
                 wave;
                 enabled = true,
-                k_spin_orbit = params.k_spin_orbit,
-                k_tensor = params.k_tensor,
+                k_spin_orbit = params.fine_structure.k_spin_orbit,
+                k_tensor = params.fine_structure.k_tensor,
             )
             so_vector = comp.spin_orbit_vector
             so_thomas = comp.spin_orbit_thomas
@@ -292,7 +292,7 @@ function compute_spectrum(
         )
     end
 
-    fine_structure_active = use_fine_structure && params.fine_structure
+    fine_structure_active = use_fine_structure && params.fine_structure.enabled
     if same_j_spin_orbit_mixing && fine_structure_active && !is_equal_flavor(meson)
         _apply_same_j_spin_orbit_mixing!(states, params, masses, channel_cache)
     end
@@ -375,7 +375,7 @@ function _apply_same_j_spin_orbit_mixing!(
             singlet.L,
             radial;
             enabled = true,
-            k_spin_orbit = params.k_spin_orbit,
+            k_spin_orbit = params.fine_structure.k_spin_orbit,
         )
         mix = same_j_mixing(singlet.mass_GeV, triplet.mass_GeV, offdiag.total)
         _assign_block_members!(
@@ -430,7 +430,7 @@ function _apply_tensor_mixing!(
             high_radial,
             low.J;
             enabled = true,
-            k_tensor = params.k_tensor,
+            k_tensor = params.fine_structure.k_tensor,
         )
         basis = [
             BasisState(low.n, low.L, 3, low.J),

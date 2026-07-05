@@ -134,15 +134,15 @@ function same_j_pwave_mixing_diagnostic(params, masses; ngrid = 450, rmax = 24.0
         masses,
         "P",
         radial;
-        k_spin_orbit = params.k_spin_orbit,
+        k_spin_orbit = params.fine_structure.k_spin_orbit,
     )
     triplet_shift = fine_structure_split(
         params,
         masses,
         FineStructureMultiplet("P", 3, 1),
         radial;
-        k_spin_orbit = params.k_spin_orbit,
-        k_tensor = params.k_tensor,
+        k_spin_orbit = params.fine_structure.k_spin_orbit,
+        k_tensor = params.fine_structure.k_tensor,
     )
     mix = same_j_mixing(vals[1], vals[1] + triplet_shift, offdiag.total)
     return (
@@ -177,7 +177,7 @@ open(report_path, "w") do io
             mq,
             reference;
             contact_hyperfine = true,
-            use_fine_structure = params.fine_structure,
+            use_fine_structure = params.fine_structure.enabled,
             kinetic = :relativistic,
         )
         residuals = [row.residual_MeV for row in rows]
