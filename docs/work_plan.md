@@ -138,8 +138,8 @@ radius.
 | W2a-3 charmed | **done** (merged `44e1d50`) | 10 rows, every value image-verified vs page 22. A_c/S_c are light-class analogues; realistic column is `[A_c/A]`/`[S_c/S]` ratios; β_c≡β (footnote d); A_c P-waves carry recoil `m_cβ/((m_c+m_d)β_c)`. 2 real coeff-vs-numeric sign flips on Q1c/Q2c (footnote b: pure-formula vs mixed-numeric). |
 | W2a-4 charmonium | relaunch pending | |
 | W3-1 crop audit + 2S→χ₀ | **done** (merged `07ad617`) | finished in 285s (tight scope worked). Open-flavor M1 image-verified vs page 24, shift confirmed. 2S→χ₀ not a q-convention artifact (model-q helps b-b̄, hurts c-c̄). |
-| W3-2 isoscalar rows | queued | after W3-1 merges (same files) — now unblocked |
-| W3-3 remaining blocks | queued | after W3-2 merges (same files) |
+| W3-2 isoscalar rows | **done** (merged `4a8645c`) | 6 isoscalar M1 rows; all signs right (incl. φ→η/η′ relative sign); dominant magnitudes ~15-24%; η↔η′ ordering inverted → sub-dominant rows ~2-3× low (needs paper per-row I mock-mass eval). |
+| W3-3 remaining blocks | relaunch pending | now unblocked (same files free) — light E1/M2 + strange/charmed P-wave + hindered bottomonium |
 | W2c charm classes | queued | blocked by W2a-3 |
 | W4 Table VII | queued | wave 2 |
 | W5 Eqs. 20-21 | queued | blocked by W2a light rows |
