@@ -135,7 +135,7 @@ radius.
 | W2a-1D3 | **done** (merged `8823643`) | light 1³D₃ salvaged from interrupted worker, page-16 verified. |
 | W2a-1 light 1D+2S | relaunch pending | worker-sized unit |
 | W2a-2 strange | relaunch pending | |
-| W2a-3 charmed | relaunch pending | unblocks W2c |
+| W2a-3 charmed | **done** (merged `44e1d50`) | 10 rows, every value image-verified vs page 22. A_c/S_c are light-class analogues; realistic column is `[A_c/A]`/`[S_c/S]` ratios; β_c≡β (footnote d); A_c P-waves carry recoil `m_cβ/((m_c+m_d)β_c)`. 2 real coeff-vs-numeric sign flips on Q1c/Q2c (footnote b: pure-formula vs mixed-numeric). |
 | W2a-4 charmonium | relaunch pending | |
 | W3-1 crop audit + 2S→χ₀ | **done** (merged `07ad617`) | finished in 285s (tight scope worked). Open-flavor M1 image-verified vs page 24, shift confirmed. 2S→χ₀ not a q-convention artifact (model-q helps b-b̄, hurts c-c̄). |
 | W3-2 isoscalar rows | queued | after W3-1 merges (same files) — now unblocked |
