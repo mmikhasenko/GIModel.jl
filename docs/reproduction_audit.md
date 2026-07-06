@@ -21,6 +21,23 @@ Status vocabulary:
   to reproduce.
 - **missing** — needed for the victory claim and not present.
 
+## 0. Global scales and fitted constants (honesty ledger)
+
+"Reproduced" means different things depending on where a number comes from.
+Every non-derived constant in the pipeline falls into one of three tiers; the
+victory claim must be read against this table, not around it.
+
+| Tier | Constants | Source | Bearing on the claim |
+| --- | --- | --- | --- |
+| **A. Paper's own inputs** (reproduced as inputs, not refit) | Table II: `b=0.18 GeV²`, `c=−0.253 GeV`, `σ₀=1.80 GeV`, `s=1.55`, quark masses, the four `ε` factors; Fig. 2 `α_s` coefficients `(0.25,0.15,0.20)`/denominators `(1,10,1000)`; Table III annihilation amplitudes `A(³S₁)=2.5`, `A(³P₂)=−0.8`, `P1/P2` `A_np=0.50/0.55`; photon smearing exponents `0.7`/`0.5`; decay oscillator `β=0.40 GeV` | Godfrey-Isgur 1985, audited into `data/` and sync-checked | These are the paper's; using them is faithful reproduction, not fitting. |
+| **B. Paper's own fit, re-performed identically** | Strong-decay strengths `A=1.665`, `S₀=3.918` | Two-point fit to the *same* rows the paper fits (`ρ→ππ`, `B→[ωπ]_S`) | Methodologically identical to the paper (which gets `A=1.67`, `S=3.27`); the small `S₀` difference is the wavefunction/kinematics convention, not a new knob. No extra freedom introduced. |
+| **C. Ours, not in the paper — diagnostic bridging scales** | `k_spin_orbit = 0.48`, `k_tensor = 0.42` (`[fine_structure]` in the TOML) | Two global O(1) multipliers on the **first-order fine-structure expectations evaluated on the FD radial mesh**, chosen to align the FD splittings with the paper's HO-basis result | **This is the one genuine caveat on the spectrum reproduction.** The paper diagonalizes in a harmonic-oscillator basis (Eq. 14) and needs no such factor; our FD first-order fine structure does. The mass *centres*, radial/orbital spacings, contact hyperfine, and mixing *structure* carry no such scale — only the spin-orbit and tensor splitting magnitudes do. **W6** (HO-order validation, A15-A17) is exactly the work that would remove tiers-C scales; until then, "spectra reproduced" means centres+spacings to few-MeV and fine-structure splittings up to these two global scales. |
+
+Everything else in the model is derived (kinetic operator, potentials,
+Clebsch-Gordan/angular factors, overlap kernels) with no adjustable constant.
+The photon (Table VI) and general-annihilation (Table III/16) audits add **no
+new fitted constants** on our side — they reuse tier-A/B values only.
+
 ## 1. Tables and figures
 
 | Item | Content | Status | Computed asset | Gap to close |
@@ -121,27 +138,52 @@ Status vocabulary:
 | D9 | Γ(τ → A₁ν) | missing (Table VII) |
 | D10-D11 | Γ(V→Pγ), Γ(P→Vγ) from μ | folded (trivial conversions; Table VI audit compares moments/amplitudes directly — apply when width columns are scored) |
 
-## 3. Victory checklist
+## 3. Where the residuals live (the logic)
 
-Ordered by what blocks the claim "the original model is fully reproduced":
+Across every audited table the deviations concentrate in exactly **two**
+places, and neither is a coding error:
 
-1. **Mixing-angle audit asset** (small): one computed-vs-paper table for the
-   13 quoted θ values (strange 6, charm 4, bottom 3), with the paper's
-   rotation convention pinned once. All machinery exists.
-2. **Table V completion** (largest): digitize and audit the remaining
-   sections (light 2S/1D, strange with recoil factors, charmed, charmonium);
-   wire the model K1 angle into the Q1/Q2 rows; code the charm classes
-   `A_c`, `S_c`; resolve the strange-parent √3 normalization.
-3. **Table VI completion** (medium): isoscalar mixing rows (mixing layer
-   already provides amplitudes), remaining E1/M2 blocks, PDF crop audit of
-   the OCR-shifted column, promote the Appendix-D kernels into `src/`.
-4. **Table VII** (medium): D4-D8 decay constants and widths, γγ/gluonic
-   widths, charge radii — all on existing wavefunctions.
-5. **Eqs. (20)-(21)** (small): realistic-factor ratios on model waves —
-   also directly improves flagged Table V rows.
-6. **HO-order validation of spin/mixing blocks** (background): the last
-   Appendix-A fidelity item (A15-A17); central operator already validated.
+1. **Small-offdiagonal same-J mixing angles.** The model's own K1 (strange 1P
+   +19.5° vs paper +34°) and charm 1P (−24.8° vs −41°) angles deviate when the
+   singlet-triplet splitting is only a few MeV. This *alone* explains the
+   Q1/Q2 and Q1c/Q2c decay misses: those rows reproduce the paper's numbers
+   exactly when evaluated at the *paper's* angle. Large-offdiagonal angles
+   (1D, 1F blocks) agree to a few degrees.
+2. **Light-sector wavefunction overlaps (~15-24%)** and the deepest
+   multi-node cancellations (η↔η′ ordering, Υ″→η_bγ sign, 2S→χ₀ magnitude).
+   All trace to the **FD central-solve vs paper HO-order radial residual** —
+   the same root as the tier-C scales in §0.
 
-Items that are **not** reproduction blockers: Table I, Table VIII,
-Eqs. (11), (15), (23)-(29), A1-A6, B37 (context/superseded); they are
-candidates for the direction-2 demos instead.
+Both buckets point at the same fix: **W6**, paper-order perturbation theory in
+the HO basis. The model reproduces the paper's *algebra, signs, centres, and
+spacings*; the open gaps are the physics limits the paper itself discusses,
+modulated by our FD-vs-HO basis choice.
+
+## 4. Remaining work and costs
+
+Status of each workstream (see `docs/work_plan.md` for the live board):
+
+| Done | |
+| --- | --- |
+| Figs. 3-9 spectra (all sectors) · Table III · **Table IV** · mixing-angle audit · **Table VI (all blocks)** · Table V light 1S+1P/Q1Q2/1D/2S/charmed digitized+partly scored | |
+
+| Remaining | Cost | Blocks victory? |
+| --- | --- | --- |
+| **Score the digitized Table V 2S/1D/1³D₃ rows** (wiring D/P-class scoring into the audit; data already in) | small (1 unit) | yes — Table V |
+| **Table V charmonium (ψ) section + 1³F₄ nonet** (digitize page 209/later + score) | small-med (1-2 units) | yes — Table V |
+| **Eqs. (20)-(21) realistic-factor ratios** (radial moments on model waves; also improves flagged Table V rows) | small (1 unit) | soft — quality, not coverage |
+| **Strange √3 recoil** (W2c-2: apply the charm A_c recoil multiplier to strange K*₂→Kπ) | small (1 unit) | soft — one known outlier |
+| **Table VII** (D4-D8 decay constants + leptonic/γγ/gluonic widths + charge radii; digitize + audit) | **large** (2-3 units: 1 data, 1-2 code) | yes — last untouched table |
+| **W6 HO-order validation** (A15-A17; removes the tier-C scales and the §3 residuals) | **large / research** (background) | it is the deepest fidelity item; "reproduced up to global scales" holds without it, "fully reproduced" is stronger with it |
+| Promote Table VI/Appendix-D kernels from audit scripts into `src/` + tests | med | no — engineering hygiene |
+
+**Not reproduction blockers** (context/superseded — candidates for the
+direction-2 demos instead): Table I, Table VIII, Eqs. (11), (15), (23)-(29),
+A1-A6, B37.
+
+**Honest one-line status:** spectra and decay/EM tables are reproduced to the
+few-MeV / ~10-20% level the paper works at, with two global fine-structure
+scales (§0 tier C) standing in for the paper's HO-order treatment; the
+remaining coverage gap to a literal "every table reproduced" claim is Table
+VII plus the charmonium/2S/1D Table V scoring, and the remaining *fidelity*
+gap is W6.

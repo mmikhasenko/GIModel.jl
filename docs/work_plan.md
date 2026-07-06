@@ -101,8 +101,9 @@ Coordinator-owned until W1-W4 land.
 2. Ledger updates (`reproduction_audit.md`, `observable_ledger.md`, this
    file) are coordinator-only, done at merge time.
 3. A workstream is **done** when its audit asset is committed, regenerable
-   from a script, and its acceptance criterion in
-   `reproduction_audit.md` §3 is met.
+   from a script, and the corresponding `reproduction_audit.md` row (§1
+   "Gap to close" / §4) is satisfied. Global/fitted-scale changes must be
+   reflected in `reproduction_audit.md` §0.
 
 ## Worker-sizing constraint (observed)
 
@@ -128,20 +129,33 @@ radius.
 
 ## Status board
 
-| Stream | Status | Notes |
+Cost/blocking detail for the open items lives in
+[`reproduction_audit.md`](reproduction_audit.md) §4; this board tracks
+ownership and merge state only.
+
+### Completed and merged (9 units)
+
+| Unit | Commit | One-line outcome |
 | --- | --- | --- |
-| W1 angles | **done** (merged `5340e62`) | 1D blocks 0.3-2.5°, b-sector 1-5° after low/high label exchange; small-offdiagonal 1P blocks 13-30° off with inverted radial trend — physics finding, resolution points at W6. |
-| W2b K1 wiring | **done** (merged `c5d7ccd`) | Q1/Q2 scored 3 ways; paper numeric column matches its own +34° quote (median dev 10% vs 25% model / 38% unmixed); free θ-scan lands on +34°. Model-side gap is the K1 angle itself. |
-| W2a-1D3 | **done** (merged `8823643`) | light 1³D₃ salvaged from interrupted worker, page-16 verified. |
-| W2a-1 light 1D+2S | **done** (merged `824eaed`) | 94 rows incl. strange 2S/1D; K*_S→ρK sign correction + 1³F₄ scope exclusion both image-confirmed on page 209. |
-| W2a-2 strange | **N/A** | strange 1S+1P already in light CSV; strange 2S/1D folded into W2a-1. No separate unit needed. |
-| W2a-3 charmed | **done** (merged `44e1d50`) | 10 rows, every value image-verified vs page 22. A_c/S_c are light-class analogues; realistic column is `[A_c/A]`/`[S_c/S]` ratios; β_c≡β (footnote d); A_c P-waves carry recoil `m_cβ/((m_c+m_d)β_c)`. 2 real coeff-vs-numeric sign flips on Q1c/Q2c (footnote b: pure-formula vs mixed-numeric). |
-| W2a-4 charmonium | relaunch pending | |
-| W3-1 crop audit + 2S→χ₀ | **done** (merged `07ad617`) | finished in 285s (tight scope worked). Open-flavor M1 image-verified vs page 24, shift confirmed. 2S→χ₀ not a q-convention artifact (model-q helps b-b̄, hurts c-c̄). |
-| W3-2 isoscalar rows | **done** (merged `4a8645c`) | 6 isoscalar M1 rows; all signs right (incl. φ→η/η′ relative sign); dominant magnitudes ~15-24%; η↔η′ ordering inverted → sub-dominant rows ~2-3× low (needs paper per-row I mock-mass eval). |
-| W3-3 remaining blocks | **done** (merged `d678136`) | light E1/M2 (A₂→πγ fit +0.51 vs +0.55), strange K*(1420) E1 (~9%), hindered b-b̄ M1 (Υ″ sign-flips → W6). Table VI structurally complete. |
-| W2c-1 charm classes | **done** (merged `f2dadf2`) | A_c/S_c coded, no refit; charmed rows 12% median; Q1c/Q2c reproduce at paper −41°. Closes Table IV charm-class gap. |
-| W2c-2 strange √3 | queued | investigate K*₂→Kπ ~√3 normalization (unequal-mass recoil); the charmed A_c recoil multiplier is the model to apply |
-| W4 Table VII | queued | wave 2 |
-| W5 Eqs. 20-21 | queued | blocked by W2a light rows |
-| W6 HO-order | unscheduled | coordinator; strengthened by W1's 1P angle finding |
+| W1 angles | `5340e62` | 13 angles audited; large-offdiag blocks match, small-offdiag 1P off (→ W6). |
+| W2b K1 wiring | `c5d7ccd` | Q1/Q2 scored 3 ways; paper matches its own +34°. |
+| W2a-1³D₃ | `8823643` | light 1³D₃ digitized, page-16 verified. |
+| W2a-3 charmed | `44e1d50` | 10 charmed rows, page-22 verified; A_c/S_c/β_c convention documented. |
+| W2a-1 light 2S/1D | `824eaed` | 94 rows incl. strange 2S/1D, page-209 verified (sign correction + 1³F₄ exclusion). |
+| W3-1 crop+2S→χ₀ | `07ad617` | open-flavor M1 image-verified; 2S→χ₀ shown not a q-artifact. |
+| W3-2 isoscalar | `4a8645c` | 6 isoscalar M1 rows; signs right, η↔η′ ordering open (→ W6). |
+| W3-3 blocks | `d678136` | light E1/M2 + strange E1 + hindered b-b̄; **Table VI structurally complete**. |
+| W2c-1 charm classes | `f2dadf2` | A_c/S_c coded no-refit; **closes Table IV gap**; Q1c/Q2c reproduce at −41°. |
+
+(W2a-2 strange: **N/A** — strange 1S+1P already in the light CSV, strange 2S/1D folded into W2a-1.)
+
+### Open units (owner = coordinator until launched)
+
+| Unit | Scope | Depends on |
+| --- | --- | --- |
+| **W2d score-D/2S** | wire D-/P-class scoring for the digitized 2S/1D/1³D₃ rows into `audit_table_v_decays.jl` | — (data merged) |
+| **W2a-4 charmonium** | digitize + score Table V ψ section + the 1³F₄ nonet (page 209) | — |
+| **W5 Eqs. 20-21** | realistic-factor radial-moment ratios on model waves; adds Table V correction column | — (light rows merged) |
+| **W2c-2 strange √3** | apply the charm A_c recoil multiplier to strange K*₂→Kπ | — |
+| **W4 Table VII** | D4-D8 decay constants + leptonic/γγ/gluonic widths + charge radii; digitize + audit (split 1 data / 1-2 code) | — |
+| **W6 HO-order** | paper-order HO perturbation for spin/mixing (A15-A17); removes the tier-C global scales | research; do last |
