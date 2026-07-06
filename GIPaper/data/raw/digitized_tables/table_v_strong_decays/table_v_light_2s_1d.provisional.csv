@@ -1,0 +1,95 @@
+source,page,section,decay_label,parent,daughter1,daughter2,coefficient_expr,coefficient_value,amplitude_class,qbar_power,paper_MeV12,realistic_factor,experiment_MeV12,footnotes,confidence,notes
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,rho -> [omega pi]_P,rho,omega,pi,-(1/36)^(1/2),-0.1666667,D,1,-7.8,[D/S],,,medium,realistic factor is [D/S] multiplier
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,rho -> [omega pi]_F,rho,omega,pi,+(1/600)^(1/2),0.0408248,A,3,+2.7,(1.7),,,medium,F-wave
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,rho -> [rho eta]_P,rho,rho,eta,-(1/72)^(1/2),-0.1178511,D,1,-4.2,[D/S],,,medium,
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,rho -> [rho eta]_F,rho,rho,eta,+(1/1200)^(1/2),0.0288675,A,3,+0.9,(1.7),,,medium,F-wave
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,rho -> [K* Kbar]_P,rho,Kstar,K,+(1/72)^(1/2),0.1178511,D,1,+3.7,[D/S],,,medium,
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,rho -> [K* Kbar]_F,rho,Kstar,K,-(1/1200)^(1/2),-0.0288675,A,3,-0.7,(1.7),,,medium,F-wave
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,omega -> [rho pi]_P,omega,rho,pi,+(1/12)^(1/2),0.2886751,D,1,+14,[D/S],,,medium,
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,omega -> [rho pi]_F,omega,rho,pi,-(1/200)^(1/2),-0.0707107,A,3,-4.7,(1.7),,,medium,F-wave
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,omega -> [omega eta]_P,omega,omega,eta,-(1/72)^(1/2),-0.1178511,D,1,-4.1,[D/S],,,medium,
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,omega -> [omega eta]_F,omega,omega,eta,+(1/1200)^(1/2),0.0288675,A,3,+0.9,(1.7),,,medium,F-wave
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,omega -> [K* Kbar]_P,omega,Kstar,K,+(1/72)^(1/2),0.1178511,D,1,+3.7,[D/S],,,medium,
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,omega -> [K* Kbar]_F,omega,Kstar,K,-(1/1200)^(1/2),-0.0288675,A,3,-0.7,(1.7),,,medium,F-wave
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,phi -> [rho pi]_P,phi,rho,pi,0,0.0,mixing_only,0,0,,,,medium,zero for ideal mixing
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,phi -> [rho pi]_F,phi,rho,pi,0,0.0,mixing_only,0,0,,,,medium,zero for ideal mixing
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,phi -> [omega eta]_P,phi,omega,eta,0,0.0,mixing_only,0,0,,,,medium,zero for ideal mixing
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,phi -> [omega eta]_F,phi,omega,eta,0,0.0,mixing_only,0,0,,,,medium,zero for ideal mixing
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,phi -> [K* Kbar]_P,phi,Kstar,K,+(1/36)^(1/2),0.1666667,D,1,+7.5,[D/S],,,medium,
+Godfrey-Isgur-1985.pdf,17,1^3D_2 nonstrange,phi -> [K* Kbar]_F,phi,Kstar,K,-(1/600)^(1/2),-0.0408248,A,3,-2.4,(1.6),,,medium,F-wave
+Godfrey-Isgur-1985.pdf,17,1^3D_2 1^1D_2 strange,Q1 -> [rho K]_P,Q1,rho,K,+(1/72)^(1/2),0.1178511,D,1,+7.7,[D/S],,c,medium,footnote c: Q1 is pure 1D2 (lower mass)
+Godfrey-Isgur-1985.pdf,17,1^3D_2 1^1D_2 strange,Q1 -> [rho K]_F,Q1,rho,K,+(3/1600)^(1/2),0.0433013,A,3,+0.9,(1.6),,c,medium,F-wave
+Godfrey-Isgur-1985.pdf,17,1^3D_2 1^1D_2 strange,Q1 -> [omega K]_P,Q1,omega,K,-(1/216)^(1/2),-0.0680414,D,1,-4.4,[D/S],,c,medium,
+Godfrey-Isgur-1985.pdf,17,1^3D_2 1^1D_2 strange,Q1 -> [omega K]_F,Q1,omega,K,-(1/1600)^(1/2),-0.025,A,3,-0.5,(1.6),,c,medium,F-wave
+Godfrey-Isgur-1985.pdf,17,1^3D_2 1^1D_2 strange,Q1 -> [K* pi]_P,Q1,Kstar,pi,+(1/72)^(1/2),0.1178511,D,1,+0.9,[D/S],,c,medium,
+Godfrey-Isgur-1985.pdf,17,1^3D_2 1^1D_2 strange,Q1 -> [K* pi]_F,Q1,Kstar,pi,+(3/1600)^(1/2),0.0433013,A,3,+3.6,(1.6),,c,medium,F-wave
+Godfrey-Isgur-1985.pdf,17,1^3D_2 1^1D_2 strange,Q1 -> [K* eta]_P,Q1,Kstar,eta,+(sqrt2+1)/sqrt(432),0.1161539,D,1,+3.8,[D/S],,c,medium,
+Godfrey-Isgur-1985.pdf,17,1^3D_2 1^1D_2 strange,Q1 -> [K* eta]_F,Q1,Kstar,eta,+(sqrt2+1)/sqrt(3200),0.0426777,A,3,+0.9,(1.6),,c,medium,F-wave
+Godfrey-Isgur-1985.pdf,17,1^3D_2 1^1D_2 strange,Q2 -> [rho K]_P,Q2,rho,K,+(1/48)^(1/2),0.1443376,D,1,+2.6,[D/S],,c,medium,footnote c: Q2 is pure 3D2 (higher mass)
+Godfrey-Isgur-1985.pdf,17,1^3D_2 1^1D_2 strange,Q2 -> [rho K]_F,Q2,rho,K,-(1/800)^(1/2),-0.0353553,A,3,-3.1,(1.6),,c,medium,F-wave
+Godfrey-Isgur-1985.pdf,17,1^3D_2 1^1D_2 strange,Q2 -> [omega K]_P,Q2,omega,K,-(1/144)^(1/2),-0.0833333,D,1,-1.5,[D/S],,c,medium,
+Godfrey-Isgur-1985.pdf,17,1^3D_2 1^1D_2 strange,Q2 -> [omega K]_F,Q2,omega,K,+(1/2400)^(1/2),0.0204124,A,3,+1.7,(1.6),,c,medium,F-wave
+Godfrey-Isgur-1985.pdf,18,1^3D_2 1^1D_2 strange,Q2 -> [K* pi]_P,Q2,Kstar,pi,-(1/48)^(1/2),-0.1443376,D,1,-8.9,[D/S],7 +- 2,c,medium,
+Godfrey-Isgur-1985.pdf,18,1^3D_2 1^1D_2 strange,Q2 -> [K* pi]_F,Q2,Kstar,pi,+(1/800)^(1/2),0.0353553,A,3,+0.1,(1.6),,c,medium,F-wave
+Godfrey-Isgur-1985.pdf,18,1^3D_2 1^1D_2 strange,Q2 -> [K* eta]_P,Q2,Kstar,eta,+(sqrt2-1)/sqrt(288),0.0244078,D,1,-1.6,[D/S],,c,low,printed coeff sign + but printed value -1.6; sign mismatch on image
+Godfrey-Isgur-1985.pdf,18,1^3D_2 1^1D_2 strange,Q2 -> [K* eta]_F,Q2,Kstar,eta,-(sqrt2-1)/sqrt(4800),-0.0059787,A,3,-1.0,(1.6),,c,medium,F-wave
+Godfrey-Isgur-1985.pdf,18,1^1D_2 nonstrange,A3 -> [rho pi]_P,A3,rho,pi,+(1/27)^(1/2),0.1924501,D,1,+8.9,[D/S],9.5 +- 1,,medium,section header 1^1D_2 (nonstrange)
+Godfrey-Isgur-1985.pdf,18,1^1D_2 nonstrange,A3 -> [rho pi]_F,A3,rho,pi,+(1/200)^(1/2),0.0707107,A,3,+4.5,(1.7),,,medium,F-wave
+Godfrey-Isgur-1985.pdf,18,1^1D_2 nonstrange,A3 -> [K* Kbar]_P,A3,Kstar,K,+(1/108)^(1/2),0.096225,D,1,+2.8,[D/S],3.1 +- 0.9,,medium,
+Godfrey-Isgur-1985.pdf,18,1^1D_2 nonstrange,A3 -> [K* Kbar]_F,A3,Kstar,K,+(1/800)^(1/2),0.0353553,A,3,+0.7,(1.7),,,medium,F-wave
+Godfrey-Isgur-1985.pdf,18,1^1D_2 nonstrange,omega -> [K* Kbar]_P,omega,Kstar,K,+(1/108)^(1/2),0.096225,D,1,+2.8,[D/S],,,medium,omega here is 1^1D_2 isoscalar
+Godfrey-Isgur-1985.pdf,18,1^1D_2 nonstrange,omega -> [K* Kbar]_F,omega,Kstar,K,+(1/800)^(1/2),0.0353553,A,3,+0.7,(1.7),,,medium,F-wave
+Godfrey-Isgur-1985.pdf,18,1^1D_2 nonstrange,phi -> [K* Kbar]_P,phi,Kstar,K,-(1/54)^(1/2),-0.1360828,D,1,-6.0,[D/S],,,medium,phi here is 1^1D_2 isoscalar
+Godfrey-Isgur-1985.pdf,18,1^1D_2 nonstrange,phi -> [K* Kbar]_F,phi,Kstar,K,-(1/400)^(1/2),-0.05,A,3,-2.8,(1.6),,,medium,"F-wave; coeff 1/400 (not in OCR list, read from image)"
+Godfrey-Isgur-1985.pdf,18,1^3D_1,rhoD -> pi pi,rhoD,pi,pi,-(5/162)^(1/2),-0.1756821,D,1,-10,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,18,1^3D_1,rhoD -> omega pi,rhoD,omega,pi,-(5/324)^(1/2),-0.124226,D,1,-5.5,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,18,1^3D_1,rhoD -> K Kbar,rhoD,K,K,-(5/324)^(1/2),-0.124226,D,1,-5.9,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,18,1^3D_1,rhoD -> rho eta,rhoD,rho,eta,-(5/648)^(1/2),-0.087841,D,1,-2.9,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,18,1^3D_1,rhoD -> K* Kbar,rhoD,Kstar,K,+(5/648)^(1/2),0.087841,D,1,+2.5,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,18,1^3D_1,omegaD -> rho pi,omegaD,rho,pi,+(5/108)^(1/2),0.2151657,D,1,+9.7,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,18,1^3D_1,omegaD -> omega eta,omegaD,omega,eta,-(5/648)^(1/2),-0.087841,D,1,-2.8,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,18,1^3D_1,omegaD -> omega eta',omegaD,omega,etaprime,-(5/648)^(1/2),-0.087841,D,1,below_threshold,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,18,1^3D_1,omegaD -> K Kbar,omegaD,K,K,-(5/324)^(1/2),-0.124226,D,1,-5.9,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,19,1^3D_1,omegaD -> K* Kbar,omegaD,Kstar,K,+(5/648)^(1/2),0.087841,D,1,+2.5,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,19,1^3D_1,phiD -> phi eta,phiD,phi,eta,+(5/324)^(1/2),0.124226,D,1,+4.1,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,19,1^3D_1,phiD -> K Kbar,phiD,K,K,+(5/162)^(1/2),0.1756821,D,1,+10,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,19,1^3D_1,phiD -> K* Kbar,phiD,Kstar,K,+(5/324)^(1/2),0.124226,D,1,+5.4,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,19,1^3D_1,K*D -> K pi,KstarD,K,pi,-(5/216)^(1/2),-0.1521452,D,1,-8.9,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,19,1^3D_1,K*D -> K eta,KstarD,K,eta,-(sqrt10+sqrt5)/sqrt(1296),-0.149954,D,1,-7.7,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,19,1^3D_1,K*D -> K eta',KstarD,K,etaprime,+(sqrt10-sqrt5)/sqrt(1296),0.025728,D,1,+0.8,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,19,1^3D_1,K*D -> K* pi,KstarD,Kstar,pi,-(5/432)^(1/2),-0.1075829,D,1,-5.0,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,19,1^3D_1,K*D -> K* eta,KstarD,Kstar,eta,+(sqrt10-sqrt5)/sqrt(2592),0.0181925,D,1,+0.6,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,19,1^3D_1,K*D -> rho K,KstarD,rho,K,+(5/432)^(1/2),0.1075829,D,1,+4.6,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,19,1^3D_1,K*D -> omega K,KstarD,omega,K,-(5/1296)^(1/2),-0.062113,D,1,-2.6,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,19,1^3D_1,K*D -> phi K,KstarD,phi,K,-(5/648)^(1/2),-0.087841,D,1,-2.5,[D/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,19,2^1S_0,pi' -> rho pi,piprime,rho,pi,-(1/27)^(1/2),-0.1924501,P,1,-4.8,[P/S],~14,,medium,
+Godfrey-Isgur-1985.pdf,19,2^1S_0,pi' -> K* Kbar,piprime,Kstar,K,-(1/108)^(1/2),-0.096225,P,1,below_threshold,,,,medium,
+Godfrey-Isgur-1985.pdf,19,2^1S_0,eta_r -> (K pi)_K* Kbar,eta_r,Kstar,K,-(1/108)^(1/2),-0.096225,P,1,-0.11 - 1.1,[P/S],,f,low,printed value is two-part '-0.11 - 1.1' (mixing-dependent range)
+Godfrey-Isgur-1985.pdf,19,2^1S_0,eta'_r -> K* Kbar,etaprime_r,Kstar,K,+(1/54)^(1/2),0.1360828,P,1,-0.46 + 2.4,[P/S],,,low,printed value is two-part '-0.46 + 2.4' (mixing-dependent range)
+Godfrey-Isgur-1985.pdf,19,2^1S_0,K' -> K* pi,Kprime,Kstar,pi,-(1/72)^(1/2),-0.1178511,P,1,-3.2,[P/S],10 +- 2,,medium,
+Godfrey-Isgur-1985.pdf,19,2^1S_0,K' -> K* eta,Kprime,Kstar,eta,-(sqrt2+1)/sqrt(432),-0.1161539,P,1,-0.5,[P/S],,,medium,
+Godfrey-Isgur-1985.pdf,20,2^1S_0,K' -> rho K,Kprime,rho,K,-(1/72)^(1/2),-0.1178511,P,1,-2.4,[P/S],6 +- 1,,medium,
+Godfrey-Isgur-1985.pdf,20,2^1S_0,K' -> omega K,Kprime,omega,K,+(1/216)^(1/2),0.0680414,P,1,+1.3,[P/S],,,medium,
+Godfrey-Isgur-1985.pdf,20,2^1S_0,K' -> phi K,Kprime,phi,K,-(1/108)^(1/2),-0.096225,P,1,below_threshold,,,,medium,
+Godfrey-Isgur-1985.pdf,20,2^3S_1,rhoS -> pi pi,rhoS,pi,pi,+(1/162)^(1/2),0.0785674,P,1,+4.0,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,20,2^3S_1,rhoS -> omega pi,rhoS,omega,pi,-(1/81)^(1/2),-0.1111111,P,1,-3.7,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,20,2^3S_1,rhoS -> (pi pi)_rho eta,rhoS,rho,eta,-(1/162)^(1/2),-0.0785674,P,1,-1.3,[P/S],see Sec. VA,f,medium,
+Godfrey-Isgur-1985.pdf,20,2^3S_1,rhoS -> K Kbar,rhoS,K,K,+(1/324)^(1/2),0.0555556,P,1,+2.0,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,20,2^3S_1,rhoS -> (K pi)_K* Kbar,rhoS,Kstar,K,+(1/162)^(1/2),0.0785674,P,1,+0.5,[P/S],see Sec. VA,f,medium,
+Godfrey-Isgur-1985.pdf,20,2^3S_1,omegaS -> (pi pi)_rho pi,omegaS,rho,pi,+(1/27)^(1/2),0.1924501,P,1,-5.8,[P/S],see Sec. VA,f,low,printed coeff sign + but printed value -5.8; sign mismatch on image
+Godfrey-Isgur-1985.pdf,20,2^3S_1,omegaS -> omega eta,omegaS,omega,eta,-(1/162)^(1/2),-0.0785674,P,1,-1.3,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,20,2^3S_1,omegaS -> omega eta',omegaS,omega,etaprime,-(1/162)^(1/2),-0.0785674,P,1,below_threshold,,see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,20,2^3S_1,omegaS -> K Kbar,omegaS,K,K,+(1/324)^(1/2),0.0555556,P,1,+2.0,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,20,2^3S_1,omegaS -> (K pi)_K* Kbar,omegaS,Kstar,K,+(1/162)^(1/2),0.0785674,P,1,+0.6,[P/S],see Sec. VA,f,medium,
+Godfrey-Isgur-1985.pdf,20,2^3S_1,phiS -> rho pi,phiS,rho,pi,0,0.0,mixing_only,0,0,,see Sec. VA,,medium,zero for ideal mixing
+Godfrey-Isgur-1985.pdf,20,2^3S_1,phiS -> phi eta,phiS,phi,eta,+(1/81)^(1/2),0.1111111,P,1,+1.8,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,20,2^3S_1,phiS -> K Kbar,phiS,K,K,-(1/162)^(1/2),-0.0785674,P,1,-3.8,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,20,2^3S_1,phiS -> K* Kbar,phiS,Kstar,K,+(1/81)^(1/2),0.1111111,P,1,+3.4,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,20,2^3S_1,K*S -> K pi,KstarS,K,pi,+(1/216)^(1/2),0.0680414,P,1,+3.4,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,21,2^3S_1,K*S -> K eta,KstarS,K,eta,+(sqrt2+1)/sqrt(1296),0.0670615,P,1,+2.7,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,21,2^3S_1,K*S -> K eta',KstarS,K,etaprime,-(sqrt2-1)/sqrt(1296),-0.0115059,P,1,-0.2,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,21,2^3S_1,K*S -> rho K,KstarS,rho,K,+(1/108)^(1/2),0.096225,P,1,+2.9,[P/S],see Sec. VA,,medium,OCR showed -1/108 artifact; image shows +(1/108)
+Godfrey-Isgur-1985.pdf,21,2^3S_1,K*S -> omega K,KstarS,omega,K,-(1/324)^(1/2),-0.0555556,P,1,-1.6,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,21,2^3S_1,K*S -> phi K,KstarS,phi,K,-(1/162)^(1/2),-0.0785674,P,1,-0.8,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,21,2^3S_1,K*S -> K* pi,KstarS,Kstar,pi,-(1/108)^(1/2),-0.096225,P,1,-3.4,[P/S],see Sec. VA,,medium,
+Godfrey-Isgur-1985.pdf,21,2^3S_1,K*S -> (K pi)_K* eta,KstarS,Kstar,eta,+(sqrt2-1)/sqrt(648),0.0162718,P,1,+0.3,[P/S],see Sec. VA,f,medium,
