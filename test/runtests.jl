@@ -1183,6 +1183,52 @@ end
     @test_throws ArgumentError reduced_decay_amplitude(model, :bogus, 1.0)
 end
 
+@testset "Table V charmed decays (A_c/S_c, footnote d)" begin
+    q_rho = decay_momentum(0.769, 0.138, 0.138)
+    q_B = decay_momentum(1.231, 0.7826, 0.138)
+    model = calibrate_strong_decay_model(q_rho, q_B)
+
+    # Charm classes reuse the light reduced-amplitude algebra unchanged
+    # (footnote d: A_c/S_c are the charm analogues; beta_c = beta).
+    @test reduced_decay_amplitude(model, :A_c, 3.0) == model.A
+    @test reduced_decay_amplitude(model, :S_c, 1.0) ≈ reduced_decay_amplitude(model, :S, 1.0)
+
+    m_c, m_d = GIModel.CHARM_M_C_GEV, GIModel.CHARM_M_D_GEV
+    r = m_c / (m_c + m_d)
+
+    # The charmed form factor exp[-(1/4)(m_c/(m_c+m_d))^2 q^2/beta^2] replaces
+    # the light exp(-q^2/16 beta^2); at fixed q, coefficient, and class the
+    # charm amplitude equals the light one rescaled by the Gaussian ratio.
+    let q = 0.4, c = 0.9, L = 2, beta = model.beta_GeV
+        light = strong_decay_amplitude(model, c, :A, L, q)
+        # rebuild the light amplitude under the :A_c class = same reduced value,
+        # so the only difference is the form factor and (optionally) recoil.
+        charm = charm_decay_amplitude(model, c, :A_c, L, q)
+        ratio = exp(-0.25 * r^2 * q^2 / beta^2) / exp(-q^2 / (16 * beta^2))
+        @test isapprox(charm / light, ratio; rtol = 1e-10)
+    end
+
+    # The recoil multiplier m_c*beta/((m_c+m_d)*beta_c) = m_c/(m_c+m_d) with
+    # beta_c=beta; A_c P-wave rows carry it, S-wave/1^3S_1 rows do not.
+    let q = 0.5, c = -sqrt(1 / 5), L = 2
+        no_rec = charm_decay_amplitude(model, c, :A_c, L, q; recoil = false)
+        with_rec = charm_decay_amplitude(model, c, :A_c, L, q; recoil = true)
+        @test isapprox(with_rec / no_rec, r; rtol = 1e-10)
+    end
+
+    # below threshold -> zero
+    @test charm_decay_amplitude(model, 1.0, :A_c, 1, 0.0) == 0.0
+
+    # Clean 1^3S_1 D* -> D pi rows reproduce the paper's column with NO refit
+    # (masses: D*+=2.010, D0=1.865, pi+=0.1396; D*0=2.007, pi0=0.135).
+    q_dstarp = decay_momentum(2.010, 1.865, 0.1396)
+    @test isapprox(charm_decay_amplitude(model, -sqrt(2 / 3), :A_c, 1, q_dstarp),
+        -0.34; atol = 0.05)
+    q_dstar0 = decay_momentum(2.007, 1.865, 0.135)
+    @test isapprox(charm_decay_amplitude(model, -sqrt(1 / 3), :A_c, 1, q_dstar0),
+        -0.27; atol = 0.05)
+end
+
 @testset "Meson construction and flavor resolution" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     cc = Meson(mq, :c, :c)

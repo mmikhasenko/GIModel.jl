@@ -145,6 +145,57 @@ daughter. The two `(pi pi)_eps K` rows stay unscoreable: with the nominal
 (-0.10) also confirms the digitized `-0.1` that the OCR note had flagged
 as suspect.
 
+## Charmed section (`A_c`/`S_c`, Table V footnote d)
+
+The charmed rows reuse the SAME two-parameter `(A, S0)` calibration as
+the light sector (no refit). Per footnote d the only changes are the
+class letters (`A_c`/`S_c`, identical reduced-amplitude algebra),
+`beta_c = beta` numerically, and the modified Gaussian form factor
+`exp[-(1/4)(m_c/(m_c+m_d))^2 q^2/beta_c^2]`. The four A_c P-wave rows
+(`K*_c` and the `[D* pi]_D` rows of `Q1c`/`Q2c`) carry the explicit
+recoil multiplier `m_c beta / ((m_c+m_d) beta_c)`; the S_c S-wave and
+1^3S_1 rows do not. `m_c = 1.628 GeV`, `m_d = 0.220 GeV` (Table II).
+
+Clean scoreable charmed rows: 3; median abs deviation 12% (|paper| > 1).
+
+| decay | class | recoil | q MeV | computed | paper | ratio | status |
+|---|---|:-:|---:|---:|---:|---:|---|
+| `D*+ -> D0 pi+` | A_c | no | 38 | -0.31 | -0.34 | 0.92 | small-amplitude (abs diff 0.03) |
+| `D*+ -> D+ pi0` | A_c | no | 39 | +0.24 | +0.24 | 0.98 | small-amplitude (abs diff 0.00) |
+| `D*0 -> D0 pi0` | A_c | no | 42 | -0.26 | -0.27 | 0.98 | small-amplitude (abs diff 0.01) |
+| `K*_c -> D pi` | A_c | yes | 539 | -7.77 | -7.3 | 1.06 | ok |
+| `K*_c -> D* pi` | A_c | yes | 426 | -6.01 | -5.1 | 1.18 | ok |
+| `kappa_c -> D pi` | S_c | no | 457 | -13.24 | -15 | 0.88 | ok |
+
+The three `1^3S_1` `D* -> D pi` rows reproduce the paper's column to
+within a few percent with no refit, directly confirming that `A_c = A`
+with only the charmed form factor applied. The `K*_c` (`1^3P_2`) and
+`kappa_c` (`1^3P_0`) rows are the clean P-wave checks; residual spread
+is dominated by the GI-predicted charmed parent masses (not experimental).
+
+### `Q1c`/`Q2c` rows: charm 1P mixing (footnote b + j)
+
+Exactly as the strange `Q1`/`Q2` rows: the printed formula is the pure
+singlet/triplet amplitude while the numeric column is the physical mixed
+state, so the two sign-flagged rows (`Q1c -> [D* pi]_S`,
+`Q2c -> [D* pi]_D`, footnote j hypersensitive) are scored via the same
+three-way rotation, using the charm 1P same-J angle from
+`compute_spectrum(Meson(mq, :c, :d))`.
+
+| decay | q MeV | unmixed | model -24.8 | paper -41 | paper | status |
+|---|---:|---:|---:|---:|---:|---|
+| `Q1c -> [D* pi]_S` | 373 | +8.49 | +2.66 | -1.47 | -1.5 | scored |
+| `Q1c -> [D* pi]_D` | 373 | +4.79 | +5.77 | +5.84 | +5.3 | scored |
+| `Q2c -> [D* pi]_S` | 417 | +11.48 | +13.82 | +13.99 | +15 | scored |
+| `Q2c -> [D* pi]_D` | 417 | -4.29 | -1.35 | +0.74 | +0.7 | small-amplitude (mixing-sensitive) |
+
+The model charm 1P angle is `-24.8 deg` (`compute_spectrum`,
+`antisymmetric_spin_orbit` on the `c dbar` 1P block); the paper quotes ~`-41 deg`.
+As in the strange Q1/Q2 case, the two sign-flagged rows are near
+cancellations whose numeric value is set by this mixing angle; the
+clean `Q2c -> [D* pi]_S` (S_c) and `Q1c -> [D* pi]_D` (A_c) rows are the
+robust ones. See `mixing_angles.md` for the charm 1P angle finding.
+
 ## Open Conventions
 
 - `Q1`/`Q2` numeric amplitudes fold the strange-axial (`K1`) `1^1P_1`/`1^3P_1` mixing angle into the unmixed footnote-b formula coefficients; they are scored three ways (unmixed / model `+19.5 deg` / paper `+34 deg`) in the dedicated section above, and select the paper's `+34 deg`.

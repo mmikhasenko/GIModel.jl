@@ -128,6 +128,7 @@ export StrongDecayModel,
     decay_momentum,
     reduced_decay_amplitude,
     strong_decay_amplitude,
+    charm_decay_amplitude,
     calibrate_strong_decay_model
 include("strong_decays.jl")
 

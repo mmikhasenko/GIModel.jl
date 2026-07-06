@@ -15,7 +15,40 @@ const TABLE = joinpath(
     root, "data", "raw", "digitized_tables", "table_v_strong_decays",
     "table_v_light_1s_1p.provisional.csv",
 )
+const CHARM_TABLE = joinpath(
+    root, "data", "raw", "digitized_tables", "table_v_strong_decays",
+    "table_v_charmed.provisional.csv",
+)
 const REPORT = joinpath(root, "docs", "residual_reports", "table_v_light_decays.md")
+
+# Charmed-meson kinematics (GeV). Daughters use PDG-era D/D*/pi masses; parents
+# use the GI-1985 predicted charmed P-wave masses (Sec. IV / Table VIII). The
+# 1^3S_1 D* parents are the physical D* states (near threshold, so amplitudes
+# are momentum-sensitive at the few-MeV level).
+const CHARM_MASS = Dict(
+    "Dstarplus" => 2.010, "Dstar0" => 2.007, "Dstar" => 2.008,
+    "D0" => 1.865, "Dplus" => 1.869, "D" => 1.867,
+    "piplus" => 0.1396, "pi0" => 0.135, "pi" => 0.138,
+    # GI-1985 predicted charmed 1P parents (charm analogues of K*, kappa, Q1/Q2)
+    "Kstar_c" => 2.50,   # 1^3P_2 (D*_2)
+    "kappa_c" => 2.40,   # 1^3P_0
+    "Q1c" => 2.44,       # lower 1P (mostly 1^1P_1)
+    "Q2c" => 2.49,       # higher 1P (mostly 1^3P_1)
+)
+
+# charm-meson quark masses (GeV) for the footnote-d form factor / recoil.
+const CHARM_M_C = 1.628
+const CHARM_M_D = 0.220
+
+# A_c P-wave rows that carry the explicit recoil multiplier (footnote d):
+# K*_c rows and the [D* pi]_D rows of Q1c/Q2c. S_c S-wave and 1^3S_1 rows do not.
+charm_has_recoil(section, class, qbar_power) =
+    Symbol(class) == :A_c && Int(qbar_power) >= 2
+
+# The charmed CSV's paper_MeV12 column parses as Float64 (unlike the light
+# CSV's strings); format it back with an explicit sign for display parity.
+charm_paper_text(v) = ismissing(v) ? "" :
+    (v isa AbstractString ? String(v) : @sprintf("%+g", v))
 
 const class_map = Dict(
     :A => :A, :A0 => :A0, :Aprime => :Aprime, :Adoubleprime => :Adoubleprime,
@@ -88,6 +121,20 @@ function model_k1_angle_deg()
     mix = only(filter(m -> m.mechanism == "antisymmetric_spin_orbit", state.mixings))
     return mix.mixing_angle_deg
 end
+
+# Charm 1P same-J mixing angle from the model, for the Q1c/Q2c rows (footnote b
+# charm analogue). Same public spectrum API as audit_mixing_angles.jl, on the
+# c-dbar 1P block.
+function model_k1c_angle_deg()
+    params_path = joinpath(dirname(root), "data", "parameters.provisional.toml")
+    params, mq = load_parameters_and_quark_masses(params_path)
+    spec = compute_spectrum(params, Meson(mq, :c, :d);
+        levels = [BasisState(1, "P", 1, 1), BasisState(1, "P", 3, 1)])
+    state = spectrum_state(spec, 1, "P", 1, 1)
+    mix = only(filter(m -> m.mechanism == "antisymmetric_spin_orbit", state.mixings))
+    return mix.mixing_angle_deg
+end
+const THETA_PAPER_1P_CHARM_DEG = -41.0   # Fig./Table VIII charm 1P (cu-bar analog)
 
 # Rows whose paper numerics depend on machinery beyond the two-parameter
 # equal-mass convention; they are computed but excluded from the headline
@@ -241,6 +288,69 @@ function main()
                for r in q1q2
                if r.label in ("Q1 -> [(K pi)_K* pi]_S", "Q2 -> [(K pi)_K* pi]_D")]
 
+    # --- Charmed section (A_c/S_c, footnote d) -------------------------------
+    charm_rows = collect(CSV.File(CHARM_TABLE))
+    charm_q(row) = decay_momentum(
+        CHARM_MASS[String(row.parent)],
+        CHARM_MASS[String(row.daughter1)], CHARM_MASS[String(row.daughter2)])
+    charm_amp(row, q) = charm_decay_amplitude(
+        model, Float64(row.coefficient_value),
+        Symbol(String(row.amplitude_class)), Int(row.qbar_power), q;
+        recoil = charm_has_recoil(String(row.section), String(row.amplitude_class),
+                                  Int(row.qbar_power)),
+        m_c_GeV = CHARM_M_C, m_d_GeV = CHARM_M_D)
+
+    charm_scored = NamedTuple[]
+    for row in charm_rows
+        parent = String(row.parent)
+        parent in ("Q1c", "Q2c") && continue   # handled in the mixing block below
+        q = charm_q(row)
+        amp = charm_amp(row, q)
+        paper_value = ismissing(row.paper_MeV12) ? nothing : Float64(row.paper_MeV12)
+        paper_text = charm_paper_text(row.paper_MeV12)
+        small = !isnothing(paper_value) && abs(paper_value) <= 1.0
+        ratio = (isnothing(paper_value) || paper_value == 0) ? missing : amp / paper_value
+        push!(charm_scored, (
+            label = String(row.decay_label), section = String(row.section),
+            class = String(row.amplitude_class),
+            recoil = charm_has_recoil(String(row.section), String(row.amplitude_class),
+                                      Int(row.qbar_power)),
+            q_GeV = q, computed = amp, paper = paper_text, paper_value = paper_value,
+            ratio = ratio, small = small,
+        ))
+    end
+    charm_dev = [abs(r.ratio - 1) for r in charm_scored if !ismissing(r.ratio) && !r.small]
+    charm_median = isempty(charm_dev) ? NaN : sort(charm_dev)[max(1, (length(charm_dev) + 1) ÷ 2)]
+
+    # Q1c/Q2c three-way mixing (charm analogue of the Q1/Q2 block, footnote b).
+    theta_c_model = model_k1c_angle_deg()
+    thetas_c = [0.0, theta_c_model, THETA_PAPER_1P_CHARM_DEG]
+    qc_rows = [row for row in charm_rows if String(row.parent) in ("Q1c", "Q2c")]
+    ckey(row) = (String(row.daughter1), String(row.daughter2), Int(row.qbar_power))
+    csinglet = Dict(ckey(r) => r for r in qc_rows if String(r.parent) == "Q1c")
+    ctriplet = Dict(ckey(r) => r for r in qc_rows if String(r.parent) == "Q2c")
+    function c_unmixed_pair(key, q)
+        a(r) = charm_amp(r, q)
+        return a(csinglet[key]), a(ctriplet[key])
+    end
+    c_mixed(amp_s, amp_t, th, parent) =
+        parent == "Q1c" ? cosd(th) * amp_s + sind(th) * amp_t :
+        -sind(th) * amp_s + cosd(th) * amp_t
+    q1q2c = NamedTuple[]
+    for row in qc_rows
+        parent = String(row.parent)
+        paper_value = ismissing(row.paper_MeV12) ? nothing : Float64(row.paper_MeV12)
+        paper_text = charm_paper_text(row.paper_MeV12)
+        q = charm_q(row)
+        amp_s, amp_t = c_unmixed_pair(ckey(row), q)
+        amps = [c_mixed(amp_s, amp_t, th, parent) for th in thetas_c]
+        push!(q1q2c, (
+            label = String(row.decay_label), parent = parent, q_GeV = q,
+            amp_s = amp_s, amp_t = amp_t, amps = amps,
+            paper = paper_value, paper_text = paper_text,
+        ))
+    end
+
     open(REPORT, "w") do io
         println(io, "# Table V Light 1S+1P Strong-Decay Audit")
         println(io)
@@ -347,6 +457,73 @@ function main()
         println(io, "(-0.10) also confirms the digitized `-0.1` that the OCR note had flagged")
         println(io, "as suspect.")
         println(io)
+        println(io, "## Charmed section (`A_c`/`S_c`, Table V footnote d)")
+        println(io)
+        println(io, "The charmed rows reuse the SAME two-parameter `(A, S0)` calibration as")
+        println(io, "the light sector (no refit). Per footnote d the only changes are the")
+        println(io, "class letters (`A_c`/`S_c`, identical reduced-amplitude algebra),")
+        println(io, "`beta_c = beta` numerically, and the modified Gaussian form factor")
+        println(io, "`exp[-(1/4)(m_c/(m_c+m_d))^2 q^2/beta_c^2]`. The four A_c P-wave rows")
+        println(io, "(`K*_c` and the `[D* pi]_D` rows of `Q1c`/`Q2c`) carry the explicit")
+        println(io, "recoil multiplier `m_c beta / ((m_c+m_d) beta_c)`; the S_c S-wave and")
+        println(io, "1^3S_1 rows do not. `m_c = 1.628 GeV`, `m_d = 0.220 GeV` (Table II).")
+        println(io)
+        println(io, @sprintf(
+            "Clean scoreable charmed rows: %d; median abs deviation %.0f%% (|paper| > 1).",
+            count(r -> !ismissing(r.ratio) && !r.small, charm_scored),
+            isnan(charm_median) ? 0.0 : 100 * charm_median))
+        println(io)
+        println(io, "| decay | class | recoil | q MeV | computed | paper | ratio | status |")
+        println(io, "|---|---|:-:|---:|---:|---:|---:|---|")
+        for r in charm_scored
+            ratio_text = ismissing(r.ratio) ? "" : @sprintf("%.2f", r.ratio)
+            status = r.small ? @sprintf("small-amplitude (abs diff %.2f)", abs(r.computed - r.paper_value)) :
+                     (ismissing(r.ratio) ? "unscored" :
+                      (abs(r.ratio - 1) > 0.20 ? "**flag**" : "ok"))
+            println(io, @sprintf(
+                "| `%s` | %s | %s | %.0f | %+.2f | %s | %s | %s |",
+                r.label, r.class, r.recoil ? "yes" : "no", 1000r.q_GeV,
+                r.computed, r.paper, ratio_text, status))
+        end
+        println(io)
+        println(io, "The three `1^3S_1` `D* -> D pi` rows reproduce the paper's column to")
+        println(io, "within a few percent with no refit, directly confirming that `A_c = A`")
+        println(io, "with only the charmed form factor applied. The `K*_c` (`1^3P_2`) and")
+        println(io, "`kappa_c` (`1^3P_0`) rows are the clean P-wave checks; residual spread")
+        println(io, "is dominated by the GI-predicted charmed parent masses (not experimental).")
+        println(io)
+        println(io, "### `Q1c`/`Q2c` rows: charm 1P mixing (footnote b + j)")
+        println(io)
+        println(io, "Exactly as the strange `Q1`/`Q2` rows: the printed formula is the pure")
+        println(io, "singlet/triplet amplitude while the numeric column is the physical mixed")
+        println(io, "state, so the two sign-flagged rows (`Q1c -> [D* pi]_S`,")
+        println(io, "`Q2c -> [D* pi]_D`, footnote j hypersensitive) are scored via the same")
+        println(io, "three-way rotation, using the charm 1P same-J angle from")
+        println(io, "`compute_spectrum(Meson(mq, :c, :d))`.")
+        println(io)
+        println(io, @sprintf(
+            "| decay | q MeV | unmixed | model %+.1f | paper %+.0f | paper | status |",
+            theta_c_model, THETA_PAPER_1P_CHARM_DEG))
+        println(io, "|---|---:|---:|---:|---:|---:|---|")
+        for r in q1q2c
+            small = !isnothing(r.paper) && abs(r.paper) <= 1.0
+            status = small ? "small-amplitude (mixing-sensitive)" : "scored"
+            println(io, @sprintf(
+                "| `%s` | %.0f | %+.2f | %+.2f | %+.2f | %s | %s |",
+                r.label, 1000r.q_GeV, r.amps[1], r.amps[2], r.amps[3], r.paper_text, status))
+        end
+        println(io)
+        println(io, @sprintf(
+            "The model charm 1P angle is `%+.1f deg` (`compute_spectrum`,",
+            theta_c_model))
+        println(io, @sprintf(
+            "`antisymmetric_spin_orbit` on the `c dbar` 1P block); the paper quotes ~`%+.0f deg`.",
+            THETA_PAPER_1P_CHARM_DEG))
+        println(io, "As in the strange Q1/Q2 case, the two sign-flagged rows are near")
+        println(io, "cancellations whose numeric value is set by this mixing angle; the")
+        println(io, "clean `Q2c -> [D* pi]_S` (S_c) and `Q1c -> [D* pi]_D` (A_c) rows are the")
+        println(io, "robust ones. See `mixing_angles.md` for the charm 1P angle finding.")
+        println(io)
         println(io, "## Open Conventions")
         println(io)
         println(io, @sprintf(
@@ -359,6 +536,9 @@ function main()
     @printf("A=%.3f S0=%.3f scored=%d flagged=%d excluded=%d\n", model.A, model.S0, length(scored), n_flagged, n_excluded)
     @printf("Q1/Q2: theta_model=%+.1f deg, theta_paper=%+.0f deg; median dev unmixed=%.0f%% model=%.0f%% paper=%.0f%%; best-scan theta=%+.1f deg\n",
         theta_model, THETA_PAPER_DEG, 100q1q2_medians[1], 100q1q2_medians[2], 100q1q2_medians[3], theta_best)
+    @printf("charm: scored=%d median dev=%.0f%%; theta_c_model=%+.1f deg theta_c_paper=%+.0f deg\n",
+        count(r -> !ismissing(r.ratio) && !r.small, charm_scored),
+        isnan(charm_median) ? 0.0 : 100charm_median, theta_c_model, THETA_PAPER_1P_CHARM_DEG)
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
