@@ -61,6 +61,25 @@ function central_waves(params, masses, L; nlevels = 2)
     return physical_waves(vecs, r)
 end
 
+"""Model (GI predicted) meson masses in GeV: eigenvalues of the same
+S-wave Hamiltonian (kinetic sqrt terms carry the constituent rest masses,
+so eigenvalues ARE meson masses) plus the nonperturbative contact term.
+Reuses `swave_waves`' operators; no new fitted constants."""
+function swave_masses(params, masses; multiplicity, nlevels = 3)
+    H, r = G.relativistic_hamiltonian(params, masses, 0; ngrid = NGRID, rmax = RMAX)
+    op = G.contact_hyperfine_operator(params, masses, "S", multiplicity, r)
+    vals, _ = G.lowest_eigenpairs(Symmetric(Matrix(H) + Matrix(op)), nlevels)
+    return vals
+end
+
+"""Model (GI predicted) meson masses in GeV for the central orbital-L solve
+(P-wave chi radial function is J-independent at the paper's first order)."""
+function central_masses(params, masses, L; nlevels = 2)
+    H, r = G.relativistic_hamiltonian(params, masses, L; ngrid = NGRID, rmax = RMAX)
+    vals, _ = G.lowest_eigenpairs(Symmetric(Matrix(H)), nlevels)
+    return vals
+end
+
 function physical_waves(vecs, r)
     h = r[2] - r[1]
     waves = RadialWaveOnUniformMesh[]
@@ -165,26 +184,29 @@ push!(m1_rows, ("omega -> pi gamma",
     m1_moment(sys["nn"], 1, 1, [(1.0, m_ud)]), "+2.07"))
 # Open-flavor coefficients rebuilt from quark charges with the transition-
 # moment rule mu = e_q I_q - e_qbar I_qbar (antiquark charge enters flipped).
-# Paper values below use the OCR predicted column shifted UP by one row in
-# this block: the raw OCR column was displaced (computed D*+/D*0/F*/F_b*
-# match the shifted values at the 0.1-2% level, and the orphaned "-0.55"
-# lands exactly on the computed F_b*). Crop audit against the PDF pending.
+# Paper values below are IMAGE-VERIFIED against the printed "Predicted mu"
+# column on PDF page 24 (page_images/page-024.png, printed p. 212). The raw
+# vision-OCR column (md lines 1124-1133) was displaced DOWN by one row vs the
+# decay labels; every printed value read directly off the page confirms the
+# earlier shift-correction exactly (K*+ +0.91, K*0 -1.20, D*+ -0.35,
+# D*0 +1.78, F* -0.13, B* +1.37, B*0 -0.78, F_b* -0.55). No values changed.
+# (Printed labels: the u-bbar row is B*- -> B- gamma, and F_b* carries note f.)
 push!(m1_rows, ("K*+ -> K+ gamma   [+2/3 I_d - 1/3 I_s]",
-    m1_moment(sys["ns"], 1, 1, [(2 / 3, m_ud), (-1 / 3, m_s)]), "+0.91 (OCR shift-corrected)"))
+    m1_moment(sys["ns"], 1, 1, [(2 / 3, m_ud), (-1 / 3, m_s)]), "+0.91 (image-verified page 24)"))
 push!(m1_rows, ("K*0 -> K0 gamma   [-1/3 I_d - 1/3 I_s]",
-    m1_moment(sys["ns"], 1, 1, [(-1 / 3, m_ud), (-1 / 3, m_s)]), "-1.20 (OCR shift-corrected)"))
+    m1_moment(sys["ns"], 1, 1, [(-1 / 3, m_ud), (-1 / 3, m_s)]), "-1.20 (image-verified page 24)"))
 push!(m1_rows, ("D*+ -> D+ gamma   [+2/3 I_c - 1/3 I_d]",
-    m1_moment(sys["nc"], 1, 1, [(2 / 3, m_c), (-1 / 3, m_ud)]), "-0.35 (OCR shift-corrected)"))
+    m1_moment(sys["nc"], 1, 1, [(2 / 3, m_c), (-1 / 3, m_ud)]), "-0.35 (image-verified page 24)"))
 push!(m1_rows, ("D*0 -> D0 gamma   [+2/3 I_c + 2/3 I_d]",
-    m1_moment(sys["nc"], 1, 1, [(2 / 3, m_c), (2 / 3, m_ud)]), "+1.78 (OCR shift-corrected)"))
+    m1_moment(sys["nc"], 1, 1, [(2 / 3, m_c), (2 / 3, m_ud)]), "+1.78 (image-verified page 24)"))
 push!(m1_rows, ("F* -> F gamma     [+2/3 I_c - 1/3 I_s]",
-    m1_moment(sys["sc"], 1, 1, [(2 / 3, m_c), (-1 / 3, m_s)]), "-0.13 (OCR shift-corrected)"))
-push!(m1_rows, ("B*+(u bbar)       [+2/3 I_d - 1/3 I_b]",
-    m1_moment(sys["nb"], 1, 1, [(2 / 3, m_ud), (-1 / 3, m_b)]), "+1.37 (OCR shift-corrected)"))
+    m1_moment(sys["sc"], 1, 1, [(2 / 3, m_c), (-1 / 3, m_s)]), "-0.13 (image-verified page 24)"))
+push!(m1_rows, ("B*-(u bbar)       [+2/3 I_d - 1/3 I_b]",
+    m1_moment(sys["nb"], 1, 1, [(2 / 3, m_ud), (-1 / 3, m_b)]), "+1.37 (image-verified page 24)"))
 push!(m1_rows, ("B*0(d bbar)       [-1/3 I_d - 1/3 I_b]",
-    m1_moment(sys["nb"], 1, 1, [(-1 / 3, m_ud), (-1 / 3, m_b)]), "-0.78 (OCR shift-corrected)"))
+    m1_moment(sys["nb"], 1, 1, [(-1 / 3, m_ud), (-1 / 3, m_b)]), "-0.78 (image-verified page 24)"))
 push!(m1_rows, ("F_b*(b sbar)      [-1/3 I_b - 1/3 I_s]",
-    m1_moment(sys["sb"], 1, 1, [(-1 / 3, m_b), (-1 / 3, m_s)]), "-0.55 (OCR shift-corrected)"))
+    m1_moment(sys["sb"], 1, 1, [(-1 / 3, m_b), (-1 / 3, m_s)]), "-0.55 (image-verified page 24)"))
 push!(m1_rows, ("psi -> eta_c gamma",
     m1_moment(sys["cc"], 1, 1, [(4 / 3, m_c)]), "+0.69"))
 push!(m1_rows, ("psi' -> eta_c' gamma",
@@ -216,9 +238,10 @@ bb_P = central_waves(params, ConstituentMasses(m_b, m_b), 1; nlevels = 2)
 cc_P_p = [momentum_wave(w, 1) for w in cc_P]
 bb_P_p = [momentum_wave(w, 1) for w in bb_P]
 
-"""E1 amplitude `coeff(q_GeV) * E_1^i * sqrt(alpha * q_MeV)` in MeV^(1/2)."""
-function e1_amplitude(wS, mwS, wP, mwP, m_i, coeff_of_q, M_parent, M_child)
-    q = photon_momentum(M_parent, M_child)
+"""E1 amplitude `coeff(q_GeV) * E_1^i * sqrt(alpha * q_MeV)` in MeV^(1/2).
+Pass an explicit `q` to override the measured-mass photon momentum."""
+function e1_amplitude(wS, mwS, wP, mwP, m_i, coeff_of_q, M_parent, M_child; q = nothing)
+    q === nothing && (q = photon_momentum(M_parent, M_child))
     E1 = E_moment(wS, wP, mean_energy(mwS, m_i), mean_energy(mwP, m_i), m_i; n = 1)
     return coeff_of_q(q) * E1 * sqrt(ALPHA_EM * 1000 * q)
 end
@@ -263,6 +286,47 @@ let s = sys["bb"]
     end
 end
 
+# --- 2S -> chi_0 momentum convention test ------------------------------------
+# The `psi' -> chi_c0 gamma` and `Upsilon' -> chi_b0 gamma` rows sit 20-30%
+# high with q from measured 1984 masses. These rows have the largest q of the
+# 2S->chi block, so the amplitude (~ q^(3/2) via coeff*sqrt(q)) is the most
+# q-sensitive. Test whether the paper used the MODEL predicted masses for the
+# parent (2^3S_1) and daughter (1^3P_0) instead. Model masses are eigenvalues
+# of the same solves (no new constants).
+println("computing model masses for the 2S->chi_0 momentum test ...")
+cc_S_masses = swave_masses(params, ConstituentMasses(m_c, m_c); multiplicity = 3, nlevels = 3)
+bb_S_masses = swave_masses(params, ConstituentMasses(m_b, m_b); multiplicity = 3, nlevels = 3)
+cc_P_masses = central_masses(params, ConstituentMasses(m_c, m_c), 1; nlevels = 2)
+bb_P_masses = central_masses(params, ConstituentMasses(m_b, m_b), 1; nlevels = 2)
+
+# rows: (name, target, system, m_i, cJ, coeff_sign, M_parent_meas, M_child_meas,
+#        M_parent_model, M_child_model)
+chi0_variant_rows = Vector{NTuple{7,Any}}()
+let s = sys["cc"]
+    q_meas = photon_momentum(3.686, 3.415)
+    q_model = photon_momentum(cc_S_masses[2], cc_P_masses[1])
+    amp_meas = e1_amplitude(s.triplet[2], s.triplet_p[2], cc_P[1], cc_P_p[1], m_c,
+        q -> sqrt(1 / 3) * 4q / 9, 3.686, 3.415; q = q_meas)
+    amp_model = e1_amplitude(s.triplet[2], s.triplet_p[2], cc_P[1], cc_P_p[1], m_c,
+        q -> sqrt(1 / 3) * 4q / 9, 3.686, 3.415; q = q_model)
+    push!(chi0_variant_rows,
+        ("psi' -> chi_c0 gamma", "+0.14", q_meas, amp_meas, q_model, amp_model,
+         (cc_S_masses[2], cc_P_masses[1])))
+end
+let s = sys["bb"]
+    q_meas = photon_momentum(10.023, 9.860)
+    q_model = photon_momentum(bb_S_masses[2], bb_P_masses[1])
+    amp_meas = e1_amplitude(s.triplet[2], s.triplet_p[2], bb_P[1], bb_P_p[1], m_b,
+        q -> -sqrt(1 / 3) * 2q / 9, 10.023, 9.860; q = q_meas)
+    amp_model = e1_amplitude(s.triplet[2], s.triplet_p[2], bb_P[1], bb_P_p[1], m_b,
+        q -> -sqrt(1 / 3) * 2q / 9, 10.023, 9.860; q = q_model)
+    push!(chi0_variant_rows,
+        ("Upsilon' -> chi_b0 gamma", "-0.025", q_meas, amp_meas, q_model, amp_model,
+         (bb_S_masses[2], bb_P_masses[1])))
+end
+
+reldev(val, paper) = abs(val - paper) / abs(paper)
+
 # --- report ------------------------------------------------------------------
 
 outpath = joinpath(root, "docs", "residual_reports", "table_vi_photon_decays.md")
@@ -278,13 +342,16 @@ open(outpath, "w") do io
     println(io, "constants**. `rho -> pi gamma` is the paper's fit row for the 0.7")
     println(io, "exponent, so it doubles as the pipeline normalization check.")
     println(io)
-    println(io, "Paper values marked \"OCR shift-corrected\" are the vision-OCR predicted")
-    println(io, "column shifted up by one row in the open-flavor block: the raw OCR")
-    println(io, "column was displaced against the decay labels (with the shift, computed")
-    println(io, "D*+/D*0/F*/F_b* land at the 0.1-2% level and the orphaned -0.55 falls")
-    println(io, "exactly on the computed F_b*). Open-flavor formula coefficients are")
-    println(io, "rebuilt from quark charges via mu = e_q I_q - e_qbar I_qbar; a crop")
-    println(io, "audit of the printed PDF column remains to be done.")
+    println(io, "Paper values in the open-flavor M1 block are marked **image-verified")
+    println(io, "(page 24)**: each was read directly off the printed \"Predicted mu\"")
+    println(io, "column of PDF page 24 (`paper/vision_ocr/page_images/page-024.png`,")
+    println(io, "printed p. 212). The raw vision-OCR column (md lines 1124-1133) was")
+    println(io, "displaced by one row against the decay labels; the printed page confirms")
+    println(io, "the earlier one-row shift-correction exactly (K*+ +0.91, K*0 -1.20,")
+    println(io, "D*+ -0.35, D*0 +1.78, F* -0.13, B* +1.37, B*0 -0.78, F_b* -0.55). No")
+    println(io, "values changed by the crop audit. (Printed labels: the u-bbar row is")
+    println(io, "B*- -> B- gamma; F_b* carries footnote f.) Open-flavor formula")
+    println(io, "coefficients are rebuilt from quark charges via mu = e_q I_q - e_qbar I_qbar.")
     println(io)
     println(io, "## Magnetic-dipole moments (mu / mu_N)")
     println(io)
@@ -307,6 +374,33 @@ open(outpath, "w") do io
         @printf(io, "| %s | %+.3f | %s |\n", name, val, target)
     end
     println(io)
+    println(io, "## 2S -> chi_0 photon-momentum convention test")
+    println(io)
+    println(io, "The two `2S -> chi_0` E1 rows sit high with q from measured 1984")
+    println(io, "masses. They carry the largest q of the 2S->chi block, so the amplitude")
+    println(io, "(`~ q^{3/2}`, from `coeff(q) * sqrt(q)`) is the most q-sensitive row and")
+    println(io, "the natural place to test the mass convention. Below, `q` is recomputed")
+    println(io, "from the MODEL (GI predicted) parent/daughter masses -- eigenvalues of")
+    println(io, "the same 2^3S_1 and central 1^3P_0 solves, no new constants -- and shown")
+    println(io, "side by side with the measured-mass variant. Everything else (E_1 moment,")
+    println(io, "coefficient) is held fixed.")
+    println(io)
+    println(io, "| Decay | q (meas) MeV | Computed (meas) | q (model) MeV | Computed (model) | Paper |")
+    println(io, "|---|---|---|---|---|---|")
+    for (name, target, q_meas, amp_meas, q_model, amp_model, mm) in chi0_variant_rows
+        @printf(io, "| %s | %.1f | %+.3f | %.1f | %+.3f | %s |\n",
+            name, q_meas * 1000, amp_meas, q_model * 1000, amp_model, target)
+    end
+    println(io)
+    for (name, target, q_meas, amp_meas, q_model, amp_model, mm) in chi0_variant_rows
+        p = parse(Float64, target)
+        d_meas = 100 * reldev(amp_meas, p)
+        d_model = 100 * reldev(amp_model, p)
+        closer = d_model < d_meas ? "model masses" : "measured masses"
+        @printf(io, "- `%s`: measured-mass q gives %.1f%% deviation, model-mass q (parent %.3f -> daughter %.3f GeV) gives %.1f%%. **%s closer.**\n",
+            name, d_meas, mm[1], mm[2], d_model, closer)
+    end
+    println(io)
     println(io, "## Conventions used")
     println(io)
     println(io, "- `mu/mu_N = coefficient * I_i * M_N` (Table VI lists moments in units")
@@ -327,4 +421,12 @@ println()
 println("E1 rows:")
 for (name, val, target) in e1_rows
     @printf("  %-46s %+8.3f   paper %s\n", name, val, target)
+end
+println()
+println("2S -> chi_0 q-convention test:")
+for (name, target, q_meas, amp_meas, q_model, amp_model, mm) in chi0_variant_rows
+    p = parse(Float64, target)
+    @printf("  %-24s meas q=%.1f MeV -> %+.3f (%.1f%%) | model q=%.1f MeV -> %+.3f (%.1f%%) | paper %s\n",
+        name, q_meas * 1000, amp_meas, 100 * reldev(amp_meas, p),
+        q_model * 1000, amp_model, 100 * reldev(amp_model, p), target)
 end
