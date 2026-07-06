@@ -140,7 +140,8 @@ radius.
 | W3-1 crop audit + 2S→χ₀ | **done** (merged `07ad617`) | finished in 285s (tight scope worked). Open-flavor M1 image-verified vs page 24, shift confirmed. 2S→χ₀ not a q-convention artifact (model-q helps b-b̄, hurts c-c̄). |
 | W3-2 isoscalar rows | **done** (merged `4a8645c`) | 6 isoscalar M1 rows; all signs right (incl. φ→η/η′ relative sign); dominant magnitudes ~15-24%; η↔η′ ordering inverted → sub-dominant rows ~2-3× low (needs paper per-row I mock-mass eval). |
 | W3-3 remaining blocks | relaunch pending | now unblocked (same files free) — light E1/M2 + strange/charmed P-wave + hindered bottomonium |
-| W2c charm classes | queued | blocked by W2a-3 |
+| W2c-1 charm classes | **done** (merged `f2dadf2`) | A_c/S_c coded, no refit; charmed rows 12% median; Q1c/Q2c reproduce at paper −41°. Closes Table IV charm-class gap. |
+| W2c-2 strange √3 | queued | investigate K*₂→Kπ ~√3 normalization (unequal-mass recoil); the charmed A_c recoil multiplier is the model to apply |
 | W4 Table VII | queued | wave 2 |
 | W5 Eqs. 20-21 | queued | blocked by W2a light rows |
 | W6 HO-order | unscheduled | coordinator; strengthened by W1's 1P angle finding |
