@@ -43,22 +43,22 @@ Headline rows (clean two-parameter convention, |paper| > 1): 33; median abs devi
 | `E -> [(K pi)_K* Kbar]_D` | A | 144 | +0.24 | +0.7 | 0.35 | **flag** |
 | `E -> delta2 pi` | mixing | 352 | n/a | ~0 |  | excluded: Table III mixing only |
 | `E -> eps eta` | mixing | 0 | n/a | ~0 |  | excluded: Table III mixing only |
-| `Q1 -> [(K pi)_K* pi]_S` | S | 307 | -9.43 | -0.3 | 31.42 | excluded: model K1 mixing angle |
-| `Q1 -> [(K pi)_K* pi]_D` | A | 307 | -1.91 | -3.0 | 0.64 | excluded: model K1 mixing angle |
-| `Q1 -> [(pi pi)_rho K]_S` | S | 96 | +6.16 | +9.9 | 0.62 | excluded: model K1 mixing angle |
-| `Q1 -> [(pi pi)_rho K]_D` | A | 96 | +0.11 | +0.5 | 0.22 | excluded: model K1 mixing angle |
-| `Q1 -> [omega K]_S` | S | 32 | -2.08 | -7.0 | 0.30 | excluded: model K1 mixing angle |
-| `Q1 -> [omega K]_D` | A | 32 | -0.00 | -0.2 | 0.02 | excluded: model K1 mixing angle |
-| `Q1 -> (K pi)_kappa pi` | Aprime | 235 | -3.38 | -3.1 | 1.09 | excluded: model K1 mixing angle |
-| `Q1 -> (pi pi)_eps K` | Aprime | 0 | +0.00 | +0.04 | 0.00 | excluded: model K1 mixing angle |
-| `Q2 -> [(K pi)_K* pi]_S` | S | 399 | +13.35 | +16 | 0.83 | excluded: model K1 mixing angle |
-| `Q2 -> [(K pi)_K* pi]_D` | A | 399 | -2.54 | -0.1 | 25.39 | excluded: model K1 mixing angle |
-| `Q2 -> [(pi pi)_rho K]_S` | S | 294 | +13.24 | +4.2 | 3.15 | excluded: model K1 mixing angle |
-| `Q2 -> [(pi pi)_rho K]_D` | A | 294 | -1.22 | -1.8 | 0.68 | excluded: model K1 mixing angle |
-| `Q2 -> [omega K]_S` | S | 279 | -7.57 | -3.0 | 2.52 | excluded: model K1 mixing angle |
-| `Q2 -> [omega K]_D` | A | 279 | +0.62 | +0.8 | 0.77 | excluded: model K1 mixing angle |
-| `Q2 -> (K pi)_kappa pi` | A | 337 | -8.01 | -1.4 | 5.72 | excluded: model K1 mixing angle |
-| `Q2 -> (pi pi)_eps K` | A | 0 | +0.00 | -2.0 | -0.00 | excluded: model K1 mixing angle |
+| `Q1 -> [(K pi)_K* pi]_S` | S | 307 | -9.43 | -0.3 | 31.42 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q1 -> [(K pi)_K* pi]_D` | A | 307 | -1.91 | -3.0 | 0.64 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q1 -> [(pi pi)_rho K]_S` | S | 96 | +6.16 | +9.9 | 0.62 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q1 -> [(pi pi)_rho K]_D` | A | 96 | +0.11 | +0.5 | 0.22 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q1 -> [omega K]_S` | S | 32 | -2.08 | -7.0 | 0.30 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q1 -> [omega K]_D` | A | 32 | -0.00 | -0.2 | 0.02 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q1 -> (K pi)_kappa pi` | Aprime | 235 | -3.38 | -3.1 | 1.09 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q1 -> (pi pi)_eps K` | Aprime | 0 | +0.00 | +0.04 | 0.00 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q2 -> [(K pi)_K* pi]_S` | S | 399 | +13.35 | +16 | 0.83 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q2 -> [(K pi)_K* pi]_D` | A | 399 | -2.54 | -0.1 | 25.39 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q2 -> [(pi pi)_rho K]_S` | S | 294 | +13.24 | +4.2 | 3.15 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q2 -> [(pi pi)_rho K]_D` | A | 294 | -1.22 | -1.8 | 0.68 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q2 -> [omega K]_S` | S | 279 | -7.57 | -3.0 | 2.52 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q2 -> [omega K]_D` | A | 279 | +0.62 | +0.8 | 0.77 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q2 -> (K pi)_kappa pi` | A | 337 | -8.01 | -1.4 | 5.72 | excluded: K1 mixing angle (see Q1/Q2 section) |
+| `Q2 -> (pi pi)_eps K` | A | 0 | +0.00 | -2.0 | -0.00 | excluded: K1 mixing angle (see Q1/Q2 section) |
 | `B -> [omega pi]_S` | S | 348 | -11.00 | -11 | 1.00 | ok |
 | `B -> [omega pi]_D` | A | 348 | -2.98 | -3.0 | 0.99 | ok |
 | `B -> (eta pi)_delta2 pi` | Aprime | 188 | -3.98 | -4.4 | 0.90 | ok |
@@ -81,8 +81,72 @@ Headline rows (clean two-parameter convention, |paper| > 1): 33; median abs devi
 | `kappa -> K eta` | S | 334 | -2.78 | -2.8 | 0.99 | ok |
 | `kappa -> K eta'` | S | 0 | +0.00 | below threshold |  | ok |
 
+## Q1/Q2 (strange axial) rows: three-way K1 mixing-angle comparison
+
+Table V footnote b: *"We quote the pure `Q_B(1)` (i.e., pure singlet
+(triplet)) amplitude formulas under `Q_1(2)`, where `Q_1(2)` is the lower
+(higher) state in mass."*  So the printed `Q1` formula column is the
+unmixed `1^1P_1` amplitude, the printed `Q2` column the unmixed `1^3P_1`
+amplitude, and the numeric column is for the physical mixed states.
+
+**Convention adopted** (see `mixing_angles.md` for the identity mapping
+between the model's `StateMixing` angle and the paper's): the printed
+singlet/triplet columns are combined with the Fig. 4 caption rotation
+
+```
+A(Q1 -> X) =  cos(theta) A_singlet(X) + sin(theta) A_triplet(X)
+A(Q2 -> X) = -sin(theta) A_singlet(X) + cos(theta) A_triplet(X)
+```
+
+with both unmixed amplitudes evaluated at the *physical parent's*
+momentum, and **no extra relative phase** between the printed singlet and
+triplet amplitude columns. This relative-phase choice is validated by the
+two footnote-j hypersensitive rows: at `theta = +34 deg` the rotation
+reproduces both near-cancellations (`Q1 -> [K* pi]_S` and
+`Q2 -> [K* pi]_D`) in sign and magnitude, while the opposite relative
+phase (`theta -> -theta`) predicts them at full unmixed size (~ -16 and
+~ -3.5), grossly excluded by the paper's -0.3 and -0.1.
+
+Angles compared: **unmixed** `theta = 0` (headline-table behavior), **model** `theta = +19.5 deg` (`compute_spectrum`, `antisymmetric_spin_orbit` mixing of the `u sbar` 1P block), **paper** `theta = +34 deg` (Fig. 4 caption `theta_1P`).
+
+| decay | q MeV | unmixed | model +19.5 | paper +34 | paper | r(unm) | r(mod) | r(pap) | status |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| `Q1 -> [(K pi)_K* pi]_S` | 307 | -9.43 | -4.43 | -0.36 | -0.3 |  |  |  | small-amplitude (abs): diff 9.13 / 4.13 / 0.06 |
+| `Q1 -> [(K pi)_K* pi]_D` | 307 | -1.91 | -2.25 | -2.34 | -3.0 | 0.64 | 0.75 | 0.78 | scored |
+| `Q1 -> [(pi pi)_rho K]_S` | 96 | +6.16 | +8.72 | +9.99 | +9.9 | 0.62 | 0.88 | 1.01 | scored |
+| `Q1 -> [(pi pi)_rho K]_D` | 96 | +0.11 | +0.08 | +0.05 | +0.5 |  |  |  | small-amplitude (abs): diff 0.39 / 0.42 / 0.45 |
+| `Q1 -> [omega K]_S` | 32 | -2.08 | -2.95 | -3.38 | -7.0 | 0.30 | 0.42 | 0.48 | scored |
+| `Q1 -> [omega K]_D` | 32 | -0.00 | -0.00 | -0.00 | -0.2 |  |  |  | small-amplitude (abs): diff 0.20 / 0.20 / 0.20 |
+| `Q1 -> (K pi)_kappa pi` | 235 | -3.38 | -4.78 | -5.47 | -3.1 |  |  |  | unscored: quasi-two-body kinematics convention open |
+| `Q1 -> (pi pi)_eps K` | 0 | +0.00 | +0.00 | +0.00 | +0.04 |  |  |  | unscored: below nominal threshold (paper integrates lineshape) |
+| `Q2 -> [(K pi)_K* pi]_S` | 399 | +13.35 | +15.74 | +16.35 | +16 | 0.83 | 0.98 | 1.02 | scored |
+| `Q2 -> [(K pi)_K* pi]_D` | 399 | -2.54 | -1.19 | -0.10 | -0.1 |  |  |  | small-amplitude (abs): diff 2.44 / 1.09 / 0.00 |
+| `Q2 -> [(pi pi)_rho K]_S` | 294 | +13.24 | +9.36 | +5.74 | +4.2 | 3.15 | 2.23 | 1.37 | scored |
+| `Q2 -> [(pi pi)_rho K]_D` | 294 | -1.22 | -1.72 | -1.97 | -1.8 | 0.68 | 0.96 | 1.10 | scored |
+| `Q2 -> [omega K]_S` | 279 | -7.57 | -5.35 | -3.28 | -3.0 | 2.52 | 1.78 | 1.09 | scored |
+| `Q2 -> [omega K]_D` | 279 | +0.62 | +0.88 | +1.00 | +0.8 |  |  |  | small-amplitude (abs): diff 0.18 / 0.08 / 0.20 |
+| `Q2 -> (K pi)_kappa pi` | 337 | -8.01 | -5.66 | -3.47 | -1.4 | 5.72 | 4.04 | 2.48 | scored |
+| `Q2 -> (pi pi)_eps K` | 0 | +0.00 | +0.00 | +0.00 | -2.0 |  |  |  | unscored: below nominal threshold (paper integrates lineshape) |
+
+Median abs deviation over the 8 ratio-scored rows: unmixed 38%, model angle 25%, paper angle 10%.
+A scan of the median deviation over `theta in [0, 60] deg` is minimized at `theta = +34.0 deg`; the two footnote-j rows individually imply `theta = +34.2 deg` (`Q1 -> [(K pi)_K* pi]_S`) and `theta = +34.0 deg` (`Q2 -> [(K pi)_K* pi]_D`).
+
+**Conclusion:** the paper's Q1/Q2 numeric column is consistent with the
+quoted `theta_1P ~ +34 deg`, not with the model's `+19.5 deg` (which misses the two cancellation rows by an order of magnitude). The Q1/Q2 rows therefore corroborate the `mixing_angles.md` finding that our `u sbar` 1P same-J angle is the quantity that deviates, not the decay algebra.
+
+Residual paper-angle outliers, all kinematics-driven: `Q1 -> [omega K]_S`
+sits at `q = 32 MeV` (the nominal masses put it 2 MeV above threshold, so
+the amplitude is hostage to the Q1 mass input at the few-MeV level),
+`Q1 -> [rho K]_D` is a tiny D-wave at `q = 96 MeV` with the same
+sensitivity, and `Q2 -> (K pi)_kappa pi` has a quasi-two-body `kappa`
+daughter. The two `(pi pi)_eps K` rows stay unscoreable: with the nominal
+`eps` mass both parents are below threshold (the paper integrates the
+`eps` lineshape, footnote f). The paper-angle value of `Q2 -> [K* pi]_D`
+(-0.10) also confirms the digitized `-0.1` that the OCR note had flagged
+as suspect.
+
 ## Open Conventions
 
-- `Q1`/`Q2` numeric amplitudes fold in the model's strange-axial (`K1`) mixing angle on top of the unmixed formula coefficients; reproducing them needs the `1^3P_1`/`1^1P_1` strange mixing block (machinery exists in the spectrum layer).
+- `Q1`/`Q2` numeric amplitudes fold the strange-axial (`K1`) `1^1P_1`/`1^3P_1` mixing angle into the unmixed footnote-b formula coefficients; they are scored three ways (unmixed / model `+19.5 deg` / paper `+34 deg`) in the dedicated section above, and select the paper's `+34 deg`.
 - Quasi-two-body subchannel daughters (`(pi pi)_eps`, `(K pi)_kappa`, `(eta pi)_delta2`) and sub-threshold modes (`D -> K* Kbar`) depend on lineshape conventions the paper does not state; nominal-mass kinematics cannot reproduce them.
 - Strange-parent normalization: `K*2 -> K pi` computes ~sqrt(3) high while `K*(892) -> K pi` is exact, pointing at unequal-mass recoil factors in the Appendix B amplitudes not yet encoded.

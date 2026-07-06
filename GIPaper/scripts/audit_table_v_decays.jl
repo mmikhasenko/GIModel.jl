@@ -17,6 +17,11 @@ const TABLE = joinpath(
 )
 const REPORT = joinpath(root, "docs", "residual_reports", "table_v_light_decays.md")
 
+const class_map = Dict(
+    :A => :A, :A0 => :A0, :Aprime => :Aprime, :Adoubleprime => :Adoubleprime,
+    :S => :S, :D => :D, :P => :P,
+)
+
 # Parent masses (GeV): 1984-era experimental values for established states,
 # GI model masses (Figs. 3-5) for states the paper itself predicted
 # (H, H', delta2, eps, eps', kappa as parents).
@@ -58,6 +63,32 @@ const DAUGHTER_MASS = Dict(
     "kappa" => 0.98,
 )
 
+# --- Q1/Q2 (strange axial) mixing ---------------------------------------------
+#
+# Table V footnote b: "We quote the pure Q_B(1) (i.e., pure singlet (triplet))
+# amplitude formulas under Q_1(2), where Q_1(2) is the lower (higher) state in
+# mass."  So the printed Q1 formula column is the unmixed 1^1P_1 amplitude and
+# the printed Q2 column the unmixed 1^3P_1 amplitude, while the numeric column
+# is for the physical mixed states, rotated with the Fig. 4 caption convention
+#
+#   A(Q1 -> X) =  cos(theta) A_singlet(X) + sin(theta) A_triplet(X)
+#   A(Q2 -> X) = -sin(theta) A_singlet(X) + cos(theta) A_triplet(X)
+#
+# with both unmixed amplitudes evaluated at the physical parent's momentum.
+# The model angle comes from the public spectrum API exactly as in
+# audit_mixing_angles.jl (identity convention mapping, see mixing_angles.md).
+const THETA_PAPER_DEG = 34.0   # Fig. 4 caption, theta_1P
+
+function model_k1_angle_deg()
+    params_path = joinpath(dirname(root), "data", "parameters.provisional.toml")
+    params, mq = load_parameters_and_quark_masses(params_path)
+    spec = compute_spectrum(params, Meson(mq, :u, :s);
+        levels = [BasisState(1, "P", 1, 1), BasisState(1, "P", 3, 1)])
+    state = spectrum_state(spec, 1, "P", 1, 1)
+    mix = only(filter(m -> m.mechanism == "antisymmetric_spin_orbit", state.mixings))
+    return mix.mixing_angle_deg
+end
+
 # Rows whose paper numerics depend on machinery beyond the two-parameter
 # equal-mass convention; they are computed but excluded from the headline
 # score, each with its reason.
@@ -67,8 +98,9 @@ function exclusion_reason(row)
     notes = ismissing(row.notes) ? "" : String(row.notes)
     if parent in ("Q1", "Q2")
         # The numeric column uses the model's strange-axial (K1) mixing angle
-        # on top of the unmixed formula coefficients.
-        return "model K1 mixing angle"
+        # on top of the unmixed formula coefficients; these rows are scored
+        # three ways in the dedicated Q1/Q2 section below the main table.
+        return "K1 mixing angle (see Q1/Q2 section)"
     end
     occursin("kinematics convention open", notes) && return "quasi-two-body daughter mass"
     occursin("image audit pending", notes) && return "image audit pending"
@@ -105,10 +137,6 @@ function main()
         m1 = DAUGHTER_MASS[String(row.daughter1)]
         m2 = DAUGHTER_MASS[String(row.daughter2)]
         q = decay_momentum(M, m1, m2)
-        class_map = Dict(
-            :A => :A, :A0 => :A0, :Aprime => :Aprime, :Adoubleprime => :Adoubleprime,
-            :S => :S, :D => :D, :P => :P,
-        )
         if class === :mixing_only
             push!(computed_rows, (
                 label = label, section = String(row.section), class = "mixing",
@@ -149,6 +177,70 @@ function main()
     n_flagged = count(r -> r.flagged, computed_rows)
     n_excluded = count(r -> hasproperty(r, :excluded) && !isnothing(r.excluded), computed_rows)
 
+    # --- Q1/Q2 three-way mixing comparison (footnote b + Fig. 4 rotation) ----
+    theta_model = model_k1_angle_deg()
+    thetas = [0.0, theta_model, THETA_PAPER_DEG]   # unmixed, model, paper
+
+    qrows = [row for row in rows if String(row.parent) in ("Q1", "Q2")]
+    channel_key(row) = (String(row.daughter1), String(row.daughter2), Int(row.qbar_power))
+    singlet = Dict(channel_key(r) => r for r in qrows if String(r.parent) == "Q1")
+    triplet = Dict(channel_key(r) => r for r in qrows if String(r.parent) == "Q2")
+
+    # Unmixed 1^1P_1 / 1^3P_1 amplitudes for a channel at momentum q (the
+    # printed Q1/Q2 formula coefficients per footnote b, common kinematics).
+    function unmixed_pair(key, q)
+        amp(r) = strong_decay_amplitude(model, Float64(r.coefficient_value),
+            class_map[Symbol(String(r.amplitude_class))], Int(r.qbar_power), q)
+        return amp(singlet[key]), amp(triplet[key])
+    end
+    mixed(amp_s, amp_t, theta_deg, parent) =
+        parent == "Q1" ? cosd(theta_deg) * amp_s + sind(theta_deg) * amp_t :
+        -sind(theta_deg) * amp_s + cosd(theta_deg) * amp_t
+
+    q1q2 = NamedTuple[]
+    for row in qrows
+        parent = String(row.parent)
+        notes = ismissing(row.notes) ? "" : String(row.notes)
+        paper_text = strip(String(row.paper_MeV12))
+        paper_value = tryparse(Float64, replace(paper_text, "+" => ""))
+        q = decay_momentum(PARENT_MASS[parent],
+            DAUGHTER_MASS[String(row.daughter1)], DAUGHTER_MASS[String(row.daughter2)])
+        amp_s, amp_t = unmixed_pair(channel_key(row), q)
+        amps = [mixed(amp_s, amp_t, th, parent) for th in thetas]
+        small = !isnothing(paper_value) && abs(paper_value) <= 1.0
+        status = if q <= 0
+            "unscored: below nominal threshold (paper integrates lineshape)"
+        elseif occursin("kinematics convention open", notes)
+            "unscored: quasi-two-body kinematics convention open"
+        elseif small
+            "small-amplitude (abs)"
+        else
+            "scored"
+        end
+        push!(q1q2, (
+            label = String(row.decay_label), parent = parent, q_GeV = q,
+            amp_s = amp_s, amp_t = amp_t, amps = amps,
+            paper = paper_value, paper_text = paper_text,
+            small = small, status = status, notes = notes,
+        ))
+    end
+
+    ratio_rows = [r for r in q1q2 if r.status == "scored"]
+    small_rows = [r for r in q1q2 if r.status == "small-amplitude (abs)"]
+    median_dev(theta) = begin
+        devs = sort([abs(mixed(r.amp_s, r.amp_t, theta, r.parent) / r.paper - 1)
+                     for r in ratio_rows])
+        devs[max(1, (length(devs) + 1) ÷ 2)]
+    end
+    q1q2_medians = [median_dev(th) for th in thetas]
+    scan = 0.0:0.1:60.0
+    theta_best = scan[argmin([median_dev(th) for th in scan])]
+    # Angle implied by each footnote-j hypersensitive row (amp(theta) = paper).
+    implied = [(r.label, scan[argmin([abs(mixed(r.amp_s, r.amp_t, th, r.parent) - r.paper)
+                                      for th in scan])])
+               for r in q1q2
+               if r.label in ("Q1 -> [(K pi)_K* pi]_S", "Q2 -> [(K pi)_K* pi]_D")]
+
     open(REPORT, "w") do io
         println(io, "# Table V Light 1S+1P Strong-Decay Audit")
         println(io)
@@ -184,14 +276,89 @@ function main()
             ))
         end
         println(io)
+        println(io, "## Q1/Q2 (strange axial) rows: three-way K1 mixing-angle comparison")
+        println(io)
+        println(io, "Table V footnote b: *\"We quote the pure `Q_B(1)` (i.e., pure singlet")
+        println(io, "(triplet)) amplitude formulas under `Q_1(2)`, where `Q_1(2)` is the lower")
+        println(io, "(higher) state in mass.\"*  So the printed `Q1` formula column is the")
+        println(io, "unmixed `1^1P_1` amplitude, the printed `Q2` column the unmixed `1^3P_1`")
+        println(io, "amplitude, and the numeric column is for the physical mixed states.")
+        println(io)
+        println(io, "**Convention adopted** (see `mixing_angles.md` for the identity mapping")
+        println(io, "between the model's `StateMixing` angle and the paper's): the printed")
+        println(io, "singlet/triplet columns are combined with the Fig. 4 caption rotation")
+        println(io)
+        println(io, "```")
+        println(io, "A(Q1 -> X) =  cos(theta) A_singlet(X) + sin(theta) A_triplet(X)")
+        println(io, "A(Q2 -> X) = -sin(theta) A_singlet(X) + cos(theta) A_triplet(X)")
+        println(io, "```")
+        println(io)
+        println(io, "with both unmixed amplitudes evaluated at the *physical parent's*")
+        println(io, "momentum, and **no extra relative phase** between the printed singlet and")
+        println(io, "triplet amplitude columns. This relative-phase choice is validated by the")
+        println(io, "two footnote-j hypersensitive rows: at `theta = +34 deg` the rotation")
+        println(io, "reproduces both near-cancellations (`Q1 -> [K* pi]_S` and")
+        println(io, "`Q2 -> [K* pi]_D`) in sign and magnitude, while the opposite relative")
+        println(io, "phase (`theta -> -theta`) predicts them at full unmixed size (~ -16 and")
+        println(io, "~ -3.5), grossly excluded by the paper's -0.3 and -0.1.")
+        println(io)
+        println(io, @sprintf(
+            "Angles compared: **unmixed** `theta = 0` (headline-table behavior), **model** `theta = %+.1f deg` (`compute_spectrum`, `antisymmetric_spin_orbit` mixing of the `u sbar` 1P block), **paper** `theta = %+.0f deg` (Fig. 4 caption `theta_1P`).",
+            theta_model, THETA_PAPER_DEG))
+        println(io)
+        println(io, @sprintf(
+            "| decay | q MeV | unmixed | model %+.1f | paper %+.0f | paper | r(unm) | r(mod) | r(pap) | status |",
+            theta_model, THETA_PAPER_DEG))
+        println(io, "|---|---:|---:|---:|---:|---:|---:|---:|---:|---|")
+        for r in q1q2
+            ratios = map(a -> (r.status == "scored" ? @sprintf("%.2f", a / r.paper) : ""), r.amps)
+            status = r.status
+            if r.status == "small-amplitude (abs)"
+                status *= @sprintf(": diff %.2f / %.2f / %.2f", (abs.(r.amps .- r.paper))...)
+            end
+            println(io, @sprintf(
+                "| `%s` | %.0f | %+.2f | %+.2f | %+.2f | %s | %s | %s | %s | %s |",
+                r.label, 1000r.q_GeV, r.amps[1], r.amps[2], r.amps[3], r.paper_text,
+                ratios[1], ratios[2], ratios[3], status,
+            ))
+        end
+        println(io)
+        println(io, @sprintf(
+            "Median abs deviation over the %d ratio-scored rows: unmixed %.0f%%, model angle %.0f%%, paper angle %.0f%%.",
+            length(ratio_rows), 100q1q2_medians[1], 100q1q2_medians[2], 100q1q2_medians[3]))
+        println(io, @sprintf(
+            "A scan of the median deviation over `theta in [0, 60] deg` is minimized at `theta = %+.1f deg`; the two footnote-j rows individually imply %s.",
+            theta_best,
+            join([@sprintf("`theta = %+.1f deg` (`%s`)", th, lb) for (lb, th) in implied], " and ")))
+        println(io)
+        println(io, "**Conclusion:** the paper's Q1/Q2 numeric column is consistent with the")
+        println(io, @sprintf(
+            "quoted `theta_1P ~ +34 deg`, not with the model's `%+.1f deg` (which misses the two cancellation rows by an order of magnitude). The Q1/Q2 rows therefore corroborate the `mixing_angles.md` finding that our `u sbar` 1P same-J angle is the quantity that deviates, not the decay algebra.",
+            theta_model))
+        println(io)
+        println(io, "Residual paper-angle outliers, all kinematics-driven: `Q1 -> [omega K]_S`")
+        println(io, "sits at `q = 32 MeV` (the nominal masses put it 2 MeV above threshold, so")
+        println(io, "the amplitude is hostage to the Q1 mass input at the few-MeV level),")
+        println(io, "`Q1 -> [rho K]_D` is a tiny D-wave at `q = 96 MeV` with the same")
+        println(io, "sensitivity, and `Q2 -> (K pi)_kappa pi` has a quasi-two-body `kappa`")
+        println(io, "daughter. The two `(pi pi)_eps K` rows stay unscoreable: with the nominal")
+        println(io, "`eps` mass both parents are below threshold (the paper integrates the")
+        println(io, "`eps` lineshape, footnote f). The paper-angle value of `Q2 -> [K* pi]_D`")
+        println(io, "(-0.10) also confirms the digitized `-0.1` that the OCR note had flagged")
+        println(io, "as suspect.")
+        println(io)
         println(io, "## Open Conventions")
         println(io)
-        println(io, "- `Q1`/`Q2` numeric amplitudes fold in the model's strange-axial (`K1`) mixing angle on top of the unmixed formula coefficients; reproducing them needs the `1^3P_1`/`1^1P_1` strange mixing block (machinery exists in the spectrum layer).")
+        println(io, @sprintf(
+            "- `Q1`/`Q2` numeric amplitudes fold the strange-axial (`K1`) `1^1P_1`/`1^3P_1` mixing angle into the unmixed footnote-b formula coefficients; they are scored three ways (unmixed / model `%+.1f deg` / paper `+34 deg`) in the dedicated section above, and select the paper's `+34 deg`.",
+            theta_model))
         println(io, "- Quasi-two-body subchannel daughters (`(pi pi)_eps`, `(K pi)_kappa`, `(eta pi)_delta2`) and sub-threshold modes (`D -> K* Kbar`) depend on lineshape conventions the paper does not state; nominal-mass kinematics cannot reproduce them.")
         println(io, "- Strange-parent normalization: `K*2 -> K pi` computes ~sqrt(3) high while `K*(892) -> K pi` is exact, pointing at unequal-mass recoil factors in the Appendix B amplitudes not yet encoded.")
     end
     println("wrote ", REPORT)
     @printf("A=%.3f S0=%.3f scored=%d flagged=%d excluded=%d\n", model.A, model.S0, length(scored), n_flagged, n_excluded)
+    @printf("Q1/Q2: theta_model=%+.1f deg, theta_paper=%+.0f deg; median dev unmixed=%.0f%% model=%.0f%% paper=%.0f%%; best-scan theta=%+.1f deg\n",
+        theta_model, THETA_PAPER_DEG, 100q1q2_medians[1], 100q1q2_medians[2], 100q1q2_medians[3], theta_best)
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
