@@ -137,8 +137,8 @@ radius.
 | W2a-2 strange | relaunch pending | |
 | W2a-3 charmed | relaunch pending | unblocks W2c |
 | W2a-4 charmonium | relaunch pending | |
-| W3-1 crop audit + 2S→χ₀ | **launching** | verification-only, fits worker budget |
-| W3-2 isoscalar rows | queued | after W3-1 merges (same files) |
+| W3-1 crop audit + 2S→χ₀ | **done** (merged `07ad617`) | finished in 285s (tight scope worked). Open-flavor M1 image-verified vs page 24, shift confirmed. 2S→χ₀ not a q-convention artifact (model-q helps b-b̄, hurts c-c̄). |
+| W3-2 isoscalar rows | queued | after W3-1 merges (same files) — now unblocked |
 | W3-3 remaining blocks | queued | after W3-2 merges (same files) |
 | W2c charm classes | queued | blocked by W2a-3 |
 | W4 Table VII | queued | wave 2 |
