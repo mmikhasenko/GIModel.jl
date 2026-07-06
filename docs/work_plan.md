@@ -133,13 +133,13 @@ radius.
 | W1 angles | **done** (merged `5340e62`) | 1D blocks 0.3-2.5°, b-sector 1-5° after low/high label exchange; small-offdiagonal 1P blocks 13-30° off with inverted radial trend — physics finding, resolution points at W6. |
 | W2b K1 wiring | **done** (merged `c5d7ccd`) | Q1/Q2 scored 3 ways; paper numeric column matches its own +34° quote (median dev 10% vs 25% model / 38% unmixed); free θ-scan lands on +34°. Model-side gap is the K1 angle itself. |
 | W2a-1D3 | **done** (merged `8823643`) | light 1³D₃ salvaged from interrupted worker, page-16 verified. |
-| W2a-1 light 1D+2S | relaunch pending | worker-sized unit |
-| W2a-2 strange | relaunch pending | |
+| W2a-1 light 1D+2S | **done** (merged `824eaed`) | 94 rows incl. strange 2S/1D; K*_S→ρK sign correction + 1³F₄ scope exclusion both image-confirmed on page 209. |
+| W2a-2 strange | **N/A** | strange 1S+1P already in light CSV; strange 2S/1D folded into W2a-1. No separate unit needed. |
 | W2a-3 charmed | **done** (merged `44e1d50`) | 10 rows, every value image-verified vs page 22. A_c/S_c are light-class analogues; realistic column is `[A_c/A]`/`[S_c/S]` ratios; β_c≡β (footnote d); A_c P-waves carry recoil `m_cβ/((m_c+m_d)β_c)`. 2 real coeff-vs-numeric sign flips on Q1c/Q2c (footnote b: pure-formula vs mixed-numeric). |
 | W2a-4 charmonium | relaunch pending | |
 | W3-1 crop audit + 2S→χ₀ | **done** (merged `07ad617`) | finished in 285s (tight scope worked). Open-flavor M1 image-verified vs page 24, shift confirmed. 2S→χ₀ not a q-convention artifact (model-q helps b-b̄, hurts c-c̄). |
 | W3-2 isoscalar rows | **done** (merged `4a8645c`) | 6 isoscalar M1 rows; all signs right (incl. φ→η/η′ relative sign); dominant magnitudes ~15-24%; η↔η′ ordering inverted → sub-dominant rows ~2-3× low (needs paper per-row I mock-mass eval). |
-| W3-3 remaining blocks | relaunch pending | now unblocked (same files free) — light E1/M2 + strange/charmed P-wave + hindered bottomonium |
+| W3-3 remaining blocks | **done** (merged `d678136`) | light E1/M2 (A₂→πγ fit +0.51 vs +0.55), strange K*(1420) E1 (~9%), hindered b-b̄ M1 (Υ″ sign-flips → W6). Table VI structurally complete. |
 | W2c-1 charm classes | **done** (merged `f2dadf2`) | A_c/S_c coded, no refit; charmed rows 12% median; Q1c/Q2c reproduce at paper −41°. Closes Table IV charm-class gap. |
 | W2c-2 strange √3 | queued | investigate K*₂→Kπ ~√3 normalization (unequal-mass recoil); the charmed A_c recoil multiplier is the model to apply |
 | W4 Table VII | queued | wave 2 |
