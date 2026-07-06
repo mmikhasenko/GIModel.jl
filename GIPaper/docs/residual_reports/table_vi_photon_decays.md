@@ -57,6 +57,8 @@ All isoscalar paper values are IMAGE-VERIFIED against page 24.
 | eta' -> omega gamma [mixed P1/S1] | +0.216 | +0.63 |
 | rho -> eta gamma   [mixed P1] | +1.167 | +1.53 |
 | eta' -> rho gamma  [mixed P1] | +0.599 | +1.85 |
+| Upsilon' -> eta_b gamma (hindered, recoil) | +0.009 | +0.007 |
+| Upsilon'' -> eta_b gamma (hindered, recoil) | -0.004 | +0.007 |
 
 ### Isoscalar block notes
 
@@ -101,6 +103,49 @@ angular coefficient).
 | Upsilon' -> chi_b2 gamma | -0.041 | -0.040 |
 | Upsilon' -> chi_b1 gamma | -0.041 | -0.038 |
 | Upsilon' -> chi_b0 gamma | -0.033 | -0.025 |
+| A2 -> pi gamma (fit of exponent 0.5) | +0.510 | +0.55 |
+| A2 -> rho gamma | +0.149 | +0.15 |
+| A2 -> omega gamma | +0.441 | +0.44 |
+| A1 -> pi gamma | +0.605 | +0.56 |
+| B -> pi gamma | +0.566 | +0.63 |
+| f' -> phi gamma | -0.309 | -0.31 |
+| K*(1420) -> K gamma  [2/(3m_u) E1^u + 1/(3m_s) E1^s] | +0.436 | +0.48 |
+
+### Light E1/M2 and strange P-wave block notes
+
+- **`A2 -> pi gamma` is the paper's fit row for the 0.5 exponent** (the
+  E_n^i prefactor), so it is the E1-pipeline normalization check, mirroring
+  `rho -> pi gamma` for the M1 pipeline. Computed +0.51 vs the +0.55 fit
+  target -- the same ~6-8% light-sector wavefunction residual seen there,
+  reached with NO new fitted constant (the exponent is the paper's).
+- The light E1/M2 rows reproduce the paper cleanly: `A2 -> rho gamma`
+  +0.149 vs +0.15 and `A2 -> omega gamma` +0.441 vs +0.44 are within 1%,
+  `A1 -> pi gamma` +0.61 vs +0.56, `B -> pi gamma` +0.57 vs +0.63, and
+  `f' -> phi gamma` -0.309 vs -0.31 (sign and magnitude). A2/A1/B use the
+  central 1P n nbar wave, f' the 1P s sbar wave -- both J-independent at
+  first order, differing only via q and the printed angular coefficient.
+- `K*(1420) -> K gamma` (strange 1P) folds the two emitting-quark channels
+  `2/(3 m_u) E1^u + 1/(3 m_s) E1^s` on the same n sbar 1S->1P overlap;
+  computed +0.44 vs +0.48 (~9%, consistent with the light residual).
+- There are no separate charmed P-wave E1 rows in Table VI beyond the
+  charmonium chi_c/psi' block already audited; the printed charmed sector
+  of the E1 table is exhausted by the strange K*(1420) row.
+
+### Hindered bottomonium M1 block notes
+
+- The hindered `Upsilon(nS) -> eta_b gamma` rows carry the recoil term
+  `-2/3 [I_b - q^2/(24 m_b) E_2^b]` (footnote c: retained because the direct
+  I overlap is small on the near-orthogonal radial waves), the b bbar
+  analogue of the audited `psi' -> eta_c gamma` hindered row.
+- `Upsilon' -> eta_b gamma` computes +0.009 vs the paper +0.007 (right sign,
+  right order of magnitude for this cancellation-dominated amplitude).
+- `Upsilon'' -> eta_b gamma` computes -0.004 vs +0.007: the SIGN differs.
+  This is the deepest cancellation of the block (a 3S -> 1S direct overlap
+  against the E_2 recoil term, both tiny with two radial nodes between the
+  waves), so it is acutely sensitive to the residual difference between our
+  central-solve radial wave and the paper's HO-order treatment. Flagged as
+  the open item for the hindered block; the allowed rows and the
+  first-radial hindered row are reproduced.
 
 ## 2S -> chi_0 photon-momentum convention test
 

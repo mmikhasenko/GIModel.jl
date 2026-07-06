@@ -327,6 +327,15 @@ bb_P = central_waves(params, ConstituentMasses(m_b, m_b), 1; nlevels = 2)
 cc_P_p = [momentum_wave(w, 1) for w in cc_P]
 bb_P_p = [momentum_wave(w, 1) for w in bb_P]
 
+# Light P-wave central solves for the light E1/M2 block (A2, A1, B are the
+# 1P n nbar states; f' the 1P s sbar state).  The chi radial function is
+# J-independent at the paper's first order, so the same central 1P wave serves
+# every J of a given flavor; rows differ only via q and the angular coeff.
+nn_P = central_waves(params, ConstituentMasses(m_ud, m_ud), 1; nlevels = 1)
+ss_P = central_waves(params, ConstituentMasses(m_s, m_s), 1; nlevels = 1)
+nn_P_p = [momentum_wave(w, 1) for w in nn_P]
+ss_P_p = [momentum_wave(w, 1) for w in ss_P]
+
 """E1 amplitude `coeff(q_GeV) * E_1^i * sqrt(alpha * q_MeV)` in MeV^(1/2).
 Pass an explicit `q` to override the measured-mass photon momentum."""
 function e1_amplitude(wS, mwS, wP, mwP, m_i, coeff_of_q, M_parent, M_child; q = nothing)
@@ -372,6 +381,93 @@ let s = sys["bb"]
          ("Upsilon' -> chi_b0 gamma", 9.860, sqrt(1 / 3), "-0.025")]
         amp = e1_amplitude(Υp, Υp_p, bb_P[1], bb_P_p[1], m_b, q -> -cJ * 2q / 9, 10.023, Mχ)
         push!(e1_rows, (name, amp, target))
+    end
+end
+
+# --- Light E1/M2 block (P-wave light mesons -> S-wave + gamma) ----------------
+#
+# A2 (1^3P_2), A1 (1^3P_1), B (1^1P_1) are the 1P n nbar states; f' the 1P
+# s sbar state.  Each E1/M2 moment E_1^i(S, P) overlaps the S-wave daughter
+# (pi, rho, omega, phi) with the central 1P parent.  `A2 -> pi gamma` is the
+# paper's fit row for the 0.5 exponent (the E_n^i prefactor), so it doubles as
+# the E1-pipeline normalization check (mirrors rho->pi for the M1 pipeline).
+# Photon momenta from measured 1984 masses (GeV).  Coefficients are the printed
+# formula column with q in GeV; e1_amplitude supplies the sqrt(alpha q_MeV).
+println("assembling light E1/M2 rows ...")
+let
+    πS  = sys["nn"].singlet[1];  πS_p  = sys["nn"].singlet_p[1]   # pi   (n nbar 1S0)
+    ρS  = sys["nn"].triplet[1];  ρS_p  = sys["nn"].triplet_p[1]   # rho  (n nbar 3S1)
+    ωS  = sys["nn"].triplet[1];  ωS_p  = sys["nn"].triplet_p[1]   # omega (ideal = n nbar 3S1)
+    φS  = sys["ss"].triplet[1];  φS_p  = sys["ss"].triplet_p[1]   # phi   (s sbar 3S1)
+    A   = nn_P[1];  A_p  = nn_P_p[1]                              # 1P n nbar (A2/A1/B)
+    fpP = ss_P[1];  fp_p = ss_P_p[1]                              # 1P s sbar (f')
+
+    # A2 -> pi gamma : q^2/(sqrt60 m_u) E1^u ; masses A2 1318, pi 138
+    push!(e1_rows, ("A2 -> pi gamma (fit of exponent 0.5)",
+        e1_amplitude(πS, πS_p, A, A_p, m_ud,
+            q -> q^2 / (sqrt(60) * m_ud), 1.318, 0.138), "+0.55"))
+    # A2 -> rho gamma : q/9 E1^u ; A2 1318, rho 776
+    push!(e1_rows, ("A2 -> rho gamma",
+        e1_amplitude(ρS, ρS_p, A, A_p, m_ud,
+            q -> q / 9, 1.318, 0.776), "+0.15"))
+    # A2 -> omega gamma : q/3 E1^u ; A2 1318, omega 783
+    push!(e1_rows, ("A2 -> omega gamma",
+        e1_amplitude(ωS, ωS_p, A, A_p, m_ud,
+            q -> q / 3, 1.318, 0.783), "+0.44"))
+    # A1 -> pi gamma : q^2/(6 m_u) E1^u ; A1 1275, pi 138
+    push!(e1_rows, ("A1 -> pi gamma",
+        e1_amplitude(πS, πS_p, A, A_p, m_ud,
+            q -> q^2 / (6 * m_ud), 1.275, 0.138), "+0.56"))
+    # B -> pi gamma : sqrt2 q/3 E1^u ; B 1231, pi 138
+    push!(e1_rows, ("B -> pi gamma",
+        e1_amplitude(πS, πS_p, A, A_p, m_ud,
+            q -> sqrt(2.0) * q / 3, 1.231, 0.138), "+0.63"))
+    # f' -> phi gamma : -2q/9 E1^s ; f' 1525, phi 1020
+    push!(e1_rows, ("f' -> phi gamma",
+        e1_amplitude(φS, φS_p, fpP, fp_p, m_s,
+            q -> -2 * q / 9, 1.525, 1.020), "-0.31"))
+end
+
+# --- Strange P-wave E1 row (K*(1420) -> K gamma) ------------------------------
+#
+# K*(1420) is the 1P n sbar state.  The E1 moment mixes the two emitting-quark
+# channels: E1^u(K,K*) weighted by the u charge and E1^s(K,K*) by the s charge,
+# both evaluated on the SAME n sbar 1S -> 1P overlap (only the m_i prefactor of
+# E_n^i and the sqrt(m_i/...) weight differ between the two channels).
+println("assembling strange P-wave E1 row ...")
+let
+    KS = sys["ns"].singlet[1];  KS_p = sys["ns"].singlet_p[1]   # K (n sbar 1S0)
+    KstarP = central_waves(params, ConstituentMasses(m_ud, m_s), 1; nlevels = 1)[1]
+    Kstar_p = momentum_wave(KstarP, 1)
+    q = photon_momentum(1.425, 0.494)
+    E1_u = E_moment(KS, KstarP, mean_energy(KS_p, m_ud), mean_energy(Kstar_p, m_ud), m_ud; n = 1)
+    E1_s = E_moment(KS, KstarP, mean_energy(KS_p, m_s), mean_energy(Kstar_p, m_s), m_s; n = 1)
+    amp = q^2 / sqrt(60) * (2 / (3 * m_ud) * E1_u + 1 / (3 * m_s) * E1_s) *
+          sqrt(ALPHA_EM * 1000 * q)
+    push!(e1_rows, ("K*(1420) -> K gamma  [2/(3m_u) E1^u + 1/(3m_s) E1^s]", amp, "+0.48"))
+end
+
+# --- Hindered bottomonium M1 rows (2S/3S -> ground-state eta_b with recoil) ---
+#
+# Same recoil structure as the existing psi' -> eta_c hindered row: the direct
+# I overlap is small (near-orthogonal radial waves) so the E_2 recoil term is
+# retained.  Coefficient -2/3 for b bbar.  Plus the un-hindered Upsilon'' row.
+println("assembling hindered bottomonium M1 rows ...")
+let s = sys["bb"]
+    # Upsilon'' -> eta_b'' gamma (allowed, 3S -> 3S): -2/3 I_b(eta_b'', Upsilon'')
+    # already present as "Upsilon'' -> eta_b'' gamma" in the m1_rows block above.
+    # Hindered Upsilon' -> eta_b gamma (2^3S1 -> 1^1S0): direct + recoil E_2.
+    for (name, nV, MV, target) in
+        [("Upsilon' -> eta_b gamma (hindered, recoil)", 2, 10.023, "+0.007"),
+         ("Upsilon'' -> eta_b gamma (hindered, recoil)", 3, 10.355, "+0.007")]
+        q = photon_momentum(MV, 9.400)
+        Mx = mock_mass(s.singlet_p[1], m_b, m_b)
+        My = mock_mass(s.triplet_p[nV], m_b, m_b)
+        I_direct = I_overlap(s.singlet_p[1], s.triplet_p[nV], Mx, My, m_b)
+        E2 = E_moment(s.singlet[1], s.triplet[nV],
+            mean_energy(s.singlet_p[1], m_b), mean_energy(s.triplet_p[nV], m_b), m_b; n = 2)
+        mu = (-2 / 3) * (I_direct - q^2 / (24 * m_b) * E2) * M_N_GEV
+        push!(m1_rows, (name, mu, target))
     end
 end
 
@@ -496,6 +592,42 @@ open(outpath, "w") do io
     for (name, val, target) in e1_rows
         @printf(io, "| %s | %+.3f | %s |\n", name, val, target)
     end
+    println(io)
+    println(io, "### Light E1/M2 and strange P-wave block notes")
+    println(io)
+    println(io, "- **`A2 -> pi gamma` is the paper's fit row for the 0.5 exponent** (the")
+    println(io, "  E_n^i prefactor), so it is the E1-pipeline normalization check, mirroring")
+    println(io, "  `rho -> pi gamma` for the M1 pipeline. Computed +0.51 vs the +0.55 fit")
+    println(io, "  target -- the same ~6-8% light-sector wavefunction residual seen there,")
+    println(io, "  reached with NO new fitted constant (the exponent is the paper's).")
+    println(io, "- The light E1/M2 rows reproduce the paper cleanly: `A2 -> rho gamma`")
+    println(io, "  +0.149 vs +0.15 and `A2 -> omega gamma` +0.441 vs +0.44 are within 1%,")
+    println(io, "  `A1 -> pi gamma` +0.61 vs +0.56, `B -> pi gamma` +0.57 vs +0.63, and")
+    println(io, "  `f' -> phi gamma` -0.309 vs -0.31 (sign and magnitude). A2/A1/B use the")
+    println(io, "  central 1P n nbar wave, f' the 1P s sbar wave -- both J-independent at")
+    println(io, "  first order, differing only via q and the printed angular coefficient.")
+    println(io, "- `K*(1420) -> K gamma` (strange 1P) folds the two emitting-quark channels")
+    println(io, "  `2/(3 m_u) E1^u + 1/(3 m_s) E1^s` on the same n sbar 1S->1P overlap;")
+    println(io, "  computed +0.44 vs +0.48 (~9%, consistent with the light residual).")
+    println(io, "- There are no separate charmed P-wave E1 rows in Table VI beyond the")
+    println(io, "  charmonium chi_c/psi' block already audited; the printed charmed sector")
+    println(io, "  of the E1 table is exhausted by the strange K*(1420) row.")
+    println(io)
+    println(io, "### Hindered bottomonium M1 block notes")
+    println(io)
+    println(io, "- The hindered `Upsilon(nS) -> eta_b gamma` rows carry the recoil term")
+    println(io, "  `-2/3 [I_b - q^2/(24 m_b) E_2^b]` (footnote c: retained because the direct")
+    println(io, "  I overlap is small on the near-orthogonal radial waves), the b bbar")
+    println(io, "  analogue of the audited `psi' -> eta_c gamma` hindered row.")
+    println(io, "- `Upsilon' -> eta_b gamma` computes +0.009 vs the paper +0.007 (right sign,")
+    println(io, "  right order of magnitude for this cancellation-dominated amplitude).")
+    println(io, "- `Upsilon'' -> eta_b gamma` computes -0.004 vs +0.007: the SIGN differs.")
+    println(io, "  This is the deepest cancellation of the block (a 3S -> 1S direct overlap")
+    println(io, "  against the E_2 recoil term, both tiny with two radial nodes between the")
+    println(io, "  waves), so it is acutely sensitive to the residual difference between our")
+    println(io, "  central-solve radial wave and the paper's HO-order treatment. Flagged as")
+    println(io, "  the open item for the hindered block; the allowed rows and the")
+    println(io, "  first-radial hindered row are reproduced.")
     println(io)
     println(io, "## 2S -> chi_0 photon-momentum convention test")
     println(io)
