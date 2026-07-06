@@ -104,15 +104,43 @@ Coordinator-owned until W1-W4 land.
    from a script, and its acceptance criterion in
    `reproduction_audit.md` §3 is met.
 
+## Worker-sizing constraint (observed)
+
+Delegated workers are terminated at a hard ~11-minute wall-clock ceiling
+(session-limit). Empirically: code-shaped tasks that finish inside that
+window survive and merge (W1, W2b); slow many-round-trip digitization /
+page-image-verification tasks (W2a, W3) die having produced little. **Rule
+going forward: a delegated unit must be completable in <~10 min.** The two
+image-heavy streams are therefore split into single-deliverable units below,
+launched one/two at a time (not swarmed) to cap shared-budget burn and blast
+radius.
+
+### W2a decomposition (per Table V section; each ~one page, ~30 rows)
+- **W2a-1** light 1D remainder (1³D₁, 1³D₂, 1¹D₂) + light 2S — 1³D₃ already merged (`8823643`).
+- **W2a-2** strange section.
+- **W2a-3** charmed section (unblocks W2c).
+- **W2a-4** charmonium (ψ) section.
+
+### W3 decomposition (Table VI; single owned script/report, so serial not parallel)
+- **W3-1** crop audit of the OCR-shifted open-flavor M1 column + 2S→χ₀ model-mass-q test (verification-only, no new rows — smallest, launch first).
+- **W3-2** isoscalar mixing rows via existing Table III amplitudes.
+- **W3-3** remaining light E1/M2 + strange/charmed P-wave + hindered bottomonium blocks.
+
 ## Status board
 
 | Stream | Status | Notes |
 | --- | --- | --- |
-| W1 angles | **done** (merged `5340e62`) | `mixing_angles.md`: 1D blocks 0.3-2.5°, b-sector 1-5° after low/high label exchange (near-degenerate eigenstates); small-offdiagonal 1P blocks 13-30° off with inverted radial trend — physics finding, not a bug. Worker interrupted by session limit; coordinator completed. |
-| W2a Table V digitization | relaunch pending | wave-1 worker cut off by session limit before output; relaunch after limit reset |
-| W2b K1 wiring | queued | W1 done — unblocked; note the K1 (u sbar 1P) angle itself deviates (+19.5° vs paper +34°), so score Q1/Q2 rows with both angles |
-| W2c charm classes | queued | blocked by W2a (charm rows) |
-| W3 Table VI | relaunch pending | wave-1 worker cut off by session limit before output; relaunch after limit reset |
+| W1 angles | **done** (merged `5340e62`) | 1D blocks 0.3-2.5°, b-sector 1-5° after low/high label exchange; small-offdiagonal 1P blocks 13-30° off with inverted radial trend — physics finding, resolution points at W6. |
+| W2b K1 wiring | **done** (merged `c5d7ccd`) | Q1/Q2 scored 3 ways; paper numeric column matches its own +34° quote (median dev 10% vs 25% model / 38% unmixed); free θ-scan lands on +34°. Model-side gap is the K1 angle itself. |
+| W2a-1D3 | **done** (merged `8823643`) | light 1³D₃ salvaged from interrupted worker, page-16 verified. |
+| W2a-1 light 1D+2S | relaunch pending | worker-sized unit |
+| W2a-2 strange | relaunch pending | |
+| W2a-3 charmed | relaunch pending | unblocks W2c |
+| W2a-4 charmonium | relaunch pending | |
+| W3-1 crop audit + 2S→χ₀ | **launching** | verification-only, fits worker budget |
+| W3-2 isoscalar rows | queued | after W3-1 merges (same files) |
+| W3-3 remaining blocks | queued | after W3-2 merges (same files) |
+| W2c charm classes | queued | blocked by W2a-3 |
 | W4 Table VII | queued | wave 2 |
-| W5 Eqs. 20-21 | queued | blocked by W2a merge |
-| W6 HO-order | unscheduled | coordinator; the small-offdiagonal 1P angle sensitivity found by W1 strengthens the case for this item |
+| W5 Eqs. 20-21 | queued | blocked by W2a light rows |
+| W6 HO-order | unscheduled | coordinator; strengthened by W1's 1P angle finding |
