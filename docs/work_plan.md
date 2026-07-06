@@ -108,11 +108,11 @@ Coordinator-owned until W1-W4 land.
 
 | Stream | Status | Notes |
 | --- | --- | --- |
-| W1 angles | launched (wave 1) | |
-| W2a Table V digitization | launched (wave 1) | |
-| W2b K1 wiring | queued | blocked by W1 (angle convention) |
+| W1 angles | **done** (merged `5340e62`) | `mixing_angles.md`: 1D blocks 0.3-2.5°, b-sector 1-5° after low/high label exchange (near-degenerate eigenstates); small-offdiagonal 1P blocks 13-30° off with inverted radial trend — physics finding, not a bug. Worker interrupted by session limit; coordinator completed. |
+| W2a Table V digitization | relaunch pending | wave-1 worker cut off by session limit before output; relaunch after limit reset |
+| W2b K1 wiring | queued | W1 done — unblocked; note the K1 (u sbar 1P) angle itself deviates (+19.5° vs paper +34°), so score Q1/Q2 rows with both angles |
 | W2c charm classes | queued | blocked by W2a (charm rows) |
-| W3 Table VI | launched (wave 1) | |
+| W3 Table VI | relaunch pending | wave-1 worker cut off by session limit before output; relaunch after limit reset |
 | W4 Table VII | queued | wave 2 |
 | W5 Eqs. 20-21 | queued | blocked by W2a merge |
-| W6 HO-order | unscheduled | coordinator |
+| W6 HO-order | unscheduled | coordinator; the small-offdiagonal 1P angle sensitivity found by W1 strengthens the case for this item |
