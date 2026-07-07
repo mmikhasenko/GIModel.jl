@@ -1,0 +1,80 @@
+page,journal_pg,multipole,decay,parent,daughter,formula,predicted,experiment,footnotes,confidence,notes
+24,212,M1,rho -> pi gamma,rho,pi,"+1/3 I_d(pi,rho)",+0.69,0.69 +- 0.04,fit,high,predicted mu in mu_N; formula in e/2; fit input for I_m exponent 0.7
+24,212,M1,rho -> eta gamma,rho,eta,"+1/sqrt2 I_d(eta_ns,rho)",+1.53,1.62 +- 0.21,,high,
+24,212,M1,eta' -> rho gamma,etaprime,rho,"+1/sqrt2 I_d(eta_ns,rho)",+1.85,1.43 +- 0.31,,high,
+24,212,M1,omega -> pi gamma,omega,pi,"+I_d(pi,omega)",+2.07,2.38 +- 0.13,,high,
+24,212,M1,omega -> eta gamma,omega,eta,"+1/(3 sqrt2) I_d(eta_ns,omega)",+0.50,0.37 +- 0.15,,high,
+24,212,M1,eta' -> omega gamma,etaprime,omega,"+1/(3 sqrt2) I_d(eta_ns,omega)",+0.63,0.44 +- 0.12,,high,
+24,212,M1,phi -> pi gamma,phi,pi,0,(+0.06),0.13 +- 0.02,"a,d",high,zero at ideal mixing; +0.06 via isoscalar mixing
+24,212,M1,phi -> eta gamma,phi,eta,"+sqrt2/3 I_s(eta_s,phi)",+0.71,0.69 +- 0.07,,high,
+24,212,M1,phi -> eta' gamma,phi,etaprime,"-sqrt2/3 I_s(eta_s,phi)",-0.66,,,high,
+24,212,M1,eta_r -> omega gamma,eta_r,omega,"+1/3 I_d(eta_ns_r,omega)",-0.18,,,high,
+24,212,M1,eta_r -> rho gamma,eta_r,rho,"+I_d(eta_ns_r,omega)",+0.57,,,medium,second I_d arg reads omega on page; expected rho for ->rho gamma (possible print typo)
+24,212,M1,eta_r -> phi gamma,eta_r,phi,0,+0.37,,,high,
+24,212,M1,eta'_r -> omega gamma,etaprime_r,omega,0,+0.01,,,high,
+24,212,M1,eta'_r -> rho gamma,etaprime_r,rho,0,+0.008,,,high,
+24,212,M1,eta'_r -> phi gamma,etaprime_r,phi,"-2/3 I_s(eta_s_r,phi)",-0.29,,,high,
+24,212,M1,K*+ -> K+ gamma,Kstarplus,Kplus,"+2/3 I_d(K,K*) - 1/3 I_s(K,K*)",+0.91,0.86 +- 0.11,,high,
+24,212,M1,K*0 -> K0 gamma,Kstar0,K0,"-1/3 I_d(K,K*) - 1/3 I_s(K,K*)",-1.20,0.95 +- 0.22,,high,
+24,212,M1,D*+ -> D+ gamma,Dstarplus,Dplus,"+2/3 I_c(D,D*) - 1/3 I_d(D,D*)",-0.35,,b,high,
+24,212,M1,D*0 -> D0 gamma,Dstar0,D0,"+2/3 I_c(D,D*) + 2/3 I_d(D,D*)",+1.78,,b,high,
+24,212,M1,F* -> F gamma,Fstar,F,"+2/3 I_c(F,F*) - 1/3 I_s(F,F*)",-0.13,,,high,F is the c-sbar (Ds) meson
+24,212,M1,B*- -> B- gamma,Bstarminus,Bminus,"-1/3 I_b(B,B*) + 2/3 I_d(B,B*)",+1.37,,,high,
+24,212,M1,B*0 -> B0 gamma,Bstar0,B0,"-1/3 I_b(B,B*) - 1/3 I_d(B,B*)",-0.78,,,high,
+24,212,M1,Fb* -> Fb gamma,Fbstar,Fb,"-1/3 I_b(Fb,Fb*) - 1/3 I_s(Fb,Fb*)",-0.55,,f,high,Fb is the b-sbar (Bs) meson
+24,212,M1,psi -> eta_c gamma,psi,eta_c,"+4/3 I_c(eta_c,psi)",+0.69,0.44 +- 0.10,i,high,
+25,213,M1,psi' -> eta'_c gamma,psiprime,etaprime_c,"+4/3 I_c(eta'_c,psi')",+0.68,0.8 +- 0.4,,high,
+25,213,M1,psi' -> eta_c gamma,psiprime,eta_c,"+4/3 [I_c(eta_c,psi') - q^2/(24 m_c) E2^c(eta_c,psi)]",-0.056,0.029 +- 0.007,c,high,hindered M1 with E2 correction
+25,213,M1,Upsilon -> eta_b gamma,Upsilon,eta_b,"-2/3 I_b(eta_b,Upsilon)",-0.13,,,high,
+25,213,M1,Upsilon' -> eta'_b gamma,Upsilonprime,etaprime_b,"-2/3 I_b(eta'_b,Upsilon')",-0.12,,,high,
+25,213,M1,Upsilon' -> eta_b gamma,Upsilonprime,eta_b,"-2/3 [I_b(eta_b,Upsilon') - q^2/(24 m_b) E2^b(eta_b,Upsilon')]",+0.007,,c,high,hindered M1 with E2 correction
+25,213,M1,Upsilon'' -> eta''_b gamma,Upsilondoubleprime,etadoubleprime_b,"-2/3 I_b(eta''_b,Upsilon'')",-0.12,,,high,
+25,213,M1,Upsilon'' -> eta'_b gamma,Upsilondoubleprime,etaprime_b,"-2/3 [I_b(eta'_b,Upsilon'') - q^2/(24 m_b) E2^b(eta'_b,Upsilon'')]",+0.007,,c,high,hindered
+25,213,M1,Upsilon'' -> eta_b gamma,Upsilondoubleprime,eta_b,"-2/3 [I_b(eta_b,Upsilon'') - q^2/(24 m_b) E2^b(eta_b,Upsilon'')]",-0.004,,c,high,hindered
+25,213,M1,psi -> eta gamma,psi,eta,0,(+0.001),0.003 +- 0.001,d,high,zero at ideal mixing; parenthetical via mixing
+25,213,M1,psi -> eta' gamma,psi,etaprime,0,(+0.003),0.005 +- 0.002,d,high,
+25,213,M1,psi -> pi0 gamma,psi,pi0,0,(+0.0007),0.0007 +- 0.0003,"d,g",high,
+25,213,M1,psi -> eta_r gamma,psi,eta_r,0,(-0.002),0.007 +- 0.002,"d,e",high,
+25,213,M1,psi -> eta'_r gamma,psi,etaprime_r,0,(-0.002),,d,high,
+25,213,M1,Upsilon -> eta gamma,Upsilon,eta,0,(+8e-5),,d,high,
+25,213,M1,Upsilon -> eta' gamma,Upsilon,etaprime,0,(+3e-6),,d,high,
+25,213,M1,Upsilon -> pi0 gamma,Upsilon,pi0,0,(~0),,"d,g",high,
+25,213,M1,Upsilon -> eta_r gamma,Upsilon,eta_r,0,(-9e-5),,d,high,
+25,213,M1,Upsilon -> eta'_r gamma,Upsilon,etaprime_r,0,(+3e-4),,d,high,
+25,213,M2,A2 -> pi gamma,A2,pi,"q^2/sqrt(60 m_u) E1^u(pi,A2)",+0.55,0.55 +- 0.09,"h,fit",high,units sqrt(alpha q); theory/exp in MeV^1/2; M2 (q^2/m)
+25,213,M2,K*(1420) -> K gamma,Kstar2_1420,K,"q^2/sqrt60 [2/(3 m_u) E1^u(K,K*) + 1/(3 m_s) E1^s(K,K*)]",+0.48,0.50 +- 0.05,h,high,M2
+25,213,E1,A2 -> rho gamma,A2,rho,"q/9 E1^u(rho,A2)",+0.15,,,high,
+25,213,E1,f' -> phi gamma,fprime,phi,"-2q/9 E1^s(phi,f')",-0.31,,,high,
+25,213,E1,A2_0 -> omega gamma,A2,omega,"q/3 E1^u(omega,A2)",+0.44,,,high,
+25,213,M2,A1 -> pi gamma,A1,pi,"q^2/(6 m_u) E1^u(pi,A1)",+0.56,1.0 +- 0.3,h,high,M2 (q^2/m)
+25,213,E1,B -> pi gamma,B,pi,"sqrt2 q/3 E1^u(pi,B)",+0.63,0.45 +- 0.04,h,high,
+25,213,E1,chi_2c -> psi gamma,chi_2c,psi,"4q/9 E1^c(chi_2c,psi)",+0.50,0.58 +- 0.18,,high,
+25,213,E1,chi_1c -> psi gamma,chi_1c,psi,"4q/9 E1^c(psi,chi_1c)",+0.44,< 0.86,,high,
+26,214,E1,chi_0c -> psi gamma,chi_0c,psi,"4q/9 E1^c(psi,chi_0c)",+0.30,0.33 +- 0.08,,high,
+26,214,E1,psi' -> chi_2c gamma,psiprime,chi_2c,"4q/9 (5/3)^1/2 E1^c(chi_2c,psi')",+0.14,0.13 +- 0.02,,high,
+26,214,E1,psi' -> chi_1c gamma,psiprime,chi_1c,"4q/9 E1^c(chi_1c,psi')",+0.15,0.13 +- 0.02,,high,
+26,214,E1,psi' -> chi_0c gamma,psiprime,chi_0c,"4q/9 (1/3)^1/2 E1^c(chi_0c,psi)",+0.14,0.13 +- 0.02,,high,
+26,214,E1,chi_2b -> Upsilon gamma,chi_2b,Upsilon,"-2q/9 E1^b(Upsilon,chi_2b)",-0.18,,,high,
+26,214,E1,chi_1b -> Upsilon gamma,chi_1b,Upsilon,"-2q/9 E1^b(Upsilon,chi_1b)",-0.17,,,high,
+26,214,E1,chi_0b -> Upsilon gamma,chi_0b,Upsilon,"-2q/9 E1^b(Upsilon,chi_0b)",-0.16,,,high,
+26,214,E1,Upsilon' -> chi_2b gamma,Upsilonprime,chi_2b,"-2q/9 (5/3)^1/2 E1^b(chi_2b,Upsilon')",-0.040,0.043 +- 0.008,,high,
+26,214,E1,Upsilon' -> chi_1b gamma,Upsilonprime,chi_1b,"-2q/9 E1^b(chi_1b,Upsilon')",-0.038,0.042 +- 0.008,,high,
+26,214,E1,Upsilon' -> chi_0b gamma,Upsilonprime,chi_0b,"-2q/9 (1/3)^1/2 E1^b(chi_0b,Upsilon')",-0.025,0.032 +- 0.009,,high,
+26,214,E1,chi'_2b -> Upsilon' gamma,chiprime_2b,Upsilonprime,"-2q/9 E1^b(Upsilon',chi'_2b)",-0.12,,,high,
+26,214,E1,chi'_2b -> Upsilon gamma,chiprime_2b,Upsilon,"-2q/9 E1^b(Upsilon,chi'_2b)",+0.09,,,high,
+26,214,E1,chi'_1b -> Upsilon' gamma,chiprime_1b,Upsilonprime,"-2q/9 E1^b(Upsilon',chi'_1b)",-0.11,,,high,
+26,214,E1,chi'_1b -> Upsilon gamma,chiprime_1b,Upsilon,"-2q/9 E1^b(Upsilon,chi'_1b)",+0.069,,,high,
+26,214,E1,chi'_0b -> Upsilon' gamma,chiprime_0b,Upsilonprime,"-2q/9 E1^b(Upsilon',chi'_0b)",-0.10,,,high,
+26,214,E1,chi'_0b -> Upsilon gamma,chiprime_0b,Upsilon,"-2q/9 E1^b(Upsilon,chi'_0b)",+0.047,,,high,
+26,214,E1,Upsilon'' -> chi'_2b gamma,Upsilondoubleprime,chiprime_2b,"-2q/9 (5/3)^1/2 E1^b(chi'_2b,Upsilon'')",-0.044,0.048 +- 0.015,,high,
+26,214,E1,Upsilon'' -> chi_2b gamma,Upsilondoubleprime,chi_2b,"-2q/9 (5/3)^1/2 E1^b(chi_2b,Upsilon'')",-0.020,,,high,
+26,214,E1,Upsilon'' -> chi'_1b gamma,Upsilondoubleprime,chiprime_1b,"-2q/9 E1^b(chi'_1b,Upsilon'')",-0.043,0.053 +- 0.015,,high,decay printed with typo Y''->chi'_1b Y (should be gamma)
+26,214,E1,Upsilon'' -> chi_1b gamma,Upsilondoubleprime,chi_1b,"-2q/9 E1^b(chi_1b,Upsilon'')",-0.008,,,high,
+26,214,E1,Upsilon'' -> chi'_0b gamma,Upsilondoubleprime,chiprime_0b,"-2q/9 (1/3)^1/2 E1^b(chi'_0b,Upsilon'')",-0.030,0.037 +- 0.014,,high,
+26,214,E1,Upsilon'' -> chi_0b gamma,Upsilondoubleprime,chi_0b,"-2q/9 (1/3)^1/2 E1^b(chi_0b,Upsilon'')",-0.002,,,high,
+26,214,E1,psi -> A2 gamma,psi,A2,0,(+0.002),< 7e-3,d,high,forbidden/mixing-induced
+26,214,E1,psi -> f gamma,psi,f,0,(+0.024),0.010 +- 0.002,d,high,
+26,214,E1,psi -> f' gamma,psi,fprime,0,(+0.010),< 4e-3,d,high,
+26,214,E1,Upsilon -> A2 gamma,Upsilon,A2,0,(+0.002),,d,high,
+26,214,E1,Upsilon -> f gamma,Upsilon,f,0,(-0.006),,d,high,
+26,214,E1,Upsilon -> f' gamma,Upsilon,fprime,0,(-0.002),,d,high,

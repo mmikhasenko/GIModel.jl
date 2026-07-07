@@ -64,3 +64,33 @@ column still shows the full class letter (`D q̃`, `P q̃`).
 - **h** Reference 9.
 - **i** Reference 15.
 - **j** This result is extremely sensitive to the Q_A–Q_B mixing angle of Fig. 4.
+
+## `table_vi_photon_decays.csv` — Table VI, photon decays (pages 24–26, 79 rows)
+
+Two blocks, distinguished by the `multipole` column:
+- **M1** (magnetic-dipole, 42 rows): `formula` is the magnetic moment μ in units of
+  e/2; `predicted` and `experiment` are μ in units of μ_N. Parenthetical predicted
+  values (e.g. `(+0.06)`) are mixing/forbidden-induced order-of-magnitude estimates
+  (footnote d). Hindered quarkonium rows carry a `q^2/(24 m_Q) E2` recoil term.
+- **E1 / M2** (37 rows, "Other electric and magnetic multipole decays"): `formula`
+  is the amplitude in units of √(αq); `predicted`(="Theory") and `experiment` are in
+  MeV^1/2. `multipole` is classified by the q-power in the formula (`q^L/m` → M2, `q`
+  → E1); the `I_m`/`E_n^i` factors are defined in the Table VI caption (Appendix D).
+
+Columns: `page,journal_pg,multipole,decay,parent,daughter,formula,predicted,experiment,footnotes,confidence,notes`.
+`formula` fields are quoted (they contain commas from `I_x(a,b)`). `daughter` is the
+non-photon final meson.
+
+### Table VI footnotes (pages 26–27)
+- **a** This moment includes a contribution of +0.01 from π⁰–η mixing.
+- **b** Absolute widths unknown, but predicted branching ratios compare favorably to experiment via Table V.
+- **c** Recoil term included in this decay since the direct term is so small (hindered M1).
+- **d** Amplitudes from photon emission off the non-ss̄ (cc̄,bb̄) component of the initial φ(ψ,Υ) or to the ss̄(cc̄,bb̄) component of the final meson (Table III); Zweig-violating contributions are omitted, so the parenthetical "predicted" values are order-of-magnitude only.
+- **e** We tentatively identify η_r with the ι(1440); see Sec. VA.
+- **f** F_b denotes a bs̄ meson.
+- **g** Recoil absorbed by a light-quark system, so a form factor exp(−q²/16β²) with β=0.40 GeV is included (as in Table V).
+- **h** Reference 20.
+- **i** Reference 23.
+
+### GI-predicted masses for the 2S/1D vector states (Sec. VA, page 215), used as Table V/VII parents
+ρ_S 1.45, ω_S 1.46, K*_S 1.58, φ_S 1.69 (2³S₁); ρ_D 1.66, ω_D 1.66, K*_D 1.78, φ_D 1.88 (1³D₁) GeV.
