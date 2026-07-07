@@ -1,0 +1,62 @@
+page,journal_pg,subtable,decay,quantity,formula,predicted,experiment,footnotes,confidence,notes
+28,216,leptonic,pi -> mu nu,f_pi,2 sqrt3 P_pi,+1.3,0.95,,high,leptonic decay constant amplitude; units as in paper
+28,216,leptonic,K -> mu nu,f_K,2 sqrt3 P_K,+0.47,0.32,,high,
+28,216,leptonic,D -> mu nu,f_D,2 sqrt3 P_D,+0.13,,,high,
+29,217,leptonic,F -> mu nu,f_F,2 sqrt3 P_F,+0.17,,,high,F is c-sbar (Ds)
+29,217,leptonic,B -> mu nu,f_B,2 sqrt3 P_B,+0.033,,,high,
+29,217,leptonic,1^1S_0(bc) -> mu nu,f_bc,2 sqrt3 P_bc,+0.091,,,high,
+29,217,leptonic,tau -> A1 nu,f_A1,2 sqrt2 P'_A1,+0.11,0.10 +- 0.04,,high,
+29,217,leptonic,tau -> K*(892) nu,f_Kstar,2 sqrt3 V_K*,+0.30,0.28 +- 0.07,,high,
+29,217,leptonic,rho -> e+ e-,f_rho,sqrt6 V_rho,+0.20,0.20 +- 0.02,,high,
+29,217,leptonic,omega -> e+ e-,f_omega,(2/3)^1/2 V_omega,+0.07,0.07 +- 0.01,,high,
+29,217,leptonic,phi -> e+ e-,f_phi,-(4/3)^1/2 V_phi,-0.11,0.07 +- 0.01,,high,
+29,217,leptonic,rhoS -> e+ e-,f_rhoS,sqrt6 V_rhoS,-0.037,,,high,rhoS = 2^3S_1
+29,217,leptonic,rhoD -> e+ e-,f_rhoD,(4/3)^1/2 V'_rhoD,+0.019,,,high,rhoD = 1^3D_1
+29,217,leptonic,omegaS -> e+ e-,f_omegaS,(2/3)^1/2 V_omegaS,-0.012,,,high,
+29,217,leptonic,omegaD -> e+ e-,f_omegaD,(4/27)^1/2 V'_omegaD,+0.006,,,high,
+29,217,leptonic,phiS -> e+ e-,f_phiS,-(4/3)^1/2 V_phiS,+0.027,,,high,
+29,217,leptonic,phiD -> e+ e-,f_phiD,-(8/27)^1/2 V'_phiD,-0.012,,,high,
+29,217,leptonic,psi -> e+ e-,f_psi,(16/3)^1/2 V_psi,+0.12,0.08 +- 0.01,,high,
+29,217,leptonic,psi' -> e+ e-,f_psi',(16/3)^1/2 V_psi',-0.063,0.049 +- 0.007,,high,
+29,217,leptonic,psi'' -> e+ e-,f_psi'',(32/27)^1/2 V'_psi'',+0.011,0.020 +- 0.003,,high,psi'' is a 1^3D_1-like state
+29,217,leptonic,psi''' -> e+ e-,f_psi''',(16/3)^1/2 V_psi''',+0.046,0.028 +- 0.007,,high,
+29,217,leptonic,Upsilon -> e+ e-,f_Upsilon,-(4/3)^1/2 V_Upsilon,-0.026,0.023 +- 0.002,,high,
+29,217,leptonic,Upsilon' -> e+ e-,f_Upsilon',-(4/3)^1/2 V_Upsilon',+0.017,0.015 +- 0.002,,high,
+29,217,leptonic,Upsilon'' -> e+ e-,f_Upsilon'',-(4/3)^1/2 V_Upsilon'',-0.014,0.012 +- 0.002,,high,
+29,217,leptonic,Upsilon''' -> e+ e-,f_Upsilon''',-(4/3)^1/2 V_Upsilon''',+0.012,0.010 +- 0.002,,high,
+29,217,leptonic,1^3D_1(bb) -> e+ e-,f_1^3D_1(bb),-(8/27)^1/2 V'_1^3D_1(bb),-0.0008,,,high,
+29,217,leptonic,zeta -> e+ e-,f_zeta,+(16/3)^1/2 V_zeta,+0.01,,,high,hypothetical t-tbar 1^3S_1 meson
+29,217,gamma_gamma,pi -> gamma gamma,,,2.6 eV^1/2,2.8 +- 0.1 eV^1/2,,high,
+29,217,gamma_gamma,pi' -> gamma gamma,,,-1.0 keV^1/2,,,high,
+29,217,gamma_gamma,eta -> gamma gamma,,,0.50 keV^1/2,0.57 +- 0.05 keV^1/2,,high,
+29,217,gamma_gamma,eta' -> gamma gamma,,,1.3 keV^1/2,2.3 +- 0.6 keV^1/2,,high,
+29,217,gamma_gamma,eta_r -> gamma gamma,,,-2.7 keV^1/2,,,high,
+29,217,gamma_gamma,eta'_r -> gamma gamma,,,-2.2 keV^1/2,,,high,
+29,217,gamma_gamma,eta_c -> gamma gamma,,,2.6 keV^1/2,< 5 keV^1/2,a,high,
+29,217,gamma_gamma,eta'_c -> gamma gamma,,,-2.2 keV^1/2,,,high,
+29,217,gamma_gamma,eta_b -> gamma gamma,,,0.62 keV^1/2,,,high,
+29,217,gamma_gamma,eta_t -> gamma gamma,,,1.5 keV^1/2,,,high,hypothetical t-tbar 1^1S_0 meson
+29,217,gamma_gamma,A2 -> gamma gamma,,,-1.2 keV^1/2,0.9 +- 0.1 keV^1/2,,high,
+29,217,gamma_gamma,f -> gamma gamma,,,-1.9 keV^1/2,1.7 +- 0.1 keV^1/2,,high,
+29,217,gamma_gamma,f' -> gamma gamma,,,-0.25 keV^1/2,0.3 +- 0.1 keV^1/2,"b,c",high,
+29,217,gluonic,eta_c -> 2g,,,4.7,3.5 +- 0.6,,high,units MeV^1/2
+29,217,gluonic,psi -> 3g,,,0.42,0.21 +- 0.01,,high,units MeV^1/2
+29,217,gluonic,eta'_c -> 2g,,,-2.7,< 3,,high,units MeV^1/2
+30,218,gluonic,psi' -> 3g,,,-0.28,0.22 +- 0.08,,high,units MeV^1/2
+30,218,gluonic,eta_b -> 2g,,,2.5,,,high,units MeV^1/2
+30,218,gluonic,Upsilon -> 3g,,,0.21,0.21 +- 0.04,,high,units MeV^1/2
+30,218,gluonic,eta'_b -> 2g,,,-1.7,,,high,units MeV^1/2
+30,218,gluonic,Upsilon' -> 3g,,,-0.15,,,high,units MeV^1/2
+30,218,gluonic,Upsilon'' -> 3g,,,0.13,,,high,units MeV^1/2
+30,218,gluonic,Upsilon''' -> 3g,,,-0.11,,,high,units MeV^1/2
+30,218,gluonic,eta_t -> 2g,,,1.1,,,high,hypothetical t-tbar 1^1S_0 meson; MeV^1/2
+30,218,gluonic,zeta -> 3g,,,0.10,,,high,hypothetical t-tbar 1^3S_1 meson; MeV^1/2
+30,218,gluonic,chi_2c -> 2g,,,0.88,1.6 +- 0.3,,high,units MeV^1/2
+30,218,gluonic,chi_0c -> 2g,,,2.5,4 +- 0.5,,high,units MeV^1/2
+30,218,gluonic,chi_2b -> 2g,,,0.35,,,high,units MeV^1/2
+30,218,gluonic,chi_0b -> 2g,,,0.82,,,high,units MeV^1/2
+30,218,gluonic,chi'_2b -> 2g,,,-0.37,,,high,units MeV^1/2
+30,218,gluonic,chi'_0b -> 2g,,,-0.82,,,high,units MeV^1/2
+30,218,charge_radius,pi+,r_E^2,,+(0.66)^2,+(0.66 +- 0.02)^2,"d,fit",high,r_E^2 in fm^2
+30,218,charge_radius,K+,r_E^2,,+(0.59)^2,+(0.53 +- 0.07)^2,e,high,r_E^2 in fm^2
+30,218,charge_radius,K0,r_E^2,,-(0.30)^2,-(0.23 +- 0.05)^2,f,high,r_E^2 in fm^2

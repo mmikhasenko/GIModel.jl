@@ -94,3 +94,27 @@ non-photon final meson.
 
 ### GI-predicted masses for the 2S/1D vector states (Sec. VA, page 215), used as Table V/VII parents
 ρ_S 1.45, ω_S 1.46, K*_S 1.58, φ_S 1.69 (2³S₁); ρ_D 1.66, ω_D 1.66, K*_D 1.78, φ_D 1.88 (1³D₁) GeV.
+
+## `table_vii_annihilation_em.csv` — Table VII, leptonic/γγ/gluonic decays + charge radii (pages 28–30, 61 rows)
+
+Four sub-tables via the `subtable` column:
+- **leptonic** (27 rows): `quantity` is the decay constant (f_π, f_ρ, …); `formula`
+  is the amplitude (e.g. `2 sqrt3 P_pi`, `sqrt6 V_rho`) in terms of the P_P/P'_A1/
+  V_V/V'_V factors defined in the caption; `predicted`/`experiment` are the amplitude
+  (units as in the paper).
+- **gamma_gamma** (13 rows): P→γγ / ³P₂→γγ amplitudes; `predicted`/`experiment` carry
+  their unit inline (`2.6 eV^1/2`, `0.50 keV^1/2`) because it varies by row.
+- **gluonic** (18 rows): QQ̄→2g/3g amplitudes in MeV^1/2 (noted per row).
+- **charge_radius** (3 rows): `predicted`/`experiment` are r_E² in fm², written as the
+  paper does, `±(radius)^2` (sign = sign of r_E²).
+
+Columns: `page,journal_pg,subtable,decay,quantity,formula,predicted,experiment,footnotes,confidence,notes`.
+`ζ`/`η_t` rows are hypothetical t-t̄ mesons (kept for completeness, flagged in notes).
+
+### Table VII footnotes (page 218)
+- **a** Reference 23.
+- **b** This amplitude is very sensitive to f–f' mixing.
+- **c** Reference 24.
+- **d** Reference 25.
+- **e** Reference 26.
+- **f** Reference 27.
