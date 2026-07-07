@@ -1,0 +1,221 @@
+page,journal_pg,section,parent,decay,daughter1,daughter2,formula,coefficient,amp_class,qbar_power,amp_MeV,realistic_bracket,realistic_factor,experiment,footnotes,confidence,notes
+14,202,1^3S_1,rho,rho -> pi pi,pi,pi,+(4/3)^1/2 A qt,1.1547005,A,1,+12.4,,,12.4,fit,high,fit input for A
+14,202,1^3S_1,phi,phi -> K Kbar,K,K,-(4/3)^1/2 A qt,-1.1547005,A,1,-2.4,,,1.9 +- 0.1,,high,
+14,202,1^3S_1,Kstar,K* -> K pi,K,pi,+A qt,1.0,A,1,+7.9,,,7.1 +- 0.1,,high,
+14,202,1^3P_2,A2,A2 -> (pi pi)_rho pi,rho,pi,-(1/5)^1/2 A qt^2,-0.4472136,A,2,-5.6,,1.5,8.8 +- 0.3,f,high,
+14,202,1^3P_2,A2,A2 -> eta pi,eta,pi,+(1/30)^1/2 A qt^2,0.1825742,A,2,+4.5,,,4.0 +- 0.1,,high,
+14,202,1^3P_2,A2,A2 -> K Kbar,K,K,-(1/30)^1/2 A qt^2,-0.1825742,A,2,-2.8,,,2.3 +- 0.1,,high,
+14,202,1^3P_2,A2,A2 -> eta' pi,etaprime,pi,+(1/30)^1/2 A qt^2,0.1825742,A,2,+1.0,,,< 1.5,,high,
+14,202,1^3P_2,f,f -> pi pi,pi,pi,-(1/10)^1/2 A qt^2,-0.3162278,A,2,-11,,,12 +- 1,,high,
+14,202,1^3P_2,f,f -> K Kbar,K,K,-(1/30)^1/2 A qt^2,-0.1825742,A,2,-2.5,,,2.3 +- 0.2,,high,
+14,202,1^3P_2,f,f -> eta eta,eta,eta,+(1/120)^1/2 A qt^2,0.0912871,A,2,+0.8,,,1.0 +- 0.2,g,high,
+14,202,1^3P_2,fprime,f' -> pi pi,pi,pi,0,0.0,mixing_only,0,+1.1,,,0.8 +- 0.4,,high,nonzero only through Table III mixing
+14,202,1^3P_2,fprime,f' -> K Kbar,K,K,-(1/15)^1/2 A qt^2,-0.2581989,A,2,-7.1,,,<= 8 +- 1,,high,
+14,202,1^3P_2,fprime,f' -> eta eta,eta,eta,+(1/60)^1/2 A qt^2,0.1290994,A,2,+2.9,,,< 6,,high,
+14,202,1^3P_2,fprime,f' -> eta' eta,etaprime,eta,-(1/30)^1/2 A qt^2,-0.1825742,A,2,-0.04,,,,,high,
+14,202,1^3P_2,fprime,f' -> (K pi)_K* Kbar,Kstar,K,+(1/10)^1/2 A qt^2,0.3162278,A,2,+1.7,,1.4,< 5,f,high,
+14,202,1^3P_2,Kstar2,K*2 -> K pi,K,pi,+(1/20)^1/2 A qt^2,0.2236068,A,2,+7.7,,,6.7 +- 0.5,,high,parent is 1^3P_2 K (K2*(1430)); printed as K*
+14,202,1^3P_2,Kstar2,K*2 -> (K pi)_K* pi,Kstar,pi,-(3/40)^1/2 A qt^2,-0.2738613,A,2,-3.7,,1.4,5.0 +- 0.5,f,high,
+14,202,1^3P_2,Kstar2,K*2 -> (pi pi)_rho K,rho,K,-(3/40)^1/2 A qt^2,-0.2738613,A,2,-2.1,,1.4,3.0 +- 0.4,f,high,
+14,202,1^3P_2,Kstar2,K*2 -> omega K,omega,K,+(1/40)^1/2 A qt^2,0.1581139,A,2,+1.2,,1.4,2.0 +- 0.4,,high,
+14,202,1^3P_2,Kstar2,K*2 -> K eta,K,eta,-[(sqrt2-1)/sqrt120] A qt^2,-0.0378144,A,2,-0.8,,,2.2 +1.1/-2.2,,high,
+14,202,1^3P_2,Kstar2,K*2 -> K eta',K,etaprime,+[(sqrt2+1)/sqrt120] A qt^2,0.2203969,A,2,below_threshold,,,,,high,
+14,202,1^3P_1 nonstrange,A1,A1 -> [(pi pi)_rho pi]_S,rho,pi,+(8/9)^1/2 S,0.9428090,S,0,+20,,,18 +- 2,f,high,
+14,202,1^3P_1 nonstrange,A1,A1 -> [(pi pi)_rho pi]_D,rho,pi,-(1/9)^1/2 A qt^2,-0.3333333,A,2,-3.0,,1.5,,f,high,
+14,202,1^3P_1 nonstrange,A1,A1 -> (pi pi)_eps pi,eps,pi,-(8/9)^1/2 A0 qt,-0.9428090,A0,1,-4.3,[A0/A],,3.6 +- 0.4,f,high,quasi-two-body eps daughter
+15,203,1^3P_1 nonstrange,D1285,D -> [(K pi)_K* Kbar]_S,Kstar,K,+(2/9)^1/2 S,0.4714045,S,0,+0.69,,,,f,high,D is 1^3P_1 isoscalar D(1285)
+15,203,1^3P_1 nonstrange,D1285,D -> [(K pi)_K* Kbar]_D,Kstar,K,-(1/36)^1/2 A qt^2,-0.1666667,A,2,-0.0,,,,f,high,
+15,203,1^3P_1 nonstrange,D1285,D -> (eta pi)_delta2 pi,delta2,pi,+(8/3)^1/2 A0 qt,1.6329932,A0,1,+4.6,[A0/A],,4.0 +- 0.8,"e,f",high,quasi-two-body delta2 daughter
+15,203,1^3P_1 nonstrange,D1285,D -> (pi pi)_eps eta,eps,eta,-(4/9)^1/2 A0 qt,-0.6666667,A0,1,-3.4,[A0/A],,1.8 +- 0.8,f,high,quasi-two-body eps daughter
+15,203,1^3P_1 nonstrange,E1420,E -> [(K pi)_K* Kbar]_S,Kstar,K,-(4/9)^1/2 S,-0.6666667,S,0,-10,,,7 +4/-1,"f,h",high,E is 1^3P_1 isoscalar E(1420)
+15,203,1^3P_1 nonstrange,E1420,E -> [(K pi)_K* Kbar]_D,Kstar,K,+(1/18)^1/2 A qt^2,0.2357023,A,2,+0.7,,1.3,,f,high,
+15,203,1^3P_1 nonstrange,E1420,E -> delta2 pi,delta2,pi,0,0.0,mixing_only,0,~0,,,,"e,f",high,
+15,203,1^3P_1 nonstrange,E1420,E -> eps eta,eps,eta,0,0.0,mixing_only,0,~0,,,,,high,
+15,203,1P_1 strange,Q1,Q1 -> [(K pi)_K* pi]_S,Kstar,pi,-(1/6)^1/2 S,-0.4082483,S,0,-0.3,,,2.7 +- 1.5,"b,f,i,j",high,
+15,203,1P_1 strange,Q1,Q1 -> [(K pi)_K* pi]_D,Kstar,pi,-(1/12)^1/2 A qt^2,-0.2886751,A,2,-3.0,,1.4,2.6 +- 0.5,"b,f,i",high,
+15,203,1P_1 strange,Q1,Q1 -> [(pi pi)_rho K]_S,rho,K,+(1/6)^1/2 S,0.4082483,S,0,+9.9,,,6.2 +- 1.0,"b,f,i",high,
+15,203,1P_1 strange,Q1,Q1 -> [(pi pi)_rho K]_D,rho,K,+(1/12)^1/2 A qt^2,0.2886751,A,2,+0.5,,1.4,not seen,"b,f,i",high,
+15,203,1P_1 strange,Q1,Q1 -> [omega K]_S,omega,K,-(1/18)^1/2 S,-0.2357023,S,0,-7.0,,,3.1 +- 0.5,"b,i",high,
+15,203,1P_1 strange,Q1,Q1 -> [omega K]_D,omega,K,-(1/36)^1/2 A qt^2,-0.1666667,A,2,-0.2,,1.4,not seen,"b,i",high,
+15,203,1P_1 strange,Q1,Q1 -> (K pi)_kappa pi,kappa,pi,-(1/3)^1/2 Ap qt,-0.5773503,Aprime,1,-3.1,[A'/A],,5.1 +- 0.5,f,high,quasi-two-body kappa daughter
+15,203,1P_1 strange,Q1,Q1 -> (pi pi)_eps K,eps,K,+(1/9)^1/2 Ap qt,0.3333333,Aprime,1,+0.04,[A'/A],,1.6 +- 0.4,"f,j",high,
+15,203,1P_1 strange,Q2,Q2 -> [(K pi)_K* pi]_S,Kstar,pi,+(1/3)^1/2 S,0.5773503,S,0,+16,,,13 +- 3,f,high,
+15,203,1P_1 strange,Q2,Q2 -> [(K pi)_K* pi]_D,Kstar,pi,-(1/24)^1/2 A qt^2,-0.2041241,A,2,-0.1,,1.4,2.6 +- 0.9,"b,f,i,j",high,
+15,203,1P_1 strange,Q2,Q2 -> [(pi pi)_rho K]_S,rho,K,+(1/3)^1/2 S,0.5773503,S,0,+4.2,,,2.4 +- 2.3,"b,f,i",high,
+15,203,1P_1 strange,Q2,Q2 -> [(pi pi)_rho K]_D,rho,K,-(1/24)^1/2 A qt^2,-0.2041241,A,2,-1.8,,1.4,not seen,"b,f,i",high,
+15,203,1P_1 strange,Q2,Q2 -> [omega K]_S,omega,K,-(1/9)^1/2 S,-0.3333333,S,0,-3.0,,,1.1 +- 1.0,"b,i",high,
+15,203,1P_1 strange,Q2,Q2 -> [omega K]_D,omega,K,+(1/72)^1/2 A qt^2,0.1178511,A,2,+0.8,,1.4,not seen,"b,i",high,
+15,203,1P_1 strange,Q2,Q2 -> (K pi)_kappa pi,kappa,pi,-(2/3)^1/2 A qt,-0.8164966,A,1,-1.4,,,~0,"b,f,i",high,quasi-two-body kappa daughter
+15,203,1P_1 strange,Q2,Q2 -> (pi pi)_eps K,eps,K,-(2/9)^1/2 A qt,-0.4714045,A,1,-2.0,,,1.7 +- 1.4,"b,f,i",high,quasi-two-body eps daughter
+15,203,1^1P_1 nonstrange,B,B -> [omega pi]_S,omega,pi,-(2/9)^1/2 S,-0.4714045,S,0,-11,,,11,fit,high,fit input for S0
+15,203,1^1P_1 nonstrange,B,B -> [omega pi]_D,omega,pi,-(1/9)^1/2 A qt^2,-0.3333333,A,2,-3.0,,1.5,3.2 +- 0.5,,high,
+15,203,1^1P_1 nonstrange,B,B -> (eta pi)_delta2 pi,delta2,pi,-(8/9)^1/2 Ap qt,-0.9428090,Aprime,1,-4.4,[A'/A],,,"e,f",high,quasi-two-body delta2 daughter
+15,203,1^1P_1 nonstrange,H,H -> [rho pi]_S,rho,pi,+(2/3)^1/2 S,0.8164966,S,0,+19,,,18 +- 2,,high,H is 1^1P_1 isoscalar (GI model mass)
+15,203,1^1P_1 nonstrange,H,H -> [rho pi]_D,rho,pi,+(1/3)^1/2 A qt^2,0.5773503,A,2,+5.2,,1.5,,,high,
+15,203,1^1P_1 nonstrange,Hprime,H' -> [rho pi]_S,rho,pi,0,0.0,mixing_only,0,~0,,,,,high,
+15,203,1^1P_1 nonstrange,Hprime,H' -> [rho pi]_D,rho,pi,0,0.0,mixing_only,0,~0,,,,,high,
+15,203,1^1P_1 nonstrange,Hprime,H' -> [(K pi)_K* Kbar]_S,Kstar,K,+(2/9)^1/2 S,0.4714045,S,0,+8.0,,,,f,high,
+15,203,1^1P_1 nonstrange,Hprime,H' -> [(K pi)_K* Kbar]_D,Kstar,K,+(1/9)^1/2 A qt^2,0.3333333,A,2,+1.2,,1.3,,f,high,
+16,204,1^3P_0,delta2,delta2 -> eta pi,eta,pi,+(1/3)^1/2 S,0.5773503,S,0,+14,,1.3,see Sec. VD,e,high,delta2 is 1^3P_0 isovector (GI model mass)
+16,204,1^3P_0,delta2,delta2 -> K Kbar,K,K,-(1/3)^1/2 S,-0.5773503,S,0,-11,,1.3,see Sec. VD,e,high,
+16,204,1^3P_0,delta2,delta2 -> eta' pi,etaprime,pi,+(1/3)^1/2 S,0.5773503,S,0,below_threshold,,1.3,see Sec. VD,e,high,
+16,204,1^3P_0,eps,eps -> pi pi,pi,pi,-S,-1.0,S,0,-27,,1.3,see Sec. VD,,high,eps is 1^3P_0 isoscalar
+16,204,1^3P_0,eps,eps -> K Kbar,K,K,-(1/3)^1/2 S,-0.5773503,S,0,-11,,1.3,see Sec. VD,,high,
+16,204,1^3P_0,eps,eps -> eta eta,eta,eta,+(1/12)^1/2 S,0.2886751,S,0,below_threshold,,1.3,see Sec. VD,,high,
+16,204,1^3P_0,epsprime,eps' -> pi pi,pi,pi,0,0.0,mixing_only,0,~0,,,see Sec. VD,,high,
+16,204,1^3P_0,epsprime,eps' -> K Kbar,K,K,-(2/3)^1/2 S,-0.8164966,S,0,-21,,1.2,see Sec. VD,,high,
+16,204,1^3P_0,epsprime,eps' -> eta eta,eta,eta,+(1/6)^1/2 S,0.4082483,S,0,+10,,1.2,see Sec. VD,,high,
+16,204,1^3P_0,kappa,kappa -> K pi,K,pi,+(1/2)^1/2 S,0.7071068,S,0,+19,,1.2,see Sec. VD,,high,kappa is 1^3P_0 strange
+16,204,1^3P_0,kappa,kappa -> K eta,K,eta,-[(sqrt2-1)/sqrt12] S,-0.1195229,S,0,-2.8,,1.2,see Sec. VD,,high,
+16,204,1^3P_0,kappa,kappa -> K eta',K,etaprime,+[(sqrt2+1)/sqrt12] S,0.6969470,S,0,below_threshold,,1.2,see Sec. VD,,high,
+16,204,0++ cryptoexotics,delta,delta -> eta pi,eta,pi,,,unlisted,,see Sec. VD,,,,,medium,no amplitude columns; deferred to Sec. VD
+16,204,0++ cryptoexotics,delta,delta -> K Kbar,K,K,,,unlisted,,see Sec. VD,,,,,medium,
+16,204,0++ cryptoexotics,Sstar,S* -> pi pi,pi,pi,,,unlisted,,see Sec. VD,,,,,medium,
+16,204,0++ cryptoexotics,Sstar,S* -> K Kbar,K,K,,,unlisted,,see Sec. VD,,,,,medium,
+16,204,1^3D_3,g,g -> pi pi,pi,pi,-(1/560)^1/2 A qt^3,-0.0422577,A,3,-5.6,,,6.9 +- 0.6,,high,g is 1^3D_3 isovector (rho3)
+16,204,1^3D_3,g,g -> omega pi,omega,pi,+(1/420)^1/2 A qt^3,0.0487950,A,3,+3.1,,1.8,5 +- 2,,high,
+16,204,1^3D_3,g,g -> K Kbar,K,K,-(1/1120)^1/2 A qt^3,-0.0298807,A,3,-2.2,,,1.7 +- 0.3,,high,
+16,204,1^3D_3,g,g -> K* Kbar,Kstar,K,-(1/840)^1/2 A qt^3,-0.0345033,A,3,-0.7,,1.8,< 2.6,,high,
+16,204,1^3D_3,omega3,omega -> rho pi,rho,pi,-(1/140)^1/2 A qt^3,-0.0845154,A,3,-5.2,,1.8,8 +- 2,,high,omega is 1^3D_3 isoscalar (omega3)
+16,204,1^3D_3,omega3,omega -> omega eta,omega,eta,+(1/840)^1/2 A qt^3,0.0345033,A,3,+0.9,,1.8,,,high,
+16,204,1^3D_3,omega3,omega -> [B pi]_D,B,pi,-(2/5)^1/2 App qt^2,-0.6324555,Adoubleprime,2,-6.1,[A''/A],,7 +- 2,,high,class A'' D-wave
+16,204,1^3D_3,omega3,omega -> [B pi]_G,B,pi,-(3/7840)^1/2 A qt^4,-0.0195615,A,4,-0.2,,,,,high,G-wave (L=4)
+16,204,1^3D_3,omega3,omega -> K Kbar,K,K,-(1/1120)^1/2 A qt^3,-0.0298807,A,3,-2.1,,,,,high,
+16,204,1^3D_3,omega3,omega -> K* Kbar,Kstar,K,-(1/840)^1/2 A qt^3,-0.0345033,A,3,-0.6,,1.8,,,high,
+16,204,1^3D_3,phi3,phi -> rho pi,rho,pi,0,0.0,mixing_only,0,0,,,,,high,phi is 1^3D_3 ss isoscalar (phi3)
+16,204,1^3D_3,phi3,phi -> omega eta,omega,eta,0,0.0,mixing_only,0,0,,,,,high,
+16,204,1^3D_3,phi3,phi -> [B pi]_D,B,pi,0,0.0,mixing_only,0,0,,,,,high,
+16,204,1^3D_3,phi3,phi -> [B pi]_G,B,pi,0,0.0,mixing_only,0,0,,,,,high,
+16,204,1^3D_3,phi3,phi -> K Kbar,K,K,+(1/560)^1/2 A qt^3,0.0422577,A,3,+5.2,,,7 +- 2,,high,
+16,204,1^3D_3,phi3,phi -> K* Kbar,Kstar,K,-(1/420)^1/2 A qt^3,-0.0487950,A,3,-2.8,,1.6,5 +- 2,,high,
+16,204,1^3D_3,Kstar3,K* -> K pi,K,pi,-(3/2240)^1/2 A qt^3,-0.0365963,A,3,-4.6,,,4.9 +- 1.0,,high,K* is 1^3D_3 strange (K3*)
+16,204,1^3D_3,Kstar3,K* -> K* pi,Kstar,pi,+(1/560)^1/2 A qt^3,0.0422577,A,3,+2.8,,1.6,seen,,high,
+16,204,1^3D_3,Kstar3,K* -> rho K,rho,K,-(1/560)^1/2 A qt^3,-0.0422577,A,3,-2.3,,1.6,seen,,high,
+16,204,1^3D_3,Kstar3,K* -> omega K,omega,K,+(1/1680)^1/2 A qt^3,0.0243975,A,3,+1.3,,1.6,seen,,high,
+17,205,1^3D_2 nonstrange,rho2,rho -> [omega pi]_P,omega,pi,-(1/36)^1/2 D qt,-0.1666667,D,1,-7.8,[D/S],,,,high,rho2 is 1^3D_2 isovector
+17,205,1^3D_2 nonstrange,rho2,rho -> [omega pi]_F,omega,pi,+(1/600)^1/2 A qt^3,0.0408248,A,3,+2.7,,1.7,,,high,
+17,205,1^3D_2 nonstrange,rho2,rho -> [rho eta]_P,rho,eta,-(1/72)^1/2 D qt,-0.1178511,D,1,-4.2,[D/S],,,,high,
+17,205,1^3D_2 nonstrange,rho2,rho -> [rho eta]_F,rho,eta,+(1/1200)^1/2 A qt^3,0.0288675,A,3,+0.9,,1.7,,,high,
+17,205,1^3D_2 nonstrange,rho2,rho -> [K* Kbar]_P,Kstar,K,+(1/72)^1/2 D qt,0.1178511,D,1,+3.7,[D/S],,,,high,
+17,205,1^3D_2 nonstrange,rho2,rho -> [K* Kbar]_F,Kstar,K,-(1/1200)^1/2 A qt^3,-0.0288675,A,3,-0.7,,1.7,,,high,
+17,205,1^3D_2 nonstrange,omega2,omega -> [rho pi]_P,rho,pi,+(1/12)^1/2 D qt,0.2886751,D,1,+14,[D/S],,,,high,omega2 is 1^3D_2 isoscalar
+17,205,1^3D_2 nonstrange,omega2,omega -> [rho pi]_F,rho,pi,-(1/200)^1/2 A qt^3,-0.0707107,A,3,-4.7,,1.7,,,high,
+17,205,1^3D_2 nonstrange,omega2,omega -> [omega eta]_P,omega,eta,-(1/72)^1/2 D qt,-0.1178511,D,1,-4.1,[D/S],,,,high,
+17,205,1^3D_2 nonstrange,omega2,omega -> [omega eta]_F,omega,eta,+(1/1200)^1/2 A qt^3,0.0288675,A,3,+0.9,,1.7,,,high,
+17,205,1^3D_2 nonstrange,omega2,omega -> [K* Kbar]_P,Kstar,K,+(1/72)^1/2 D qt,0.1178511,D,1,+3.7,[D/S],,,,high,
+17,205,1^3D_2 nonstrange,omega2,omega -> [K* Kbar]_F,Kstar,K,-(1/1200)^1/2 A qt^3,-0.0288675,A,3,-0.7,,1.7,,,high,
+17,205,1^3D_2 nonstrange,phi2,phi -> [rho pi]_P,rho,pi,0,0.0,mixing_only,0,0,,,,,high,phi2 is 1^3D_2 ss isoscalar
+17,205,1^3D_2 nonstrange,phi2,phi -> [rho pi]_F,rho,pi,0,0.0,mixing_only,0,0,,,,,high,
+17,205,1^3D_2 nonstrange,phi2,phi -> [omega eta]_P,omega,eta,0,0.0,mixing_only,0,0,,,,,high,
+17,205,1^3D_2 nonstrange,phi2,phi -> [omega eta]_F,omega,eta,0,0.0,mixing_only,0,0,,,,,high,
+17,205,1^3D_2 nonstrange,phi2,phi -> [K* Kbar]_P,Kstar,K,+(1/36)^1/2 D qt,0.1666667,D,1,+7.5,[D/S],,,,high,
+17,205,1^3D_2 nonstrange,phi2,phi -> [K* Kbar]_F,Kstar,K,-(1/600)^1/2 A qt^3,-0.0408248,A,3,-2.4,,1.6,,,high,
+17,205,1^3D_2 1^1D_2 strange,Q1_1D2,Q1 -> [rho K]_P,rho,K,+(1/72)^1/2 D qt,0.1178511,D,1,+7.7,[D/S],,,c,high,footnote c: Q1 is pure 1^1D_2 (lower)
+17,205,1^3D_2 1^1D_2 strange,Q1_1D2,Q1 -> [rho K]_F,rho,K,+(3/1600)^1/2 A qt^3,0.0433013,A,3,+0.9,,1.6,,c,high,
+17,205,1^3D_2 1^1D_2 strange,Q1_1D2,Q1 -> [omega K]_P,omega,K,-(1/216)^1/2 D qt,-0.0680414,D,1,-4.4,[D/S],,,c,high,
+17,205,1^3D_2 1^1D_2 strange,Q1_1D2,Q1 -> [omega K]_F,omega,K,-(1/1600)^1/2 A qt^3,-0.025,A,3,-0.5,,1.6,,c,high,
+17,205,1^3D_2 1^1D_2 strange,Q1_1D2,Q1 -> [K* pi]_P,Kstar,pi,+(1/72)^1/2 D qt,0.1178511,D,1,+0.9,[D/S],,,c,high,
+17,205,1^3D_2 1^1D_2 strange,Q1_1D2,Q1 -> [K* pi]_F,Kstar,pi,+(3/1600)^1/2 A qt^3,0.0433013,A,3,+3.6,,1.6,,c,high,
+17,205,1^3D_2 1^1D_2 strange,Q1_1D2,Q1 -> [K* eta]_P,Kstar,eta,+[(sqrt2+1)/sqrt432] D qt,0.1161539,D,1,+3.8,[D/S],,,c,high,
+17,205,1^3D_2 1^1D_2 strange,Q1_1D2,Q1 -> [K* eta]_F,Kstar,eta,+[(sqrt2+1)/sqrt3200] A qt^3,0.0426777,A,3,+0.9,,1.6,,c,high,
+17,205,1^3D_2 1^1D_2 strange,Q2_1D2,Q2 -> [rho K]_P,rho,K,+(1/48)^1/2 D qt,0.1443376,D,1,+2.6,[D/S],,,c,high,footnote c: Q2 is pure 1^3D_2 (higher)
+17,205,1^3D_2 1^1D_2 strange,Q2_1D2,Q2 -> [rho K]_F,rho,K,-(1/800)^1/2 A qt^3,-0.0353553,A,3,-3.1,,1.6,,c,high,
+17,205,1^3D_2 1^1D_2 strange,Q2_1D2,Q2 -> [omega K]_P,omega,K,-(1/144)^1/2 D qt,-0.0833333,D,1,-1.5,[D/S],,,c,high,
+17,205,1^3D_2 1^1D_2 strange,Q2_1D2,Q2 -> [omega K]_F,omega,K,+(1/2400)^1/2 A qt^3,0.0204124,A,3,+1.7,,1.6,,c,high,
+18,206,1^3D_2 1^1D_2 strange,Q2_1D2,Q2 -> [K* pi]_P,Kstar,pi,-(1/48)^1/2 D qt,-0.1443376,D,1,-8.9,[D/S],,7 +- 2,c,high,
+18,206,1^3D_2 1^1D_2 strange,Q2_1D2,Q2 -> [K* pi]_F,Kstar,pi,+(1/800)^1/2 A qt^3,0.0353553,A,3,+0.1,,1.6,,c,high,
+18,206,1^3D_2 1^1D_2 strange,Q2_1D2,Q2 -> [K* eta]_P,Kstar,eta,+[(sqrt2-1)/sqrt288] D qt,0.0244078,D,1,-1.6,[D/S],,,c,low,printed formula sign + but printed value -1.6 (sign mismatch on page)
+18,206,1^3D_2 1^1D_2 strange,Q2_1D2,Q2 -> [K* eta]_F,Kstar,eta,-[(sqrt2-1)/sqrt4800] A qt^3,-0.0059787,A,3,-1.0,,1.6,,c,high,
+18,206,1^1D_2 nonstrange,A3,A3 -> [rho pi]_P,rho,pi,+(1/27)^1/2 D qt,0.1924501,D,1,+8.9,[D/S],,9.5 +- 1,,high,A3 is 1^1D_2 isovector (pi2)
+18,206,1^1D_2 nonstrange,A3,A3 -> [rho pi]_F,rho,pi,+(1/200)^1/2 A qt^3,0.0707107,A,3,+4.5,,1.7,,,high,
+18,206,1^1D_2 nonstrange,A3,A3 -> [K* Kbar]_P,Kstar,K,+(1/108)^1/2 D qt,0.0962250,D,1,+2.8,[D/S],,3.1 +- 0.9,,high,
+18,206,1^1D_2 nonstrange,A3,A3 -> [K* Kbar]_F,Kstar,K,+(1/800)^1/2 A qt^3,0.0353553,A,3,+0.7,,1.7,,,high,
+18,206,1^1D_2 nonstrange,omega_1D2,omega -> [K* Kbar]_P,Kstar,K,+(1/108)^1/2 D qt,0.0962250,D,1,+2.8,[D/S],,,,high,omega is 1^1D_2 isoscalar
+18,206,1^1D_2 nonstrange,omega_1D2,omega -> [K* Kbar]_F,Kstar,K,+(1/800)^1/2 A qt^3,0.0353553,A,3,+0.7,,1.7,,,high,
+18,206,1^1D_2 nonstrange,phi_1D2,phi -> [K* Kbar]_P,Kstar,K,-(1/54)^1/2 D qt,-0.1360828,D,1,-6.0,[D/S],,,,high,phi is 1^1D_2 ss isoscalar
+18,206,1^1D_2 nonstrange,phi_1D2,phi -> [K* Kbar]_F,Kstar,K,-(1/400)^1/2 A qt^3,-0.05,A,3,-2.8,,1.6,,,high,
+18,206,1^3D_1,rhoD,rhoD -> pi pi,pi,pi,-(5/162)^1/2 D qt,-0.1756821,D,1,-10,[D/S],,see Sec. VA,,high,rhoD is 1^3D_1 isovector
+18,206,1^3D_1,rhoD,rhoD -> omega pi,omega,pi,-(5/324)^1/2 D qt,-0.1242260,D,1,-5.5,[D/S],,see Sec. VA,,high,
+18,206,1^3D_1,rhoD,rhoD -> K Kbar,K,K,-(5/324)^1/2 D qt,-0.1242260,D,1,-5.9,[D/S],,see Sec. VA,,high,
+18,206,1^3D_1,rhoD,rhoD -> rho eta,rho,eta,-(5/648)^1/2 D qt,-0.0878410,D,1,-2.9,[D/S],,see Sec. VA,,high,
+18,206,1^3D_1,rhoD,rhoD -> K* Kbar,Kstar,K,+(5/648)^1/2 D qt,0.0878410,D,1,+2.5,[D/S],,see Sec. VA,,high,
+18,206,1^3D_1,omegaD,omegaD -> rho pi,rho,pi,+(5/108)^1/2 D qt,0.2151657,D,1,+9.7,[D/S],,see Sec. VA,,high,omegaD is 1^3D_1 isoscalar
+18,206,1^3D_1,omegaD,omegaD -> omega eta,omega,eta,-(5/648)^1/2 D qt,-0.0878410,D,1,-2.8,[D/S],,see Sec. VA,,high,
+18,206,1^3D_1,omegaD,omegaD -> omega eta',omega,etaprime,-(5/648)^1/2 D qt,-0.0878410,D,1,below_threshold,[D/S],,see Sec. VA,,high,
+18,206,1^3D_1,omegaD,omegaD -> K Kbar,K,K,-(5/324)^1/2 D qt,-0.1242260,D,1,-5.9,[D/S],,see Sec. VA,,high,
+19,207,1^3D_1,omegaD,omegaD -> K* Kbar,Kstar,K,+(5/648)^1/2 D qt,0.0878410,D,1,+2.5,[D/S],,see Sec. VA,,high,
+19,207,1^3D_1,phiD,phiD -> phi eta,phi,eta,+(5/324)^1/2 D qt,0.1242260,D,1,+4.1,[D/S],,see Sec. VA,,high,phiD is 1^3D_1 ss isoscalar
+19,207,1^3D_1,phiD,phiD -> K Kbar,K,K,+(5/162)^1/2 D qt,0.1756821,D,1,+10,[D/S],,see Sec. VA,,high,
+19,207,1^3D_1,phiD,phiD -> K* Kbar,Kstar,K,+(5/324)^1/2 D qt,0.1242260,D,1,+5.4,[D/S],,see Sec. VA,,high,
+19,207,1^3D_1,KstarD,K*D -> K pi,K,pi,-(5/216)^1/2 D qt,-0.1521452,D,1,-8.9,[D/S],,see Sec. VA,,high,K*D is 1^3D_1 strange
+19,207,1^3D_1,KstarD,K*D -> K eta,K,eta,-[(sqrt10+sqrt5)/sqrt1296] D qt,-0.1499540,D,1,-7.7,[D/S],,see Sec. VA,,high,
+19,207,1^3D_1,KstarD,K*D -> K eta',K,etaprime,+[(sqrt10-sqrt5)/sqrt1296] D qt,0.0257280,D,1,+0.8,[D/S],,see Sec. VA,,high,
+19,207,1^3D_1,KstarD,K*D -> K* pi,Kstar,pi,-(5/432)^1/2 D qt,-0.1075829,D,1,-5.0,[D/S],,see Sec. VA,,high,
+19,207,1^3D_1,KstarD,K*D -> K* eta,Kstar,eta,+[(sqrt10-sqrt5)/sqrt2592] D qt,0.0181925,D,1,+0.6,[D/S],,see Sec. VA,,high,
+19,207,1^3D_1,KstarD,K*D -> rho K,rho,K,+(5/432)^1/2 D qt,0.1075829,D,1,+4.6,[D/S],,see Sec. VA,,high,
+19,207,1^3D_1,KstarD,K*D -> omega K,omega,K,-(5/1296)^1/2 D qt,-0.0621130,D,1,-2.6,[D/S],,see Sec. VA,,high,
+19,207,1^3D_1,KstarD,K*D -> phi K,phi,K,-(5/648)^1/2 D qt,-0.0878410,D,1,-2.5,[D/S],,see Sec. VA,,high,
+19,207,2^1S_0,piprime,pi' -> rho pi,rho,pi,-(1/27)^1/2 P qt,-0.1924501,P,1,-4.8,[P/S],,~14,,high,
+19,207,2^1S_0,piprime,pi' -> K* Kbar,Kstar,K,-(1/108)^1/2 P qt,-0.0962250,P,1,below_threshold,,,,,high,
+19,207,2^1S_0,eta_r,eta_r -> (K pi)_K* Kbar,Kstar,K,-(1/108)^1/2 P qt,-0.0962250,P,1,-0.11-1.1,[P/S],,,f,medium,two-part mixing-dependent value (B14/B15 perfect mixing)
+19,207,2^1S_0,etaprime_r,eta'_r -> K* Kbar,Kstar,K,+(1/54)^1/2 P qt,0.1360828,P,1,-0.46+2.4,[P/S],,,,medium,two-part mixing-dependent value
+19,207,2^1S_0,Kprime,K' -> K* pi,Kstar,pi,-(1/72)^1/2 P qt,-0.1178511,P,1,-3.2,[P/S],,10 +- 2,,high,
+19,207,2^1S_0,Kprime,K' -> K* eta,Kstar,eta,-[(sqrt2+1)/sqrt432] P qt,-0.1161539,P,1,-0.5,[P/S],,,,high,
+20,208,2^1S_0,Kprime,K' -> rho K,rho,K,-(1/72)^1/2 P qt,-0.1178511,P,1,-2.4,[P/S],,6 +- 1,,high,
+20,208,2^1S_0,Kprime,K' -> omega K,omega,K,+(1/216)^1/2 P qt,0.0680414,P,1,+1.3,[P/S],,,,high,
+20,208,2^1S_0,Kprime,K' -> phi K,phi,K,-(1/108)^1/2 P qt,-0.0962250,P,1,below_threshold,,,,,high,
+20,208,2^3S_1,rhoS,rhoS -> pi pi,pi,pi,+(1/162)^1/2 P qt,0.0785674,P,1,+4.0,[P/S],,see Sec. VA,,high,rhoS is 2^3S_1 isovector
+20,208,2^3S_1,rhoS,rhoS -> omega pi,omega,pi,-(1/81)^1/2 P qt,-0.1111111,P,1,-3.7,[P/S],,see Sec. VA,,high,
+20,208,2^3S_1,rhoS,rhoS -> (pi pi)_rho eta,rho,eta,-(1/162)^1/2 P qt,-0.0785674,P,1,-1.3,[P/S],,see Sec. VA,f,high,
+20,208,2^3S_1,rhoS,rhoS -> K Kbar,K,K,+(1/324)^1/2 P qt,0.0555556,P,1,+2.0,[P/S],,see Sec. VA,,high,
+20,208,2^3S_1,rhoS,rhoS -> (K pi)_K* Kbar,Kstar,K,+(1/162)^1/2 P qt,0.0785674,P,1,+0.5,[P/S],,see Sec. VA,f,high,
+20,208,2^3S_1,omegaS,omegaS -> (pi pi)_rho pi,rho,pi,+(1/27)^1/2 P qt,0.1924501,P,1,-5.8,[P/S],,see Sec. VA,f,low,printed formula sign + but printed value -5.8 (sign mismatch on page)
+20,208,2^3S_1,omegaS,omegaS -> omega eta,omega,eta,-(1/162)^1/2 P qt,-0.0785674,P,1,-1.3,[P/S],,see Sec. VA,,high,omegaS is 2^3S_1 isoscalar
+20,208,2^3S_1,omegaS,omegaS -> omega eta',omega,etaprime,-(1/162)^1/2 P qt,-0.0785674,P,1,below_threshold,,,see Sec. VA,,high,
+20,208,2^3S_1,omegaS,omegaS -> K Kbar,K,K,+(1/324)^1/2 P qt,0.0555556,P,1,+2.0,[P/S],,see Sec. VA,,high,
+20,208,2^3S_1,omegaS,omegaS -> (K pi)_K* Kbar,Kstar,K,+(1/162)^1/2 P qt,0.0785674,P,1,+0.6,[P/S],,see Sec. VA,f,high,
+20,208,2^3S_1,phiS,phiS -> rho pi,rho,pi,0,0.0,mixing_only,0,0,,,see Sec. VA,,high,phiS is 2^3S_1 ss isoscalar
+20,208,2^3S_1,phiS,phiS -> phi eta,phi,eta,+(1/81)^1/2 P qt,0.1111111,P,1,+1.8,[P/S],,see Sec. VA,,high,
+20,208,2^3S_1,phiS,phiS -> K Kbar,K,K,-(1/162)^1/2 P qt,-0.0785674,P,1,-3.8,[P/S],,see Sec. VA,,high,
+20,208,2^3S_1,phiS,phiS -> K* Kbar,Kstar,K,+(1/81)^1/2 P qt,0.1111111,P,1,+3.4,[P/S],,see Sec. VA,,high,
+20,208,2^3S_1,KstarS,K*S -> K pi,K,pi,+(1/216)^1/2 P qt,0.0680414,P,1,+3.4,[P/S],,see Sec. VA,,high,K*S is 2^3S_1 strange
+21,209,2^3S_1,KstarS,K*S -> K eta,K,eta,+[(sqrt2+1)/sqrt1296] P qt,0.0670615,P,1,+2.7,[P/S],,see Sec. VA,,high,
+21,209,2^3S_1,KstarS,K*S -> K eta',K,etaprime,-[(sqrt2-1)/sqrt1296] P qt,-0.0115059,P,1,-0.2,[P/S],,see Sec. VA,,high,
+21,209,2^3S_1,KstarS,K*S -> rho K,rho,K,+(1/108)^1/2 P qt,0.0962250,P,1,+2.9,[P/S],,see Sec. VA,,high,
+21,209,2^3S_1,KstarS,K*S -> omega K,omega,K,-(1/324)^1/2 P qt,-0.0555556,P,1,-1.6,[P/S],,see Sec. VA,,high,
+21,209,2^3S_1,KstarS,K*S -> phi K,phi,K,-(1/162)^1/2 P qt,-0.0785674,P,1,-0.8,[P/S],,see Sec. VA,,high,
+21,209,2^3S_1,KstarS,K*S -> K* pi,Kstar,pi,-(1/108)^1/2 P qt,-0.0962250,P,1,-3.4,[P/S],,see Sec. VA,,high,
+21,209,2^3S_1,KstarS,K*S -> (K pi)_K* eta,Kstar,eta,+[(sqrt2-1)/sqrt648] P qt,0.0162718,P,1,+0.3,[P/S],,see Sec. VA,f,high,
+21,209,1^3F_4,delta,delta -> rho pi,rho,pi,+(1/12096)^1/2 A qt^4,0.0090924,A,4,+2.7,,2.1,,,high,delta is 1^3F_4 isovector (a4)
+21,209,1^3F_4,delta,delta -> eta pi,eta,pi,-(1/60480)^1/2 A qt^4,-0.0040663,A,4,-1.7,,,,,high,
+21,209,1^3F_4,delta,delta -> K Kbar,K,K,+(1/60480)^1/2 A qt^4,0.0040663,A,4,+1.4,,,,,high,
+21,209,1^3F_4,delta,delta -> eta' pi,etaprime,pi,-(1/60480)^1/2 A qt^4,-0.0040663,A,4,-0.8,,,,,high,
+21,209,1^3F_4,delta,delta -> K* Kbar,Kstar,K,+(1/48384)^1/2 A qt^4,0.0045462,A,4,+0.7,,2.1,,,high,
+21,209,1^3F_4,h,h -> pi pi,pi,pi,+(1/20160)^1/2 A qt^4,0.0070430,A,4,+3.9,,,5 +- 1,,high,h is 1^3F_4 nonstrange isoscalar
+21,209,1^3F_4,h,h -> K Kbar,K,K,+(1/60480)^1/2 A qt^4,0.0040663,A,4,+1.4,,,1.2 +- 0.4,,high,
+21,209,1^3F_4,h,h -> eta eta,eta,eta,-(1/241920)^1/2 A qt^4,-0.0020331,A,4,-0.6,,,,,high,
+21,209,1^3F_4,h,h -> eta eta',eta,etaprime,-(1/120960)^1/2 A qt^4,-0.0028753,A,4,-0.3,,,,,high,
+21,209,1^3F_4,h,h -> eta' eta',etaprime,etaprime,-(1/241920)^1/2 A qt^4,-0.0020331,A,4,-0.0,,,,,high,
+21,209,1^3F_4,h,h -> K* Kbar,Kstar,K,+(1/48384)^1/2 A qt^4,0.0045462,A,4,+0.7,,2.1,,,high,
+21,209,1^3F_4,hprime,h' -> pi pi,pi,pi,0,0.0,mixing_only,0,0,,,,,high,h' is 1^3F_4 ss isoscalar
+21,209,1^3F_4,hprime,h' -> K Kbar,K,K,+(1/30240)^1/2 A qt^4,0.0057505,A,4,+3.1,,,,,high,
+21,209,1^3F_4,hprime,h' -> eta eta,eta,eta,-(1/120960)^1/2 A qt^4,-0.0028753,A,4,-1.4,,,,,high,
+21,209,1^3F_4,hprime,h' -> eta eta',eta,etaprime,+(1/60480)^1/2 A qt^4,0.0040663,A,4,+1.0,,,,,high,
+21,209,1^3F_4,hprime,h' -> eta' eta',etaprime,etaprime,-(1/120960)^1/2 A qt^4,-0.0028753,A,4,-0.2,,,,,high,
+21,209,1^3F_4,hprime,h' -> K* Kbar,Kstar,K,-(1/24192)^1/2 A qt^4,-0.0064293,A,4,-1.9,,1.9,,,high,
+21,209,1^3F_4,Kstar4,K* -> K pi,K,pi,-(1/40320)^1/2 A qt^4,-0.0049801,A,4,-2.7,,,4 +- 1,,high,K* is 1^3F_4 strange (K4*)
+21,209,1^3F_4,Kstar4,K* -> K* pi,Kstar,pi,+(1/32256)^1/2 A qt^4,0.0055679,A,4,+1.7,,1.9,,,high,
+21,209,1^3F_4,Kstar4,K* -> rho K,rho,K,+(1/32256)^1/2 A qt^4,0.0055679,A,4,+1.6,,1.9,,,high,
+21,209,1^3F_4,Kstar4,K* -> omega K,omega,K,-(1/96768)^1/2 A qt^4,-0.0032147,A,4,-0.9,,1.9,,,high,
+21,209,1^3F_4,Kstar4,K* -> K eta,K,eta,+[(sqrt2-1)/sqrt241920] A qt^4,0.0008421,A,4,+0.3,,,,,high,
+21,209,1^3F_4,Kstar4,K* -> K eta',K,etaprime,-[(sqrt2+1)/sqrt241920] A qt^4,-0.0049084,A,4,-0.9,,,,,high,
+22,210,1^3S_1 charmed,Dstarplus,D*+ -> D0 pi+,D0,piplus,-(2/3)^1/2 Ac qt,-0.8164966,Ac,1,-0.34,[Ac/A],,,,high,charmed 1^3S_1
+22,210,1^3S_1 charmed,Dstarplus,D*+ -> D+ pi0,Dplus,pi0,+(1/3)^1/2 Ac qt,0.5773503,Ac,1,+0.24,[Ac/A],,,,high,
+22,210,1^3S_1 charmed,Dstar0,D*0 -> D0 pi0,D0,pi0,-(1/3)^1/2 Ac qt,-0.5773503,Ac,1,-0.27,[Ac/A],,,,high,
+22,210,1^3P_2 charmed,Kstar_c,K*c -> D pi,D,pi,-(1/5)^1/2 Ac qt^2 mcB/((mc+md)Bc),-0.4472136,Ac,2,-7.3,[Ac/A],,,d,high,recoil multiplier m_c beta/((m_c+m_d) beta_c) applies
+22,210,1^3P_2 charmed,Kstar_c,K*c -> D* pi,Dstar,pi,-(3/10)^1/2 Ac qt^2 mcB/((mc+md)Bc),-0.5477226,Ac,2,-5.1,[Ac/A],,,d,high,recoil multiplier applies
+22,210,1P_1 charmed,Q1c,Q1c -> [D* pi]_S,Dstar,pi,+(1/6)^1/2 Sc,0.4082483,Sc,0,-1.5,[Sc/S],,,"b,d",high,footnote b: physical mixed state; footnote j: very mixing-sensitive
+22,210,1P_1 charmed,Q1c,Q1c -> [D* pi]_D,Dstar,pi,+(1/3)^1/2 Ac qt^2 mcB/((mc+md)Bc),0.5773503,Ac,2,+5.3,[Ac/A],,,"b,d",high,recoil multiplier applies
+22,210,1P_1 charmed,Q2c,Q2c -> [D* pi]_S,Dstar,pi,+(1/3)^1/2 Sc,0.5773503,Sc,0,+15,[Sc/S],,,"b,d",high,
+22,210,1P_1 charmed,Q2c,Q2c -> [D* pi]_D,Dstar,pi,-(1/6)^1/2 Ac qt^2 mcB/((mc+md)Bc),-0.4082483,Ac,2,+0.7,[Ac/A],,,"b,d",high,recoil multiplier applies; footnote j: very mixing-sensitive
+22,210,1^3P_0 charmed,kappa_c,kappac -> D pi,D,pi,-(1/2)^1/2 Sc,-0.7071068,Sc,0,-15,[Sc/S],,,d,high,charmed 1^3P_0
