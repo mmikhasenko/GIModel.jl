@@ -46,7 +46,7 @@ new fitted constants** on our side — they reuse tier-A/B values only.
 | Table II | Model parameters | reproduced (as audited input) | `data/table_ii_parameters.csv` + TOML, sync-checked by `scripts/data_checks.py validate` | — |
 | Table III | Isoscalar mixed compositions, n = 1, 2 | reproduced | `GIPaper/docs/residual_reports/table_iii_mixing_audit.md`, `annihilation_model_scorecard.md` | General Eq. (16) blocks match the ω/φ and f₂/f₂′ eigenvectors; literal P1/P2 pseudoscalar modes reproduce the structure at amplitude RMS 0.180/0.114 while the calibrated P1 control carries the mass scoring. Literal-mode mass scoring is the residual item. |
 | Table IV | Reduced partial-wave amplitude classes | reproduced | `src/strong_decays.jl` + tests | Light classes (A, A′, A″, A₀, S, D, P) coded and calibrated; charm classes `A_c`, `S_c` now coded (`f2dadf2`) with the footnote-d form factor and the P-wave recoil multiplier, β_c≡β. Key result: the light calibration (A=1.665, S₀=3.918) transfers to charm with **no refit**. |
-| Table V | Strong decay amplitudes (multipage) | partial | `GIPaper/docs/residual_reports/table_v_light_decays.md` | Light 1S+1P audited (33 headline rows, 6% median). **Q1/Q2 K1-mixing rows now scored** three ways (`c5d7ccd`): paper column matches its own +34° quote (10% median) not our +19.5° model angle. Light 1³D₃ digitized (`8823643`). **Charmed section digitized + scored** (`44e1d50`, `f2dadf2`): 6 clean rows at 12% median; Q1c/Q2c reproduce at the paper's −41° charm 1P angle (model's own −24.8° misses the cancellation rows — same story as strange K1). **Light 2S + 1D-remainder digitized** (`824eaed`, 94 rows incl. strange 2S/1D, page-verified). Digitized-but-not-yet-scored: the 2S/1D/1³D₃ rows (audit currently scores 1S+1P + charmed). Missing: charmonium (ψ) section, the 1³F₄ nonet (δ/h/h′/K*, found on page 209), scoring the digitized D/2S rows, strange √3 recoil (W2c-2). |
+| Table V | Strong decay amplitudes (multipage) | reproduced (all sections scored) | `table_v_light_decays.md`, `table_v_2s_1d_decays.md` | **Every Table V section is now digitized and scored.** Light 1S+1P (`table_v_light_decays.md`, 33 headline rows 6% median); Q1/Q2 K1-mixing rows scored 3 ways (`c5d7ccd`), paper matches its own +34° not our +19.5°. **Charmed** section (`44e1d50`, `f2dadf2`): 6 clean rows 12% median, Q1c/Q2c reproduce at −41°. **2S/1D/1³D₃/1³F₄** (`a8066b8`, `0407272`, `table_v_2s_1d_decays.md`): scored by Table IV class — **structure-independent (A/A′/A″/A₀) median 1%** over 28 rows spanning S→F (incl. the full 1³F₄ nonet, the highest-L light section), confirming the algebra + A-calibration + model-mass kinematics; **structure-dependent (S/D/P) median 19%**, carrying the S₀ strength (tier B) and a q̄² node. Strange 1D₂ Q1/Q2 excluded as physical mixed states (θ₁D, like the 1P case). **Note:** Table V has no charmonium strong-decay section (ψ below open-flavor threshold). One characterized open outlier: `K*₂→Kπ` high by exactly √3 (`fb5f5b4`, W2c-2 — not kinematic, a missing Appendix-B isospin factor). |
 | Table VI | Photon decays: M1 moments, E1 amplitudes | partial | `GIPaper/docs/residual_reports/table_vi_photon_decays.md` | 28 mixing-free rows reproduced (quarkonium M1 0.1-2%, open-flavor M1 1-4%, light ~6%, E1 3-7%). **Open-flavor M1 column now image-verified against printed page 24** (`07ad617`): the one-row OCR shift was correct, all 8 values confirmed, caveat retired. **2S → χ₀ is not a q-convention artifact**: model-mass q helps Υ′→χ_b0 (30%→16%) but hurts ψ′→χ_c0 (27%→43%) — the c-c̄ 2S-1P gap is genuinely compressed. **6 isoscalar M1 rows added** (`4a8645c`) via the audited Table III mixing (P1 pseudoscalar + S1 vector blocks, no new constants): all signs reproduced including the nontrivial φ→η(+)/φ→η′(−) relative sign; dominant-flavor magnitudes at the ~15-24% light-sector I-overlap residual; sub-dominant rows ~2-3× low because η↔η′ ordering is inverted vs the paper (needs the paper's per-row I mock-mass evaluation). **All printed blocks now audited** (`d678136`): light E1/M2 (A₂→πγ fit row +0.510 vs +0.55 ~7%; A₂→ργ/ωγ within 1%; A₁/B ~8-10%; f′→φγ sign+mag), strange K*(1420)→Kγ E1 +0.436 vs +0.48 (~9%; no separate charmed P-wave E1 rows exist), hindered bottomonium M1 (Υ′→η_bγ +0.009 vs +0.007; **Υ″→η_bγ sign-flips** −0.004 vs +0.007 — deepest 3S→1S/E2 cancellation, points at W6). Open items: η↔η′ ordering and the Υ″ sign both trace to the central-solve vs paper-HO-order radial residual (W6). ψ/Υ→(light)γ order-of-magnitude rows (footnote d) deliberately not modeled. |
 | Table VII | Leptonic, γγ, gluonic decays; charge radii | missing | — | Not started. Needs D4-D8 (f_P, f_V definitions, leptonic widths), γγ and gluonic width formulas, and ⟨r²⟩ from the model wavefunctions. |
 | Table VIII | Input masses/widths for the 0⁺⁺ coupled-channel discussion (Fig. 16) | context | — | Discussion-layer phenomenology (Sec. V D), not a model output. Optional. |
@@ -165,16 +165,14 @@ Status of each workstream (see `docs/work_plan.md` for the live board):
 
 | Done | |
 | --- | --- |
-| Figs. 3-9 spectra (all sectors) · Table III · **Table IV** · mixing-angle audit · **Table VI (all blocks)** · Table V light 1S+1P/Q1Q2/1D/2S/charmed digitized+partly scored | |
+| Figs. 3-9 spectra (all sectors) · Table III · **Table IV** · mixing-angle audit · **Table VI (all blocks)** · **Table V (all sections digitized + scored, incl. 1³F₄)** · **Eqs. (20)-(21) type-A realistic factors** | |
 
 | Remaining | Cost | Blocks victory? |
 | --- | --- | --- |
-| **Score the digitized Table V 2S/1D/1³D₃ rows** (wiring D/P-class scoring into the audit; data already in) | small (1 unit) | yes — Table V |
-| **Table V charmonium (ψ) section + 1³F₄ nonet** (digitize page 209/later + score) | small-med (1-2 units) | yes — Table V |
-| **Eqs. (20)-(21) realistic-factor ratios** (radial moments on model waves; also improves flagged Table V rows) | small (1 unit) | soft — quality, not coverage |
-| **Strange √3 recoil** (W2c-2: apply the charm A_c recoil multiplier to strange K*₂→Kπ) | small (1 unit) | soft — one known outlier |
 | **Table VII** (D4-D8 decay constants + leptonic/γγ/gluonic widths + charge radii; digitize + audit) | **large** (2-3 units: 1 data, 1-2 code) | yes — last untouched table |
 | **W6 HO-order validation** (A15-A17; removes the tier-C scales and the §3 residuals) | **large / research** (background) | it is the deepest fidelity item; "reproduced up to global scales" holds without it, "fully reproduced" is stronger with it |
+| **Strange √3 recoil** (W2c-2: derive the Appendix-B isospin factor for `K*₂→Kπ`; now precisely characterized as non-kinematic, `fb5f5b4`) | small (1 unit) | soft — one characterized outlier |
+| **Eq. (21) type-S momentum ratio** (companion to the type-A factors, now that hyperfine waves are exposed) | small (1 unit) | soft — quality, not coverage |
 | Promote Table VI/Appendix-D kernels from audit scripts into `src/` + tests | med | no — engineering hygiene |
 
 **Not reproduction blockers** (context/superseded — candidates for the
@@ -183,7 +181,7 @@ A1-A6, B37.
 
 **Honest one-line status:** spectra and decay/EM tables are reproduced to the
 few-MeV / ~10-20% level the paper works at, with two global fine-structure
-scales (§0 tier C) standing in for the paper's HO-order treatment; the
-remaining coverage gap to a literal "every table reproduced" claim is Table
-VII plus the charmonium/2S/1D Table V scoring, and the remaining *fidelity*
-gap is W6.
+scales (§0 tier C) standing in for the paper's HO-order treatment; **Table V is
+now scored across every section** (structure-independent amplitudes at 1%,
+structure-dependent at ~19%), so the only untouched table is **Table VII**, and
+the remaining *fidelity* gap is W6.

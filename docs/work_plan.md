@@ -133,7 +133,7 @@ Cost/blocking detail for the open items lives in
 [`reproduction_audit.md`](reproduction_audit.md) §4; this board tracks
 ownership and merge state only.
 
-### Completed and merged (9 units)
+### Completed and merged (13 units)
 
 | Unit | Commit | One-line outcome |
 | --- | --- | --- |
@@ -146,16 +146,20 @@ ownership and merge state only.
 | W3-2 isoscalar | `4a8645c` | 6 isoscalar M1 rows; signs right, η↔η′ ordering open (→ W6). |
 | W3-3 blocks | `d678136` | light E1/M2 + strange E1 + hindered b-b̄; **Table VI structurally complete**. |
 | W2c-1 charm classes | `f2dadf2` | A_c/S_c coded no-refit; **closes Table IV gap**; Q1c/Q2c reproduce at −41°. |
+| W2d score 2S/1D | `a8066b8` | 2S/1D/1³D₃ scored; structure-independent median 1%, structure-dependent 19%. |
+| W2a-4 1³F₄ | `0407272` | 1³F₄ nonet digitized+scored (no charmonium in Table V); SI median stays 1% S→F. |
+| W5 Eqs. 20-21 | `dfb3007` | type-A realistic factors from hyperfine waves; R_A>1, monotonic in L, ~paper trend. |
+| W2c-2 √3 diag | `fb5f5b4` | K*₂→Kπ √3 characterized: non-kinematic, missing Appendix-B isospin factor (open). |
 
 (W2a-2 strange: **N/A** — strange 1S+1P already in the light CSV, strange 2S/1D folded into W2a-1.)
+
+**Table V is now digitized and scored across every section.**
 
 ### Open units (owner = coordinator until launched)
 
 | Unit | Scope | Depends on |
 | --- | --- | --- |
-| **W2d score-D/2S** | wire D-/P-class scoring for the digitized 2S/1D/1³D₃ rows into `audit_table_v_decays.jl` | — (data merged) |
-| **W2a-4 charmonium** | digitize + score Table V ψ section + the 1³F₄ nonet (page 209) | — |
-| **W5 Eqs. 20-21** | realistic-factor radial-moment ratios on model waves; adds Table V correction column | — (light rows merged) |
-| **W2c-2 strange √3** | apply the charm A_c recoil multiplier to strange K*₂→Kπ | — |
-| **W4 Table VII** | D4-D8 decay constants + leptonic/γγ/gluonic widths + charge radii; digitize + audit (split 1 data / 1-2 code) | — |
+| **W4 Table VII** | D4-D8 decay constants + leptonic/γγ/gluonic widths + charge radii; digitize + audit (split 1 data / 1-2 code) | — (last untouched table) |
+| **W2c-2 fix** | derive the Appendix-B `K*₂→Kπ` isospin factor (diagnosis done in `fb5f5b4`) | — |
+| **W5b Eq. 21** | type-S momentum-ratio companion to the type-A factors | — (hyperfine waves now exposed) |
 | **W6 HO-order** | paper-order HO perturbation for spin/mixing (A15-A17); removes the tier-C global scales | research; do last |
