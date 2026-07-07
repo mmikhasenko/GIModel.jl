@@ -59,7 +59,7 @@ include("harmonic_oscillator_basis.jl")
 export channel_solution
 include("channel_solver.jl")
 
-export spin_dot
+export spin_dot, contact_hyperfine_nonperturbative_states
 include("contact_hyperfine.jl")
 
 export MixingMechanism,
@@ -91,7 +91,8 @@ export fine_structure_split,
     same_j_mixing,
     LdotS,
     tensor_triplet_LJ,
-    tensor_triplet_offdiag_sameJ
+    tensor_triplet_offdiag_sameJ,
+    radial_cross_expect_udr
 include("spin_fine_structure.jl")
 
 export CentralPotentialPath, central_potential_path

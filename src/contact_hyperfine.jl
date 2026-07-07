@@ -157,6 +157,51 @@ function contact_hyperfine_nonperturbative_levels(
     return levels
 end
 
+"""
+    contact_hyperfine_nonperturbative_states(params, masses, L, multiplicity, r, nlevels)
+        -> (levels::Vector{Float64}, vectors::Matrix{Float64}, r::Vector{Float64})
+
+Like [`contact_hyperfine_nonperturbative_levels`](@ref) but also returns the
+eigenvectors (reduced radial waves `u(r)`, one per column) of the S-wave
+Hamiltonian with the contact-hyperfine operator added non-perturbatively, plus
+the rebuilt grid. The singlet/triplet split of these waves is what makes the
+`^1S_0` (e.g. `pi`) more compact than the `^3S_1` (e.g. `rho`) and drives the
+Eq. (20)/(21) realistic-factor ratios. Returns `(Float64[], zeros(0,0),
+Float64[])` when the non-perturbative contact path is inactive.
+"""
+function contact_hyperfine_nonperturbative_states(
+    params::GIParameters{FiniteDifferenceBasis},
+    masses::ConstituentMasses,
+    L::AbstractString,
+    multiplicity::Integer,
+    r::AbstractVector,
+    nlevels::Integer,
+)
+    if !params.factors.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
+        return Float64[], zeros(Float64, 0, 0), Float64[]
+    end
+    h = r[2] - r[1]
+    rmax = h * (length(r) + 1)
+    hamiltonian, rebuilt_r =
+        relativistic_hamiltonian(params, masses, 0; ngrid = length(r), rmax = rmax)
+    length(rebuilt_r) == length(r) || error("rebuilt S-wave grid changed length")
+    operator = contact_hyperfine_operator(params, masses, L, multiplicity, rebuilt_r)
+    levels, vectors =
+        lowest_eigenpairs(Symmetric(Matrix(hamiltonian) + Matrix(operator)), nlevels)
+    return levels, Matrix(vectors), collect(Float64, rebuilt_r)
+end
+
+function contact_hyperfine_nonperturbative_states(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L::AbstractString,
+    multiplicity::Integer,
+    r::AbstractVector,
+    nlevels::Integer,
+)
+    return Float64[], zeros(Float64, 0, 0), Float64[]
+end
+
 function contact_hyperfine_nonperturbative_levels(
     params::GIParameters,
     masses::ConstituentMasses,

@@ -1435,3 +1435,29 @@ end
     @test !hasmethod(add_spin_corrections, Tuple{MixedSpectrum})
     @test !hasmethod(add_intra_meson_mixing, Tuple{CentralSpectrum})
 end
+
+@testset "nonperturbative contact states expose hyperfine-distinct S waves" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    masses = Meson(mq, :q, :q).constituent_masses
+    central = central_spectrum(params, Meson(mq, :q, :q); levels = spectrum_levels(1))
+    r = central.computation.channel_cache[RadialChannelKey(masses, "S")].r
+    h = r[2] - r[1]
+
+    lvl1, vec1, r1 = contact_hyperfine_nonperturbative_states(params, masses, "S", 1, r, 2)
+    lvl3, vec3, r3 = contact_hyperfine_nonperturbative_states(params, masses, "S", 3, r, 2)
+    @test r1 == r3 == r                     # shared mesh with the central solve
+    @test size(vec1, 2) >= 1 && size(vec3, 2) >= 1
+    # levels agree with the energy-only accessor
+    @test lvl1 ≈ GIModel.contact_hyperfine_nonperturbative_levels(params, masses, "S", 1, r, 2)
+    @test lvl3 ≈ GIModel.contact_hyperfine_nonperturbative_levels(params, masses, "S", 3, r, 2)
+
+    # ^1S_0 (pi) is more compact than ^3S_1 (rho): smaller <r^2>, lower energy
+    r2(u) = radial_cross_expect_udr(u, u, r, h, (x, _i) -> x^2)
+    @test r2(vec1[:, 1]) < r2(vec3[:, 1])
+    @test lvl1[1] < lvl3[1]
+
+    # inactive path (non-FD basis) returns empties, not an error
+    lvlho, vecho, rho = contact_hyperfine_nonperturbative_states(
+        with_basis(params, HarmonicOscillatorBasis), masses, "S", 1, r, 2)
+    @test isempty(lvlho) && isempty(vecho) && isempty(rho)
+end
