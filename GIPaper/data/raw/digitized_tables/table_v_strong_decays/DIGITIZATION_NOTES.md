@@ -1,5 +1,15 @@
 # Table V (Strong Decays) — Digitization Notes
 
+> **SUPERSEDED.** The `*.provisional.csv` files in this folder have been folded
+> into the single canonical, page-image-verified
+> [`../table_v_strong_decays.csv`](../table_v_strong_decays.csv) (220 rows; see
+> [`../README_canonical_tables.md`](../README_canonical_tables.md)). The
+> canonical transcription also **corrected three sign/value errors** in the old
+> `1³F₄` rows here (`h→ηη`, `h'→ηη`, `K₄*→Kπ`) and split the conflated
+> `[D/S]`/`(1.x)` realistic-factor columns. These files are retained only until
+> `audit_table_v_decays.jl` and `audit_table_v_2s_1d_decays.jl` are rewired to
+> the canonical CSV; do not use them for new work.
+
 ## Charmed / open-charm section (unit W2a-3)
 
 ### Source
