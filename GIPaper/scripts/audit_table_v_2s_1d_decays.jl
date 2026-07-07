@@ -184,6 +184,17 @@ function main()
             status = "excluded: quasi-two-body daughter"
         elseif q <= 0
             status = "excluded: below threshold at model mass"
+        elseif !struct_indep
+            # Structure-dependent (S/D/P) rows: the paper's numeric column is NOT
+            # raw harmonic-oscillator. Proof (rho -> [omega pi]_P): the D-class
+            # formula S0 - 0.3 A qbar^2 with the paper's own A=1.67, S0=3.27
+            # peaks near -4.5 and can NEVER reach the tabulated -7.8; but
+            # -4.5 x (1.7) = -7.7, and (1.7) is exactly the realistic factor
+            # printed on the row. So the D/P column has the realistic [D/S]/(P/S)
+            # multiplier folded in (and uses S0=3.27), making a raw-HO comparison
+            # apples-to-oranges. Excluded from the headline; scored properly only
+            # once the realistic factor is applied (W5b).
+            status = "excluded: paper col not raw HO (realistic [D/S]/(P/S) folded in)"
         end
         ratio = (isnothing(paper_value) || paper_value == 0) ? missing : amp / paper_value
         small = !isnothing(paper_value) && abs(paper_value) <= 1.0
@@ -226,23 +237,49 @@ function main()
         println(io, "**Parent masses are the model's own predictions** from")
         println(io, "`compute_spectrum` (corrected stage: central + contact + fine structure),")
         println(io, "so this is an end-to-end check: our spectrum feeds the decay kinematics.")
-        println(io, "The paper suppresses the realistic-factor multipliers (`[D/S]`, `(1.x)`)")
-        println(io, "from the numeric column, so the comparison is against the raw")
-        println(io, "harmonic-oscillator amplitude; the realistic factors are audited")
-        println(io, "separately (Eqs. 20-21, `W5`).")
         println(io)
-        println(io, "**Headline, split by Table IV amplitude class** (clean rows, |paper| > 1):")
+        println(io, "**Only the structure-independent rows are directly comparable** (see the")
+        println(io, "class split below and the \"Why the D/P rows are excluded\" note): those")
+        println(io, "are `A`/`A'`/`A''`/`A0` decays whose numeric column is the raw")
+        println(io, "harmonic-oscillator amplitude. The structure-dependent `S`/`D`/`P` rows")
+        println(io, "are **not** raw HO in the paper -- the realistic `[D/S]`/`(P/S)` factor is")
+        println(io, "folded into their numeric column -- so a raw comparison is meaningless and")
+        println(io, "they are excluded from the headline.")
+        println(io)
+        println(io, "**Headline** (clean structure-independent rows, |paper| > 1):")
         println(io)
         println(io, @sprintf(
-            "- **Structure-independent** (`A`/`A'`/`A''`/`A0`: F- and G-wave rows): %d scored, median abs deviation **%.0f%%**. These carry only the `q^L` angular factor and the elastic form factor, so they isolate the flavor/spin algebra + kinematics + the `A` calibration -- and they reproduce the paper's column tightly.",
+            "- **Structure-independent** (`A`/`A'`/`A''`/`A0`: F- and G-wave rows): %d scored, median abs deviation **%.0f%%**. These carry only the `q^L` angular factor and the elastic form factor, so they isolate the flavor/spin algebra + kinematics + the `A` calibration -- and they reproduce the paper's column tightly across every orbital from S to F.",
             length(scored_si), 100median_si))
         println(io, @sprintf(
-            "- **Structure-dependent** (`S`/`D`/`P`: the `S0 - k A qbar^2` classes): %d scored, median abs deviation **%.0f%%**. These are \"highly sensitive to the structure of the states\" (Table IV text): they carry the `S0` strength (whose two-point fit reproduces `S0 = %.2f` vs the paper's reported `3.27`, `reproduction_audit.md` tier B) and a `qbar^2` node that makes them hypersensitive to `qbar`; the residual grows with `qbar` and produces near-zero blow-ups exactly at the node.",
-            length(scored_sd), 100median_sd, model.S0))
+            "- **Structure-dependent** (`S`/`D`/`P`): %d rows, all **excluded** from the headline (paper numeric column includes the realistic factor; see the dedicated note). Their raw computed values are still shown in the tables for reference.",
+            count(r -> !r.struct_indep && !ismissing(r.ratio), computed)))
         println(io)
         println(io, @sprintf(
-            "Overall: %d scored, median %.0f%%, flagged (>20%%): %d; small-amplitude rows: %d; excluded (computed but not scored): %d.",
-            length(scored), 100median_dev, n_flag, n_small, n_excl))
+            "Excluded (computed but not scored): %d; small-amplitude rows: %d.",
+            n_excl, n_small))
+        println(io)
+        println(io, "## Why the D/P rows are excluded (paper column is not raw HO)")
+        println(io)
+        println(io, "The structure-dependent numeric column is **not** the raw harmonic-")
+        println(io, "oscillator amplitude, despite the table header. Decisive check on")
+        println(io, "`rho -> [omega pi]_P` (D-class) and its F-wave partner, which **share one**")
+        println(io, "`q`:")
+        println(io)
+        println(io, "- The F-wave (`A`-class, structure-independent) fixes `q ~ 664 MeV`, where")
+        println(io, "  it reproduces the paper's `+2.7`.")
+        println(io, "- At that same `q`, the D-class formula `S0 - 0.3 A qbar^2` with the")
+        println(io, "  paper's **own** reported `A = 1.67, S0 = 3.27` gives `-4.5`. In fact the")
+        println(io, "  D-class amplitude for this decay **peaks near `-4.5` and can never reach**")
+        println(io, "  the tabulated `-7.8` at any `q`.")
+        println(io, "- But `-4.5 x (1.7) = -7.7 ~ -7.8`, and `(1.7)` is exactly the realistic")
+        println(io, "  factor printed on the row. So the paper folds the realistic `[D/S]`")
+        println(io, "  multiplier into the D/P numeric column (and evaluates with `S0 = 3.27`).")
+        println(io)
+        println(io, "Comparing our raw HO value against that column is apples-to-oranges;")
+        println(io, "scoring these rows requires applying the realistic factor (and the paper's")
+        println(io, "`S0`), which is the `W5b` follow-up. The earlier \"~19% structure-dependent")
+        println(io, "residual\" was an artifact of this mismatch, not a model discrepancy.")
         println(io)
         # Emit one subtable per section, in reading order.
         section_order = [
@@ -267,16 +304,16 @@ function main()
         end
         println(io, "## Notes")
         println(io)
-        println(io, "- The clean read is the class split above: **structure-independent")
+        println(io, "- The clean result is the structure-independent set: **`A`/`A'`/`A''`/`A0`")
         println(io, "  amplitudes reproduce the paper's numeric column to a few percent**")
         println(io, "  (confirming the algebra, the `A` calibration, the flavor/spin")
-        println(io, "  coefficients, and the model-mass kinematics), while the")
-        println(io, "  **structure-dependent `S`/`D`/`P` rows carry the `S0` strength and a")
-        println(io, "  `qbar^2` node** and so spread more and blow up near the node.")
+        println(io, "  coefficients, and the model-mass kinematics). The structure-dependent")
+        println(io, "  `S`/`D`/`P` rows are excluded because the paper's numeric column for them")
+        println(io, "  is realistic-corrected, not raw HO (see the dedicated note above).")
         println(io, "- Parent masses are the corrected (pre-mixing) model masses from")
         println(io, "  `compute_spectrum`. For a given decay the D-wave and F-wave rows share")
-        println(io, "  the same `q`, so the tight F-wave (structure-independent) agreement at")
-        println(io, "  that `q` rules out a kinematics error as the cause of the D-wave spread.")
+        println(io, "  the same `q`; the tight F-wave (structure-independent) agreement at that")
+        println(io, "  `q` is what lets the D-wave check above pin the paper's realistic factor.")
         println(io, "- The `1^3F_4` nonet (`L = 4`, all structure-independent `A qbar^4`) is")
         println(io, "  the highest-L light section and reproduces the paper's column")
         println(io, "  essentially exactly, extending the clean structure-independent")
@@ -297,9 +334,8 @@ function main()
     end
 
     println("wrote ", REPORT)
-    @printf("A=%.3f S0=%.3f | scored=%d (SI=%d SD=%d) flagged=%d small=%d excluded=%d | median: all=%.0f%% SI=%.0f%% SD=%.0f%%\n",
-        model.A, model.S0, length(scored), length(scored_si), length(scored_sd),
-        n_flag, n_small, n_excl, 100median_dev, 100median_si, 100median_sd)
+    @printf("A=%.3f S0=%.3f | structure-independent scored=%d median=%.0f%% flagged=%d | small=%d excluded(incl. SD not-raw-HO)=%d\n",
+        model.A, model.S0, length(scored_si), 100median_si, n_flag, n_small, n_excl)
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__

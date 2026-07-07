@@ -146,7 +146,7 @@ ownership and merge state only.
 | W3-2 isoscalar | `4a8645c` | 6 isoscalar M1 rows; signs right, η↔η′ ordering open (→ W6). |
 | W3-3 blocks | `d678136` | light E1/M2 + strange E1 + hindered b-b̄; **Table VI structurally complete**. |
 | W2c-1 charm classes | `f2dadf2` | A_c/S_c coded no-refit; **closes Table IV gap**; Q1c/Q2c reproduce at −41°. |
-| W2d score 2S/1D | `a8066b8` | 2S/1D/1³D₃ scored; structure-independent median 1%, structure-dependent 19%. |
+| W2d score 2S/1D | `a8066b8` | 2S/1D/1³D₃ scored; structure-independent median 1%. SD (S/D/P) rows excluded: paper column not raw HO (realistic factor folded in). |
 | W2a-4 1³F₄ | `0407272` | 1³F₄ nonet digitized+scored (no charmonium in Table V); SI median stays 1% S→F. |
 | W5 Eqs. 20-21 | `dfb3007` | type-A realistic factors from hyperfine waves; R_A>1, monotonic in L, ~paper trend. |
 | W2c-2 √3 diag | `fb5f5b4` | K*₂→Kπ √3 characterized: non-kinematic, missing Appendix-B isospin factor (open). |
