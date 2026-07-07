@@ -1,0 +1,24 @@
+source,page,section,decay_label,parent,daughter1,daughter2,coefficient_expr,coefficient_value,amplitude_class,qbar_power,paper_MeV12,realistic_factor,experiment_MeV12,footnotes,confidence,notes
+Godfrey-Isgur-1985.pdf,21,1^3F_4,delta -> rho pi,delta,rho,pi,+(1/12096)^(1/2),0.0090924,A,4,+2.7,(2.1),,,medium,1^3F_4 isovector (a4 analog); realistic factor (2.1) shown once for the nonet
+Godfrey-Isgur-1985.pdf,21,1^3F_4,delta -> eta pi,delta,eta,pi,-(1/60480)^(1/2),-0.0040663,A,4,-1.7,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,delta -> K Kbar,delta,K,K,+(1/60480)^(1/2),0.0040663,A,4,+1.4,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,delta -> eta' pi,delta,etaprime,pi,-(1/60480)^(1/2),-0.0040663,A,4,-0.8,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,delta -> K* Kbar,delta,Kstar,K,+(1/48384)^(1/2),0.0045462,A,4,+0.7,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,h -> pi pi,h,pi,pi,+(1/20160)^(1/2),0.0070430,A,4,+3.9,,,,medium,1^3F_4 nonstrange isoscalar
+Godfrey-Isgur-1985.pdf,21,1^3F_4,h -> K Kbar,h,K,K,+(1/60480)^(1/2),0.0040663,A,4,+1.4,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,h -> eta eta,h,eta,eta,+(1/241920)^(1/2),0.0020331,A,4,+1.0,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,h -> eta eta',h,eta,etaprime,-(1/120960)^(1/2),-0.0028753,A,4,-0.3,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,h -> eta' eta',h,etaprime,etaprime,+(1/241920)^(1/2),0.0020331,A,4,+0.6,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,h -> K* Kbar,h,Kstar,K,+(1/48384)^(1/2),0.0045462,A,4,+0.7,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,h' -> pi pi,hprime,pi,pi,0,0.0,mixing_only,0,0,(2.1),,,medium,zero for ideal mixing (ss isoscalar)
+Godfrey-Isgur-1985.pdf,21,1^3F_4,h' -> K Kbar,hprime,K,K,+(1/30240)^(1/2),0.0057505,A,4,+3.1,,,,medium,1^3F_4 ss isoscalar
+Godfrey-Isgur-1985.pdf,21,1^3F_4,h' -> eta eta,hprime,eta,eta,+(1/120960)^(1/2),0.0028753,A,4,+1.4,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,h' -> eta eta',hprime,eta,etaprime,+(1/60480)^(1/2),0.0040663,A,4,+1.0,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,h' -> eta' eta',hprime,etaprime,etaprime,-(1/120960)^(1/2),-0.0028753,A,4,-0.2,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,h' -> K* Kbar,hprime,Kstar,K,-(1/24192)^(1/2),-0.0064293,A,4,-1.9,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,K* -> K pi,Kstar4,K,pi,+(1/40320)^(1/2),0.0049801,A,4,-2.7,,,,low,printed coeff sign + but printed value -2.7; sign mismatch on image (K4* analog)
+Godfrey-Isgur-1985.pdf,21,1^3F_4,K* -> K* pi,Kstar4,Kstar,pi,+(1/32256)^(1/2),0.0055679,A,4,+1.7,,5 +- 1,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,K* -> rho K,Kstar4,rho,K,+(1/32256)^(1/2),0.0055679,A,4,+1.6,,1.2 +- 0.4,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,K* -> omega K,Kstar4,omega,K,-(1/96768)^(1/2),-0.0032147,A,4,-0.9,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,K* -> K eta,Kstar4,K,eta,+(sqrt2-1)/sqrt(241920),0.0008421,A,4,+0.3,,,,medium,
+Godfrey-Isgur-1985.pdf,21,1^3F_4,K* -> K eta',Kstar4,K,etaprime,-(sqrt2+1)/sqrt(241920),-0.0049084,A,4,-0.9,,4 +- 1,,medium,
