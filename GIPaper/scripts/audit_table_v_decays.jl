@@ -530,7 +530,10 @@ function main()
             "- `Q1`/`Q2` numeric amplitudes fold the strange-axial (`K1`) `1^1P_1`/`1^3P_1` mixing angle into the unmixed footnote-b formula coefficients; they are scored three ways (unmixed / model `%+.1f deg` / paper `+34 deg`) in the dedicated section above, and select the paper's `+34 deg`.",
             theta_model))
         println(io, "- Quasi-two-body subchannel daughters (`(pi pi)_eps`, `(K pi)_kappa`, `(eta pi)_delta2`) and sub-threshold modes (`D -> K* Kbar`) depend on lineshape conventions the paper does not state; nominal-mass kinematics cannot reproduce them.")
-        println(io, "- Strange-parent normalization: `K*2 -> K pi` computes ~sqrt(3) high while `K*(892) -> K pi` is exact, pointing at unequal-mass recoil factors in the Appendix B amplitudes not yet encoded.")
+        println(io, "- **`K*2 -> K pi` is high by exactly sqrt(3)** (computed `+13.38` vs paper `+7.7`; ratio 1.74 = sqrt(3) to 0.4%). This is a single-mode anomaly, now sharply localized:")
+        println(io, "  - The other four `K*2` (`1^3P_2` strange) modes reproduce (`(K pi)_K* pi` 1.06, `(pi pi)_rho K` 1.04, `omega K` 0.95, `K eta` 0.95), and `K*(892) -> K pi` (`1^3S_1` strange, same Kpi daughters) is exact (0.99). So it is not a strange-parent nor a Kpi-daughter normalization.")
+        println(io, "  - It is **not kinematic**: the paper's `+7.7` matches experiment (`6.7 +- 0.5`), and evaluating the paper's own `+(3/20)^(1/2) A qbar^2` formula reproduces `+7.7` only at `q ~ 486 MeV` (parent mass ~ 1.20 GeV), far below both the physical `K*_2(1430)` and our model's predicted `1.402 GeV` (which give `q ~ 605-623 MeV` and `~12.5-13.4`). No plausible parent mass yields `7.7`.")
+        println(io, "  - The charm `A_c` recoil multiplier does **not** resolve it: `m_c beta/((m_c+m_d) beta_c) < 1` is the wrong magnitude and direction. The clean `sqrt(3)` points to a missing flavor/normalization factor specific to this mode (identical-particle / MP-order isospin in Appendix B), to be derived, not fit. Open (W2c-2).")
     end
     println("wrote ", REPORT)
     @printf("A=%.3f S0=%.3f scored=%d flagged=%d excluded=%d\n", model.A, model.S0, length(scored), n_flagged, n_excluded)
