@@ -48,6 +48,11 @@ column still shows the full class letter (`D q̃`, `P q̃`).
 - `h' → η η` (1³F₄): old `+1.4`, page shows `−(1/120960)^½ → −1.4`.
 - `K* → K π` (1³F₄, K₄*): old had `+` coeff with a spurious "sign mismatch" note;
   page shows `−(1/40320)^½ → −2.7` (signs consistent, no mismatch).
+- `K*₂ → K π` (1³P₂, K₂*(1430)): old provisional coefficient `+(3/20)^½ = 0.387`;
+  page shows `+(1/20)^½ = 0.224` — a factor of exactly √3 smaller. This is the
+  sole cause of the long-standing "K*₂→Kπ high by √3" anomaly: with the
+  canonical coefficient the row reproduces the paper (+7.60 vs +7.7). It was a
+  transcription error, not a missing physics factor.
 
 ### Genuine on-page sign mismatches (formula sign ≠ printed value sign), flagged `low`
 - `Q2 → [K*η]_P` (1³D₂ strange): formula `+`, printed value `−1.6`.

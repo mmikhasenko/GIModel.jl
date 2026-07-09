@@ -1229,6 +1229,49 @@ end
         -0.27; atol = 0.05)
 end
 
+@testset "Row-oriented decay API (DecayChannel decomposition)" begin
+    q_rho = decay_momentum(0.769, 0.138, 0.138)
+    q_B = decay_momentum(1.231, 0.7826, 0.138)
+    model = calibrate_strong_decay_model(q_rho, q_B)          # :table_iv default
+    model_lead = calibrate_strong_decay_model(q_rho, q_B; convention = :leading)
+
+    # spatial_overlap is the pure [DERIVED] SHO momentum factor.
+    @test spatial_overlap(0.0, 1, 0.40) == 0.0
+    @test spatial_overlap(0.359, 0, 0.40) ≈ GIModel._suppressed_factor(0.359, 0.40)
+
+    # The 3-way decomposition multiplies back to the scalar amplitude.
+    ch_rho = DecayChannel("rho", "pi", "pi", sqrt(4 / 3), :A, 1)
+    a = decay_amplitude(model, ch_rho, q_rho; convention = :table_iv)
+    @test a.total ≈ a.coefficient * a.reduced * a.spatial_overlap
+    @test a.total ≈ strong_decay_amplitude(model, sqrt(4 / 3), :A, 1, q_rho)
+    @test a.total ≈ 12.4 atol = 1e-9
+    @test matrix_element(a) ≈ a.coefficient * a.reduced
+    @test decay_width(a) ≈ a.total^2
+
+    # leading vs table_iv: identical for structure-independent A, differ for D.
+    ch_D = DecayChannel("rho2", "omega", "pi", -sqrt(1 / 36), :D, 1)
+    q = 0.66
+    @test decay_amplitude(model, ch_rho, q; convention = :leading).total ≈
+          decay_amplitude(model, ch_rho, q; convention = :table_iv).total
+    @test decay_amplitude(model_lead, ch_D, q; convention = :leading).reduced ≈ model_lead.S0
+    @test decay_amplitude(model, ch_D, q; convention = :table_iv).reduced <
+          decay_amplitude(model, ch_D, q; convention = :leading).reduced
+
+    # MesonMasses resolves the momentum internally.
+    masses = MesonMasses(Dict("rho" => 0.769, "pi" => 0.138))
+    @test mass(masses, "rho") == 0.769
+    @test masses["pi"] == 0.138
+    @test decay_amplitude(model, ch_rho, masses; convention = :table_iv).total ≈ 12.4 atol = 1e-9
+    @test_throws Exception mass(masses, "unregistered")
+
+    # Charmed channel derives its footnote-d form factor + recoil from the class.
+    ch_c = DecayChannel("Kstar_c", "D", "pi", -sqrt(1 / 5), :A_c, 2)
+    q_c = 0.4
+    got = decay_amplitude(model, ch_c, q_c; convention = :leading).total
+    want = charm_decay_amplitude(model, -sqrt(1 / 5), :A_c, 2, q_c; recoil = true, convention = :leading)
+    @test got ≈ want
+end
+
 @testset "Meson construction and flavor resolution" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     cc = Meson(mq, :c, :c)

@@ -210,13 +210,15 @@ radii, and decay-model discussion beyond the mass spectrum.
 What the repo does: `docs/observable_ledger.md` (the acceptance artifact)
 tracks decay conventions separately from the mass code. The Table IV/V
 two-parameter strong-decay model is implemented in `src/strong_decays.jl`
-(`A = 1.665` from `rho -> pi pi`, `S0 = 3.918` from `B -> [omega pi]_S`,
-`beta = 0.40 GeV`), the light `1S`+`1P` block of Table V is digitized in
-`data/raw/digitized_tables/table_v_strong_decays/`, and
-`scripts/audit_table_v_decays.jl` reproduces the paper's numeric amplitude
-column at 6% median deviation on the 33 clean-convention rows, with the
-open conventions (K1 mixing angle, quasi-two-body lineshapes, strange
-recoil factors) itemized in the audit and the observable ledger. Table VI
+(row-oriented `decay_amplitude` API; `A = 1.665` from `rho -> pi pi`,
+`S0 = 3.287` from `B -> [omega pi]_S` in the leading-S0 convention,
+`beta = 0.40 GeV`), all of Table V is digitized in
+`data/raw/digitized_tables/table_v_strong_decays.csv`, and
+`scripts/reproduce_table_v.jl` reproduces the paper's numeric amplitude
+column on **160 / 178 scoreable rows**, with the remaining non-matches shown
+(via implied-mass inversion + the mixing rotation) to be parent-mass /
+mixing-angle input sensitivity, and the deferred conventions (quasi-two-body
+lineshapes, sub-threshold modes) itemized in the observable ledger. Table VI
 photon decays are now started: `scripts/audit_table_vi_photon_decays.jl`
 evaluates the Appendix-D mock-meson overlaps `I_i(x,y)` / `E_n^i(x,y)` on
 the model's own FD wavefunctions and reproduces 28 mixing-free M1/E1 rows

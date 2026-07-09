@@ -128,9 +128,18 @@ include("flavor_mixing.jl")
 export StrongDecayModel,
     decay_momentum,
     reduced_decay_amplitude,
+    spatial_overlap,
     strong_decay_amplitude,
     charm_decay_amplitude,
-    calibrate_strong_decay_model
+    calibrate_strong_decay_model,
+    DecayChannel,
+    StrongDecayAmplitude,
+    decay_amplitude,
+    matrix_element,
+    decay_width,
+    MesonMasses,
+    mass,
+    load_table_v
 include("strong_decays.jl")
 
 end

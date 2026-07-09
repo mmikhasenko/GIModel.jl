@@ -54,8 +54,10 @@ verification: light 2S and 1D, strange, charmed, charmonium sections.
 Wire the model's strange 1P same-J mixing angle from the spectrum layer into
 the Table V audit so the 15 excluded Q1/Q2 rows become scoreable.
 
-- Files: `GIPaper/scripts/audit_table_v_decays.jl` (extend),
-  `GIPaper/docs/residual_reports/table_v_light_decays.md` (regenerate).
+- Files: `GIPaper/scripts/reproduce_table_v.jl`,
+  `GIPaper/docs/residual_reports/table_v_reproduction.md` (regenerate). *(Done:
+  the Q1/Q2 + Q1c/Q2c rows are scored via the singlet/triplet rotation in the
+  unified reproduction harness.)*
 
 ### W2c — Charm classes and sections (medium-large, wave 2, after W2a)
 

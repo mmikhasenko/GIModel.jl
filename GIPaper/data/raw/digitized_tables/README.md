@@ -15,11 +15,8 @@ transcriptions.
   (79 rows), **`table_vii_annihilation_em.csv`** (61 rows): canonical,
   from-page-image transcriptions of Tables V/VI/VII. Schema and footnotes are
   documented in **[`README_canonical_tables.md`](README_canonical_tables.md)**.
-- `table_v_strong_decays/`: **superseded** piecemeal `*.provisional.csv` files
-  (folded into `table_v_strong_decays.csv`). Kept only because
-  `audit_table_v_decays.jl` and `audit_table_v_2s_1d_decays.jl` still read them;
-  they will be removed once those audits are rewired to the canonical file. Do
-  not use for new work — see that folder's `DIGITIZATION_NOTES.md` header.
+  Table V is consumed by `GIModel.load_table_v` and reproduced end-to-end by
+  `GIPaper/scripts/reproduce_table_v.jl` (160/178 scoreable rows match).
 
 ## Rules
 

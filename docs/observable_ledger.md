@@ -37,51 +37,73 @@ electromagnetic conventions are tracked here before/while they are encoded.
 - Isoscalar rows use Table III mixings (P1 for pseudoscalars; `(B14)/(B15)`
   perfect mixing for the `1^1S_0` formula column).
 
+### Equation provenance ([PAPER] transcribed vs [DERIVED] in-module)
+
+An amplitude factorizes as `amp = c * X(qbar) * spatial_overlap`
+(matrix element x numerical overlap):
+
+| factor | symbol | provenance | where |
+|---|---|---|---|
+| flavor-spin coefficient | `c` | **[PAPER]** App. B, one per row | canonical CSV `coefficient` |
+| reduced-amplitude class algebra | `X` form, `k = 1/2,3/10,3/4` | **[PAPER]** Table IV | `reduced_decay_amplitude` |
+| fitted strengths | `A`, `S0` | **[DERIVED]** solved from 2 fit rows | `calibrate_strong_decay_model` |
+| spatial overlap | `qbar^L sqrt(q/2pi) e^{-q^2/16b^2}` | **[DERIVED]** SHO integral | `spatial_overlap` |
+| breakup momentum | `q` | **[DERIVED]** Kallen | `decay_momentum` |
+| charm form factor + recoil | footnote d | **[PAPER]** shape, **[DERIVED]** value | `spatial_overlap(; charm)` |
+| partial width | `|amp|^2` | **[DERIVED]** GI normalization | `decay_width` |
+
+**Leading-S0 convention.** The paper's structure-dependent (S/D/P) numeric
+column uses the *leading constant* `S0 = 3 h beta` (dropping the
+`-k A qbar^2` polynomial of Table IV). That is what reproduces the reported
+`S0 ~ 3.29` and the D/P rows to ~1%; it is the `:leading` convention (default
+of `decay_amplitude`), while `:table_iv` keeps the printed polynomial.
+
 ### Encoded so far
 
-- `data/raw/digitized_tables/table_v_strong_decays/table_v_light_1s_1p.provisional.csv`:
-  the light `u-d-s` `1^3S_1`, `1^3P_2`, `1^3P_1`, `1^1P_1`, and `1^3P_0`
-  sections of Table V (coefficient expressions, classes, paper numbers,
-  experiment column), digitized from the vision OCR Markdown; image audit
-  pending for the messier later pages.
-- `src/strong_decays.jl`: reduced-amplitude algebra, two-point calibration,
-  and the full-amplitude assembly above. Calibration on the paper's fit rows
-  gives `A = 1.665`, `S0 = 3.918` (with `beta = 0.40 GeV` and 1984-era
-  masses).
-- `scripts/audit_table_v_decays.jl` writes
-  `docs/residual_reports/table_v_light_decays.md`: of the 70 extracted rows,
-  the 33 headline rows with a clean equal-mass two-parameter convention
-  reproduce the paper's numeric column at 6% median deviation (e.g.
-  `K* -> K pi` +7.97 vs +7.9, `A2 -> eta pi` +4.49 vs +4.5,
-  `f -> pi pi` -10.9 vs -11); 8 are flagged and 27 are excluded with stated
-  reasons (K1 mixing angle, quasi-two-body lineshapes, strange recoil).
+- `data/raw/digitized_tables/table_v_strong_decays.csv`: the canonical,
+  page-image-verified transcription of all of Table V (220 rows, see
+  `README_canonical_tables.md`).
+- `src/strong_decays.jl`: the row-oriented API — `DecayChannel`,
+  `decay_amplitude` returning the 3-way `StrongDecayAmplitude` decomposition
+  (`coefficient`/`reduced`/`spatial_overlap`/`total`), `matrix_element`,
+  `decay_width`, `MesonMasses`, `load_table_v`, the `:leading`/`:table_iv`
+  conventions, and the charm footnote-d path. Leading calibration gives
+  `A = 1.665`, `S0 = 3.287` (`beta = 0.40 GeV`).
+- `scripts/reproduce_table_v.jl` writes
+  `docs/residual_reports/table_v_reproduction.md`: **160 / 178 scoreable rows
+  match** (+6 near, 12 off), 22 convention-deferred. Non-matches are all
+  parent-mass or mixing-angle input sensitivity (each MISS inverts to a mass
+  within 20-50 MeV of the input), not decay-algebra error.
+
+### Findings that make Table V reproduce
+
+1. **Leading-S0** turns every S/D/P row from "excluded" to a ~1% match
+   (`rho -> [omega pi]_P` -7.82 vs -7.8).
+2. **`K*2 -> K pi` sqrt(3) was a digitization error, not physics.** The old
+   provisional coefficient `+(3/20)^1/2` should be `+(1/20)^1/2` (page image);
+   the canonical value gives +7.60 vs paper +7.7. The careful re-digitization
+   fixed it.
+3. **`h` (f4) is the nn isoscalar** (decays to pi pi, K Kbar), not ss; a flavor
+   fix that reproduced its whole 1^3F_4 block.
+4. **Same-J mixing** (Q1/Q2, Q1c/Q2c): rotating the pure singlet/triplet
+   formulas by the paper's angle (1P +34, 1D +33, charm -41 deg) reproduces the
+   footnote-j near-cancellations in sign and magnitude
+   (`Q1->[K*pi]_S` -0.34 vs -0.3, `Q2->[K*pi]_S` +17.4 vs +16).
 
 ### Open conventions / next steps
 
-1. Decay momenta `q`: computed from a 1984-era mass table (experimental
-   masses for established states, GI model masses for unobserved parents like
-   `H`, `H'`, `delta2`, `epsilon`, `epsilon'`, `kappa`). Quasi-two-body
-   subchannel daughter masses (`(pi pi)_epsilon`, `(K pi)_kappa`,
-   `(eta pi)_delta2`) are the dominant ambiguity; rows whose computed
-   amplitude deviates from the paper by more than 20% are flagged in the
-   audit for a per-row kinematics audit.
-2. `Q1`/`Q2` (strange axial) rows: the numeric column folds in the model's
-   `K1` (`1^3P_1`/`1^1P_1`) mixing angle on top of the unmixed formula
-   coefficients — the near-zero `Q1 -> [K* pi]_S` against the large
-   `Q2 -> [K* pi]_S` is the familiar K1(1270)/K1(1400) selectivity. The
-   spectrum layer's antisymmetric spin-orbit block provides this angle; wiring
-   it into the decay audit is the clearest next step.
-3. Strange-parent normalization: `K*2 -> K pi` computes ~sqrt(3) above the
-   paper while `K*(892) -> K pi` is exact; the strange `1^3P_0`/`ss`-parent
-   `S`-rows sit 20-30% off in a correlated way. Appendix B's
-   emission amplitudes carry unequal-mass recoil factors not yet encoded.
-4. Later Table V sections (light `2S`, `1D`, charmed, charmonium `psi`
-   sectors with `A_c`, `S_c`, `beta_c`) are not yet extracted.
-5. "Realistic factor" column (SHO -> realistic wavefunction correction
-   ratios) is recorded but not modeled.
-6. Table VI/VII electromagnetic amplitudes and charge radii: Table VI is
-   started, see the section below. Table VII (leptonic, two-photon, gluonic
-   decays, charge radii) is not started.
+1. Quasi-two-body subchannel daughters (`(pi pi)_eps`, `(K pi)_kappa`,
+   `(eta pi)_delta2`) and sub-threshold modes depend on a lineshape the paper
+   does not state; those rows are convention-deferred, not scored.
+2. GI-predicted parent masses: the residual MISSes (isoscalar `H`/`H'`, `2S`
+   `K'`/`rho_S`, near-threshold `K* Kbar`) track the parent mass; using the
+   paper's own predicted masses would close them. Documented per-row via the
+   implied-mass inversion in the report.
+3. "Realistic factor" column (SHO -> realistic wavefunction ratios) is recorded
+   in the CSV but not applied (the leading-S0 finding superseded the earlier
+   "realistic factor folded in" hypothesis).
+4. Table VII (leptonic, two-photon, gluonic decays, charge radii) audit is not
+   started; Table VI photon decays are in the section below.
 
 ## Photon Decays `M* -> M gamma` (Sec. IV B, Table VI, Appendix D)
 
