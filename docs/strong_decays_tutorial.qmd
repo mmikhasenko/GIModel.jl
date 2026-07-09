@@ -1,0 +1,200 @@
+---
+title: "Strong Decays in GIModel: reproducing Godfrey--Isgur Table V"
+subtitle: "A hands-on tutorial for the row-oriented decay API"
+date: 2026-07-09
+engine: julia
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: false
+    number-sections: true
+    theme: cosmo
+    df-print: kable
+---
+
+## What this tutorial covers
+
+Godfrey and Isgur [Phys. Rev. D **32**, 189 (1985)] tabulate the strong decays
+$M^* \to M + P$ (a meson emitting a pseudoscalar) in their Table V. This tutorial
+shows how `GIModel` computes those amplitudes with an API built so that **you can
+see where every number comes from** — the spin--flavor matrix element, the
+harmonic-oscillator spatial overlap, and the two fitted constants — and then
+reproduces the table row by row.
+
+The single formula behind all of Table V is
+
+$$
+\text{amp} \;=\; \underbrace{c}_{\text{coefficient}} \cdot
+\underbrace{X(\bar q)}_{\text{reduced amplitude}} \cdot
+\underbrace{\bar q^{\,L}\,\sqrt{q/2\pi}\;e^{-q^2/16\beta^2}}_{\text{spatial overlap}},
+\qquad \bar q = q/\beta,\ \ \beta = 0.40\ \text{GeV},
+$$
+
+in $\mathrm{MeV}^{1/2}$. The partial width is $\lvert\text{amp}\rvert^2$.
+
+**Provenance — which pieces are the paper's, which are derived here:**
+
+| factor | symbol | provenance | source |
+|---|---|---|---|
+| spin--flavor coefficient | $c$ | **[PAPER]** Appendix B, one per row | canonical CSV |
+| reduced-amplitude algebra | $X$, $k=\tfrac12,\tfrac3{10},\tfrac34$ | **[PAPER]** Table IV | `reduced_decay_amplitude` |
+| fitted strengths | $A$, $S_0$ | **[DERIVED]** solved from 2 fit rows | `calibrate_strong_decay_model` |
+| spatial overlap | $\bar q^{L}\sqrt{q/2\pi}\,e^{-q^2/16\beta^2}$ | **[DERIVED]** SHO integral | `spatial_overlap` |
+| breakup momentum | $q$ | **[DERIVED]** Källén kinematics | `decay_momentum` |
+
+## Setup
+
+We work in the `GIPaper` project, which has `GIModel` plus `CSV` for loading the
+digitized table.
+
+```{julia}
+#| output: false
+using Pkg
+Pkg.activate(joinpath("..", "GIPaper"))
+using GIModel
+using CSV, DataFrames
+```
+
+### Calibrating the model
+
+The whole table rides on **two** fitted numbers. `A` (structure-independent
+strength) is fixed by $\rho\to\pi\pi = +12.4$, and $S_0$ (structure-dependent
+strength) by $B\to[\omega\pi]_S = -11$, both at their physical breakup momenta.
+Nothing else is tuned.
+
+```{julia}
+q_rho = decay_momentum(0.769, 0.138, 0.138)     # rho -> pi pi
+q_B   = decay_momentum(1.231, 0.7826, 0.138)    # B -> omega pi
+model = calibrate_strong_decay_model(q_rho, q_B; convention = :leading)
+(A = model.A, S0 = model.S0, beta = model.beta_GeV)
+```
+
+## One decay, fully decomposed
+
+A decay is a `DecayChannel`: the parent, its two daughters, the spin--flavor
+coefficient $c$, the reduced-amplitude class, and the orbital power $L$. For
+$\rho\to\pi\pi$ the paper's formula is $+(4/3)^{1/2} A\,\bar q$, so $c=\sqrt{4/3}$,
+class `:A`, $L=1$.
+
+```{julia}
+rho_pipi = DecayChannel("rho", "pi", "pi", sqrt(4/3), :A, 1; label = "rho -> pi pi")
+a = decay_amplitude(model, rho_pipi, q_rho)
+```
+
+`decay_amplitude` returns a `StrongDecayAmplitude` that keeps the three factors
+separate, so the amplitude is self-documenting:
+
+```{julia}
+(coefficient    = a.coefficient,      # c        [PAPER]
+ reduced        = a.reduced,          # X(qbar)  [Table IV]
+ spatial_overlap = a.spatial_overlap, # the SHO integral [DERIVED]
+ total          = a.total,            # their product = the tabulated number
+ matrix_element = matrix_element(a),  # c * X    (the interaction part)
+ width_MeV      = decay_width(a))     # |amp|^2
+```
+
+The `total` is $+12.4\ \mathrm{MeV}^{1/2}$ — the fit row, exact by construction —
+and you can read off that it is `coefficient * reduced * spatial_overlap`.
+
+## The leading-$S_0$ convention (the key to the S/D/P rows)
+
+Table IV writes the *structure-dependent* classes as $S_0 - k A\bar q^2$. But the
+paper's **numeric column** was computed with only the leading constant
+$S_0 = 3h\beta$ — the $-kA\bar q^2$ polynomial dropped. That is the difference
+between `:table_iv` (the printed formula) and `:leading` (what reproduces the
+table). Watch it on $\rho(1^3D_2)\to[\omega\pi]_P$, a D-class row the paper lists
+as $-7.8$:
+
+```{julia}
+rho2 = DecayChannel("rho2", "omega", "pi", -sqrt(1/36), :D, 1; label = "rho -> [omega pi]_P")
+q = decay_momentum(1.70, 0.7826, 0.138)   # model 1^3D_2 mass ~ 1.70 GeV
+(table_iv = decay_amplitude(model, rho2, q; convention = :table_iv).total,
+ leading  = decay_amplitude(model, rho2, q; convention = :leading).total,
+ paper    = -7.8)
+```
+
+`:leading` lands on $-7.8$; `:table_iv` misses by ~20%. This one convention turns
+~90 previously "unscoreable" S/D/P rows into ~1% matches, and is why
+`decay_amplitude` defaults to `:leading`.
+
+## Loading the whole table
+
+The canonical, page-image-verified transcription lives in the data folder;
+`load_table_v` turns its rows into `DecayChannel`s (skipping the pure Table III
+mixing rows).
+
+```{julia}
+csv = joinpath("..", "GIPaper", "data", "raw", "digitized_tables",
+               "table_v_strong_decays.csv")
+channels = load_table_v(CSV.File(csv))
+length(channels)
+```
+
+To turn channels into numbers we need masses. `MesonMasses` is a simple
+name → mass resolver; here we build one with physical values for the
+$1^3S_1$ nonet. We iterate the CSV rows of that section so each computed
+amplitude sits next to the paper's own number from the same row.
+
+```{julia}
+masses = MesonMasses(Dict(
+    "rho" => 0.769, "phi" => 1.0195, "Kstar" => 0.8921,
+    "pi" => 0.138, "K" => 0.4957, "eta" => 0.5488,
+))
+
+demo = DataFrame(decay = String[], computed = Float64[], paper = String[])
+for r in CSV.File(csv)
+    String(r.section) == "1^3S_1" || continue
+    ch = DecayChannel(String(r.parent), String(r.daughter1), String(r.daughter2),
+                      Float64(r.coefficient), Symbol(replace(String(r.amp_class),
+                          "Ac" => "A_c", "Sc" => "S_c")), Int(r.qbar_power);
+                      label = String(r.decay))
+    push!(demo, (ch.label, round(decay_amplitude(model, ch, masses).total, digits = 2),
+                 strip(String(r.amp_MeV))))
+end
+demo
+```
+
+Every $1^3S_1$ row reproduces the paper to a couple percent, purely from the two
+fit constants and the kinematics — no per-row tuning.
+
+## The full reproduction
+
+Running the whole table is one script:
+
+```bash
+julia GIPaper/scripts/reproduce_table_v.jl
+```
+
+which writes `GIPaper/docs/residual_reports/table_v_reproduction.md`. The headline
+is **160 / 178 scoreable rows match**, and the interesting part is *why the rest
+don't* — each is an input sensitivity, not a decay-algebra error:
+
+- **Same-$J$ mixing.** The $Q_1/Q_2$ ($K_1(1270)/K_1(1400)$) rows are physical
+  *mixed* states; rotating the pure singlet/triplet formulas by the paper's angle
+  ($\theta_{1P}\approx+34^\circ$) reproduces the footnote-$j$ near-cancellations
+  in sign *and* magnitude ($Q_1\to[K^*\pi]_S = -0.34$ vs $-0.3$;
+  $Q_2\to[K^*\pi]_S = +17.4$ vs $+16$).
+
+- **The $K^*_2\to K\pi$ "$\sqrt3$ anomaly" was a digitization error.** The old
+  transcription had $c=(3/20)^{1/2}$; the page image shows $(1/20)^{1/2}$ —
+  exactly $\sqrt3$ smaller. With the canonical value the row reproduces
+  ($+7.60$ vs $+7.7$). Careful re-digitization, not new physics, resolved it.
+
+- **Residual misses are parent-mass sensitivity.** Every structure-independent
+  miss inverts to a parent mass within 20--50 MeV of the input (the $\bar q^2$ of
+  a D-wave amplifies a small mass error ~2× over its matched S-wave partner).
+
+## Where to go from here
+
+- `src/strong_decays.jl` — the API, with `[PAPER]`/`[DERIVED]` tags on every
+  factor.
+- `docs/observable_ledger.md` — the equation-provenance table and the
+  leading-$S_0$ note.
+- `GIPaper/data/raw/digitized_tables/README_canonical_tables.md` — the canonical
+  transcription and the digitization errors it fixed.
+- `GIPaper/scripts/reproduce_table_v.jl` — the harness that produces the per-row
+  report.
+
+Try it yourself: pick any Table V row, build its `DecayChannel`, and inspect the
+three factors — the point of this API is that no number is a black box.
