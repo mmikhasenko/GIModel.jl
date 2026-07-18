@@ -1,0 +1,222 @@
+# Figures 1-16 of Godfrey-Isgur 1985 (Phys. Rev. D 32, 189).
+#
+# Page numbers are page-IMAGE numbers (paper/vision_ocr/page_images/page-0NN.png);
+# the mapping is  image = journal_pg - 188  (journal p.189 = page-001.png).
+# Each anchor below was verified against the printed page image (the OCR
+# "PDF Page" markers drift after page 12 and were corrupted around Fig. 16, so
+# the late anchors were read off the images directly, not the OCR markers).
+#
+# Reproduced: Fig. 2 (running coupling) and Figs. 3-9 (the seven sector spectra).
+# Everything else is illustrative / discussion material (context): schematic
+# Feynman graphs (1, 13-15), the potential sketch (12), hypothetical top-quark
+# spectra (10, 11), and the 0++ coupled-channel phenomenology (16).
+
+schema_version = 1
+
+# --- Sec. II figures -------------------------------------------------------
+
+[[unit]]
+id = "fig-1"
+kind = "figure"
+label = "Fig. 1"
+page = 3
+statement = "The annihilation interaction H_A: a typical qqbar -> gluons -> qqbar graph (schematic origin of the H_A term)."
+status = "context"
+anchor = "paper/vision_ocr/page_images/page-003.png"
+parent = "sec-II"
+notes = "A schematic Feynman graph, nothing to reproduce numerically. The physics it represents (the annihilation Hamiltonian, Eq. 16) is implemented via src/pseudoscalar_annihilation.jl / isoscalar_general_annihilation; the figure itself is context."
+
+[[unit]]
+id = "fig-2"
+kind = "figure"
+label = "Fig. 2"
+page = 4
+statement = "The saturating running coupling alpha_s(Q^2) [Eq. (12)] fitted to lowest-order QCD: alpha_s = 0.25 exp(-Q^2) + 0.15 exp(-Q^2/10) + 0.20 exp(-Q^2/1000)."
+status = "reproduced"
+code = ["src/running_coupling.jl:alpha_s_r"]
+tests = ["GI momentum-space alpha_s profile"]
+metric = "alpha_s^critical = sum a_k = 0.60; the three (a_k, gamma_k) coefficients are the paper's own Fig. 2 fit (tier-A input), reproduced as alpha_s_q / alpha_s_r with analytic derivatives."
+anchor = "paper/vision_ocr/page_images/page-004.png"
+parent = "sec-II"
+notes = "Fig. 2 caption/plot is on page-004 (journal 192); the eqs and the 'as shown in Fig. 2' reference sit on page-003. alpha_s_r is the r-space erf form [Eq. (13)] used by the potential; alpha_s_q is the Q^2 form plotted. Regression-tested (also 'GI erf profile' testsets)."
+
+# --- Sec. III spectrum figures ---------------------------------------------
+
+[[unit]]
+id = "fig-3"
+kind = "figure"
+label = "Fig. 3"
+page = 6
+statement = "Isovector meson spectrum [-u dbar, sqrt(1/2)(uu-dd), d ubar]: predicted masses and dominant compositions vs experiment across all J^PC."
+status = "reproduced"
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/isovector.png"]
+report = "GIPaper/docs/residual_reports/isovector_residuals.md"
+metric = "mean abs residual ~14.5 MeV"
+anchor = "paper/vision_ocr/page_images/page-006.png"
+parent = "sec-III"
+notes = "Our reproduction is report/figures/isovector.png. 1-- and 0++ sectors need the Sec. V A / V D caveats (0++ is the KKbar-bound-state discussion, Fig. 16)."
+
+[[unit]]
+id = "fig-4"
+kind = "figure"
+label = "Fig. 4"
+page = 7
+statement = "Strange meson spectrum (u sbar, d sbar): predicted masses and compositions vs experiment."
+status = "reproduced"
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/strange.png"]
+report = "GIPaper/docs/residual_reports/strange_residuals.md"
+metric = "mean abs residual ~10.8 MeV"
+anchor = "paper/vision_ocr/page_images/page-007.png"
+parent = "sec-III"
+notes = "Reproduction report/figures/strange.png. Same-J K1 (1P) mixing angle is the residual sensitivity (mixing_angles.md)."
+
+[[unit]]
+id = "fig-5"
+kind = "figure"
+label = "Fig. 5"
+page = 8
+statement = "Light isoscalar meson spectrum (dominantly uu/dd/ss mixtures); state assignments given in Table III."
+status = "reproduced"
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/isoscalar.png"]
+report = "GIPaper/docs/residual_reports/isoscalar_residuals.md"
+metric = "mean abs residual ~11.5 MeV"
+anchor = "paper/vision_ocr/page_images/page-008.png"
+parent = "sec-III"
+notes = "Reproduction report/figures/isoscalar.png. Isoscalar mixing (omega/phi, f2/f2') audited in table_iii_mixing_audit.md. 0-+ isoscalars carry the Sec. V A caveat."
+
+[[unit]]
+id = "fig-6"
+kind = "figure"
+label = "Fig. 6"
+page = 8
+statement = "Charmonium (c cbar) spectrum: predicted masses and compositions vs experiment."
+status = "reproduced"
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/charmonium.png"]
+report = "GIPaper/docs/residual_reports/charmonium_residuals.md"
+metric = "mean abs residual ~6.0 MeV"
+anchor = "paper/vision_ocr/page_images/page-008.png"
+parent = "sec-III"
+notes = "Reproduction report/figures/charmonium.png. Shares page-008 with Fig. 5. No charmonium strong-decay section in Table V (psi below open-flavor threshold)."
+
+[[unit]]
+id = "fig-7"
+kind = "figure"
+label = "Fig. 7"
+page = 9
+statement = "Charmed and charm-strange meson spectra (c dbar, c ubar, c sbar) with 1P/1D same-J mixing angles."
+status = "reproduced"
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/charmed.png"]
+report = "GIPaper/docs/residual_reports/charmed_residuals.md"
+metric = "mean abs residual ~12.4 MeV"
+anchor = "paper/vision_ocr/page_images/page-009.png"
+parent = "sec-III"
+notes = "Reproduction report/figures/charmed.png. Paper angles theta_1P^cu=-41, theta_1D^cu=-39, theta_1P^cs=-44, theta_1D^cs=-39 (mixing_angles.md)."
+
+[[unit]]
+id = "fig-8"
+kind = "figure"
+label = "Fig. 8"
+page = 9
+statement = "Bottomonium (b bbar) spectrum: predicted masses vs experiment."
+status = "reproduced"
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/bottomonium.png"]
+report = "GIPaper/docs/residual_reports/bottomonium_residuals.md"
+metric = "mean abs residual ~4.3 MeV (best sector)"
+anchor = "paper/vision_ocr/page_images/page-009.png"
+parent = "sec-III"
+notes = "Reproduction report/figures/bottomonium.png. Shares page-009 with Fig. 7."
+
+[[unit]]
+id = "fig-9"
+kind = "figure"
+label = "Fig. 9"
+page = 10
+statement = "b-flavored meson spectra (b qbar, b sbar, b cbar) with 1P mixing angles."
+status = "reproduced"
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/bottom_light.png"]
+report = "GIPaper/docs/residual_reports/b_flavored_residuals.md"
+metric = "mean abs residual ~5.2 MeV"
+anchor = "paper/vision_ocr/page_images/page-010.png"
+parent = "sec-III"
+notes = "Our reproduction is report/figures/bottom_light.png (the b qbar + b sbar + b cbar sectors). Paper angles theta_1P^bq=-43, theta_1P^bs=-45, theta_1P^bc=-53."
+
+[[unit]]
+id = "fig-10"
+kind = "figure"
+label = "Fig. 10"
+page = 10
+statement = "Some hypothetical t-quarkonium (t tbar) levels for an assumed m_t = 35 GeV."
+status = "context"
+anchor = "paper/vision_ocr/page_images/page-010.png"
+parent = "sec-III"
+notes = "Illustrative 1985 extrapolation at m_t = 35 GeV (top is now ~173 GeV), so there is no physical spectrum to reproduce. Shares page-010 with Fig. 9. The sector solver could in principle produce it, but it is intentionally not scored."
+
+[[unit]]
+id = "fig-11"
+kind = "figure"
+label = "Fig. 11"
+page = 11
+statement = "Some hypothetical t-flavored meson spectra for an assumed m_t = 35 GeV."
+status = "context"
+anchor = "paper/vision_ocr/page_images/page-011.png"
+parent = "sec-III"
+notes = "Companion of Fig. 10; hypothetical heavy-top illustration, not a reproduction target."
+
+# --- Sec. IV decay figures (schematics) ------------------------------------
+
+[[unit]]
+id = "fig-12"
+kind = "figure"
+label = "Fig. 12"
+page = 12
+statement = "The universal qqbar confinement potential H^conf(r) in a color-singlet meson, with rms interquark separations of representative mesons overlaid."
+status = "context"
+anchor = "paper/vision_ocr/page_images/page-012.png"
+parent = "sec-IV"
+notes = "An illustrative plot of the confinement potential (implemented in src/central_potential_dispatch.jl) annotated with the region each meson probes; used later (Sec. V C) to argue the slope parameter b. No dedicated reproduction asset, so context. Subject is a Sec. II/model quantity but the figure is printed on page-012 among the decay-section figures."
+
+[[unit]]
+id = "fig-13"
+kind = "figure"
+label = "Fig. 13"
+page = 12
+statement = "Schematic of a single-quark pseudoscalar-emission transition q -> q P (the strong-decay operator of Eq. 19)."
+status = "context"
+anchor = "paper/vision_ocr/page_images/page-012.png"
+parent = "sec-IV"
+notes = "Schematic diagram of the decay vertex; the operator it depicts is treated under eq-19 / table-IV in decays.toml. Nothing to reproduce from the figure itself."
+
+[[unit]]
+id = "fig-14"
+kind = "figure"
+label = "Fig. 14"
+page = 12
+statement = "On the danger of double counting in meson decays to two pseudoscalars (why quark and antiquark emission are not summed as they would be for photon emission)."
+status = "context"
+anchor = "paper/vision_ocr/page_images/page-012.png"
+parent = "sec-IV"
+notes = "Methodological schematic underpinning the single-quark-transition decay convention. Context."
+
+[[unit]]
+id = "fig-15"
+kind = "figure"
+label = "Fig. 15"
+page = 12
+statement = "(a) A disconnected diagram; (b) a diagram contributing to eta-eta' mixing."
+status = "context"
+anchor = "paper/vision_ocr/page_images/page-012.png"
+parent = "sec-IV"
+notes = "Schematic diagrams; the eta-eta' mixing physics enters via the flavor conventions (B14-B15), not via this figure."
+
+# --- Sec. V figure ---------------------------------------------------------
+
+[[unit]]
+id = "fig-16"
+kind = "figure"
+label = "Fig. 16"
+page = 33
+statement = "Some effects in IJ^PC = 00^++ (pi pi / K Kbar) scattering: the coupled-channel T-matrix contribution each Table VIII state would make if it acted alone."
+status = "context"
+anchor = "paper/vision_ocr/page_images/page-033.png"
+parent = "sec-V"
+notes = "Sec. V D phenomenology built from the Table VIII inputs via the Breit-Wigner S-matrix (Eqs. 27-29), which are all context/discussion-layer, not a model output. Verified on page-033 (journal 221) alongside Table VIII; the OCR page markers around here are corrupted."

@@ -87,11 +87,18 @@ function main()
     # --- rollup by section ---------------------------------------------------
     sections = [u for u in units if get(u, "kind", "") == "section"]
     childstatus(secid) = [get(u, "status", "todo") for u in units if get(u, "parent", "") == secid]
+    # Derived section status = the weakest SUBSTANTIVE child. `folded`/`context`
+    # are "done by other means / not-applicable" and don't drag a section down;
+    # a section with only those rolls up to folded (or context if purely
+    # discussion), never to a green "reproduced".
     function derived(statuses)
         isempty(statuses) && return "todo"
-        all(s -> s in ("reproduced", "folded", "context"), statuses) && return "reproduced"
-        any(s -> s in ("reproduced", "implemented", "partial"), statuses) && return "partial"
-        return "todo"
+        core = filter(s -> s in ("reproduced", "implemented", "partial", "missing", "todo"), statuses)
+        isempty(core) && return all(==("context"), statuses) ? "context" : "folded"
+        all(s -> s in ("missing", "todo"), core) && return "todo"
+        any(s -> s in ("missing", "todo", "partial"), core) && return "partial"
+        any(==("implemented"), core) && return "implemented"
+        return "reproduced"
     end
 
     open(REPORT, "w") do io

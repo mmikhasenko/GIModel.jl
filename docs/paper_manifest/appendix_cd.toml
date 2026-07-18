@@ -1,0 +1,136 @@
+# Appendix C (helicity -> partial-wave / width relations) and Appendix D
+# (mock-meson electromagnetic matrix elements) enrichment fragment.
+#
+# NOTE: Eq. (C2) is intentionally omitted here — it is already carried by the
+# reference fragment decays.toml (ids are globally unique). This fragment adds
+# C1, C3 and D1-D11.
+#
+# Page numbers are page-IMAGE numbers (image = journal_pg - 188). Appendix C is
+# on page-image 37; Appendix D spans page-images 38-40. Individual per-equation
+# page assignments below are best estimates within that range (see per-unit
+# notes); the checker only requires the anchored page-image to exist.
+
+schema_version = 1
+
+# --- Appendix C: helicity -> partial-wave / width -------------------------
+
+[[unit]]
+id = "C1"
+kind = "equation"
+label = "Eq. (C1)"
+page = 37
+statement = "Helicity amplitude definition H_m for M* -> M + P; the basis from which the partial-wave amplitudes are projected."
+status = "folded"
+code = ["src/strong_decays.jl:reduced_decay_amplitude"]
+anchor = "paper/vision_ocr/page_images/page-037.png"
+parent = "app-C"
+notes = "Folded: Table IV already tabulates the partial-wave amplitudes, so we work directly in the partial-wave basis (reduced_decay_amplitude) rather than projecting from helicity amplitudes. Page-image 37 is the Appendix C page."
+
+[[unit]]
+id = "C3"
+kind = "equation"
+label = "Eq. (C3)"
+page = 37
+statement = "Helicity-to-partial-wave sum rule relating H_m to the partial-wave decay amplitudes."
+status = "context"
+anchor = "paper/vision_ocr/page_images/page-037.png"
+parent = "app-C"
+notes = "Context only: not needed while amplitudes (not widths) are compared row-by-row against Table V. No independent code — the partial-wave amplitudes are compared directly. Page-image 37 assumed for the whole appendix."
+
+# --- Appendix D: mock-meson electromagnetic matrix elements ----------------
+
+[[unit]]
+id = "D1"
+kind = "equation"
+label = "Eq. (D1)"
+page = 38
+statement = "Magnetic-moment coupling mu_{piomega} (and analogues) defined from the mock-meson current matrix element."
+status = "folded"
+code = ["GIPaper/scripts/audit_table_vi_photon_decays.jl"]
+report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
+anchor = "paper/vision_ocr/page_images/page-038.png"
+parent = "app-D"
+notes = "Folded into the mu/(e/2) (mu/mu_N) convention of the Table VI photon-decay audit. Page-image 38 is the estimated start of Appendix D (38-40 range)."
+
+[[unit]]
+id = "D2"
+kind = "equation"
+label = "Eq. (D2)"
+page = 38
+statement = "Mock-meson state definition; mock mass M~ = <E_1> + <E_2> built from the model radial waves."
+status = "implemented"
+code = ["GIPaper/scripts/audit_table_vi_photon_decays.jl:mock_mass"]
+report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
+anchor = "paper/vision_ocr/page_images/page-038.png"
+parent = "app-D"
+notes = "Realized by mock_mass (= mean_energy(quark1) + mean_energy(quark2)) in the Table VI audit; not yet promoted into src/ with tests. Page-image 38 estimated."
+
+[[unit]]
+id = "D3"
+kind = "equation"
+label = "Eq. (D3)"
+page = 38
+statement = "Relativized moment with the (m+2E)/3E^2 -> (m/E)^f prescription realizing the overlap I_i and the r^n moments E_n^i."
+status = "implemented"
+code = ["GIPaper/scripts/audit_table_vi_photon_decays.jl:I_overlap", "GIPaper/scripts/audit_table_vi_photon_decays.jl:E_moment"]
+report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
+anchor = "paper/vision_ocr/page_images/page-038.png"
+parent = "app-D"
+notes = "I_overlap uses weight (1/m_i)(m_i/E_i)^0.7; E_moment uses prefactor |m_i/sqrt(<E_i>_x<E_i>_y)|^0.5 — the paper's fitted exponents, no new constants. Page-image 38 estimated."
+
+[[unit]]
+id = "D4-D6"
+kind = "equation"
+label = "Eqs. (D4)-(D6)"
+page = 39
+statement = "Decay-constant definitions f_P, f_V, f_{A1} from the mock-meson wavefunction at the origin."
+status = "missing"
+anchor = "paper/vision_ocr/page_images/page-039.png"
+parent = "app-D"
+notes = "Not implemented — prerequisites for Table VII (leptonic/two-photon/gluonic decays), which is not started. No code cited. Page-image 39 estimated within the 38-40 Appendix D range."
+
+[[unit]]
+id = "D7"
+kind = "equation"
+label = "Eq. (D7)"
+page = 39
+statement = "Leptonic width Gamma(P -> l nu) from the pseudoscalar decay constant f_P."
+status = "missing"
+anchor = "paper/vision_ocr/page_images/page-039.png"
+parent = "app-D"
+notes = "Not implemented — needed for Table VII; depends on the D4-D6 decay constants. No code cited. Page-image 39 estimated."
+
+[[unit]]
+id = "D8"
+kind = "equation"
+label = "Eq. (D8)"
+page = 39
+statement = "Dilepton width Gamma(V -> l+ l-) from the vector decay constant f_V."
+status = "missing"
+anchor = "paper/vision_ocr/page_images/page-039.png"
+parent = "app-D"
+notes = "Not implemented — needed for Table VII; depends on the D4-D6 decay constants. No code cited. Page-image 39 estimated."
+
+[[unit]]
+id = "D9"
+kind = "equation"
+label = "Eq. (D9)"
+page = 40
+statement = "Width Gamma(tau -> A1 nu) from the axial-vector decay constant f_{A1}."
+status = "missing"
+anchor = "paper/vision_ocr/page_images/page-040.png"
+parent = "app-D"
+notes = "Not implemented — needed for Table VII; depends on the D4-D6 decay constants. No code cited. Page-image 40 estimated near the end of Appendix D."
+
+[[unit]]
+id = "D10-D11"
+kind = "equation"
+label = "Eqs. (D10)-(D11)"
+page = 40
+statement = "Radiative widths Gamma(V -> P gamma) and Gamma(P -> V gamma) from the magnetic moment mu."
+status = "folded"
+code = ["GIPaper/scripts/audit_table_vi_photon_decays.jl:e1_amplitude"]
+report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
+anchor = "paper/vision_ocr/page_images/page-040.png"
+parent = "app-D"
+notes = "Folded: trivial mu -> width conversions; the Table VI audit compares moments/amplitudes (e1_amplitude and the M1 moment) directly, and the conversions apply when the width columns are scored. Page-image 40 estimated."
