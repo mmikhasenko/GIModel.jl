@@ -1,0 +1,160 @@
+# Sec. IV strong-decay slice — the fully-worked reference fragment.
+# Every field here is verified against the code/tests/reports built this week;
+# it is the copy-able template for the delegated enrichment fragments.
+#
+# NOTE for enrichment: the units below (eqs 19-22, Table IV, Table V, B16-B25,
+# B14-B15, C2) are DONE here — the maintext/tables/appendix_b/appendix_c
+# enrichment fragments must NOT re-add them (ids are globally unique).
+
+schema_version = 1
+
+# --- Equations -------------------------------------------------------------
+
+[[unit]]
+id = "eq-19"
+kind = "equation"
+label = "Eq. (19)"
+page = 8
+statement = "Pseudoscalar-emission decay operator (g σ·q + h σ·p'): the two-coupling amplitude for M* -> M + P."
+status = "partial"
+code = ["src/strong_decays.jl:strong_decay_amplitude"]
+tests = ["Table V strong-decay model"]
+report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
+metric = "evaluated in the SU(6)/single-beta SHO limit via Table IV classes"
+anchor = "paper/vision_ocr/page_images/page-008.png"
+parent = "sec-IV"
+notes = "The operator is not applied to model wavefunctions directly; its matrix elements enter through the Table IV class algebra and the transcribed Table V coefficients."
+
+[[unit]]
+id = "eq-20"
+kind = "equation"
+label = "Eq. (20)"
+page = 9
+statement = "Type-A realistic-factor ratio <3S1|r^(L-1)|M*> / <1S0|r^(L-1)|M*> — the parenthetical correction column of Table V for A-type amplitudes."
+status = "reproduced"
+code = ["GIPaper/scripts/audit_realistic_factors.jl"]
+metric = "type-A ratios R_A = 1.65/2.03/2.23 (L=2,3,4) vs paper 1.5/1.7-1.8/2.1"
+anchor = "paper/vision_ocr/page_images/page-009.png"
+parent = "sec-IV"
+notes = "Computed from hyperfine-distinct pi/rho radial waves (contact_hyperfine_nonperturbative_states). Was mislabelled 'missing' in the old prose ledger."
+
+[[unit]]
+id = "eq-21"
+kind = "equation"
+label = "Eq. (21)"
+page = 9
+statement = "Type-S realistic-factor ratio <1S0|p|M*> / <3S1|p|M*> — the S-type companion to Eq. (20)."
+status = "partial"
+code = ["GIPaper/scripts/audit_realistic_factors.jl"]
+anchor = "paper/vision_ocr/page_images/page-009.png"
+parent = "sec-IV"
+notes = "Type-A ratios reproduced; the type-S momentum-matrix-element ratio is a soft quality follow-up, not yet scored per-row."
+
+[[unit]]
+id = "eq-22"
+kind = "equation"
+label = "Eq. (22)"
+page = 9
+statement = "Photon-emission helicity amplitude for radiative (EM) decays."
+status = "implemented"
+code = ["GIPaper/scripts/audit_table_vi_photon_decays.jl"]
+report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
+anchor = "paper/vision_ocr/page_images/page-009.png"
+parent = "sec-IV"
+notes = "Realized as the Appendix-D mock-meson form; to be promoted into src/ with tests."
+
+# --- Tables IV / V ---------------------------------------------------------
+
+[[unit]]
+id = "table-IV"
+kind = "table"
+label = "Table IV"
+page = 13
+statement = "Reduced partial-wave amplitude classes (A, A', A'', A0, S, D, P and charm A_c, S_c); full amplitude adds q^L exp(-q^2/16 beta^2)."
+status = "reproduced"
+code = ["src/strong_decays.jl:reduced_decay_amplitude"]
+tests = ["Table V strong-decay model", "Table V charmed decays"]
+report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
+metric = "light calibration (A, S0) transfers to charm with no refit; :leading vs :table_iv conventions"
+anchor = "paper/vision_ocr/page_images/page-013.png"
+parent = "sec-IV"
+notes = "Structure-dependent classes carry the S0 - k A qbar^2 polynomial (:table_iv) or the leading constant S0 (:leading, the paper's numeric-column convention)."
+
+[[unit]]
+id = "table-V"
+kind = "table"
+label = "Table V"
+page = 14
+statement = "Strong-decay amplitudes M* -> M + P over all light + charmed nonets (220 rows, pages 14-22); decay rate = |amplitude|^2."
+status = "reproduced"
+code = ["src/strong_decays.jl:decay_amplitude", "GIPaper/scripts/reproduce_table_v.jl"]
+tests = ["Row-oriented decay API"]
+report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
+metric = "160/178 scoreable rows match; leading-S0; K*2->Kpi sqrt(3) was a digitization error; h=f4 nn; same-J mixing rotation"
+anchor = "paper/vision_ocr/page_images/page-014.png"
+parent = "sec-IV"
+notes = "Canonical page-image CSV data/raw/digitized_tables/table_v_strong_decays.csv; loaded via load_table_v. Non-matches are parent-mass / mixing-angle input sensitivity."
+
+# --- Inputs / fit ----------------------------------------------------------
+
+[[unit]]
+id = "input-beta-decay"
+kind = "input"
+label = "Decay oscillator beta = 0.40 GeV"
+page = 14
+statement = "Single harmonic-oscillator scale beta for the SHO-limit decay amplitudes (Table V caption; Table VI footnote g confirms 'as in Table V')."
+status = "reproduced"
+code = ["src/strong_decays.jl:spatial_overlap"]
+anchor = "paper/vision_ocr/page_images/page-014.png"
+parent = "sec-IV"
+notes = "Paper's own input, not fitted."
+
+[[unit]]
+id = "fit-A-S0"
+kind = "fit"
+label = "Strong-decay strengths A, S0"
+page = 14
+statement = "Two-point fit: A from rho->pipi=+12.4, S0 from B->[omega pi]_S=-11, at their physical breakup momenta."
+status = "reproduced"
+code = ["src/strong_decays.jl:calibrate_strong_decay_model"]
+tests = ["Table V strong-decay model"]
+metric = "A=1.665, S0=3.287 (leading convention; paper A=1.67, S=3.27)"
+anchor = "paper/vision_ocr/page_images/page-014.png"
+parent = "sec-IV"
+notes = "Methodologically identical to the paper's own fit; no extra freedom. (Old ledgers listed the stale table_iv S0=3.918.)"
+
+# --- Appendix pieces realized by the decay slice ---------------------------
+
+[[unit]]
+id = "B16-B25"
+kind = "equation"
+label = "Eqs. (B16)-(B25)"
+page = 33
+statement = "SU(3) flavor operators X_q^i (and the antiquark charge rule B25) that set the Table V spin-flavor coefficients."
+status = "folded"
+anchor = "paper/vision_ocr/page_images/page-033.png"
+parent = "app-B"
+notes = "Their matrix elements are baked into the digitized Table V `coefficient` column (transcribed, not independently derived). Independent derivation would upgrade Table V from 'coefficients transcribed' to 'coefficients derived'."
+
+[[unit]]
+id = "B14-B15"
+kind = "equation"
+label = "Eqs. (B14)-(B15)"
+page = 33
+statement = "Perfect-mixing eta, eta' wavefunctions used for the 1^1S_0 formula column."
+status = "implemented"
+anchor = "paper/vision_ocr/page_images/page-033.png"
+parent = "app-B"
+notes = "Used by the Table V 1^1S_0 formula-column convention."
+
+[[unit]]
+id = "C2"
+kind = "equation"
+label = "Eq. (C2)"
+page = 37
+statement = "Partial width from partial-wave amplitudes, fixing the sqrt(q/2pi) amplitude convention."
+status = "implemented"
+code = ["src/strong_decays.jl:spatial_overlap"]
+anchor = "paper/vision_ocr/page_images/page-037.png"
+parent = "app-C"
+notes = "The sqrt(q/2pi) factor of the amplitude and decay_width = |amp|^2."

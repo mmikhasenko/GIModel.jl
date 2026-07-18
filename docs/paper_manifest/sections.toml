@@ -1,0 +1,90 @@
+# Paper section index — the top-level drill-down hierarchy.
+# Every other unit points at one of these ids via `parent`. Section `status` is
+# left as "todo" here and is DERIVED by check_manifest.jl from its children
+# (the rollup), so it never needs hand-editing.
+#
+# Page numbers are page-IMAGE numbers (paper/vision_ocr/page_images/page-0NN.png);
+# the mapping is  image = journal_pg - 188  (journal p.189 = page-001.png).
+
+schema_version = 1
+
+[[unit]]
+id = "sec-I"
+kind = "section"
+label = "Sec. I — Introduction"
+page = 1
+statement = "Motivation and overview of the relativized quark model."
+status = "todo"
+parent = ""
+
+[[unit]]
+id = "sec-II"
+kind = "section"
+label = "Sec. II — The model"
+page = 2
+statement = "The relativized Hamiltonian: semirelativistic kinetic term, smeared confinement + one-gluon exchange, running coupling, relativistic factors."
+status = "todo"
+parent = ""
+
+[[unit]]
+id = "sec-III"
+kind = "section"
+label = "Sec. III — Meson spectroscopy"
+page = 5
+statement = "Reproduced meson spectra for all seven flavor sectors and isoscalar mixing."
+status = "todo"
+parent = ""
+
+[[unit]]
+id = "sec-IV"
+kind = "section"
+label = "Sec. IV — Meson decays"
+page = 8
+statement = "Strong (M*->MP) and electromagnetic decay couplings from the model wavefunctions."
+status = "todo"
+parent = ""
+
+[[unit]]
+id = "sec-V"
+kind = "section"
+label = "Sec. V — Discussion"
+page = 23
+statement = "Phenomenological discussion, exotics, and the 0++ coupled-channel treatment."
+status = "todo"
+parent = ""
+
+[[unit]]
+id = "app-A"
+kind = "section"
+label = "Appendix A — Relativistic smearing & operator ordering"
+page = 31
+statement = "Smearing of the potential and the momentum-dependent operator sandwiches (A1-A17)."
+status = "todo"
+parent = ""
+
+[[unit]]
+id = "app-B"
+kind = "section"
+label = "Appendix B — Flavor/spin operators & SHO wavefunctions"
+page = 33
+statement = "SU(3) flavor operators X_q^i, ideal/perfect mixing, harmonic-oscillator wavefunctions (B1-B37)."
+status = "todo"
+parent = ""
+
+[[unit]]
+id = "app-C"
+kind = "section"
+label = "Appendix C — Helicity to partial-wave decay amplitudes"
+page = 37
+statement = "Helicity amplitude definition and partial-wave / width relations (C1-C3)."
+status = "todo"
+parent = ""
+
+[[unit]]
+id = "app-D"
+kind = "section"
+label = "Appendix D — Mock-meson electromagnetic matrix elements"
+page = 38
+statement = "Mock-meson overlaps, decay constants, and EM/leptonic width formulas (D1-D11)."
+status = "todo"
+parent = ""

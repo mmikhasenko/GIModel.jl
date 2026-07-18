@@ -1,5 +1,14 @@
 # Reproduction Audit
 
+> **Being migrated to the manifest.** The machine-checked source of truth is now
+> `docs/paper_manifest/*.toml`, rendered as the drill-down dashboard
+> (`docs/paper_dashboard.qmd`, `cd docs && make dashboard`) and validated by
+> `GIPaper/scripts/check_manifest.jl`. The **Sec. IV / decay** rows are already
+> authoritative there (and fix two drift bugs this prose carried: Eq. (20) is
+> **reproduced**, and the leading-fit `S₀ = 3.287`, not the stale `3.918`
+> below). Remaining sections are being enriched into the manifest; treat those
+> manifest entries as canonical once present.
+
 The single gate for the claim "the original Godfrey-Isgur model is fully
 reproduced". Two inventories: every **table/figure** with its computed
 local-vs-paper asset, and every **tagged equation** (main text 1a-29,

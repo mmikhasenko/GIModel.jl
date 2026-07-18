@@ -25,9 +25,9 @@ paper/vision_ocr/godfrey_isgur_1985_vision_ocr.html
 report/*.tex
 report/*_files/
 
-# Quarto tutorial build artifacts (the .qmd source is tracked; render locally).
+# Quarto build artifacts in docs/ (the .qmd sources are tracked; render locally).
 docs/*_files/
-docs/strong_decays_tutorial.html
+docs/*.html
 
 # Regenerable sector plots; curated copies are tracked under report/figures/.
 GIPaper/scripts/spectrum_plots/

@@ -14,4 +14,5 @@ julia GIPaper/scripts/audit_table_iii_mixings.jl
 julia GIPaper/scripts/reproduce_table_v.jl
 julia GIPaper/scripts/analyze_heavy_quarkonium.jl
 julia GIPaper/scripts/run_all_spectrum_checks.jl
+julia GIPaper/scripts/check_manifest.jl   # anti-drift gate: manifest links must resolve
 echo "verify_project.sh: all checks passed."
