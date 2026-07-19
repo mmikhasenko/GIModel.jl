@@ -302,6 +302,56 @@ function run_two_photon(params, mq, paper)
     return results
 end
 
+# --- isoscalar-MIXED pseudoscalar γγ rows (eta, eta', eta_r, eta'_r) ----------
+# These strongly-mixed states cannot use ideal mixing (it inverts the η<η'
+# ordering). The γγ amplitude is a COHERENT sum over the [1nn, 1ss, 2nn, 2ss]
+# flavor×radial components, with amplitudes from the P1 pseudoscalar-annihilation
+# block (the "P1 for pseudoscalars" of Sec. V A / the Table VI footnote-d
+# prescription). The physical mock-meson mass M_P is used in (M/M̃)^(3/2) — GI's
+# mock-meson prescription — because the model underpredicts the light-
+# pseudoscalar masses and the (M/M̃)^(3/2) factor is acutely mass-sensitive.
+const GG_MIXED = [   # (CSV label, block column, physical M_P GeV)
+    ("eta -> gamma gamma",     1, 0.548),
+    ("eta' -> gamma gamma",    2, 0.958),
+    ("eta_r -> gamma gamma",   3, 1.295),   # ~ eta(1295)
+    ("eta'_r -> gamma gamma",  4, 1.440),   # ~ iota(1440)
+]
+
+function run_two_photon_mixed(params, mq, paper)
+    mu, ms = mq["q"], mq["s"]
+    Qnn = (4 / 9 + 1 / 9) / sqrt(2)     # (uū+dd̄)/√2 effective charge
+    Qss = 1 / 9                          # ss̄
+    function psfam(m1, m2)               # pure-flavor ¹S₀ 1S,2S waves
+        _, _, r = channel_solution(params, ConstituentMasses(m1, m2), 0;
+            nlevels = 3, ngrid = NGRID, rmax = RMAX)
+        lv, vec, r2 = contact_hyperfine_nonperturbative_states(params,
+            ConstituentMasses(m1, m2), "S", 1, r, 3)
+        return [RadialWaveOnUniformMesh(fix_outer_antinode_positive!(copy(vec[:, n])), r2) for n in 1:2]
+    end
+    NN, SS = psfam(mu, mu), psfam(ms, ms)
+    comp = [(NN[1], mu, Qnn), (SS[1], ms, Qss), (NN[2], mu, Qnn), (SS[2], ms, Qss)]  # [1nn,1ss,2nn,2ss]
+
+    psl = [GIModel.BasisState(1, "S", 1, 0), GIModel.BasisState(2, "S", 1, 0)]
+    vl = [GIModel.BasisState(1, "S", 3, 1)]
+    nn_spec = GIModel.compute_spectrum(params, Meson(:q, :q, ConstituentMasses(mu, mu)); levels = vcat(psl, vl))
+    ss_spec = GIModel.compute_spectrum(params, Meson(:s, :s, ConstituentMasses(ms, ms)); levels = vcat(psl, vl))
+    psb = GIModel.pseudoscalar_annihilation_block(GIModel.PaperP1Annihilation(), params, nn_spec, ss_spec)
+
+    results = NamedTuple[]
+    for (label, col, Mphys) in GG_MIXED
+        a = psb.vectors[:, col]
+        A = sum(a[k] * two_photon_amplitude(:P, comp[k][1], comp[k][2], Mphys, comp[k][3]; npoints = NPTS)
+                for k in 1:4)                                   # GeV^½
+        model = from_gev(A, :keV)
+        pv, _ = get(paper, label, (NaN, :keV))
+        ratio = isnan(pv) || pv == 0 ? NaN : abs(model) / abs(pv)
+        sign_ok = !isnan(pv) && pv != 0 && sign(model) == sign(pv)
+        push!(results, (label = label, M = Mphys, mix = a,
+                        model = model, paper = pv, ratio = ratio, sign_ok = sign_ok))
+    end
+    return results
+end
+
 # =============================================================================
 # Charge-radii slice (part d)
 # =============================================================================
@@ -373,15 +423,19 @@ function main()
     params, mq = load_parameters_and_quark_masses(PARAMS_PATH)
     glu = run_gluonic(params, mq, load_paper_predictions(TABLE, "gluonic"))
     lep = run_leptonic(params, mq, load_paper_predictions(TABLE, "leptonic"))
-    gg = run_two_photon(params, mq, load_gg_predictions(TABLE))
+    gg_paper = load_gg_predictions(TABLE)
+    gg = run_two_photon(params, mq, gg_paper)
+    ggm = run_two_photon_mixed(params, mq, gg_paper)
     cr = run_charge_radii(params, mq, load_radius_predictions(TABLE))
 
     gratios = filter(!isnan, [r.ratio for r in glu])
     lratios = filter(!isnan, [r.ratio for r in lep])
     ggratios = filter(!isnan, [r.ratio for r in gg])
+    ggmratios = filter(!isnan, [r.ratio for r in ggm])
     # charge radii: score the predictions (exclude the pi+ fit anchor)
     crratios = filter(!isnan, [r.ratio for r in cr if !r.anchor])
     gmed, lmed, ggmed = median_of(gratios), median_of(lratios), median_of(ggratios)
+    ggmmed = median_of(ggmratios)
     crmed = median_of(crratios)
     gsign, lsign, ggsign = count(r -> r.sign_ok, glu), count(r -> r.sign_ok, lep), count(r -> r.sign_ok, gg)
 
@@ -483,13 +537,12 @@ function main()
         println(io, "mass, `M̃` the mock mass. Amplitude² is Γ; units follow the paper (`π` in")
         println(io, "`eV^½`, the rest in `keV^½`).")
         println(io)
-        println(io, "Scored here are the rows with unambiguous flavor content. The strongly-")
-        println(io, "mixed isoscalar pseudoscalars (`", join(GG_DEFERRED, "`, `"), "`) depend on the")
-        println(io, "P1/P2 pseudoscalar-annihilation model of Sec. V A and are deferred; `f`/`f'`")
-        println(io, "use ideal tensor mixing (`f₂` nonstrange, `f₂'` = `ss̄`); the hypothetical")
-        println(io, "t-tbar `eta_t` is not modelled.")
+        println(io, "The clean-flavor rows are below; the strongly-mixed isoscalar pseudoscalars")
+        println(io, "(`", join(GG_DEFERRED, "`, `"), "`) follow in their own table (they need the P1")
+        println(io, "mixing block). `f`/`f'` use ideal tensor mixing (`f₂` nonstrange, `f₂'` =")
+        println(io, "`ss̄`); the hypothetical t-tbar `eta_t` is not modelled.")
         println(io)
-        println(io, @sprintf("**%d two-photon rows scored; median |model|/|paper| = %.2f; signs agree on %d/%d.**",
+        println(io, @sprintf("**%d clean-flavor two-photon rows; median |model|/|paper| = %.2f; signs agree on %d/%d.**",
             length(ggratios), ggmed, ggsign, length(ggratios)))
         println(io)
         println(io, "| decay | kind | M (GeV) | q_eff | model | paper | unit | ratio | sign |")
@@ -500,6 +553,27 @@ function main()
                 isnan(r.ratio) ? "—" : @sprintf("%.2f", r.ratio),
                 r.sign_ok ? "✓" : "✗"))
         end
+        println(io)
+        println(io, "**Isoscalar-mixed pseudoscalars** (`η`, `η'`, `η_r`, `η'_r`) — a coherent")
+        println(io, "sum over the `[1nn, 1ss, 2nn, 2ss]` components with amplitudes from the P1")
+        println(io, "pseudoscalar-annihilation block (Sec. V A), using the physical mock-meson")
+        println(io, "`M_P`. Ideal mixing cannot be used here: it inverts the `η<η'` ordering.")
+        println(io, @sprintf("Median |model|/|paper| = %.2f; signs agree on %d/%d.",
+            ggmmed, count(r -> r.sign_ok, ggm), length(ggmratios)))
+        println(io)
+        println(io, "| decay | M_P (GeV) | 1nn | 1ss | 2nn | 2ss | model keV^½ | paper keV^½ | ratio | sign |")
+        println(io, "|---|---:|---:|---:|---:|---:|---:|---:|:-:|:-:|")
+        for r in ggm
+            println(io, @sprintf("| `%s` | %.3f | %+0.2f | %+0.2f | %+0.2f | %+0.2f | %+0.3f | %+0.3f | %s | %s |",
+                r.label, r.M, r.mix[1], r.mix[2], r.mix[3], r.mix[4], r.model, r.paper,
+                isnan(r.ratio) ? "—" : @sprintf("%.2f", r.ratio),
+                r.sign_ok ? "✓" : "✗"))
+        end
+        println(io)
+        println(io, "The `η<η'` γγ ordering — backwards under ideal mixing — is reproduced, and")
+        println(io, "all four signs agree; the ~30–50% magnitude spread reflects the model's")
+        println(io, "sensitivity to the P1 mixing amplitudes and the light-pseudoscalar masses.")
+        println(io, "The hypothetical t-tbar `eta_t` is not modelled.")
         println(io)
 
         # --- charge radii ----------------------------------------------------
@@ -552,8 +626,9 @@ function main()
         println(io, "  the paper's own footnote calls very `f`-`f'`-sensitive) and `π→γγ` shares")
         println(io, "  the `f_π` meson-mass sensitivity (here through `(M/M̃)^{3/2}`).")
         println(io, "- Isoscalar-mixing corrections (folded into the paper's numbers) are part of")
-        println(io, "  the `ω`/`φ` leptonic residual; the strongly-mixed isoscalar pseudoscalar")
-        println(io, "  `γγ` rows depend on the P1/P2 model (Sec. V A) and are deferred.")
+        println(io, "  the `ω`/`φ` leptonic residual. The strongly-mixed isoscalar pseudoscalar")
+        println(io, "  `γγ` rows are reproduced via the P1 block (`η<η'` ordering and all signs")
+        println(io, "  right, ~30–50% on magnitude) — ideal mixing cannot do these at all.")
         println(io, "- **Charge radii** are excellent: the `K⁺` (0.585 vs 0.59 fm) and `K⁰`")
         println(io, "  (−0.315 vs −0.30 fm) are genuine predictions (only `f` is fit, on the")
         println(io, "  `π⁺`), reproducing both the magnitude and the negative `K⁰` sign from the")
@@ -565,8 +640,14 @@ function main()
         length(gratios), gmed, gsign, length(gratios))
     @printf("leptonic:  %d rows, median |model|/|paper| = %.2f, signs %d/%d\n",
         length(lratios), lmed, lsign, length(lratios))
-    @printf("two-photon: %d rows, median |model|/|paper| = %.2f, signs %d/%d\n",
-        length(ggratios), ggmed, ggsign, length(ggratios))
+    @printf("two-photon: %d clean rows, median = %.2f, signs %d/%d ; mixed eta rows median = %.2f, signs %d/%d\n",
+        length(ggratios), ggmed, ggsign, length(ggratios),
+        ggmmed, count(r -> r.sign_ok, ggm), length(ggmratios))
+    for r in ggm
+        @printf("  %-22s model=%+7.3f paper=%+7.3f keV^½  ratio=%s sign=%s\n",
+            r.label, r.model, r.paper, isnan(r.ratio) ? "—" : @sprintf("%.2f", r.ratio),
+            r.sign_ok ? "ok" : "X")
+    end
     @printf("charge radii: %d predictions, median ratio = %.2f, signs %d/%d\n",
         length(crratios), crmed, count(r -> r.sign_ok, cr), length(cr))
     for r in cr

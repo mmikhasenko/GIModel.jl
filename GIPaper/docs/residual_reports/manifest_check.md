@@ -21,7 +21,7 @@ None — every reference resolves.
 | Sec. I — Introduction | 0 | 0 | 0 | 0 | 0 | 0 | 0 | todo |
 | Sec. II — The model | 21 | 2 | 0 | 12 | 3 | 4 | 0 | implemented |
 | Sec. III — Meson spectroscopy | 14 | 8 | 0 | 4 | 0 | 2 | 0 | implemented |
-| Sec. IV — Meson decays | 14 | 5 | 4 | 1 | 0 | 4 | 0 | partial |
+| Sec. IV — Meson decays | 14 | 6 | 3 | 1 | 0 | 4 | 0 | partial |
 | Sec. V — Discussion | 9 | 0 | 0 | 0 | 4 | 5 | 0 | folded |
 
 ## Remaining work
@@ -38,4 +38,3 @@ Projected from every `missing`/`partial`/`todo` unit — not a separate list, so
 | Eq. (D8) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: dilepton width Gamma(V->l+l-) from f_V (after D4-D6). |
 | Eq. (D9) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: axial-current width Gamma(tau->A1 nu) from f_A1 (after D4-D6). |
 | Eq. (21) | Sec. IV — Meson decays | partial | small | W5b: score the type-S <1S0|p|M*>/<3S1|p|M*> momentum ratio per row (hyperfine waves already exposed). |
-| Table VII | Sec. IV — Meson decays | partial | small | All four Table VII subtable formulas are reproduced. Only open items: the 4 strongly-mixed isoscalar-pseudoscalar gamma-gamma rows (eta/eta'/eta_r/eta'_r), which need the P1/P2 pseudoscalar-mixing model of Sec. V A, and the hypothetical t-tbar rows (never reproducible). |

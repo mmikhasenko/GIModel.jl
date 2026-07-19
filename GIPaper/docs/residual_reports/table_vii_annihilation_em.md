@@ -115,13 +115,12 @@ amplitude times quark charges: `(e_u²−e_d²)/√2` for `π`/`A2`, `4/9` for
 mass, `M̃` the mock mass. Amplitude² is Γ; units follow the paper (`π` in
 `eV^½`, the rest in `keV^½`).
 
-Scored here are the rows with unambiguous flavor content. The strongly-
-mixed isoscalar pseudoscalars (`eta`, `eta'`, `eta_r`, `eta'_r`) depend on the
-P1/P2 pseudoscalar-annihilation model of Sec. V A and are deferred; `f`/`f'`
-use ideal tensor mixing (`f₂` nonstrange, `f₂'` = `ss̄`); the hypothetical
-t-tbar `eta_t` is not modelled.
+The clean-flavor rows are below; the strongly-mixed isoscalar pseudoscalars
+(`eta`, `eta'`, `eta_r`, `eta'_r`) follow in their own table (they need the P1
+mixing block). `f`/`f'` use ideal tensor mixing (`f₂` nonstrange, `f₂'` =
+`ss̄`); the hypothetical t-tbar `eta_t` is not modelled.
 
-**8 two-photon rows scored; median |model|/|paper| = 0.98; signs agree on 8/8.**
+**8 clean-flavor two-photon rows; median |model|/|paper| = 0.98; signs agree on 8/8.**
 
 | decay | kind | M (GeV) | q_eff | model | paper | unit | ratio | sign |
 |---|:-:|---:|---:|---:|---:|:-:|:-:|:-:|
@@ -133,6 +132,24 @@ t-tbar `eta_t` is not modelled.
 | `A2 -> gamma gamma` | P2 | 1.258 | +0.236 | -1.116 | -1.200 | keV^½ | 0.93 | ✓ |
 | `f -> gamma gamma` | P2 | 1.258 | +0.393 | -1.860 | -1.900 | keV^½ | 0.98 | ✓ |
 | `f' -> gamma gamma` | P2 | 1.498 | +0.111 | -0.425 | -0.250 | keV^½ | 1.70 | ✓ |
+
+**Isoscalar-mixed pseudoscalars** (`η`, `η'`, `η_r`, `η'_r`) — a coherent
+sum over the `[1nn, 1ss, 2nn, 2ss]` components with amplitudes from the P1
+pseudoscalar-annihilation block (Sec. V A), using the physical mock-meson
+`M_P`. Ideal mixing cannot be used here: it inverts the `η<η'` ordering.
+Median |model|/|paper| = 0.84; signs agree on 4/4.
+
+| decay | M_P (GeV) | 1nn | 1ss | 2nn | 2ss | model keV^½ | paper keV^½ | ratio | sign |
+|---|---:|---:|---:|---:|---:|---:|---:|:-:|:-:|
+| `eta -> gamma gamma` | 0.548 | +0.85 | -0.50 | +0.16 | +0.06 | +0.649 | +0.500 | 1.30 | ✓ |
+| `eta' -> gamma gamma` | 0.958 | +0.43 | +0.84 | +0.31 | +0.09 | +1.090 | +1.300 | 0.84 | ✓ |
+| `eta_r -> gamma gamma` | 1.295 | -0.19 | -0.13 | +0.79 | -0.57 | -1.875 | -2.700 | 0.69 | ✓ |
+| `eta'_r -> gamma gamma` | 1.440 | -0.24 | -0.15 | +0.50 | +0.81 | -2.575 | -2.200 | 1.17 | ✓ |
+
+The `η<η'` γγ ordering — backwards under ideal mixing — is reproduced, and
+all four signs agree; the ~30–50% magnitude spread reflects the model's
+sensitivity to the P1 mixing amplitudes and the light-pseudoscalar masses.
+The hypothetical t-tbar `eta_t` is not modelled.
 
 ## Charge radii (part d)
 
@@ -177,8 +194,9 @@ and the radius `sign·√|r_E²|` (fm).
   the paper's own footnote calls very `f`-`f'`-sensitive) and `π→γγ` shares
   the `f_π` meson-mass sensitivity (here through `(M/M̃)^{3/2}`).
 - Isoscalar-mixing corrections (folded into the paper's numbers) are part of
-  the `ω`/`φ` leptonic residual; the strongly-mixed isoscalar pseudoscalar
-  `γγ` rows depend on the P1/P2 model (Sec. V A) and are deferred.
+  the `ω`/`φ` leptonic residual. The strongly-mixed isoscalar pseudoscalar
+  `γγ` rows are reproduced via the P1 block (`η<η'` ordering and all signs
+  right, ~30–50% on magnitude) — ideal mixing cannot do these at all.
 - **Charge radii** are excellent: the `K⁺` (0.585 vs 0.59 fm) and `K⁰`
   (−0.315 vs −0.30 fm) are genuine predictions (only `f` is fit, on the
   `π⁺`), reproducing both the magnitude and the negative `K⁰` sign from the

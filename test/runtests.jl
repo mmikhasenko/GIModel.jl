@@ -1620,3 +1620,36 @@ end
     @test charge_radius_squared(RadialWaveOnUniformMesh(3.0 .* w.u, w.r), mu, 2 / 3, mu, 1 / 3) ≈
           charge_radius_squared(w, mu, 2 / 3, mu, 1 / 3)
 end
+
+@testset "Table VII mixed eta/eta' two-photon (P1 coherent sum)" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    mu, ms = mq["q"], mq["s"]
+    outer!(u) = (pk = maximum(abs, u); i = findlast(x -> abs(x) > 0.2pk, u);
+                 (i !== nothing && u[i] < 0) && (u .*= -1); u)
+    Qnn = (4 / 9 + 1 / 9) / sqrt(2); Qss = 1 / 9
+
+    function psfam(m1, m2)
+        _, _, r = channel_solution(params, ConstituentMasses(m1, m2), 0; nlevels = 3, ngrid = 1000, rmax = 24.0)
+        lv, vec, r2 = contact_hyperfine_nonperturbative_states(params, ConstituentMasses(m1, m2), "S", 1, r, 3)
+        return [RadialWaveOnUniformMesh(outer!(copy(vec[:, n])), r2) for n in 1:2]
+    end
+    NN, SS = psfam(mu, mu), psfam(ms, ms)
+    comp = [(NN[1], mu, Qnn), (SS[1], ms, Qss), (NN[2], mu, Qnn), (SS[2], ms, Qss)]
+
+    psl = [GIModel.BasisState(1, "S", 1, 0), GIModel.BasisState(2, "S", 1, 0)]
+    vl = [GIModel.BasisState(1, "S", 3, 1)]
+    nn_spec = GIModel.compute_spectrum(params, Meson(:q, :q, ConstituentMasses(mu, mu)); levels = vcat(psl, vl))
+    ss_spec = GIModel.compute_spectrum(params, Meson(:s, :s, ConstituentMasses(ms, ms)); levels = vcat(psl, vl))
+    psb = GIModel.pseudoscalar_annihilation_block(GIModel.PaperP1Annihilation(), params, nn_spec, ss_spec)
+
+    ggamp(col, Mphys) = sum(psb.vectors[k, col] *
+        two_photon_amplitude(:P, comp[k][1], comp[k][2], Mphys, comp[k][3]) for k in 1:4) * sqrt(1e6)
+    Aη = ggamp(1, 0.548)
+    Aη′ = ggamp(2, 0.958)
+    # both positive, and the η<η' ordering that IDEAL mixing gets backwards
+    @test Aη > 0 && Aη′ > 0
+    @test abs(Aη) < abs(Aη′)
+    # magnitudes in the paper's ballpark (η≈0.5, η'≈1.3 keV^½)
+    @test 0.6 < abs(Aη) / 0.5 < 1.6
+    @test 0.6 < abs(Aη′) / 1.3 < 1.4
+end
