@@ -89,6 +89,7 @@ id = "table-V"
 kind = "table"
 label = "Table V"
 page = 14
+pages = "14-22"
 statement = "Strong-decay amplitudes M* -> M + P over all light + charmed nonets (220 rows, pages 14-22); decay rate = |amplitude|^2."
 status = "reproduced"
 code = ["src/strong_decays.jl:decay_amplitude", "GIPaper/scripts/reproduce_table_v.jl"]

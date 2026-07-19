@@ -85,6 +85,21 @@ function main()
             p = get(u, key, "")
             isempty(p) || exists_rel(String(p)) || push!(problems, (id, "$key missing: `$p`"))
         end
+        # pages: multipage span "A-B" -> every page image in the range must exist
+        pg = get(u, "pages", "")
+        if !isempty(pg)
+            m = match(r"^(\d+)-(\d+)$", String(pg))
+            if m === nothing
+                push!(problems, (id, "malformed pages `$pg` (expected \"A-B\")"))
+            else
+                a, b = parse(Int, m.captures[1]), parse(Int, m.captures[2])
+                a <= b || push!(problems, (id, "pages `$pg` is not ascending"))
+                for n in a:b
+                    img = "paper/vision_ocr/page_images/" * @sprintf("page-%03d.png", n)
+                    exists_rel(img) || push!(problems, (id, "pages span image missing: `$img`"))
+                end
+            end
+        end
         # parent must be "" or an existing id
         par = get(u, "parent", "")
         (isempty(par) || par in ids) || push!(problems, (id, "parent `$par` is not a known unit id"))

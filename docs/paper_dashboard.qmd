@@ -34,6 +34,12 @@ secrank(id) = (i = findfirst(==(id), SECTION_ORDER); i === nothing ? 99 : i)
 href(p) = "../" * p
 field(u, k, d="") = get(u, k, d)
 
+# "p.14" for a single page, "pp.14–22" for a multipage (page-width) table
+function pagelabel(u)
+    pg = field(u, "pages", "")
+    isempty(pg) ? "p.$(field(u,"page",""))" : "pp.$(replace(pg, "-" => "–"))"
+end
+
 const BADGE = Dict(
     "reproduced"  => ("#1a7f37", "reproduced"),
     "partial"     => ("#bf8700", "partial"),
@@ -55,7 +61,7 @@ function links_html(u)
         push!(parts, "🧪 <code>$(t)</code>")
     end
     r = field(u, "report", ""); isempty(r) || push!(parts, "<a href=\"$(href(r))\">📄 report</a>")
-    a = field(u, "anchor", ""); isempty(a) || push!(parts, "<a href=\"$(href(a))\">📖 p.$(field(u,"page",""))</a>")
+    a = field(u, "anchor", ""); isempty(a) || push!(parts, "<a href=\"$(href(a))\">📖 $(pagelabel(u))</a>")
     isempty(parts) ? "<em>no links yet</em>" : join(parts, " &nbsp;·&nbsp; ")
 end
 
@@ -97,7 +103,7 @@ function compact_links(u)
     for c in field(u, "code", String[])
         push!(parts, "<a href=\"$(href(split(String(c), ':')[1]))\"><code>$(c)</code></a>")
     end
-    a = field(u, "anchor", ""); isempty(a) || push!(parts, "<a href=\"$(href(a))\">📖 p.$(field(u,"page",""))</a>")
+    a = field(u, "anchor", ""); isempty(a) || push!(parts, "<a href=\"$(href(a))\">📖 $(pagelabel(u))</a>")
     join(parts, " &nbsp;·&nbsp; ")
 end
 
