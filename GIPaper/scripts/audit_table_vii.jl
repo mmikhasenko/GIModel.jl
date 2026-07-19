@@ -83,12 +83,25 @@ function load_paper_predictions(path)
     return preds
 end
 
+# Phase convention: the solver returns each eigenvector with an arbitrary sign,
+# so we fix one explicitly — the outermost antinode positive. Under this single
+# consistent convention the wavefunction-at-origin (and hence S_L) flips sign
+# once per radial node, reproducing the paper's alternating amplitude signs; the
+# choice is unobservable for a single width (it only fixes a rephasing of |M>).
+function fix_outer_antinode_positive!(u)
+    peak = maximum(abs, u)
+    i = findlast(x -> abs(x) > 0.2 * peak, u)
+    (i !== nothing && u[i] < 0) && (u .*= -1)
+    return u
+end
+
 # central (spin-independent) radial wave for level n of a QQ̄ at orbital L
 function central_wave(params, mq, flavor::Symbol, L::Int, n::Int)
     meson = Meson(mq, flavor, flavor)
     vals, vecs, r = channel_solution(params, meson.constituent_masses, L;
         nlevels = max(n, 4), ngrid = NGRID, rmax = RMAX)
-    return (M = vals[n], wave = RadialWaveOnUniformMesh(vecs[:, n], r))
+    u = fix_outer_antinode_positive!(copy(vecs[:, n]))
+    return (M = vals[n], wave = RadialWaveOnUniformMesh(u, r))
 end
 
 function main()
@@ -104,14 +117,15 @@ function main()
         amp_GeV = gluonic_annihilation_amplitude(row.channel, S, αs, mQ)
         model = amp_GeV * sqrt(1000)                          # GeV^1/2 -> MeV^1/2
         pap = get(paper, row.decay, NaN)
-        # overall phase is a per-state convention: score on magnitude
         ratio = isnan(pap) || pap == 0 ? NaN : abs(model) / abs(pap)
+        sign_ok = !isnan(pap) && pap != 0 && sign(model) == sign(pap)
         push!(results, (row = row, M = cw.M, S = S, alpha = αs,
-                        model = model, paper = pap, ratio = ratio))
+                        model = model, paper = pap, ratio = ratio, sign_ok = sign_ok))
     end
 
     ratios = filter(!isnan, [r.ratio for r in results])
     med = isempty(ratios) ? NaN : sort(ratios)[cld(length(ratios), 2)]
+    nsign = count(r -> r.sign_ok, results)
 
     open(REPORT, "w") do io
         println(io, "# Table VII Audit — Gluonic Annihilation (part c)")
@@ -132,24 +146,27 @@ function main()
         println(io, "`m_Q` the constituent quark mass. `S₀` is used for the S-wave channels,")
         println(io, "`S₁` for the P-wave (`chi`) channels. Amplitudes are in `MeV^(1/2)`.")
         println(io)
-        println(io, "The physical content of each amplitude is its magnitude (`amp² = Γ`). The")
-        println(io, "solver fixes each eigenvector's phase arbitrarily, so the *sign* of `S_L`")
-        println(io, "(and hence of the model amplitude) is not a controlled prediction here; the")
-        println(io, "table therefore compares magnitudes. The paper's own amplitudes alternate")
-        println(io, "sign with radial excitation, the generic behaviour of a wavefunction-at-")
-        println(io, "origin, but pinning that phase convention is left to the mixing work.")
+        println(io, "The magnitude (`amp² = Γ`) is the convention-independent physical content")
+        println(io, "and sets the score column, `|model|/|paper|`. The *sign* of a single width")
+        println(io, "is not observable (it only fixes a rephasing `|M> -> -|M>`), but the paper's")
+        println(io, "`+,-,+,-` alternation down each radial tower is real node structure: with a")
+        println(io, "consistent phase convention (**outermost antinode positive**) the")
+        println(io, "wavefunction-at-origin — and hence `S_L` — flips sign once per radial node.")
+        println(io, "Under that one convention the model signs reproduce the paper's; the")
+        println(io, "`sign` column records the match.")
         println(io)
-        println(io, @sprintf("**%d gluonic rows scored; median |model|/|paper| = %.2f.** ",
-            length(ratios), med),
+        println(io, @sprintf("**%d gluonic rows scored; median |model|/|paper| = %.2f; signs agree on %d/%d.** ",
+            length(ratios), med, nsign, length(ratios)),
             "The two hypothetical t-tbar rows (`eta_t`, `zeta`) are not modelled ",
             "(no top constituent mass in the 1985 set).")
         println(io)
-        println(io, "| decay | M (GeV) | α_s(M) | \\|S_L\\| | \\|model\\| MeV^½ | \\|paper\\| MeV^½ | ratio |")
-        println(io, "|---|---:|---:|---:|---:|---:|:-:|")
+        println(io, "| decay | M (GeV) | α_s(M) | S_L | model MeV^½ | paper MeV^½ | ratio | sign |")
+        println(io, "|---|---:|---:|---:|---:|---:|:-:|:-:|")
         for r in results
-            println(io, @sprintf("| `%s` | %.2f | %.3f | %.4f | %.3f | %.3f | %s |",
-                r.row.decay, r.M, r.alpha, abs(r.S), abs(r.model), abs(r.paper),
-                isnan(r.ratio) ? "—" : @sprintf("%.2f", r.ratio)))
+            println(io, @sprintf("| `%s` | %.2f | %.3f | %+0.4f | %+0.3f | %+0.3f | %s | %s |",
+                r.row.decay, r.M, r.alpha, r.S, r.model, r.paper,
+                isnan(r.ratio) ? "—" : @sprintf("%.2f", r.ratio),
+                r.sign_ok ? "✓" : "✗"))
         end
         println(io)
         println(io, "## Reading")
@@ -160,18 +177,22 @@ function main()
         println(io, "  within a few percent); the more relativistic **charmonium runs ~15–20%")
         println(io, "  low**, the expected finite-difference-vs-harmonic-oscillator sensitivity")
         println(io, "  of the wavefunction-at-origin (the W6 fidelity theme).")
-        println(io, "- **Signs are convention here.** The paper's amplitudes alternate sign")
-        println(io, "  with radial excitation (`Upsilon,Upsilon',Upsilon'',Upsilon'''` run")
-        println(io, "  `+,−,+,−`), which is the generic sign flip of the wavefunction-at-origin;")
-        println(io, "  but the solver's per-level eigenvector phase is arbitrary, so only the")
-        println(io, "  magnitudes above are a controlled prediction.")
+        println(io, "- **Signs reproduced under one convention.** Fixing each radial wave's")
+        println(io, "  outermost antinode positive, `S_L` flips sign once per radial node, so")
+        println(io, "  the model reproduces the paper's alternating amplitude signs")
+        println(io, "  (`Upsilon,Upsilon',Upsilon'',Upsilon'''` run `+,−,+,−`). The overall sign")
+        println(io, "  of a single width is unobservable, but this shows the node structure is")
+        println(io, "  right — and it is the same phase convention the annihilation-mixing work")
+        println(io, "  relies on, where relative signs do become physical.")
     end
 
     @printf("wrote %s\n", REPORT)
-    @printf("gluonic rows scored: %d, median |model|/|paper| = %.2f\n", length(ratios), med)
+    @printf("gluonic rows scored: %d, median |model|/|paper| = %.2f, signs agree %d/%d\n",
+        length(ratios), med, nsign, length(ratios))
     for r in results
-        @printf("  %-16s model=%+7.3f  paper=%+6.2f  ratio=%s\n",
-            r.row.decay, r.model, r.paper, isnan(r.ratio) ? "—" : @sprintf("%.2f", r.ratio))
+        @printf("  %-16s model=%+7.3f  paper=%+6.2f  ratio=%s  sign=%s\n",
+            r.row.decay, r.model, r.paper, isnan(r.ratio) ? "—" : @sprintf("%.2f", r.ratio),
+            r.sign_ok ? "ok" : "X")
     end
 end
 

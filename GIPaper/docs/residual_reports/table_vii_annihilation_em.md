@@ -16,33 +16,35 @@ with `S_L(Ψ)` the Eq. (17) smeared wavefunction-at-origin
 `m_Q` the constituent quark mass. `S₀` is used for the S-wave channels,
 `S₁` for the P-wave (`chi`) channels. Amplitudes are in `MeV^(1/2)`.
 
-The physical content of each amplitude is its magnitude (`amp² = Γ`). The
-solver fixes each eigenvector's phase arbitrarily, so the *sign* of `S_L`
-(and hence of the model amplitude) is not a controlled prediction here; the
-table therefore compares magnitudes. The paper's own amplitudes alternate
-sign with radial excitation, the generic behaviour of a wavefunction-at-
-origin, but pinning that phase convention is left to the mixing work.
+The magnitude (`amp² = Γ`) is the convention-independent physical content
+and sets the score column, `|model|/|paper|`. The *sign* of a single width
+is not observable (it only fixes a rephasing `|M> -> -|M>`), but the paper's
+`+,-,+,-` alternation down each radial tower is real node structure: with a
+consistent phase convention (**outermost antinode positive**) the
+wavefunction-at-origin — and hence `S_L` — flips sign once per radial node.
+Under that one convention the model signs reproduce the paper's; the
+`sign` column records the match.
 
-**16 gluonic rows scored; median |model|/|paper| = 0.99.** The two hypothetical t-tbar rows (`eta_t`, `zeta`) are not modelled (no top constituent mass in the 1985 set).
+**16 gluonic rows scored; median |model|/|paper| = 0.99; signs agree on 16/16.** The two hypothetical t-tbar rows (`eta_t`, `zeta`) are not modelled (no top constituent mass in the 1985 set).
 
-| decay | M (GeV) | α_s(M) | \|S_L\| | \|model\| MeV^½ | \|paper\| MeV^½ | ratio |
-|---|---:|---:|---:|---:|---:|:-:|
-| `eta_c -> 2g` | 3.06 | 0.257 | 0.2820 | 4.071 | 4.700 | 0.87 |
-| `psi -> 3g` | 3.06 | 0.257 | 0.2820 | 0.467 | 0.420 | 1.11 |
-| `eta'_c -> 2g` | 3.67 | 0.236 | 0.2020 | 2.685 | 2.700 | 0.99 |
-| `psi' -> 3g` | 3.67 | 0.236 | 0.2020 | 0.296 | 0.280 | 1.06 |
-| `eta_b -> 2g` | 9.44 | 0.183 | 0.7267 | 2.445 | 2.500 | 0.98 |
-| `Upsilon -> 3g` | 9.44 | 0.183 | 0.7267 | 0.237 | 0.210 | 1.13 |
-| `eta'_b -> 2g` | 10.00 | 0.181 | 0.5171 | 1.721 | 1.700 | 1.01 |
-| `Upsilon' -> 3g` | 10.00 | 0.181 | 0.5171 | 0.166 | 0.150 | 1.11 |
-| `Upsilon'' -> 3g` | 10.35 | 0.180 | 0.4486 | 0.142 | 0.130 | 1.09 |
-| `Upsilon''' -> 3g` | 10.63 | 0.179 | 0.4117 | 0.129 | 0.110 | 1.18 |
-| `chi_2c -> 2g` | 3.52 | 0.241 | 0.1438 | 1.006 | 0.880 | 1.14 |
-| `chi_0c -> 2g` | 3.52 | 0.241 | 0.1438 | 1.948 | 2.500 | 0.78 |
-| `chi_2b -> 2g` | 9.88 | 0.181 | 0.1997 | 0.344 | 0.350 | 0.98 |
-| `chi_0b -> 2g` | 9.88 | 0.181 | 0.1997 | 0.666 | 0.820 | 0.81 |
-| `chi'_2b -> 2g` | 10.25 | 0.180 | 0.2114 | 0.361 | 0.370 | 0.98 |
-| `chi'_0b -> 2g` | 10.25 | 0.180 | 0.2114 | 0.700 | 0.820 | 0.85 |
+| decay | M (GeV) | α_s(M) | S_L | model MeV^½ | paper MeV^½ | ratio | sign |
+|---|---:|---:|---:|---:|---:|:-:|:-:|
+| `eta_c -> 2g` | 3.06 | 0.257 | +0.2820 | +4.071 | +4.700 | 0.87 | ✓ |
+| `psi -> 3g` | 3.06 | 0.257 | +0.2820 | +0.467 | +0.420 | 1.11 | ✓ |
+| `eta'_c -> 2g` | 3.67 | 0.236 | -0.2020 | -2.685 | -2.700 | 0.99 | ✓ |
+| `psi' -> 3g` | 3.67 | 0.236 | -0.2020 | -0.296 | -0.280 | 1.06 | ✓ |
+| `eta_b -> 2g` | 9.44 | 0.183 | +0.7267 | +2.445 | +2.500 | 0.98 | ✓ |
+| `Upsilon -> 3g` | 9.44 | 0.183 | +0.7267 | +0.237 | +0.210 | 1.13 | ✓ |
+| `eta'_b -> 2g` | 10.00 | 0.181 | -0.5171 | -1.721 | -1.700 | 1.01 | ✓ |
+| `Upsilon' -> 3g` | 10.00 | 0.181 | -0.5171 | -0.166 | -0.150 | 1.11 | ✓ |
+| `Upsilon'' -> 3g` | 10.35 | 0.180 | +0.4486 | +0.142 | +0.130 | 1.09 | ✓ |
+| `Upsilon''' -> 3g` | 10.63 | 0.179 | -0.4117 | -0.129 | -0.110 | 1.18 | ✓ |
+| `chi_2c -> 2g` | 3.52 | 0.241 | +0.1438 | +1.006 | +0.880 | 1.14 | ✓ |
+| `chi_0c -> 2g` | 3.52 | 0.241 | +0.1438 | +1.948 | +2.500 | 0.78 | ✓ |
+| `chi_2b -> 2g` | 9.88 | 0.181 | +0.1997 | +0.344 | +0.350 | 0.98 | ✓ |
+| `chi_0b -> 2g` | 9.88 | 0.181 | +0.1997 | +0.666 | +0.820 | 0.81 | ✓ |
+| `chi'_2b -> 2g` | 10.25 | 0.180 | -0.2114 | -0.361 | -0.370 | 0.98 | ✓ |
+| `chi'_0b -> 2g` | 10.25 | 0.180 | -0.2114 | -0.700 | -0.820 | 0.85 | ✓ |
 
 ## Reading
 
@@ -52,8 +54,10 @@ origin, but pinning that phase convention is left to the mixing work.
   within a few percent); the more relativistic **charmonium runs ~15–20%
   low**, the expected finite-difference-vs-harmonic-oscillator sensitivity
   of the wavefunction-at-origin (the W6 fidelity theme).
-- **Signs are convention here.** The paper's amplitudes alternate sign
-  with radial excitation (`Upsilon,Upsilon',Upsilon'',Upsilon'''` run
-  `+,−,+,−`), which is the generic sign flip of the wavefunction-at-origin;
-  but the solver's per-level eigenvector phase is arbitrary, so only the
-  magnitudes above are a controlled prediction.
+- **Signs reproduced under one convention.** Fixing each radial wave's
+  outermost antinode positive, `S_L` flips sign once per radial node, so
+  the model reproduces the paper's alternating amplitude signs
+  (`Upsilon,Upsilon',Upsilon'',Upsilon'''` run `+,−,+,−`). The overall sign
+  of a single width is unobservable, but this shows the node structure is
+  right — and it is the same phase convention the annihilation-mixing work
+  relies on, where relative signs do become physical.

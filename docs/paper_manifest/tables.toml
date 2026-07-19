@@ -81,7 +81,7 @@ next = "W4: leptonic (P_P/V_V/V'_V/P'_A1 with mock masses, 27 rows), gamma-gamma
 code = ["src/annihilation_widths.jl:gluonic_annihilation_amplitude", "GIPaper/scripts/audit_table_vii.jl"]
 tests = ["Table VII gluonic annihilation"]
 report = "GIPaper/docs/residual_reports/table_vii_annihilation_em.md"
-metric = "gluonic subtable reproduced: 16/16 rows, median |model|/|paper| = 0.99, zero free parameters"
+metric = "gluonic subtable reproduced: 16/16 rows, median |model|/|paper| = 0.99, signs 16/16, zero free parameters"
 anchor = "paper/vision_ocr/page_images/page-028.png"
 parent = "sec-IV"
 notes = "Gluonic subtable (part c) reproduced with ZERO free parameters: amp = sqrt(prefactor)*S_L(Psi), where S_L is the Eq.(17) smeared wavefunction-at-origin (wavefunction_origin_smearing) and prefactor is the lowest-order QCD gluonic width (8pi a_s^2/3m^2 etc). Bottomonium within a few %, charmonium ~15-20% low (FD-vs-HO wavefunction-at-origin sensitivity, the W6 theme); the two hypothetical t-tbar rows (eta_t, zeta) are not modelled. Remaining subtables: leptonic needs the mock-meson decay constants P_P/V_V/V'_V/P'_A1 (Eqs. D4-D6) with physical + mock masses; gamma-gamma needs A(P->gg)/A(3P2->gg) with quark charges; charge radii need <r^2> plus the relativistic smearing term (f=0.2). Data: table_vii_annihilation_em.csv, 61 rows."
