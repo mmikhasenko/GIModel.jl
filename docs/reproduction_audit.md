@@ -1,34 +1,19 @@
 # Reproduction Audit
 
-> **Being migrated to the manifest.** The machine-checked source of truth is now
+> **Retired into the manifest.** The per-unit inventory that used to live here —
+> every table, figure, and tagged equation with its status, code, tests, report,
+> and page image — is now the machine-checked source of truth in
 > `docs/paper_manifest/*.toml`, rendered as the drill-down dashboard
-> (`docs/paper_dashboard.qmd`, `cd docs && make dashboard`) and validated by
-> `GIPaper/scripts/check_manifest.jl`. The **Sec. IV / decay** rows are already
-> authoritative there (and fix two drift bugs this prose carried: Eq. (20) is
-> **reproduced**, and the leading-fit `S₀ = 3.287`, not the stale `3.918`
-> below). Remaining sections are being enriched into the manifest; treat those
-> manifest entries as canonical once present.
-
-The single gate for the claim "the original Godfrey-Isgur model is fully
-reproduced". Two inventories: every **table/figure** with its computed
-local-vs-paper asset, and every **tagged equation** (main text 1a-29,
-A1-A17, B1-B37, C1-C3, D1-D11 — 99 tags total) with its implementation
-status. Detailed per-topic ledgers stay in `docs/observable_ledger.md`,
-`docs/appendix_a_equation_audit.md`, `docs/formula_map.md`, and
-`docs/paper_gap_ledger.md`; this file only aggregates their verdicts.
-
-Status vocabulary:
-
-- **reproduced** — computed locally from the model and compared against the
-  paper's numbers in a checked-in asset.
-- **partial** — a subset is reproduced; the missing part is itemized.
-- **implemented** — the physics is in `src/` (or an audit script) but no
-  systematic number-vs-paper asset exists yet.
-- **folded** — not coded as a standalone formula; its content enters through
-  a convention, an input table, or a more general implementation.
-- **context** — derivational or discussion material with nothing executable
-  to reproduce.
-- **missing** — needed for the victory claim and not present.
+> (`docs/paper_dashboard.qmd`; `cd docs && make dashboard`) and validated by
+> `GIPaper/scripts/check_manifest.jl`. Go there for "is unit X done, and where is
+> the code?".
+>
+> What stays in this file is the **cross-cutting synthesis** the per-unit manifest
+> can't hold: the provenance-tier honesty ledger for the fitted constants (§0),
+> where the residuals concentrate and why (§1), and the remaining-work costing
+> (§2). The granular per-row numbers behind every "reproduced" verdict live in the
+> residual reports under `GIPaper/docs/residual_reports/`, which the manifest units
+> link directly.
 
 ## 0. Global scales and fitted constants (honesty ledger)
 
@@ -39,115 +24,15 @@ victory claim must be read against this table, not around it.
 | Tier | Constants | Source | Bearing on the claim |
 | --- | --- | --- | --- |
 | **A. Paper's own inputs** (reproduced as inputs, not refit) | Table II: `b=0.18 GeV²`, `c=−0.253 GeV`, `σ₀=1.80 GeV`, `s=1.55`, quark masses, the four `ε` factors; Fig. 2 `α_s` coefficients `(0.25,0.15,0.20)`/denominators `(1,10,1000)`; Table III annihilation amplitudes `A(³S₁)=2.5`, `A(³P₂)=−0.8`, `P1/P2` `A_np=0.50/0.55`; photon smearing exponents `0.7`/`0.5`; decay oscillator `β=0.40 GeV` | Godfrey-Isgur 1985, audited into `data/` and sync-checked | These are the paper's; using them is faithful reproduction, not fitting. |
-| **B. Paper's own fit, re-performed identically** | Strong-decay strengths `A=1.665`, `S₀=3.918` | Two-point fit to the *same* rows the paper fits (`ρ→ππ`, `B→[ωπ]_S`) | Methodologically identical to the paper (which gets `A=1.67`, `S=3.27`); the small `S₀` difference is the wavefunction/kinematics convention, not a new knob. No extra freedom introduced. |
-| **C. Ours, not in the paper — diagnostic bridging scales** | `k_spin_orbit = 0.48`, `k_tensor = 0.42` (`[fine_structure]` in the TOML) | Two global O(1) multipliers on the **first-order fine-structure expectations evaluated on the FD radial mesh**, chosen to align the FD splittings with the paper's HO-basis result | **This is the one genuine caveat on the spectrum reproduction.** The paper diagonalizes in a harmonic-oscillator basis (Eq. 14) and needs no such factor; our FD first-order fine structure does. The mass *centres*, radial/orbital spacings, contact hyperfine, and mixing *structure* carry no such scale — only the spin-orbit and tensor splitting magnitudes do. **W6** (HO-order validation, A15-A17) is exactly the work that would remove tiers-C scales; until then, "spectra reproduced" means centres+spacings to few-MeV and fine-structure splittings up to these two global scales. |
+| **B. Paper's own fit, re-performed identically** | Strong-decay strengths `A=1.665`, `S₀=3.287` (leading convention) | Two-point fit to the *same* rows the paper fits (`ρ→ππ`, `B→[ωπ]_S`) | Methodologically identical to the paper (which gets `A=1.67`, `S=3.27`); no extra freedom introduced. (The earlier `table_iv`-convention value `S₀=3.918` is superseded by the leading-S₀ convention that reproduces Table V — see the `fit-A-S0` manifest unit.) |
+| **C. Ours, not in the paper — diagnostic bridging scales** | `k_spin_orbit = 0.48`, `k_tensor = 0.42` (`[fine_structure]` in the TOML) | Two global O(1) multipliers on the **first-order fine-structure expectations evaluated on the FD radial mesh**, chosen to align the FD splittings with the paper's HO-basis result | **This is the one genuine caveat on the spectrum reproduction.** The paper diagonalizes in a harmonic-oscillator basis (Eq. 14) and needs no such factor; our FD first-order fine structure does. The mass *centres*, radial/orbital spacings, contact hyperfine, and mixing *structure* carry no such scale — only the spin-orbit and tensor splitting magnitudes do. **W6** (HO-order validation, A15-A17) is exactly the work that would remove tier-C scales; until then, "spectra reproduced" means centres+spacings to few-MeV and fine-structure splittings up to these two global scales. |
 
 Everything else in the model is derived (kinetic operator, potentials,
 Clebsch-Gordan/angular factors, overlap kernels) with no adjustable constant.
 The photon (Table VI) and general-annihilation (Table III/16) audits add **no
 new fitted constants** on our side — they reuse tier-A/B values only.
 
-## 1. Tables and figures
-
-| Item | Content | Status | Computed asset | Gap to close |
-| --- | --- | --- | --- | --- |
-| Table I | Motivational: importance of confinement in heavy QQ̄ | context | — | Nothing to reproduce; candidate for a TIL demo. |
-| Table II | Model parameters | reproduced (as audited input) | `data/table_ii_parameters.csv` + TOML, sync-checked by `scripts/data_checks.py validate` | — |
-| Table III | Isoscalar mixed compositions, n = 1, 2 | reproduced | `GIPaper/docs/residual_reports/table_iii_mixing_audit.md`, `annihilation_model_scorecard.md` | General Eq. (16) blocks match the ω/φ and f₂/f₂′ eigenvectors; literal P1/P2 pseudoscalar modes reproduce the structure at amplitude RMS 0.180/0.114 while the calibrated P1 control carries the mass scoring. Literal-mode mass scoring is the residual item. |
-| Table IV | Reduced partial-wave amplitude classes | reproduced | `src/strong_decays.jl` + tests | Light classes (A, A′, A″, A₀, S, D, P) coded and calibrated; charm classes `A_c`, `S_c` now coded (`f2dadf2`) with the footnote-d form factor and the P-wave recoil multiplier, β_c≡β. Key result: the light calibration (A=1.665, S₀=3.918) transfers to charm with **no refit**. |
-| Table V | Strong decay amplitudes (multipage) | reproduced (**160 / 178 scoreable rows match**) | `table_v_reproduction.md` | **Whole table digitized (canonical CSV) and reproduced end-to-end** by `reproduce_table_v.jl` via the row-oriented `decay_amplitude` API. **Leading-S₀ convention** (constant `S₀ = 3hβ`, dropping the `−k A q̄²` polynomial) makes every structure-dependent S/D/P row score at ~1% (`ρ→[ωπ]_P` −7.82 vs −7.8) — this **supersedes** the earlier "realistic-factor folded in" hypothesis. **Same-J mixing** (Q1/Q2 +34°, 1D₂ +33°, charm −41°) reproduces the footnote-j near-cancellations in sign and magnitude (`Q1→[K*π]_S` −0.34 vs −0.3, `Q2→[K*π]_S` +17.4 vs +16). **`K*₂→Kπ` √3 anomaly RESOLVED**: it was a digitization error (old `(3/20)^½`, canonical page value `(1/20)^½`, exactly √3 smaller) — not physics; row now matches (+7.60 vs +7.7). **`h` (f₄) flavor fix**: nn not ss. The 12 non-matches are all parent-mass / mixing-angle input sensitivity (each inverts to a mass within 20–50 MeV of the input), plus 22 convention-deferred (quasi-two-body daughters, sub-threshold). **Note:** Table V has no charmonium strong-decay section (ψ below open-flavor threshold). |
-| Table VI | Photon decays: M1 moments, E1 amplitudes | partial | `GIPaper/docs/residual_reports/table_vi_photon_decays.md` | 28 mixing-free rows reproduced (quarkonium M1 0.1-2%, open-flavor M1 1-4%, light ~6%, E1 3-7%). **Open-flavor M1 column now image-verified against printed page 24** (`07ad617`): the one-row OCR shift was correct, all 8 values confirmed, caveat retired. **2S → χ₀ is not a q-convention artifact**: model-mass q helps Υ′→χ_b0 (30%→16%) but hurts ψ′→χ_c0 (27%→43%) — the c-c̄ 2S-1P gap is genuinely compressed. **6 isoscalar M1 rows added** (`4a8645c`) via the audited Table III mixing (P1 pseudoscalar + S1 vector blocks, no new constants): all signs reproduced including the nontrivial φ→η(+)/φ→η′(−) relative sign; dominant-flavor magnitudes at the ~15-24% light-sector I-overlap residual; sub-dominant rows ~2-3× low because η↔η′ ordering is inverted vs the paper (needs the paper's per-row I mock-mass evaluation). **All printed blocks now audited** (`d678136`): light E1/M2 (A₂→πγ fit row +0.510 vs +0.55 ~7%; A₂→ργ/ωγ within 1%; A₁/B ~8-10%; f′→φγ sign+mag), strange K*(1420)→Kγ E1 +0.436 vs +0.48 (~9%; no separate charmed P-wave E1 rows exist), hindered bottomonium M1 (Υ′→η_bγ +0.009 vs +0.007; **Υ″→η_bγ sign-flips** −0.004 vs +0.007 — deepest 3S→1S/E2 cancellation, points at W6). Open items: η↔η′ ordering and the Υ″ sign both trace to the central-solve vs paper-HO-order radial residual (W6). ψ/Υ→(light)γ order-of-magnitude rows (footnote d) deliberately not modeled. |
-| Table VII | Leptonic, γγ, gluonic decays; charge radii | missing | — | Not started. Needs D4-D8 (f_P, f_V definitions, leptonic widths), γγ and gluonic width formulas, and ⟨r²⟩ from the model wavefunctions. |
-| Table VIII | Input masses/widths for the 0⁺⁺ coupled-channel discussion (Fig. 16) | context | — | Discussion-layer phenomenology (Sec. V D), not a model output. Optional. |
-| Figs. 3-9 | Full meson spectra, all flavor sectors | reproduced | `GIPaper/docs/residual_reports/scorecard.md` + 7 sector reports | Mean abs residuals: bottomonium 4.3, b-flavored 5.2 (bū/bd̄ + bs̄ + bc̄), charmonium 6.0, strange 10.8, isoscalar 11.5, charmed 12.4, isovector 14.5 MeV. Regenerated byte-identically by `run_all_spectrum_checks.jl`. |
-| Fig. 2 | Saturating α_s | reproduced | regression tests on `alpha_s_r` and derivatives | — |
-| Mixing angles (text, Secs. V) | θ_nL quoted near Figs. 5-9: strange θ₁P≈34°, θ₁D≈33°, θ₂P≈15°, θ₁F≈32°, θ₂D≈25°, θ₁G≈33°; charm θ₁P^cū≈−41°, θ₁D^cū≈−39°, θ₁P^cs̄≈−44°, θ₁D^cs̄≈−39°; bottom θ₁P^bū≈−43°, θ₁P^bs̄≈−45°, θ₁P^bc̄≈−53° | partial | `GIPaper/docs/residual_reports/mixing_angles.md` (all 13 angles, convention derived once) | Large-offdiagonal blocks reproduced (charm/strange 1D at 0.3-2.5°, strange 1F 4.7°); b-sector 1P content agrees to 1-5° once the low/high labeling of the nearly degenerate eigenstates is exchanged. Open: small-offdiagonal 1P blocks (K1 +19.5° vs +34°, cs̄ −14.1° vs −44°) inherit few-MeV singlet-triplet splitting sensitivity, and the strange radial trend is inverted (paper decreases with n, ours increases) — resolution likely sits with W6 (HO-order spin blocks), not with the angle machinery. |
-
-## 2. Equation inventory
-
-### Main text (1a-29)
-
-| Eq. | Content | Status | Where |
-| --- | --- | --- | --- |
-| 1a | Rest-frame Schrödinger equation H\|Ψ⟩ = E\|Ψ⟩ | implemented | `channel_solution` / `hamiltonian.jl` (FD), HO basis path |
-| 1b | H₀ = √(p²+m₁²) + √(p²+m₂²) | implemented | `sqrt_kinetic_matrix_from_eigen` on the FD p² eigenbasis; regression-tested |
-| 2a | Nonrelativistic kinetic limit | implemented (diagnostic) | `kinetic = :nonrelativistic` option |
-| 2b | V = H^conf + H^hyp + H^so + H_A decomposition | implemented | the staged `Spectrum` pipeline + annihilation blocks mirror exactly this split |
-| 3 | H^conf: linear + Coulomb with color factor | implemented | `central_potential`; ⟨F·F⟩ = −4/3 folded in |
-| 4 | H^hyp: contact + tensor | implemented | contact: smeared, sandwiched, nonperturbative S-wave; tensor: diagonal shifts + same-J off-diagonal blocks |
-| 5 | H^so = so(cm) + so(tp) split | implemented | `fine_structure_components` returns both pieces separately |
-| 6 | Color-magnetic spin-orbit | implemented | pointwise α_s/r³ and smeared (1/r)dG̃/dr branches; symmetric L·S + antisymmetric same-J block |
-| 7 | Thomas-precession spin-orbit | implemented | (1/2r) dH^conf/dr with smeared G̃+S̃ derivatives in the active branch |
-| 8 | F_i color matrices (quark/antiquark) | folded | enters only through ⟨F·F⟩ |
-| 9 | ⟨F_i·F_j⟩ = −4/3 (meson) | folded | sign/normalization audited in `formula_map.md` |
-| 10 | Gaussian smearing function ρ_ij | implemented | `delta_sigma_3d` (≡ A7 kernel); normalization tested |
-| 11 | Perturbative α_s(Q²) | context | only motivates the Fig. 2 fit; nothing to code |
-| 12 | Saturating α_s(Q²) = Σ a_k exp(−Q²/4γ_k²) | folded | Fig. 2 caption coefficients enter through Eq. (13) |
-| 13 | α_s(r) = Σ a_k erf(γ_k r) | implemented | `alpha_s_r` + analytic derivatives; regression-tested |
-| 14 | Staged diagonalization of H̃₁ then perturbative mixing matrices | implemented | this is precisely the `central_spectrum → add_spin_corrections → add_intra_meson_mixing` pipeline; FD is the headline basis, HO central comparison complete (sub-MeV); HO-order validation of the spin/mixing blocks is the residual item |
-| 15 | Annihilation order-of-magnitude α_sⁿ\|Ψ(0)\|²/M² | context | motivates Eq. (16) |
-| 16 | General annihilation matrix element | implemented | `isoscalar_general_annihilation_solution`: 4π(2L+1), (α_iα_j/π²)^(n/2), S_L factors, 1/(m_im_j) all audited |
-| 17 | S_L(Ψ) wavefunction factor | implemented | j_L momentum transform on phase-fixed HO waves |
-| 18a | Pseudoscalar P1 bracket | implemented | `PaperP1Annihilation` |
-| 18b | Pseudoscalar P2 bracket | implemented | `PaperP2Annihilation` |
-| 19 | Pseudoscalar-emission amplitude (g σ·q ± h σ·p′) | partial | evaluated in the SU(6)/single-β SHO limit via the Table IV classes (`strong_decays.jl`); the operator itself is never applied to model wavefunctions |
-| 20 | Realistic-factor ratio ⟨³S₁\|r^{L−1}\|M*⟩ / ⟨¹S₀\|…⟩ | missing | the parenthetical correction column of Table V; needs radial moments on model waves |
-| 21 | Realistic-factor ratio for S-type (p matrix element) | missing | as Eq. (20) |
-| 22 | Photon-emission helicity amplitude | implemented | Appendix-D mock-meson form in `audit_table_vi_photon_decays.jl` (to be promoted into `src/`) |
-| 23-26 | Perturbative P-wave multiplet formulas E(J^PC) = E₀ + aS + bT + cL | folded | the full diagonalization supersedes them; the S/T/L decomposition is exposed by `fine_structure_components`, so a formula-level demo is cheap (TIL candidate) |
-| 27-29 | 0⁺⁺ coupled-channel S-matrix / Breit-Wigner unitarity | context | Sec. V D data phenomenology around Table VIII / Fig. 16, outside the model proper |
-
-### Appendix A (A1-A17) — detailed ledger in `docs/appendix_a_equation_audit.md`
-
-| Eq. | Content | Status |
-| --- | --- | --- |
-| A1-A4 | Scattering-amplitude setup motivating the effective potential | context |
-| A5-A6 | Vector/scalar effective kernels | context (deliberately not a coding source; OCR spin labels unsafe) |
-| A7 | Gaussian smearing kernel | implemented (contact + diagnostic 3D smear; normalization tested) |
-| A8 | Smeared potential definition | implemented (diagnostic convolution; active path uses closed forms) |
-| A9 | Mass-dependent width σ(m₁,m₂) | implemented (`contact_smearing_sigma`, shared by all smeared kernels) |
-| A10-A11 | Pointwise G(r), S(r) | implemented |
-| A12-A14 | Closed-form G̃, S̃, τ_k | implemented — the **active** central path; tested against quadrature and derivatives |
-| post-A14 | Momentum factors: central A(p)G̃A(p); spin-side (m/E)^(1/2+ε) sandwiches | implemented (`appendix_a_momentum_sandwich_matrix`; contact/fine-structure sandwiches) |
-| A15 | Effective Coulomb-side spin operators | implemented (smeared-kernel branch); paper-order HO validation pending |
-| A16 | Scalar/Thomas spin-orbit operator | partial (equal-mass exact; unequal-mass antisymmetric piece handled at the mixing stage) |
-| A17 | HO matrix-element factorization | partial (central FD/HO comparison complete at sub-MeV; spin/mixing HO-order comparison pending) |
-
-### Appendix B (B1-B37)
-
-| Eq. | Content | Status |
-| --- | --- | --- |
-| B1-B9 | Flavor wavefunctions (π, K, η₈, η₁) with sign conventions | folded (flavor labels and the ns̄/ss̄ basis conventions in `meson.jl` / annihilation basis labels) |
-| B10-B13 | Ideal-mixing basis M_ns, M_s and mixing rotation | implemented (ideal mixing is the default isoscalar scheme; the rotation is the Table III eigenvector convention) |
-| B14-B15 | Perfect-mixing η, η′ | implemented (used by the Table V ¹S₀ formula column audit) |
-| B16-B25 | Flavor operators X_q^i (and antiquark rule B25) | folded — their matrix elements are baked into the digitized Table V coefficient column, not derived independently; independent derivation would upgrade the Table V audit from "coefficients transcribed" to "coefficients derived" |
-| B26-B30 | Spin wavefunctions χ | folded (standard angular algebra: `spin_dot`, `LdotS`, tensor factors — tested via sum rules) |
-| B31-B36 | SHO wavefunctions Ψ_nLM | implemented (`harmonic_oscillator_basis.jl`; also implicit in the Table IV class formulas) |
-| B37 | Example composed state vector | context (convention demo) |
-| — | ⁴Note: B-appendix β powers appear inside Table IV classes | folded |
-
-### Appendix C (C1-C3)
-
-| Eq. | Content | Status |
-| --- | --- | --- |
-| C1 | Helicity amplitude definition H_m | folded (Table IV already lists partial waves; we work directly in the partial-wave basis) |
-| C2 | Width from partial-wave amplitudes, (q/2π) factor | implemented (the `sqrt(q/2π)` amplitude convention in `strong_decay_amplitude`) |
-| C3 | Helicity → partial-wave sum rule | context (not needed while amplitudes are compared, not widths) |
-
-### Appendix D (D1-D11)
-
-| Eq. | Content | Status |
-| --- | --- | --- |
-| D1 | μ_πω definition from the current matrix element | folded (the μ/(e/2) convention of the Table VI audit) |
-| D2 | Mock-meson state definition | implemented (mock mass M̃ = ⟨E₁⟩+⟨E₂⟩ in the Table VI audit) |
-| D3 | Relativized moment with (m+2E)/3E² → (m/E)^f prescription | implemented (I_i overlap with (m/E)^0.7, E_n moments with 0.5 — the paper's fitted exponents, no new constants) |
-| D4-D6 | f_P, f_V, f_{A₁} decay-constant definitions | missing (needed for Table VII) |
-| D7 | Γ(P → lν) | missing (Table VII) |
-| D8 | Γ(V → l⁺l⁻) | missing (Table VII) |
-| D9 | Γ(τ → A₁ν) | missing (Table VII) |
-| D10-D11 | Γ(V→Pγ), Γ(P→Vγ) from μ | folded (trivial conversions; Table VI audit compares moments/amplitudes directly — apply when width columns are scored) |
-
-## 3. Where the residuals live (the logic)
+## 1. Where the residuals live (the logic)
 
 Across every audited table the deviations concentrate in exactly **two**
 places, and neither is a coding error:
@@ -168,20 +53,17 @@ the HO basis. The model reproduces the paper's *algebra, signs, centres, and
 spacings*; the open gaps are the physics limits the paper itself discusses,
 modulated by our FD-vs-HO basis choice.
 
-## 4. Remaining work and costs
+## 2. Remaining work and costs
 
-Status of each workstream (see `docs/work_plan.md` for the live board):
-
-| Done | |
-| --- | --- |
-| Figs. 3-9 spectra (all sectors) · Table III · **Table IV** · mixing-angle audit · **Table VI (all blocks)** · **Table V (all sections digitized + scored, incl. 1³F₄)** · **Eqs. (20)-(21) type-A realistic factors** | |
+Per-unit status is in the dashboard; this is the workstream-level costing of
+what still stands between the current state and "the whole paper, reproduced".
 
 | Remaining | Cost | Blocks victory? |
 | --- | --- | --- |
 | **Table VII** (D4-D8 decay constants + leptonic/γγ/gluonic widths + charge radii; digitize + audit) | **large** (2-3 units: 1 data, 1-2 code) | yes — last untouched table |
-| **W6 HO-order validation** (A15-A17; removes the tier-C scales and the §3 residuals) | **large / research** (background) | it is the deepest fidelity item; "reproduced up to global scales" holds without it, "fully reproduced" is stronger with it |
-| **Strange √3 recoil** (W2c-2: derive the Appendix-B isospin factor for `K*₂→Kπ`; now precisely characterized as non-kinematic, `fb5f5b4`) | small (1 unit) | soft — one characterized outlier |
-| **Eq. (21) type-S momentum ratio** (companion to the type-A factors, now that hyperfine waves are exposed) | small (1 unit) | soft — quality, not coverage |
+| **W6 HO-order validation** (A15-A17; removes the tier-C scales and the §1 residuals) | **large / research** (background) | it is the deepest fidelity item; "reproduced up to global scales" holds without it, "fully reproduced" is stronger with it |
+| **Strange √3 recoil** (W2c-2: derive the Appendix-B isospin factor for `K*₂→Kπ`; now precisely characterized as non-kinematic) | small (1 unit) | soft — one characterized outlier |
+| **Eq. (21) type-S momentum ratio** (companion to the reproduced type-A factors) | small (1 unit) | soft — quality, not coverage |
 | Promote Table VI/Appendix-D kernels from audit scripts into `src/` + tests | med | no — engineering hygiene |
 
 **Not reproduction blockers** (context/superseded — candidates for the
@@ -191,8 +73,6 @@ A1-A6, B37.
 **Honest one-line status:** spectra and decay/EM tables are reproduced to the
 few-MeV / ~10-20% level the paper works at, with two global fine-structure
 scales (§0 tier C) standing in for the paper's HO-order treatment; **Table V is
-digitized across every section and its structure-independent amplitudes
-reproduce at 1% from S→F** (the structure-dependent S/D/P rows carry a realistic
-factor folded into the paper's numeric column, so they need the realistic-factor
-+ paper-S₀ evaluation, W5b, before they are directly comparable), so the only
-untouched table is **Table VII**, and the remaining *fidelity* gap is W6.
+digitized across every section and reproduced end-to-end (160/178 scoreable rows)
+under the leading-S₀ convention**, so the only untouched table is **Table VII**,
+and the remaining *fidelity* gap is W6.

@@ -1,5 +1,12 @@
 # Observable Ledger
 
+> **Detail layer.** Per-unit status for the decay/EM units (Eqs. 19-22, Tables
+> IV-VI, Appendices B-D) is the manifest/dashboard (`docs/paper_manifest/*.toml`;
+> `cd docs && make dashboard`). This file is the **conventions** detail behind
+> them: the Table IV class algebra, the `[PAPER]`/`[DERIVED]` provenance split,
+> the leading-S₀ convention, and the photon-decay overlap kernels — the
+> physics-convention reasoning the per-unit `notes` only summarize.
+
 Scope ledger for GI observables beyond the mass spectrum (gap-ledger item 8).
 The mass-spectrum reproduction machinery stays in `src/` untouched; decay and
 electromagnetic conventions are tracked here before/while they are encoded.

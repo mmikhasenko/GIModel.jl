@@ -1,5 +1,11 @@
 # Paper Navigation
 
+> **Detail layer.** The manifest/dashboard (`docs/paper_manifest/*.toml`;
+> `cd docs && make dashboard`) now anchors every equation, table, and figure to
+> its exact page image (`page-0NN.png`, image = journal_pg − 188) — use it to jump
+> from a unit to its page. This file stays as the human **reading map** and the
+> guide to the OCR/PDF sources.
+
 Use this as a fast map into the Godfrey-Isgur paper while coding or extracting
 tables. For reading and search, start with
 `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`; it is the most complete

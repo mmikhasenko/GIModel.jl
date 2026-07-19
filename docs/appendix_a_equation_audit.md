@@ -1,5 +1,11 @@
 # Appendix A Equation Audit
 
+> **Detail layer.** Per-equation status/code/page for A1-A17 is the manifest
+> (`docs/paper_manifest/appendix_a.toml`, rendered in the dashboard). This file
+> is the deeper **source-and-derivation audit** those units point back to. Its
+> historical page references (page-036 for A1-A9, page-037 for A10-A15, page-038
+> for A16-A17) are the OCR-verified anchors the manifest now uses.
+
 This ledger records the current equation source status for Appendix A. The best
 current OCR-derived text is `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`;
 the older split files under `paper/vision_ocr/pages/` are archived historical

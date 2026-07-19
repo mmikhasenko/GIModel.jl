@@ -1,5 +1,13 @@
 # Paper Gap Ledger
 
+> **Detail layer.** The at-a-glance "what's done / what's missing" is the
+> manifest/dashboard (`docs/paper_manifest/*.toml`; `cd docs && make dashboard`).
+> This file is the **technical rationale** behind the `partial`/`missing`
+> statuses — the specific physics of each remaining gap (paper-order staging,
+> full Appendix-A relativization, off-diagonal tensor mixing, unequal-mass
+> spin-orbit, literal isoscalar annihilation, eigenvector-fidelity scoring), which
+> the per-unit `notes` only summarize.
+
 This is the current short list of what is still missing relative to the
 Godfrey-Isgur paper. It is meant to be the durable replacement for older
 handoff/autonomous planning notes.

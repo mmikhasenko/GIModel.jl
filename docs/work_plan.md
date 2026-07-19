@@ -1,12 +1,17 @@
 # Reproduction Work Plan
 
+> **Live status moved.** Per-unit status is the manifest/dashboard
+> (`docs/paper_manifest/*.toml`; `cd docs && make dashboard`); workstream-level
+> remaining-work costing is [`reproduction_audit.md`](reproduction_audit.md) §2;
+> the task tracker is the live board. What stays here is the **process record**:
+> the objective, how work was decomposed and delegated, the coordination rules,
+> the empirical worker-sizing lesson, and the historical commit trail of what
+> landed. Treat the "Open units" as illustrative history, not live truth.
+
 Coordinator-maintained. Objective: close every gap in
 [`docs/reproduction_audit.md`](reproduction_audit.md) so the project can claim
 **"the original Godfrey-Isgur model is fully reproduced"**, then harvest the
-demo/TIL material (direction 2). This file is the single status board; workers
-do **not** edit it — they deliver into their owned file scopes and the
-coordinator integrates, updates statuses here, and keeps the audit document in
-sync.
+demo/TIL material (direction 2).
 
 ## Demand assessment
 
@@ -103,9 +108,9 @@ Coordinator-owned until W1-W4 land.
 2. Ledger updates (`reproduction_audit.md`, `observable_ledger.md`, this
    file) are coordinator-only, done at merge time.
 3. A workstream is **done** when its audit asset is committed, regenerable
-   from a script, and the corresponding `reproduction_audit.md` row (§1
-   "Gap to close" / §4) is satisfied. Global/fitted-scale changes must be
-   reflected in `reproduction_audit.md` §0.
+   from a script, and the corresponding manifest unit is updated (status +
+   metric + report) so the dashboard reflects it. Global/fitted-scale changes
+   must be reflected in `reproduction_audit.md` §0 (the honesty ledger).
 
 ## Worker-sizing constraint (observed)
 
@@ -132,7 +137,7 @@ radius.
 ## Status board
 
 Cost/blocking detail for the open items lives in
-[`reproduction_audit.md`](reproduction_audit.md) §4; this board tracks
+[`reproduction_audit.md`](reproduction_audit.md) §2; this board tracks
 ownership and merge state only.
 
 ### Completed and merged (13 units)
@@ -157,11 +162,9 @@ ownership and merge state only.
 
 **Table V is now digitized and scored across every section.**
 
-### Open units (owner = coordinator until launched)
+### Open units
 
-| Unit | Scope | Depends on |
-| --- | --- | --- |
-| **W4 Table VII** | D4-D8 decay constants + leptonic/γγ/gluonic widths + charge radii; digitize + audit (split 1 data / 1-2 code) | — (last untouched table) |
-| **W2c-2 fix** | derive the Appendix-B `K*₂→Kπ` isospin factor (diagnosis done in `fb5f5b4`) | — |
-| **W5b Eq. 21** | type-S momentum-ratio companion to the type-A factors | — (hyperfine waves now exposed) |
-| **W6 HO-order** | paper-order HO perturbation for spin/mixing (A15-A17); removes the tier-C global scales | research; do last |
+The live open-work list is the task tracker and
+[`reproduction_audit.md`](reproduction_audit.md) §2 (Table VII, W6 HO-order
+validation, the √3 recoil factor, Eq. 21 type-S ratio, and the src/-promotion
+hygiene) — kept there so it can't drift out of sync with the dashboard.
