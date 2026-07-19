@@ -142,4 +142,14 @@ export StrongDecayModel,
     load_table_v
 include("strong_decays.jl")
 
+# =============================================================================
+# Table VII annihilation widths: gluonic QQ̄ → gluons
+# =============================================================================
+
+export wavefunction_origin_smearing,
+    gluonic_annihilation_amplitude,
+    gluonic_annihilation_width,
+    GLUONIC_CHANNELS
+include("annihilation_widths.jl")
+
 end

@@ -1504,3 +1504,35 @@ end
         with_basis(params, HarmonicOscillatorBasis), masses, "S", 1, r, 2)
     @test isempty(lvlho) && isempty(vecho) && isempty(rho)
 end
+
+@testset "Table VII gluonic annihilation (Eq. 17 S_L)" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    mb = mq["b"]
+    masses = Meson(mq, :b, :b).constituent_masses
+    tomev(a) = abs(a) * sqrt(1000)   # GeV^1/2 -> MeV^1/2
+
+    # bottomonium (most paper-faithful) S-wave: eta_b / Upsilon central wave
+    vals, vecs, r = channel_solution(params, masses, 0; nlevels = 2, ngrid = 900, rmax = 24.0)
+    S0 = wavefunction_origin_smearing(RadialWaveOnUniformMesh(vecs[:, 1], r), mb; L = 0)
+    a0 = GIModel.alpha_s_q(vals[1])
+    # zero-parameter amplitudes vs paper (eta_b -> 2g = 2.5, Upsilon -> 3g = 0.21)
+    @test 0.85 < tomev(gluonic_annihilation_amplitude(:S0_2g, S0, a0, mb)) / 2.5  < 1.15
+    @test 0.85 < tomev(gluonic_annihilation_amplitude(:S1_3g, S0, a0, mb)) / 0.21 < 1.25
+
+    # width is amplitude squared, for every channel
+    for ch in GLUONIC_CHANNELS
+        @test gluonic_annihilation_width(ch, S0, a0, mb) ≈
+              gluonic_annihilation_amplitude(ch, S0, a0, mb)^2
+    end
+
+    # P-wave chi_2b via S1 (paper chi_2b -> 2g = 0.35)
+    valsP, vecsP, rP = channel_solution(params, masses, 1; nlevels = 1, ngrid = 900, rmax = 24.0)
+    S1 = wavefunction_origin_smearing(RadialWaveOnUniformMesh(vecsP[:, 1], rP), mb; L = 1)
+    @test 0.8 < tomev(gluonic_annihilation_amplitude(:P2_2g, S1, GIModel.alpha_s_q(valsP[1]), mb)) / 0.35 < 1.2
+
+    # S_L is normalization-invariant (the wave is renormalized internally)
+    S0_scaled = wavefunction_origin_smearing(RadialWaveOnUniformMesh(3.0 .* vecs[:, 1], r), mb; L = 0)
+    @test S0_scaled ≈ S0
+    # unknown channel is rejected
+    @test_throws ArgumentError gluonic_annihilation_amplitude(:bogus, S0, a0, mb)
+end
