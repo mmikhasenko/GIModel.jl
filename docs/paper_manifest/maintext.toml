@@ -287,79 +287,79 @@ notes = "The :p2 / PaperP2Annihilation mode, solved as a mass-dependent fixed po
 id = "eq-23"
 kind = "equation"
 label = "Eq. (23)"
-page = 26
+page = 31
 statement = "Perturbative P-wave multiplet energy E(2++) = E0 + S/4 - T/5 + L."
 status = "folded"
 code = ["src/spin_fine_structure.jl:fine_structure_components"]
-anchor = "paper/vision_ocr/page_images/page-026.png"
+anchor = "paper/vision_ocr/page_images/page-031.png"
 parent = "sec-V"
-notes = "Discussion-layer perturbative formula superseded by the full diagonalization; the S/T/L decomposition it needs is exactly what fine_structure_components exposes. Page-image is a section-level estimate (Sec. V B 'The P waves', OCR PDF page 31)."
+notes = "Discussion-layer perturbative formula superseded by the full diagonalization; the S/T/L decomposition it needs is exactly what fine_structure_components exposes. OCR-located on page-image 31 (Sec. V B, 'The P waves')."
 
 [[unit]]
 id = "eq-24"
 kind = "equation"
 label = "Eq. (24)"
-page = 26
+page = 31
 statement = "Perturbative P-wave multiplet energy E(1++) = E0 + S/4 + T - L."
 status = "folded"
 code = ["src/spin_fine_structure.jl:fine_structure_components"]
-anchor = "paper/vision_ocr/page_images/page-026.png"
+anchor = "paper/vision_ocr/page_images/page-031.png"
 parent = "sec-V"
-notes = "Companion to Eq. (23); folded into the diagonalization. Page-image estimated (Sec. V B, OCR PDF page 31)."
+notes = "Companion to Eq. (23); folded into the diagonalization. OCR-located on page-image 31 (Sec. V B)."
 
 [[unit]]
 id = "eq-25"
 kind = "equation"
 label = "Eq. (25)"
-page = 27
+page = 32
 statement = "Perturbative P-wave multiplet energy E(0++) = E0 + S/4 - 2T - 2L."
 status = "folded"
 code = ["src/spin_fine_structure.jl:fine_structure_components"]
-anchor = "paper/vision_ocr/page_images/page-027.png"
+anchor = "paper/vision_ocr/page_images/page-032.png"
 parent = "sec-V"
-notes = "Companion to Eqs. (23)-(24); folded into the diagonalization. Page-image estimated (Sec. V B, OCR PDF page 32)."
+notes = "Companion to Eqs. (23)-(24); folded into the diagonalization. OCR-located on page-image 32 (Sec. V B)."
 
 [[unit]]
 id = "eq-26"
 kind = "equation"
 label = "Eq. (26)"
-page = 27
+page = 32
 statement = "Perturbative P-wave multiplet energy E(1+-) = E0 - 3S/4 (contact-only, no T or L)."
 status = "folded"
 code = ["src/spin_fine_structure.jl:fine_structure_components"]
-anchor = "paper/vision_ocr/page_images/page-027.png"
+anchor = "paper/vision_ocr/page_images/page-032.png"
 parent = "sec-V"
-notes = "The 1+- member of the P-wave multiplet set (23)-(26); folded into the diagonalization. Page-image estimated (Sec. V B, OCR PDF page 32)."
+notes = "The 1+- member of the P-wave multiplet set (23)-(26); folded into the diagonalization. OCR-located on page-image 32 (Sec. V B)."
 
 [[unit]]
 id = "eq-27"
 kind = "equation"
 label = "Eq. (27)"
-page = 28
+page = 33
 statement = "0++ coupled-channel / S-matrix relation for the scalar-meson Breit-Wigner unitarity discussion."
 status = "context"
-anchor = "paper/vision_ocr/page_images/page-028.png"
+anchor = "paper/vision_ocr/page_images/page-033.png"
 parent = "sec-V"
-notes = "Sec. V D scalar-meson phenomenology around Table VIII / Fig. 16, outside the quark-model proper (context). Page-image estimated (OCR PDF page 33)."
+notes = "Sec. V D scalar-meson phenomenology around Table VIII / Fig. 16, outside the quark-model proper (context). OCR-located on page-image 33."
 
 [[unit]]
 id = "eq-28"
 kind = "equation"
 label = "Eq. (28)"
-page = 28
+page = 33
 statement = "Coupled-channel T-matrix / partial-width relation used for the scalar-meson channel analysis."
 status = "context"
-anchor = "paper/vision_ocr/page_images/page-028.png"
+anchor = "paper/vision_ocr/page_images/page-033.png"
 parent = "sec-V"
-notes = "Sec. V D coupled-channel discussion (x_i = Gamma_i/Gamma branching ratios feeding the Fig. 16 T matrix); no model output to reproduce (context). Page-image estimated (OCR PDF page 33)."
+notes = "Sec. V D coupled-channel discussion (x_i = Gamma_i/Gamma branching ratios feeding the Fig. 16 T matrix); no model output to reproduce (context). OCR-located on page-image 33."
 
 [[unit]]
 id = "eq-29"
 kind = "equation"
 label = "Eq. (29)"
-page = 28
+page = 33
 statement = "Coupled-channel unitarity / lineshape expression closing the 0++ scalar-meson discussion."
 status = "context"
-anchor = "paper/vision_ocr/page_images/page-028.png"
+anchor = "paper/vision_ocr/page_images/page-033.png"
 parent = "sec-V"
-notes = "Sec. V D data phenomenology, outside the model proper (context). Page-image estimated (OCR PDF page 33)."
+notes = "Sec. V D data phenomenology, outside the model proper (context). OCR-located on page-image 33."

@@ -5,9 +5,9 @@
 # re-added here — ids are globally unique. Ranges are grouped exactly as the
 # `### Appendix B (B1-B37)` ledger in docs/reproduction_audit.md lists them.
 #
-# Page numbers are page-IMAGE numbers (image = journal_pg - 188); Appendix B
-# spans page-images 33-36. Within-range page assignments are best estimates
-# (the ranges are not individually OCR-located); noted per unit.
+# Page numbers are page-IMAGE numbers (image = journal_pg - 188). Appendix B's
+# heading and Eqs (B1)-(B21) are OCR-located on page-image 38 and (B22)-(B37) on
+# page-image 39; the pages below are the per-equation OCR positions.
 
 schema_version = 1
 
@@ -15,70 +15,70 @@ schema_version = 1
 id = "B1-B9"
 kind = "equation"
 label = "Eqs. (B1)-(B9)"
-page = 33
+page = 38
 statement = "Flavor wavefunctions (pi, K, eta_8, eta_1) with their sign conventions."
 status = "folded"
-anchor = "paper/vision_ocr/page_images/page-033.png"
+anchor = "paper/vision_ocr/page_images/page-038.png"
 parent = "app-B"
-notes = "Baked into the flavor labels and the ns-bar/ss-bar basis conventions in src/meson.jl (Meson flavor1/flavor2) and the annihilation basis labels; not an independent reproduction target. Page-image 33 is the Appendix-B start; exact sub-range not OCR-located."
+notes = "Baked into the flavor labels and the ns-bar/ss-bar basis conventions in src/meson.jl (Meson flavor1/flavor2) and the annihilation basis labels; not an independent reproduction target. OCR-located on page-image 38."
 
 [[unit]]
 id = "B10-B13"
 kind = "equation"
 label = "Eqs. (B10)-(B13)"
-page = 33
+page = 38
 statement = "Ideal-mixing isoscalar basis M_ns, M_s and the singlet-octet mixing rotation."
 status = "implemented"
 code = ["src/flavor_mixing.jl:annihilation_basis_input"]
 tests = ["annihilation blocks built from two spectra"]
-anchor = "paper/vision_ocr/page_images/page-033.png"
+anchor = "paper/vision_ocr/page_images/page-038.png"
 parent = "app-B"
-notes = "Ideal mixing is the default isoscalar scheme; the ns-bar/ss-bar inputs carry the sqrt(2) flavor-coherence label and the rotation is the Table III eigenvector convention. Page within the 33-34 range is a best estimate."
+notes = "Ideal mixing is the default isoscalar scheme; the ns-bar/ss-bar inputs carry the sqrt(2) flavor-coherence label and the rotation is the Table III eigenvector convention. OCR-located on page-image 38."
 
 [[unit]]
 id = "B26-B30"
 kind = "equation"
 label = "Eqs. (B26)-(B30)"
-page = 34
+page = 39
 statement = "Spin wavefunctions chi and the standard angular-momentum algebra (S1.S2, L.S, tensor factors)."
 status = "folded"
 code = ["src/contact_hyperfine.jl:spin_dot", "src/spin_fine_structure.jl:LdotS"]
 tests = ["L·S and spin_dot algebra"]
-anchor = "paper/vision_ocr/page_images/page-034.png"
+anchor = "paper/vision_ocr/page_images/page-039.png"
 parent = "app-B"
-notes = "Standard angular algebra folded into the fine-structure operators; the concrete pieces (spin_dot, LdotS, tensor_triplet_LJ) exist and are checked via sum rules, so they are cited even though the spin algebra is not a distinct reproduction milestone. Page-image 34 is an estimate within 33-35."
+notes = "Standard angular algebra folded into the fine-structure operators; the concrete pieces (spin_dot, LdotS, tensor_triplet_LJ) exist and are checked via sum rules, so they are cited even though the spin algebra is not a distinct reproduction milestone. OCR-located on page-image 39."
 
 [[unit]]
 id = "B31-B36"
 kind = "equation"
 label = "Eqs. (B31)-(B36)"
-page = 35
+page = 39
 statement = "Simple-harmonic-oscillator wavefunctions Psi_nLM (radial Laguerre form) used for the basis-comparison audits."
 status = "implemented"
 code = ["src/harmonic_oscillator_basis.jl:ho_reduced_radial"]
 tests = ["HarmonicOscillatorBasis channel solve returns mesh wavefunctions"]
-anchor = "paper/vision_ocr/page_images/page-035.png"
+anchor = "paper/vision_ocr/page_images/page-039.png"
 parent = "app-B"
-notes = "Realized by the paper-style HO radial expansion (generalized_laguerre / ho_reduced_radial / ho_basis_matrix); also implicit in the Table IV decay-class q^L exp(-q^2/16 beta^2) formulas. Page-image 35 is a best estimate within 33-36."
+notes = "Realized by the paper-style HO radial expansion (generalized_laguerre / ho_reduced_radial / ho_basis_matrix); also implicit in the Table IV decay-class q^L exp(-q^2/16 beta^2) formulas. OCR-located on page-image 39."
 
 [[unit]]
 id = "B37"
 kind = "equation"
 label = "Eq. (B37)"
-page = 36
+page = 39
 statement = "Worked example of a fully composed (flavor x spin x space) meson state vector."
 status = "context"
-anchor = "paper/vision_ocr/page_images/page-036.png"
+anchor = "paper/vision_ocr/page_images/page-039.png"
 parent = "app-B"
-notes = "Convention demonstration only — no independent code target; the composition it illustrates is exercised piecewise by the B1-B36 units. Page-image 36 is a best estimate."
+notes = "Convention demonstration only — no independent code target; the composition it illustrates is exercised piecewise by the B1-B36 units. OCR-located on page-image 39."
 
 [[unit]]
 id = "B-beta-in-table-IV"
 kind = "equation"
 label = "Appendix-B beta powers (Table IV footnote)"
-page = 34
+page = 13
 statement = "The Appendix-B oscillator beta powers reappear inside the Table IV partial-wave class formulas."
 status = "folded"
-anchor = "paper/vision_ocr/page_images/page-034.png"
+anchor = "paper/vision_ocr/page_images/page-013.png"
 parent = "app-B"
-notes = "The ledger's trailing '4Note' row: the beta scaling of the SHO overlaps is absorbed into the Table IV class algebra (see table-IV in decays.toml), so it is not scored separately. Page assigned within the Appendix-B span."
+notes = "The ledger's trailing '4Note' row: the beta scaling of the SHO overlaps is absorbed into the Table IV class algebra (see table-IV in decays.toml), so it is not scored separately. Anchored to Table IV (page-image 13), where these beta powers appear in the class formulas."
