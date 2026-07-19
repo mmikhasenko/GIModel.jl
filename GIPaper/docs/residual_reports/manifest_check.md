@@ -17,7 +17,7 @@ None — every reference resolves.
 | Appendix A — Relativistic smearing & operator ordering | 17 | 0 | 2 | 9 | 0 | 6 | 0 | partial |
 | Appendix B — Flavor/spin operators & SHO wavefunctions | 8 | 0 | 0 | 3 | 4 | 1 | 0 | implemented |
 | Appendix C — Helicity to partial-wave decay amplitudes | 3 | 0 | 0 | 1 | 1 | 1 | 0 | implemented |
-| Appendix D — Mock-meson electromagnetic matrix elements | 8 | 0 | 0 | 2 | 2 | 0 | 4 | partial |
+| Appendix D — Mock-meson electromagnetic matrix elements | 8 | 1 | 0 | 2 | 2 | 0 | 3 | partial |
 | Sec. I — Introduction | 0 | 0 | 0 | 0 | 0 | 0 | 0 | todo |
 | Sec. II — The model | 21 | 2 | 0 | 12 | 3 | 4 | 0 | implemented |
 | Sec. III — Meson spectroscopy | 14 | 8 | 0 | 4 | 0 | 2 | 0 | implemented |
@@ -33,10 +33,9 @@ Projected from every `missing`/`partial`/`todo` unit — not a separate list, so
 | Eq. (A16) | Appendix A — Relativistic smearing & operator ordering | partial | research | W6: paper-order HO validation of the scalar/Thomas spin-orbit operator; removes the tier-C k_spin_orbit scale. |
 | Eq. (A17) | Appendix A — Relativistic smearing & operator ordering | partial | research | W6: extend the sub-MeV central FD/HO agreement to the spin and mixing blocks (A15-A17 fidelity). |
 | Eq. (19) | Sec. IV — Meson decays | partial | research | Deeper decay model: apply the (g sigma.q + h sigma.p') operator to the model wavefunctions instead of the SU(6)/single-beta SHO limit. |
-| Eqs. (D4)-(D6) | Appendix D — Mock-meson electromagnetic matrix elements | missing | medium | W4: implement the mock-meson decay constants f_P, f_V, f_A1 (prerequisite for the Table VII leptonic/two-photon widths). |
 | Table VI | Sec. IV — Meson decays | partial | medium | Resolve the eta<->eta' ordering / Upsilon'' sign (the W6 radial residual) and promote the Appendix-D mock-meson kernels into src/ with tests. |
-| Table VII | Sec. IV — Meson decays | partial | medium | W4: leptonic (P_P/V_V/V'_V/P'_A1 with mock masses, 27 rows), gamma-gamma (13 rows) and charge-radii (3 rows) subtables remain; the gluonic subtable is reproduced. |
 | Eq. (D7) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: leptonic width Gamma(P->l nu) from f_P (after D4-D6). |
 | Eq. (D8) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: dilepton width Gamma(V->l+l-) from f_V (after D4-D6). |
 | Eq. (D9) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: axial-current width Gamma(tau->A1 nu) from f_A1 (after D4-D6). |
 | Eq. (21) | Sec. IV — Meson decays | partial | small | W5b: score the type-S <1S0|p|M*>/<3S1|p|M*> momentum ratio per row (hyperfine waves already exposed). |
+| Table VII | Sec. IV — Meson decays | partial | small | W4: gamma-gamma (13 rows: A(P->gg)/A(3P2->gg) + quark charges) and charge-radii (3 rows: <r^2> + relativistic smearing) subtables remain; gluonic + leptonic reproduced. |

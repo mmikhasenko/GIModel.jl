@@ -1536,3 +1536,36 @@ end
     # unknown channel is rejected
     @test_throws ArgumentError gluonic_annihilation_amplitude(:bogus, S0, a0, mb)
 end
+
+@testset "Table VII leptonic decay constants (mock-meson factors)" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    outer!(u) = (pk = maximum(abs, u); i = findlast(x -> abs(x) > 0.2pk, u);
+                 (i !== nothing && u[i] < 0) && (u .*= -1); u)
+
+    # triplet ³S₁ wave for a QQ̄; return (M, unit-phase wave)
+    function triplet_swave(m, n)
+        masses = ConstituentMasses(m, m)
+        _, _, r = channel_solution(params, masses, 0; nlevels = 2, ngrid = 1000, rmax = 24.0)
+        lv, vec, r2 = contact_hyperfine_nonperturbative_states(params, masses, "S", 3, r, 2)
+        return lv[n], RadialWaveOnUniformMesh(outer!(copy(vec[:, n])), r2)
+    end
+
+    # ψ -> e+e-: f = (16/3)^(1/2) V_ψ, paper 0.12
+    Mψ, wψ = triplet_swave(mq["c"], 1)
+    fψ = sqrt(16 / 3) * leptonic_decay_factor(:V_V, wψ, mq["c"], mq["c"], Mψ)
+    @test 0.85 < fψ / 0.12 < 1.15
+
+    # ρ -> e+e-: f = √6 V_ρ, paper 0.20 (use light triplet 1S)
+    Mρ, wρ = triplet_swave(mq["q"], 1)
+    fρ = sqrt(6) * leptonic_decay_factor(:V_V, wρ, mq["q"], mq["q"], Mρ)
+    @test 0.85 < fρ / 0.20 < 1.15
+
+    # mock mass is the free-pair energy: M̃ = <E1+E2> ≥ 2m, and finite
+    Mt = mock_meson_mass(wψ, mq["c"], mq["c"]; L = 0)
+    @test Mt > 2 * mq["c"]
+    @test Mt < 2 * mq["c"] + 2.0
+
+    # kind guards: D-/P-wave factors require equal masses; unknown kind rejected
+    @test_throws ArgumentError leptonic_decay_factor(:Vp_V, wψ, mq["c"], mq["b"], Mψ)
+    @test_throws ArgumentError leptonic_decay_factor(:bogus, wψ, mq["c"], mq["c"], Mψ)
+end

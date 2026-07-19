@@ -1,12 +1,15 @@
 # =============================================================================
-# Table VII annihilation widths — gluonic (QQ̄ → gluons) slice.
+# Table VII annihilation amplitudes — gluonic (QQ̄ → gluons) and leptonic
+# (qq̄ → W → lν, qq̄ → γ* → l⁺l⁻) slices.
 # =============================================================================
-# Lowest-order QCD annihilation of heavy quarkonia into gluons (Table VII part
-# (c), page 28). Every width is proportional to |S_L(Ψ)|², the Eq. (17)
-# smeared wavefunction-at-origin already implemented for the pseudoscalar
-# annihilation block (`_sL_smearing_factor`). This slice therefore has **zero
-# free parameters**: the model wavefunction, the constituent quark mass, and the
-# running coupling α_s(M) fix the amplitudes outright.
+# Table VII (page 28) tabulates annihilation observables of the model
+# wavefunctions. Both slices here run on the same Eq. (17)-style smeared
+# momentum integral over Φ(p) (the jₗ transform of the radial wave) and have
+# **zero free parameters** beyond the solved wavefunctions:
+#   - gluonic widths ∝ |S_L(Ψ)|² (`_sL_smearing_factor`),
+#   - leptonic decay constants via the mock-meson factors P_P, P'_A1, V_V, V'_V
+#     of Table VII(a) / Appendix D (Eqs. D4-D6), which are the same kernel with
+#     different [m/E]-type weights and mock/physical mass prefactors.
 
 """
     wavefunction_origin_smearing(radial, mass_GeV; L=0, npoints=900)
@@ -77,3 +80,116 @@ Lowest-order gluonic annihilation width Γ (GeV) = amplitude². See
 """
 gluonic_annihilation_width(channel::Symbol, S_L::Real, alpha_s::Real, mQ::Real) =
     gluonic_width_prefactor(channel, alpha_s, mQ) * float(S_L)^2
+
+# -----------------------------------------------------------------------------
+# Leptonic decay constants — the Table VII(a) mock-meson factors (Eqs. D4-D6).
+# -----------------------------------------------------------------------------
+
+# ∫u²dr = 1 copy of a radial wave (the factors carry absolute scale)
+function _unit_norm_wave(radial::RadialWaveOnUniformMesh)
+    nrm = sqrt(sum(abs2, radial.u) * radial.h)
+    nrm > 0 || throw(ArgumentError("zero-norm radial wave"))
+    return RadialWaveOnUniformMesh(radial.u ./ nrm, radial.r)
+end
+
+# K[w] = (2π)^(-3/2) ∫d³p (4π)^(-1/2) Φ_L(p) w(p): the Eq. (17) kernel with a
+# configurable momentum weight (w ≡ m/E reproduces `_sL_smearing_factor`'s
+# weight at L=0). `wave` must already be unit-normalized.
+function _mock_momentum_kernel(wave::RadialWaveOnUniformMesh, L::Integer, w; npoints::Integer = 900)
+    npts = max(npoints, 32)
+    pmax = π / wave.h
+    dp = pmax / (npts - 1)
+    accum = 0.0
+    for k in 1:npts
+        p = (k - 1) * dp
+        weight = (k == 1 || k == npts) ? 0.5 : 1.0
+        accum += weight * p^2 * _momentum_radial_wave(wave, p, L) * w(p)
+    end
+    return sqrt(2 / π) * accum * dp / sqrt(4π)
+end
+
+"""
+    mock_meson_mass(radial, m1_GeV, m2_GeV; L=0, npoints=900)
+
+The mock-meson mass `M̃ = <E₁> + <E₂>` (GeV): the free quark-pair energy
+averaged over the momentum-space wavefunction `|Φ_L(p)|²` of the radial wave.
+This is the `M̃` appearing in the Table VII(a) leptonic-factor prefactors.
+"""
+function mock_meson_mass(
+    radial::RadialWaveOnUniformMesh,
+    m1_GeV::Real,
+    m2_GeV::Real;
+    L::Integer = 0,
+    npoints::Integer = 900,
+)
+    wave = _unit_norm_wave(radial)
+    npts = max(npoints, 32)
+    pmax = π / wave.h
+    dp = pmax / (npts - 1)
+    accE, accN = 0.0, 0.0
+    for k in 1:npts
+        p = (k - 1) * dp
+        weight = (k == 1 || k == npts) ? 0.5 : 1.0
+        Φ2 = _momentum_radial_wave(wave, p, L)^2
+        accE += weight * p^2 * Φ2 * (sqrt(m1_GeV^2 + p^2) + sqrt(m2_GeV^2 + p^2))
+        accN += weight * p^2 * Φ2
+    end
+    accN > 0 || throw(ArgumentError("mock_meson_mass: vanishing momentum norm"))
+    return accE / accN
+end
+
+# kind => (orbital L of the wavefunction, needs equal masses)
+const LEPTONIC_FACTOR_KINDS = Dict(
+    :P_P => (0, false),    # ¹S₀ pseudoscalar, weight √(m₁m₂/E₁E₂)
+    :V_V => (0, false),    # ³S₁ vector,       weight √(m₁m₂/E₁E₂)
+    :Vp_V => (2, true),    # ³D₁ vector,       weight (m/E)(1 − m/E)
+    :Pp_A1 => (1, true),   # ³P₁ axial,        weight m·p/E²
+)
+
+"""
+    leptonic_decay_factor(kind, radial, m1_GeV, m2_GeV, M_GeV; npoints=900)
+
+The dimensionless Table VII(a) mock-meson leptonic factor (Eqs. D4-D6):
+
+    P_P   = M⁻¹ M̃^(-1/2) K[√(m₁m₂/E₁E₂)]     (¹S₀ wave, L=0)
+    V_V   = M⁻² M̃^(+1/2) K[√(m₁m₂/E₁E₂)]     (³S₁ wave, L=0)
+    V'_V  = M⁻² M̃^(+1/2) K[(m/E)(1 − m/E)]   (³D₁ wave, L=2, equal masses)
+    P'_A1 = M⁻² M̃^(+1/2) K[m·p/E²]           (³P₁ wave, L=1, equal masses)
+
+with `K[w] = (2π)^(-3/2) ∫d³p (4π)^(-1/2) Φ_L(p) w(p)`, `M` the meson mass and
+`M̃` the mock mass [`mock_meson_mass`](@ref) of the same wave. The tabulated
+amplitude is a quark-charge/flavor coefficient times this factor (e.g.
+`f_π/M_π = 2√3 P_π`, `f_ψ = (16/3)^(1/2) V_ψ`); the paper's implicit `m/E`
+exponent is unity, as stated below the formula block. `radial` must be the
+wave of the orbital the kind expects; its overall sign propagates to the
+factor (fix a phase convention upstream for sign comparisons).
+"""
+function leptonic_decay_factor(
+    kind::Symbol,
+    radial::RadialWaveOnUniformMesh,
+    m1_GeV::Real,
+    m2_GeV::Real,
+    M_GeV::Real;
+    npoints::Integer = 900,
+)
+    haskey(LEPTONIC_FACTOR_KINDS, kind) ||
+        throw(ArgumentError("unknown leptonic factor kind $kind (expected one of $(keys(LEPTONIC_FACTOR_KINDS)))"))
+    L, equal_only = LEPTONIC_FACTOR_KINDS[kind]
+    m1, m2, M = float(m1_GeV), float(m2_GeV), float(M_GeV)
+    (equal_only && !isapprox(m1, m2)) &&
+        throw(ArgumentError("$kind is defined for equal constituent masses (got $m1, $m2)"))
+    M > 0 || throw(ArgumentError("meson mass must be positive"))
+
+    wave = _unit_norm_wave(radial)
+    Mtilde = mock_meson_mass(wave, m1, m2; L = L, npoints = npoints)
+    w = if kind === :P_P || kind === :V_V
+        p -> sqrt(m1 * m2 / (sqrt(m1^2 + p^2) * sqrt(m2^2 + p^2)))
+    elseif kind === :Vp_V
+        p -> (E = sqrt(m1^2 + p^2); (m1 / E) * (1 - m1 / E))
+    else # :Pp_A1
+        p -> m1 * p / (m1^2 + p^2)
+    end
+    K = _mock_momentum_kernel(wave, L, w; npoints = npoints)
+    prefactor = kind === :P_P ? 1 / (M * sqrt(Mtilde)) : sqrt(Mtilde) / M^2
+    return prefactor * K
+end

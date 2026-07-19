@@ -76,15 +76,15 @@ page = 28
 pages = "28-30"
 statement = "Leptonic decay constants, gamma-gamma and gluonic annihilation amplitudes, and charge radii <r_E^2> from the model wavefunctions (page-width table; 61 rows on pages 28-30 across the leptonic/gamma_gamma/gluonic/charge_radius subtables)."
 status = "partial"
-effort = "medium"
-next = "W4: leptonic (P_P/V_V/V'_V/P'_A1 with mock masses, 27 rows), gamma-gamma (13 rows) and charge-radii (3 rows) subtables remain; the gluonic subtable is reproduced."
-code = ["src/annihilation_widths.jl:gluonic_annihilation_amplitude", "GIPaper/scripts/audit_table_vii.jl"]
-tests = ["Table VII gluonic annihilation"]
+effort = "small"
+next = "W4: gamma-gamma (13 rows: A(P->gg)/A(3P2->gg) + quark charges) and charge-radii (3 rows: <r^2> + relativistic smearing) subtables remain; gluonic + leptonic reproduced."
+code = ["src/annihilation_widths.jl:gluonic_annihilation_amplitude", "src/annihilation_widths.jl:leptonic_decay_factor", "GIPaper/scripts/audit_table_vii.jl"]
+tests = ["Table VII gluonic annihilation", "Table VII leptonic decay constants"]
 report = "GIPaper/docs/residual_reports/table_vii_annihilation_em.md"
-metric = "gluonic subtable reproduced: 16/16 rows, median |model|/|paper| = 0.99, signs 16/16, zero free parameters"
+metric = "gluonic 16/16 median 0.99 + leptonic 26/26 median 1.01 reproduced (zero-parameter, signs all agree); 2 of 4 subtables done"
 anchor = "paper/vision_ocr/page_images/page-028.png"
 parent = "sec-IV"
-notes = "Gluonic subtable (part c) reproduced with ZERO free parameters: amp = sqrt(prefactor)*S_L(Psi), where S_L is the Eq.(17) smeared wavefunction-at-origin (wavefunction_origin_smearing) and prefactor is the lowest-order QCD gluonic width (8pi a_s^2/3m^2 etc). Bottomonium within a few %, charmonium ~15-20% low (FD-vs-HO wavefunction-at-origin sensitivity, the W6 theme); the two hypothetical t-tbar rows (eta_t, zeta) are not modelled. Remaining subtables: leptonic needs the mock-meson decay constants P_P/V_V/V'_V/P'_A1 (Eqs. D4-D6) with physical + mock masses; gamma-gamma needs A(P->gg)/A(3P2->gg) with quark charges; charge radii need <r^2> plus the relativistic smearing term (f=0.2). Data: table_vii_annihilation_em.csv, 61 rows."
+notes = "Two of four subtables reproduced with ZERO free parameters, both on the Eq.(17)-style smeared momentum kernel. GLUONIC (part c): amp = sqrt(prefactor)*S_L(Psi); bottomonium within a few %, charmonium ~15-20% low (FD-vs-HO sensitivity, W6). LEPTONIC (part a): f = coeff * {P_P,V_V,V'_V,P'_A1} mock-meson factor (leptonic_decay_factor, Eqs. D4-D6); heavy quarkonia within ~10%, f_pi the largest miss (1.55x, pure meson-mass sensitivity through P_P ~ 1/M). Signs reproduce under the outermost-antinode-positive convention. Not modelled: hypothetical t-tbar rows (eta_t, zeta). REMAINING: gamma-gamma (A(P->gg)/A(3P2->gg) + quark charges) and charge radii (<r^2> + relativistic smearing, f=0.2). Data: table_vii_annihilation_em.csv, 61 rows."
 
 # --- Sec. V: 0++ coupled-channel inputs ------------------------------------
 

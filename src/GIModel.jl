@@ -149,7 +149,10 @@ include("strong_decays.jl")
 export wavefunction_origin_smearing,
     gluonic_annihilation_amplitude,
     gluonic_annihilation_width,
-    GLUONIC_CHANNELS
+    GLUONIC_CHANNELS,
+    mock_meson_mass,
+    leptonic_decay_factor,
+    LEPTONIC_FACTOR_KINDS
 include("annihilation_widths.jl")
 
 end
