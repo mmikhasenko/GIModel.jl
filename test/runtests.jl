@@ -1569,3 +1569,28 @@ end
     @test_throws ArgumentError leptonic_decay_factor(:Vp_V, wψ, mq["c"], mq["b"], Mψ)
     @test_throws ArgumentError leptonic_decay_factor(:bogus, wψ, mq["c"], mq["c"], Mψ)
 end
+
+@testset "Table VII two-photon amplitudes (part b)" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    outer!(u) = (pk = maximum(abs, u); i = findlast(x -> abs(x) > 0.2pk, u);
+                 (i !== nothing && u[i] < 0) && (u .*= -1); u)
+    tokeV(a) = a * sqrt(1e6)
+
+    # eta_c -> gamma gamma: ¹S₀ cc̄, q_eff = 4/9, paper 2.6 keV^½
+    mc = mq["c"]
+    _, _, r = channel_solution(params, ConstituentMasses(mc, mc), 0; nlevels = 2, ngrid = 1000, rmax = 24.0)
+    lv, vec, r2 = contact_hyperfine_nonperturbative_states(params, ConstituentMasses(mc, mc), "S", 1, r, 2)
+    wηc = RadialWaveOnUniformMesh(outer!(copy(vec[:, 1])), r2)
+    Aηc = tokeV(two_photon_amplitude(:P, wηc, mc, lv[1], 4 / 9))
+    @test 0.85 < Aηc / 2.6 < 1.25
+
+    # A2 -> gamma gamma: ³P₂ light isovector, q_eff = (e_u²−e_d²)/√2, paper −1.2 keV^½
+    mqk = mq["q"]
+    valsP, vecsP, rP = channel_solution(params, ConstituentMasses(mqk, mqk), 1; nlevels = 1, ngrid = 1000, rmax = 24.0)
+    wA2 = RadialWaveOnUniformMesh(outer!(copy(vecsP[:, 1])), rP)
+    AA2 = tokeV(two_photon_amplitude(:P2, wA2, mqk, valsP[1], (4 / 9 - 1 / 9) / sqrt(2)))
+    @test AA2 < 0                       # −√(4/5) prefactor => negative amplitude
+    @test 0.8 < abs(AA2) / 1.2 < 1.2
+
+    @test_throws ArgumentError two_photon_amplitude(:bogus, wηc, mc, lv[1], 4 / 9)
+end

@@ -152,7 +152,8 @@ export wavefunction_origin_smearing,
     GLUONIC_CHANNELS,
     mock_meson_mass,
     leptonic_decay_factor,
-    LEPTONIC_FACTOR_KINDS
+    LEPTONIC_FACTOR_KINDS,
+    two_photon_amplitude
 include("annihilation_widths.jl")
 
 end

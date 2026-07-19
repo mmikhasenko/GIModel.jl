@@ -38,4 +38,4 @@ Projected from every `missing`/`partial`/`todo` unit — not a separate list, so
 | Eq. (D8) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: dilepton width Gamma(V->l+l-) from f_V (after D4-D6). |
 | Eq. (D9) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: axial-current width Gamma(tau->A1 nu) from f_A1 (after D4-D6). |
 | Eq. (21) | Sec. IV — Meson decays | partial | small | W5b: score the type-S <1S0|p|M*>/<3S1|p|M*> momentum ratio per row (hyperfine waves already exposed). |
-| Table VII | Sec. IV — Meson decays | partial | small | W4: gamma-gamma (13 rows: A(P->gg)/A(3P2->gg) + quark charges) and charge-radii (3 rows: <r^2> + relativistic smearing) subtables remain; gluonic + leptonic reproduced. |
+| Table VII | Sec. IV — Meson decays | partial | small | W4: charge-radii subtable (3 rows: <r^2> + relativistic smearing, f=0.2) remains; gluonic + leptonic + two-photon reproduced. Also open: the 4 strongly-mixed isoscalar-pseudoscalar gamma-gamma rows (eta/eta'/eta_r/eta'_r) pending the P1/P2 mixing model. |

@@ -67,6 +67,32 @@ end
 
 median_of(xs) = isempty(xs) ? NaN : sort(xs)[cld(length(xs), 2)]
 
+# amplitude unit <-> GeV^(1/2): a value of `v` unit^(1/2) is v·sqrt(unit_in_GeV)
+_unit_gev(unit) = unit === :eV ? sqrt(1e-9) : sqrt(1e-6)   # eV or keV
+to_gev(v, unit) = v * _unit_gev(unit)
+from_gev(a, unit) = a / _unit_gev(unit)
+
+# γγ predicted column carries a unit string ("2.6 eV^1/2", "-1.0 keV^1/2")
+function load_gg_predictions(path)
+    preds = Dict{String,Tuple{Float64,Symbol}}()
+    open(path) do io
+        header = split(strip(readline(io)), ',')
+        di = findfirst(==("decay"), header)
+        pi_ = findfirst(==("predicted"), header)
+        si = findfirst(==("subtable"), header)
+        for line in eachline(io)
+            cols = split(line, ',')
+            length(cols) < max(di, pi_, si) && continue
+            cols[si] == "gamma_gamma" || continue
+            m = match(r"^([-+]?[0-9.]+)\s*(eV|keV)", strip(cols[pi_]))
+            m === nothing && continue
+            preds[strip(cols[di])] = (parse(Float64, m.captures[1]),
+                                      m.captures[2] == "eV" ? :eV : :keV)
+        end
+    end
+    return preds
+end
+
 # =============================================================================
 # Gluonic slice (part c)
 # =============================================================================
@@ -222,6 +248,61 @@ function run_leptonic(params, mq, paper)
 end
 
 # =============================================================================
+# Two-photon slice (part b)
+# =============================================================================
+
+struct TwoPhotonRow
+    decay::String        # CSV key
+    kind::Symbol         # :P (¹S₀) | :P2 (³P₂)
+    f1::String
+    f2::String
+    n::Int               # radial level
+    q_eff::Float64       # effective squared charge Σ aᵢ eᵢ² of the flavor state
+    unit::Symbol         # display unit of the paper value (:eV | :keV)
+end
+
+# Rows with unambiguous flavor content (single flavor, isovector, or near-ideal
+# tensor mixing). The strongly-mixed isoscalar pseudoscalars (eta, eta', eta_r,
+# eta'_r) hinge on the P1/P2 pseudoscalar-annihilation mixing model of Sec. V A
+# and are deferred; the hypothetical t-tbar eta_t is not modelled.
+const QPI = (4 / 9 - 1 / 9) / sqrt(2)      # (uū−dd̄)/√2 isovector
+const QNS = (4 / 9 + 1 / 9) / sqrt(2)      # (uū+dd̄)/√2 nonstrange isoscalar
+const TWO_PHOTON_ROWS = [
+    TwoPhotonRow("pi -> gamma gamma",     :P,  "q", "q", 1, QPI,   :eV),
+    TwoPhotonRow("pi' -> gamma gamma",    :P,  "q", "q", 2, QPI,   :keV),
+    TwoPhotonRow("eta_c -> gamma gamma",  :P,  "c", "c", 1, 4 / 9, :keV),
+    TwoPhotonRow("eta'_c -> gamma gamma", :P,  "c", "c", 2, 4 / 9, :keV),
+    TwoPhotonRow("eta_b -> gamma gamma",  :P,  "b", "b", 1, 1 / 9, :keV),
+    TwoPhotonRow("A2 -> gamma gamma",     :P2, "q", "q", 1, QPI,   :keV),
+    TwoPhotonRow("f -> gamma gamma",      :P2, "q", "q", 1, QNS,   :keV),   # f₂ ≈ nonstrange (ideal)
+    TwoPhotonRow("f' -> gamma gamma",     :P2, "s", "s", 1, 1 / 9, :keV),   # f₂' ≈ ss̄ (ideal)
+]
+const GG_DEFERRED = ["eta", "eta'", "eta_r", "eta'_r"]   # isoscalar-pseudoscalar mixing
+
+function run_two_photon(params, mq, paper)
+    scache = Dict{Tuple{Float64,Float64},Any}()
+    ccache = Dict{Tuple{Float64,Float64},Any}()
+    results = NamedTuple[]
+    for row in TWO_PHOTON_ROWS
+        m1, m2 = mq[row.f1], mq[row.f2]
+        fam = row.kind === :P ?
+              get!(() -> swave_family(params, m1, m2, 1), scache, (m1, m2)) :
+              get!(() -> central_family(params, m1, m2, 1; nlevels = max(row.n, 1)), ccache, (m1, m2))
+        M = fam.levels[row.n]
+        wave = RadialWaveOnUniformMesh(fix_outer_antinode_positive!(copy(fam.vecs[:, row.n])), fam.r)
+        A = two_photon_amplitude(row.kind, wave, m1, M, row.q_eff; npoints = NPTS)   # GeV^½
+        pv, punit = get(paper, row.decay, (NaN, :keV))
+        pg = isnan(pv) ? NaN : to_gev(pv, punit)
+        ratio = isnan(pg) || pg == 0 ? NaN : abs(A) / abs(pg)
+        sign_ok = !isnan(pg) && pg != 0 && sign(A) == sign(pg)
+        push!(results, (label = row.decay, kind = row.kind, M = M,
+                        model = from_gev(A, row.unit), paper = pv, unit = row.unit,
+                        ratio = ratio, sign_ok = sign_ok))
+    end
+    return results
+end
+
+# =============================================================================
 # Report
 # =============================================================================
 
@@ -229,19 +310,21 @@ function main()
     params, mq = load_parameters_and_quark_masses(PARAMS_PATH)
     glu = run_gluonic(params, mq, load_paper_predictions(TABLE, "gluonic"))
     lep = run_leptonic(params, mq, load_paper_predictions(TABLE, "leptonic"))
+    gg = run_two_photon(params, mq, load_gg_predictions(TABLE))
 
     gratios = filter(!isnan, [r.ratio for r in glu])
     lratios = filter(!isnan, [r.ratio for r in lep])
-    gmed, lmed = median_of(gratios), median_of(lratios)
-    gsign, lsign = count(r -> r.sign_ok, glu), count(r -> r.sign_ok, lep)
+    ggratios = filter(!isnan, [r.ratio for r in gg])
+    gmed, lmed, ggmed = median_of(gratios), median_of(lratios), median_of(ggratios)
+    gsign, lsign, ggsign = count(r -> r.sign_ok, glu), count(r -> r.sign_ok, lep), count(r -> r.sign_ok, gg)
 
     open(REPORT, "w") do io
         println(io, "# Table VII Audit — Annihilation Amplitudes")
         println(io)
-        println(io, "Generated by `julia GIPaper/scripts/audit_table_vii.jl`. Gluonic (part c)")
-        println(io, "and leptonic (part a) subtables, reproduced from the model wavefunctions")
-        println(io, "with **zero free parameters**; remaining subtables (gamma-gamma, charge")
-        println(io, "radii) are separate slices.")
+        println(io, "Generated by `julia GIPaper/scripts/audit_table_vii.jl`. Gluonic (part c),")
+        println(io, "leptonic (part a), and two-photon (part b) subtables, reproduced from the")
+        println(io, "model wavefunctions with **zero free parameters**; the charge-radii subtable")
+        println(io, "is a separate slice.")
         println(io)
         println(io, "Both slices run on the Eq. (17)-style smeared momentum integral over the")
         println(io, "jₗ-transformed radial wave. Phase convention throughout: each radial")
@@ -318,6 +401,39 @@ function main()
         end
         println(io)
 
+        # --- two-photon ------------------------------------------------------
+        println(io, "## Two-photon decays (part b)")
+        println(io)
+        println(io, "```")
+        println(io, "A(P→γγ)   = √6   q_eff (α/m) (M/M̃)^(3/2) (1/2π)     ∫d³p φ_P(p) [m/E]")
+        println(io, "A(³P₂→γγ) = −√(4/5) q_eff (α/m) (M/M̃)^(3/2) (2/π)^(1/2) ∫dp p² Φ(p) [m·p/E²]")
+        println(io, "```")
+        println(io)
+        println(io, "`q_eff = Σ aᵢ eᵢ²` is the state's effective squared charge (flavor")
+        println(io, "amplitude times quark charges: `(e_u²−e_d²)/√2` for `π`/`A2`, `4/9` for")
+        println(io, "`cc̄`, `1/9` for `bb̄`/`ss̄`); `α` the fine-structure constant; `M` the meson")
+        println(io, "mass, `M̃` the mock mass. Amplitude² is Γ; units follow the paper (`π` in")
+        println(io, "`eV^½`, the rest in `keV^½`).")
+        println(io)
+        println(io, "Scored here are the rows with unambiguous flavor content. The strongly-")
+        println(io, "mixed isoscalar pseudoscalars (`", join(GG_DEFERRED, "`, `"), "`) depend on the")
+        println(io, "P1/P2 pseudoscalar-annihilation model of Sec. V A and are deferred; `f`/`f'`")
+        println(io, "use ideal tensor mixing (`f₂` nonstrange, `f₂'` = `ss̄`); the hypothetical")
+        println(io, "t-tbar `eta_t` is not modelled.")
+        println(io)
+        println(io, @sprintf("**%d two-photon rows scored; median |model|/|paper| = %.2f; signs agree on %d/%d.**",
+            length(ggratios), ggmed, ggsign, length(ggratios)))
+        println(io)
+        println(io, "| decay | kind | M (GeV) | q_eff | model | paper | unit | ratio | sign |")
+        println(io, "|---|:-:|---:|---:|---:|---:|:-:|:-:|:-:|")
+        for (row, r) in zip(TWO_PHOTON_ROWS, gg)
+            println(io, @sprintf("| `%s` | %s | %.3f | %+0.3f | %+0.3f | %+0.3f | %s^½ | %s | %s |",
+                r.label, r.kind, r.M, row.q_eff, r.model, r.paper, r.unit,
+                isnan(r.ratio) ? "—" : @sprintf("%.2f", r.ratio),
+                r.sign_ok ? "✓" : "✗"))
+        end
+        println(io)
+
         println(io, "## Reading")
         println(io)
         println(io, "- **Zero-parameter reproduction.** No constant is fit in either slice:")
@@ -334,22 +450,28 @@ function main()
         println(io, "  above the measured 0.95 — the pion is a known hard case). The heavier")
         println(io, "  pseudoscalars, with less mass sensitivity, land within ~10%.")
         println(io, "- **Signs reproduce under one convention** (outermost antinode positive)")
-        println(io, "  across both slices: the alternation down each radial tower is the node")
+        println(io, "  across all slices: the alternation down each radial tower is the node")
         println(io, "  structure of the wavefunction-at-origin.")
-        println(io, "- The leptonic formula column is ideal-mixing; Table III isoscalar-mixing")
-        println(io, "  corrections (folded into the paper's numbers) are part of the `ω`/`φ`")
-        println(io, "  residual.")
+        println(io, "- **Two-photon** rows with clean flavor content reproduce well (`A2` 0.93,")
+        println(io, "  `f₂` 0.98, the `η_c` pair ~1.08); `f'` is off (ideal tensor mixing, which")
+        println(io, "  the paper's own footnote calls very `f`-`f'`-sensitive) and `π→γγ` shares")
+        println(io, "  the `f_π` meson-mass sensitivity (here through `(M/M̃)^{3/2}`).")
+        println(io, "- Isoscalar-mixing corrections (folded into the paper's numbers) are part of")
+        println(io, "  the `ω`/`φ` leptonic residual; the strongly-mixed isoscalar pseudoscalar")
+        println(io, "  `γγ` rows depend on the P1/P2 model (Sec. V A) and are deferred.")
     end
 
     @printf("wrote %s\n", REPORT)
-    @printf("gluonic:  %d rows, median |model|/|paper| = %.2f, signs %d/%d\n",
+    @printf("gluonic:   %d rows, median |model|/|paper| = %.2f, signs %d/%d\n",
         length(gratios), gmed, gsign, length(gratios))
-    @printf("leptonic: %d rows, median |model|/|paper| = %.2f, signs %d/%d\n",
+    @printf("leptonic:  %d rows, median |model|/|paper| = %.2f, signs %d/%d\n",
         length(lratios), lmed, lsign, length(lratios))
-    for r in lep
-        @printf("  %-22s f=%+8.4f  paper=%+8.4f  ratio=%s  sign=%s\n",
-            r.label, r.model, r.paper, isnan(r.ratio) ? "—" : @sprintf("%.2f", r.ratio),
-            r.sign_ok ? "ok" : "X")
+    @printf("two-photon: %d rows, median |model|/|paper| = %.2f, signs %d/%d\n",
+        length(ggratios), ggmed, ggsign, length(ggratios))
+    for r in gg
+        @printf("  %-22s model=%+8.3f paper=%+8.3f %-4s ratio=%s sign=%s\n",
+            r.label, r.model, r.paper, String(r.unit) * "^½",
+            isnan(r.ratio) ? "—" : @sprintf("%.2f", r.ratio), r.sign_ok ? "ok" : "X")
     end
 end
 

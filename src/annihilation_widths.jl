@@ -193,3 +193,66 @@ function leptonic_decay_factor(
     prefactor = kind === :P_P ? 1 / (M * sqrt(Mtilde)) : sqrt(Mtilde) / M^2
     return prefactor * K
 end
+
+# -----------------------------------------------------------------------------
+# Two-photon amplitudes — the Table VII(b) γγ formulas (page 28).
+# -----------------------------------------------------------------------------
+
+"""Electromagnetic fine-structure constant used in the Table VII(b) γγ formulas."""
+const ALPHA_EM = 1 / 137.036
+
+# raw momentum moment ∫ p² Φ_L(p) w(p) dp over the (unit-normalized) wave
+function _momentum_moment(wave::RadialWaveOnUniformMesh, L::Integer, w; npoints::Integer = 900)
+    npts = max(npoints, 32)
+    pmax = π / wave.h
+    dp = pmax / (npts - 1)
+    accum = 0.0
+    for k in 1:npts
+        p = (k - 1) * dp
+        weight = (k == 1 || k == npts) ? 0.5 : 1.0
+        accum += weight * p^2 * _momentum_radial_wave(wave, p, L) * w(p)
+    end
+    return accum * dp
+end
+
+"""
+    two_photon_amplitude(kind, radial, m_GeV, M_GeV, q_eff; npoints=900)
+
+Two-photon annihilation amplitude (GeV^(1/2), amplitude² = Γ) of Table VII(b):
+
+    A(P→γγ)   = √6   q_eff (α/m) (M/M̃)^(3/2) (1/2π)     ∫d³p φ_P(p) [m/E]
+    A(³P₂→γγ) = −√(4/5) q_eff (α/m) (M/M̃)^(3/2) (2/π)^(1/2) ∫dp p² Φ(p) [m·p/E²]
+
+for `kind` `:P` (S-wave pseudoscalar, `radial` the ¹S₀ wave) or `:P2` (the
+³P₂ tensor, `radial` the P-wave). `m_GeV` is the constituent quark mass (equal
+masses), `M_GeV` the meson mass, `M̃` the mock mass [`mock_meson_mass`](@ref),
+and `q_eff = Σ aᵢ eᵢ²` the state's effective squared charge (the flavor
+amplitude weighted sum of quark charges; e.g. `(e_u²−e_d²)/√2` for a π⁰-like
+isovector, `4/9` for cc̄). For the `:P` S-wave, `∫d³p φ_P(m/E) = √(4π) ∫p²Φ(m/E)dp`.
+The sign follows `q_eff` and the wave's phase convention.
+"""
+function two_photon_amplitude(
+    kind::Symbol,
+    radial::RadialWaveOnUniformMesh,
+    m_GeV::Real,
+    M_GeV::Real,
+    q_eff::Real;
+    npoints::Integer = 900,
+)
+    m, M = float(m_GeV), float(M_GeV)
+    M > 0 || throw(ArgumentError("meson mass must be positive"))
+    wave = _unit_norm_wave(radial)
+    if kind === :P
+        Mtilde = mock_meson_mass(wave, m, m; L = 0, npoints = npoints)
+        moment = _momentum_moment(wave, 0, p -> m / sqrt(m^2 + p^2); npoints = npoints)
+        integral = sqrt(4π) * moment                    # ∫d³p φ_P(m/E), S-wave
+        return sqrt(6) * q_eff * (ALPHA_EM / m) * (M / Mtilde)^1.5 * (1 / (2π)) * integral
+    elseif kind === :P2
+        # ³P₂ is a P-wave (orbital L=1); the extra p in the [m·p/E²] weight is the
+        # P-wave momentum factor.
+        Mtilde = mock_meson_mass(wave, m, m; L = 1, npoints = npoints)
+        moment = _momentum_moment(wave, 1, p -> m * p / (m^2 + p^2); npoints = npoints)
+        return -sqrt(4 / 5) * q_eff * (ALPHA_EM / m) * (M / Mtilde)^1.5 * sqrt(2 / π) * moment
+    end
+    throw(ArgumentError("unknown two-photon kind $kind (expected :P or :P2)"))
+end
