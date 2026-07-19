@@ -256,3 +256,61 @@ function two_photon_amplitude(
     end
     throw(ArgumentError("unknown two-photon kind $kind (expected :P or :P2)"))
 end
+
+# -----------------------------------------------------------------------------
+# Charge radii — the Table VII(d) formula (page 28).
+# -----------------------------------------------------------------------------
+
+# <(m/E)^power>_φ = ∫ p² |Φ_0(p)|² (m/E)^power dp over the unit-normalized wave
+function _rel_momentum_average(wave::RadialWaveOnUniformMesh, m::Real, power::Real; npoints::Integer = 900)
+    npts = max(npoints, 32)
+    pmax = π / wave.h
+    dp = pmax / (npts - 1)
+    accum = 0.0
+    for k in 1:npts
+        p = (k - 1) * dp
+        weight = (k == 1 || k == npts) ? 0.5 : 1.0
+        Φ = _momentum_radial_wave(wave, p, 0)
+        accum += weight * p^2 * Φ^2 * (m / sqrt(m^2 + p^2))^power
+    end
+    return accum * dp
+end
+
+"""Conversion (ħc)² : an r² in GeV⁻² is `HBARC_FM2 · r²` in fm²."""
+const HBARC_FM2 = 0.19733^2
+
+"""
+    charge_radius_squared(radial, m1_GeV, e1, m2_GeV, e2; f=0.2, npoints=900)
+
+Mean-square charge radius `r_E²` (GeV⁻²) of a qq̄ meson, Table VII(d):
+
+    r_E² = Σᵢ eᵢ [ <rᵢ²> + (3/4mᵢ²) ∫d³p |φ(p)|² (mᵢ/Eᵢ)^{2f} ]
+
+`rᵢ = (mⱼ/M)·r` is quark i's position from the meson center of mass, so
+`<rᵢ²> = (mⱼ/M)² <r²>` with `<r²>` the position-space expectation over the
+`radial` (¹S₀) wave; the second term is the relativistic smearing of the
+quark-position operator, `f` the fit exponent (0.2, fitted to the π⁺). `e1`,
+`e2` are the quark charges (e.g. `+2/3`, `+1/3` for the u and d̄ of π⁺;
+`−1/3`, `+1/3` for the d and s̄ of K⁰). Multiply by [`HBARC_FM2`](@ref) for fm².
+"""
+function charge_radius_squared(
+    radial::RadialWaveOnUniformMesh,
+    m1_GeV::Real,
+    e1::Real,
+    m2_GeV::Real,
+    e2::Real;
+    f::Real = 0.2,
+    npoints::Integer = 900,
+)
+    m1, m2 = float(m1_GeV), float(m2_GeV)
+    Mtot = m1 + m2
+    Mtot > 0 || throw(ArgumentError("total constituent mass must be positive"))
+    u, h = radial.u, radial.h
+    nrm = sum(abs2, u) * h
+    nrm > 0 || throw(ArgumentError("charge_radius_squared: zero-norm radial wave"))
+    r2 = sum(@. u^2 * radial.r^2) * h / nrm
+    wave = RadialWaveOnUniformMesh(u ./ sqrt(nrm), radial.r)
+    term(mi, ei, mj) =
+        ei * ((mj / Mtot)^2 * r2 + (3 / (4 * mi^2)) * _rel_momentum_average(wave, mi, 2f; npoints = npoints))
+    return term(m1, e1, m2) + term(m2, e2, m1)
+end

@@ -153,7 +153,9 @@ export wavefunction_origin_smearing,
     mock_meson_mass,
     leptonic_decay_factor,
     LEPTONIC_FACTOR_KINDS,
-    two_photon_amplitude
+    two_photon_amplitude,
+    charge_radius_squared,
+    HBARC_FM2
 include("annihilation_widths.jl")
 
 end

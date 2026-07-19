@@ -1594,3 +1594,29 @@ end
 
     @test_throws ArgumentError two_photon_amplitude(:bogus, wηc, mc, lv[1], 4 / 9)
 end
+
+@testset "Table VII charge radii (part d)" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    mu, ms = mq["q"], mq["s"]
+
+    function ps_wave(m1, m2)
+        _, _, r = channel_solution(params, ConstituentMasses(m1, m2), 0; nlevels = 2, ngrid = 1200, rmax = 26.0)
+        lv, vec, r2 = contact_hyperfine_nonperturbative_states(params, ConstituentMasses(m1, m2), "S", 1, r, 2)
+        return RadialWaveOnUniformMesh(vec[:, 1], r2)
+    end
+
+    # K+ = u s̄ : charges +2/3, +1/3 ; paper r_E² = +(0.59)² fm²  (a prediction)
+    rEK = charge_radius_squared(ps_wave(mu, ms), mu, 2 / 3, ms, 1 / 3) * HBARC_FM2
+    @test rEK > 0
+    @test 0.85 < rEK / 0.59^2 < 1.15
+
+    # K0 = d s̄ : charges −1/3, +1/3 ; paper r_E² = −(0.30)² fm²  (sign is the point)
+    rEK0 = charge_radius_squared(ps_wave(mu, ms), mu, -1 / 3, ms, 1 / 3) * HBARC_FM2
+    @test rEK0 < 0                       # negative charge on the larger-radius light quark
+    @test 0.8 < abs(rEK0) / 0.30^2 < 1.3
+
+    # normalization-invariant (wave renormalized internally)
+    w = ps_wave(mu, mu)
+    @test charge_radius_squared(RadialWaveOnUniformMesh(3.0 .* w.u, w.r), mu, 2 / 3, mu, 1 / 3) ≈
+          charge_radius_squared(w, mu, 2 / 3, mu, 1 / 3)
+end
