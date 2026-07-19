@@ -82,7 +82,44 @@ println("**", tot, " paper units** across ", length(sections), " sections · ",
 println()
 println("\nThe manifest (`docs/paper_manifest/*.toml`) is the single source of truth; ",
         "`check_manifest.jl` verifies every link below resolves. Expand a section, then a unit, ",
-        "to trace a physical statement to the paper page and the code that realizes it.\n")
+        "to trace a physical statement to the paper page and the code that realizes it. ",
+        "The **Remaining work** panel below is a live projection of the open statuses — not a ",
+        "separate list — so it can never disagree with the units.\n")
+
+# --- derived "Remaining work" panel (projection of open statuses) ----------
+seclabel = Dict(s["id"] => field(s, "label", s["id"]) for s in sections)
+const EFFORT_RANK  = Dict("large"=>1, "research"=>2, "medium"=>3, "small"=>4)
+const EFFORT_COLOR = Dict("large"=>"#cf222e", "research"=>"#8250df", "medium"=>"#bf8700", "small"=>"#57606a")
+effchip(e) = (c = get(EFFORT_COLOR, e, "#57606a");
+    isempty(e) ? "" : "<span style=\"border:1px solid $(c);color:$(c);border-radius:4px;padding:0 6px;font-size:.72em;font-weight:600\">$(e)</span>")
+function compact_links(u)
+    parts = String[]
+    for c in field(u, "code", String[])
+        push!(parts, "<a href=\"$(href(split(String(c), ':')[1]))\"><code>$(c)</code></a>")
+    end
+    a = field(u, "anchor", ""); isempty(a) || push!(parts, "<a href=\"$(href(a))\">📖 p.$(field(u,"page",""))</a>")
+    join(parts, " &nbsp;·&nbsp; ")
+end
+
+openu = [u for u in units if field(u,"kind","") != "section" &&
+                             field(u,"status","") in ("missing","partial","todo")]
+sort!(openu, by = u -> (get(EFFORT_RANK, field(u,"effort",""), 9), field(u,"status",""), u["id"]))
+if !isempty(openu)
+    println("<details open><summary><strong>Remaining work</strong> &nbsp; ",
+            "<span style=\"color:#6e7781\">(", length(openu),
+            " open units — projected from every <code>missing</code>/<code>partial</code>/<code>todo</code> status)</span></summary>\n")
+    for u in openu
+        sec = get(seclabel, field(u,"parent",""), field(u,"parent",""))
+        links = compact_links(u); links = isempty(links) ? "" : "<br><span style=\"font-size:.85em\">" * links * "</span>"
+        println("<div style=\"margin:.45em 0;padding-left:.8em;border-left:3px solid ",
+                get(EFFORT_COLOR, field(u,"effort",""), "#d0d7de"), "\">",
+                badge(field(u,"status","todo")), " &nbsp; ", effchip(field(u,"effort","")),
+                " &nbsp; <strong>", field(u,"label"), "</strong> ",
+                "<span style=\"color:#6e7781;font-size:.85em\">· ", sec, "</span><br>",
+                field(u, "next", field(u, "statement", "")), links, "</div>")
+    end
+    println("</details>\n")
+end
 
 # --- per-section drill-down ------------------------------------------------
 for sec in sort(sections, by = s -> secrank(s["id"]))

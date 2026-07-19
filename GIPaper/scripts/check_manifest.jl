@@ -19,6 +19,10 @@ const RUNTESTS = joinpath(ROOT, "test", "runtests.jl")
 
 const STATUSES = Set(["reproduced", "partial", "implemented", "folded", "context", "missing", "todo"])
 const KINDS = Set(["equation", "table", "figure", "section", "input", "fit"])
+const EFFORTS = Set(["small", "medium", "large", "research"])
+# statuses that count as open work (surfaced in the derived "Remaining work" list)
+const OPEN_STATUS = ("missing", "partial", "todo")
+const EFFORT_RANK = Dict("large" => 1, "research" => 2, "medium" => 3, "small" => 4)
 
 # repo-relative path -> absolute; check existence
 exists_rel(p) = isfile(joinpath(ROOT, p))
@@ -60,6 +64,8 @@ function main()
         push!(seen, id)
         get(u, "status", "") in STATUSES || push!(problems, (id, "unknown status `$(get(u,"status",""))`"))
         get(u, "kind", "") in KINDS || push!(problems, (id, "unknown kind `$(get(u,"kind",""))`"))
+        eff = get(u, "effort", "")
+        isempty(eff) || eff in EFFORTS || push!(problems, (id, "unknown effort `$eff` (small|medium|large|research)"))
 
         # code[]: file must exist; symbol (if given) must occur in it
         for ref in get(u, "code", String[])
@@ -132,6 +138,31 @@ function main()
                 sec["label"], length(ss), cnt(ss, "reproduced"), cnt(ss, "partial"),
                 cnt(ss, "implemented"), cnt(ss, "folded"), cnt(ss, "context"),
                 cnt(ss, "todo") + cnt(ss, "missing"), derived(ss)))
+        end
+
+        # --- derived "Remaining work" list (projection of open statuses) -----
+        seclabel = Dict(s["id"] => get(s, "label", s["id"]) for s in sections)
+        openu = [u for u in units if get(u, "kind", "") != "section" &&
+                                     get(u, "status", "") in OPEN_STATUS]
+        sort!(openu, by = u -> (get(EFFORT_RANK, get(u, "effort", ""), 9),
+                                get(u, "status", ""), u["id"]))
+        println(io)
+        println(io, "## Remaining work")
+        println(io)
+        println(io, "Projected from every `missing`/`partial`/`todo` unit — not a separate list, ",
+                    "so it cannot drift from the statuses above.")
+        println(io)
+        if isempty(openu)
+            println(io, "None — every unit is reproduced/implemented/folded/context.")
+        else
+            println(io, "| unit | section | status | effort | next step |")
+            println(io, "|---|---|:-:|:-:|---|")
+            for u in openu
+                println(io, @sprintf("| %s | %s | %s | %s | %s |",
+                    get(u, "label", u["id"]), get(seclabel, get(u, "parent", ""), ""),
+                    get(u, "status", ""), get(u, "effort", "—"),
+                    get(u, "next", get(u, "statement", ""))))
+            end
         end
     end
 

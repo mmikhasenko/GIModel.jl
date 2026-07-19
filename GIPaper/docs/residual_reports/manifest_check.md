@@ -23,3 +23,20 @@ None — every reference resolves.
 | Sec. III — Meson spectroscopy | 14 | 8 | 0 | 4 | 0 | 2 | 0 | implemented |
 | Sec. IV — Meson decays | 14 | 5 | 3 | 1 | 0 | 4 | 1 | partial |
 | Sec. V — Discussion | 9 | 0 | 0 | 0 | 4 | 5 | 0 | folded |
+
+## Remaining work
+
+Projected from every `missing`/`partial`/`todo` unit — not a separate list, so it cannot drift from the statuses above.
+
+| unit | section | status | effort | next step |
+|---|---|:-:|:-:|---|
+| Table VII | Sec. IV — Meson decays | missing | large | W4: digitize Table VII and audit the leptonic / two-photon / gluonic widths and charge radii from the model wavefunctions (depends on D4-D9). |
+| Eq. (A16) | Appendix A — Relativistic smearing & operator ordering | partial | research | W6: paper-order HO validation of the scalar/Thomas spin-orbit operator; removes the tier-C k_spin_orbit scale. |
+| Eq. (A17) | Appendix A — Relativistic smearing & operator ordering | partial | research | W6: extend the sub-MeV central FD/HO agreement to the spin and mixing blocks (A15-A17 fidelity). |
+| Eq. (19) | Sec. IV — Meson decays | partial | research | Deeper decay model: apply the (g sigma.q + h sigma.p') operator to the model wavefunctions instead of the SU(6)/single-beta SHO limit. |
+| Eqs. (D4)-(D6) | Appendix D — Mock-meson electromagnetic matrix elements | missing | medium | W4: implement the mock-meson decay constants f_P, f_V, f_A1 (prerequisite for the Table VII leptonic/two-photon widths). |
+| Table VI | Sec. IV — Meson decays | partial | medium | Resolve the eta<->eta' ordering / Upsilon'' sign (the W6 radial residual) and promote the Appendix-D mock-meson kernels into src/ with tests. |
+| Eq. (D7) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: leptonic width Gamma(P->l nu) from f_P (after D4-D6). |
+| Eq. (D8) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: dilepton width Gamma(V->l+l-) from f_V (after D4-D6). |
+| Eq. (D9) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: axial-current width Gamma(tau->A1 nu) from f_A1 (after D4-D6). |
+| Eq. (21) | Sec. IV — Meson decays | partial | small | W5b: score the type-S <1S0|p|M*>/<3S1|p|M*> momentum ratio per row (hyperfine waves already exposed). |
