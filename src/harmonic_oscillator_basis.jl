@@ -144,6 +144,59 @@ function oscillator_channel_solution(
 end
 
 """
+    ho_full_distorted_states(params, masses, L, V; nlevels, ngrid, rmax, nbasis)
+        -> (values, waves, r)
+
+Paper-order spin-distorted radial waves by **full diagonalization** of the
+central-plus-spin Hamiltonian in the finite harmonic-oscillator subspace — the
+paper's literal method. For each β candidate the spin-dependent grid operator
+`V` is projected into the oscillator basis and added to the central `H`, and the
+full `H + V` is diagonalized; the paper β convention (one β per sector,
+minimizing the `nlevels`-th state) is applied to `H + V`. Returned waves are
+physically normalized (`∫u² dr = 1`).
+
+This differs from [`ho_first_order_distorted_states`](@ref) in resumming `V`
+within the finite basis rather than truncating at first order. The two coincide
+for heavy-quark spin splittings (where `V` is a small perturbation) but diverge
+where `V` is large: for the light `¹S₀` nonstrange sector the huge attractive
+contact term collapses the mass (`≈0.10 GeV`, matching the fine-grid FD
+resummation), whereas first-order PT badly overestimates it (`≈0.28 GeV`). The
+finite basis — not a perturbation order — is the mechanism: it resums less than
+the fine FD grid (so the Table VII heavy gluonic ratios land below the
+nonperturbative-FD overshoot) yet fully for the light pion. This is the single
+treatment that harmonizes the whole Table VII audit (gluonic distortion +
+light-pseudoscalar leptonic rows) on the paper's own basis.
+"""
+function ho_full_distorted_states(
+    params::GIParameters{HarmonicOscillatorBasis},
+    masses::ConstituentMasses,
+    L::Integer,
+    V::AbstractMatrix;
+    nlevels::Integer = 6,
+    ngrid::Integer = 450,
+    rmax::Real = 24.0,
+    nbasis::Integer = max(HO_DEFAULT_NBASIS, nlevels + 4),
+)
+    r, h = radial_grid(ngrid, rmax)
+    size(V, 1) == length(r) || error("V must live on the (ngrid, rmax) mesh")
+    best = nothing
+    for β in oscillator_beta_candidates(masses, L)
+        H, U = oscillator_hamiltonian_for_beta(params, masses, L, r, h, β; nbasis = nbasis)
+        Vproj = projected_matrix(U, h, Matrix(V))
+        F = eigen(Symmetric(Matrix(H) + Matrix(Vproj)))
+        if isnothing(best) || F.values[nlevels] < best.values[nlevels]
+            best = (values = F.values, coeffs = F.vectors, basis = U)
+        end
+    end
+    waves = best.basis * best.coeffs
+    for col in axes(waves, 2)
+        nrm = sqrt(sum(abs2, waves[:, col]) * h)
+        nrm > 0 && (waves[:, col] ./= nrm)
+    end
+    return collect(best.values[1:nlevels]), Matrix(waves[:, 1:nlevels]), r
+end
+
+"""
     ho_first_order_distorted_states(params, masses, L, V; nlevels, ngrid, rmax, nbasis)
         -> (values, waves, r)
 

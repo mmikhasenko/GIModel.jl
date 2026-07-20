@@ -36,6 +36,7 @@ const REPORT = joinpath(ROOT, "docs", "residual_reports", "table_vii_annihilatio
 const NGRID = 1200
 const RMAX = 24.0
 const NPTS = 900
+const NB = 24        # harmonic-oscillator basis size (paper-order full diagonalization)
 
 # Phase convention: outermost antinode positive (see header).
 function fix_outer_antinode_positive!(u)
@@ -43,6 +44,42 @@ function fix_outer_antinode_positive!(u)
     i = findlast(x -> abs(x) > 0.2 * peak, u)
     (i !== nothing && u[i] < 0) && (u .*= -1)
     return u
+end
+
+# --- paper-order distorted waves (finite HO-basis full diagonalization) ------
+# The single treatment for the whole audit: every wave is a full diagonalization
+# of H_central + V_spin in the paper-β harmonic-oscillator basis (the paper's
+# literal method). V_spin is the smeared contact for S-waves and the calibrated
+# spin-orbit+tensor operator for the ³P_J chi rows; a central row passes V = 0.
+# This resolves the wave-choice inconsistency W6 exposed (gluonic previously used
+# spin-independent central waves; leptonic/γγ used the FD nonperturbative
+# resummation): the finite basis gives the gluonic rows their missing spin
+# distortion yet keeps the light ¹S₀ pseudoscalars resummed (pion ≈0.10 GeV),
+# where a first-order-PT treatment would fail.
+
+function contact_operator(params, m1, m2, mult)
+    r, _ = GIModel.radial_grid(NGRID, RMAX)
+    return GIModel.contact_hyperfine_operator(params, ConstituentMasses(m1, m2), "S", mult, r)
+end
+
+function pwave_operator(params, m1, m2, J)
+    r, h = GIModel.radial_grid(NGRID, RMAX)
+    return fine_structure_grid_operator(params, ConstituentMasses(m1, m2), J, r, h; L = 1)
+end
+
+# distorted radial family for a QQ̄ sector: (levels, vecs, r) with ∫u²dr = 1.
+function distorted_family(params_ho, m1, m2, L, V; nlevels)
+    vals, waves, r = ho_full_distorted_states(params_ho, ConstituentMasses(m1, m2), L, V;
+        nlevels = max(nlevels, 4), ngrid = NGRID, rmax = RMAX, nbasis = NB)
+    return (levels = vals, vecs = waves, r = r)
+end
+
+# central (spin-independent) family on the same HO basis (V = 0), for the
+# ³D₁/³P₁ leptonic rows the paper leaves undistorted.
+function central_family(params_ho, m1, m2, L; nlevels = 2)
+    vals, vecs, r = channel_solution(params_ho, ConstituentMasses(m1, m2), L;
+        nlevels = max(nlevels, 4), ngrid = NGRID, rmax = RMAX)
+    return (levels = vals, vecs = vecs, r = r)
 end
 
 # --- read the paper's predicted amplitudes from the digitized CSV ------------
@@ -126,27 +163,35 @@ const GLUONIC_ROWS = [
     GluonicRow("chi'_0b -> 2g",   :b, 1, 2, :P0_2g),
 ]
 
-# central (spin-independent) radial wave for level n of a QQ̄ at orbital L
-function central_wave(params, mq, flavor::Symbol, L::Int, n::Int)
-    meson = Meson(mq, flavor, flavor)
-    vals, vecs, r = channel_solution(params, meson.constituent_masses, L;
-        nlevels = max(n, 4), ngrid = NGRID, rmax = RMAX)
-    u = fix_outer_antinode_positive!(copy(vecs[:, n]))
-    return (M = vals[n], wave = RadialWaveOnUniformMesh(u, r))
-end
+# spin operator (L, multiplicity, J) for each gluonic annihilation channel
+channel_spin(ch::Symbol) =
+    ch === :S0_2g ? (0, 1, 0) :
+    ch === :S1_3g ? (0, 3, 1) :
+    ch === :P2_2g ? (1, 3, 2) :
+    ch === :P0_2g ? (1, 3, 0) :
+    error("unknown gluonic channel $ch")
 
-function run_gluonic(params, mq, paper)
+function run_gluonic(params, params_ho, mq, paper)
+    cache = Dict{Tuple{Symbol,Int,Int,Int},Any}()   # (flavor, L, mult, J)
     results = NamedTuple[]
     for row in GLUONIC_ROWS
         mQ = mq[String(row.flavor)]
-        cw = central_wave(params, mq, row.flavor, row.L, row.n)
-        S = wavefunction_origin_smearing(cw.wave, mQ; L = row.L, npoints = NPTS)
-        αs = GIModel.alpha_s_q(cw.M)
+        L, mult, J = channel_spin(row.channel)
+        fam = get!(cache, (row.flavor, L, mult, J)) do
+            V = L == 0 ? contact_operator(params, mQ, mQ, mult) :
+                pwave_operator(params, mQ, mQ, J)
+            distorted_family(params_ho, mQ, mQ, L, V; nlevels = row.n)
+        end
+        u = fix_outer_antinode_positive!(copy(fam.vecs[:, row.n]))
+        wave = RadialWaveOnUniformMesh(u, fam.r)
+        M = fam.levels[row.n]
+        S = wavefunction_origin_smearing(wave, mQ; L = row.L, npoints = NPTS)
+        αs = GIModel.alpha_s_q(M)
         model = gluonic_annihilation_amplitude(row.channel, S, αs, mQ) * sqrt(1000)
         pap = get(paper, row.decay, NaN)
         ratio = isnan(pap) || pap == 0 ? NaN : abs(model) / abs(pap)
         sign_ok = !isnan(pap) && pap != 0 && sign(model) == sign(pap)
-        push!(results, (label = row.decay, M = cw.M, S = S, alpha = αs,
+        push!(results, (label = row.decay, M = M, S = S, alpha = αs,
                         model = model, paper = pap, ratio = ratio, sign_ok = sign_ok))
     end
     return results
@@ -197,38 +242,28 @@ const LEPTONIC_ROWS = [
     LeptonicRow("1^3D_1(bb) -> e+ e-",    -sqrt(8 / 27),  :Vp_V,  "b", "b", 1),
 ]
 
-# S-wave hyperfine-distinct family (singlet or triplet) for a flavor pair;
-# levels are the meson masses with the contact term included nonperturbatively.
-function swave_family(params, m1, m2, multiplicity; nlevels = 4)
-    masses = ConstituentMasses(m1, m2)
-    _, _, r = channel_solution(params, masses, 0;
-        nlevels = nlevels, ngrid = NGRID, rmax = RMAX)
-    lv, vec, r2 = contact_hyperfine_nonperturbative_states(params, masses, "S",
-        multiplicity, r, nlevels)
-    isempty(lv) && error("nonperturbative contact path inactive; cannot form hyperfine-distinct waves")
-    return (levels = lv, vecs = vec, r = r2)
+# S-wave hyperfine-distinct family (singlet or triplet) for a flavor pair: the
+# paper-order finite-HO-basis full diagonalization of H_central + smeared contact
+# (levels are the hyperfine-split meson masses).
+function swave_family(params, params_ho, m1, m2, multiplicity; nlevels = 4)
+    V = contact_operator(params, m1, m2, multiplicity)
+    return distorted_family(params_ho, m1, m2, 0, V; nlevels = nlevels)
 end
 
-function central_family(params, m1, m2, L; nlevels = 2)
-    vals, vecs, r = channel_solution(params, ConstituentMasses(m1, m2), L;
-        nlevels = nlevels, ngrid = NGRID, rmax = RMAX)
-    return (levels = vals, vecs = vecs, r = r)
-end
-
-function run_leptonic(params, mq, paper)
+function run_leptonic(params, params_ho, mq, paper)
     scache = Dict{Tuple{Float64,Float64,Int},Any}()      # (m1, m2, multiplicity)
     ccache = Dict{Tuple{Float64,Float64,Int},Any}()      # (m1, m2, L)
     results = NamedTuple[]
     for row in LEPTONIC_ROWS
         m1, m2 = mq[row.f1], mq[row.f2]
         fam = if row.kind === :P_P
-            get!(() -> swave_family(params, m1, m2, 1), scache, (m1, m2, 1))
+            get!(() -> swave_family(params, params_ho, m1, m2, 1), scache, (m1, m2, 1))
         elseif row.kind === :V_V
-            get!(() -> swave_family(params, m1, m2, 3), scache, (m1, m2, 3))
+            get!(() -> swave_family(params, params_ho, m1, m2, 3), scache, (m1, m2, 3))
         elseif row.kind === :Vp_V
-            get!(() -> central_family(params, m1, m2, 2), ccache, (m1, m2, 2))
+            get!(() -> central_family(params_ho, m1, m2, 2), ccache, (m1, m2, 2))
         else # :Pp_A1
-            get!(() -> central_family(params, m1, m2, 1), ccache, (m1, m2, 1))
+            get!(() -> central_family(params_ho, m1, m2, 1), ccache, (m1, m2, 1))
         end
         M = fam.levels[row.n]
         u = fix_outer_antinode_positive!(copy(fam.vecs[:, row.n]))
@@ -279,15 +314,17 @@ const TWO_PHOTON_ROWS = [
 ]
 const GG_DEFERRED = ["eta", "eta'", "eta_r", "eta'_r"]   # isoscalar-pseudoscalar mixing
 
-function run_two_photon(params, mq, paper)
+function run_two_photon(params, params_ho, mq, paper)
     scache = Dict{Tuple{Float64,Float64},Any}()
     ccache = Dict{Tuple{Float64,Float64},Any}()
     results = NamedTuple[]
     for row in TWO_PHOTON_ROWS
         m1, m2 = mq[row.f1], mq[row.f2]
+        # ¹S₀ singlets carry the contact distortion; the light ³P₂ (A2/f/f′)
+        # radial function is J-independent at the paper's order → central.
         fam = row.kind === :P ?
-              get!(() -> swave_family(params, m1, m2, 1), scache, (m1, m2)) :
-              get!(() -> central_family(params, m1, m2, 1; nlevels = max(row.n, 1)), ccache, (m1, m2))
+              get!(() -> swave_family(params, params_ho, m1, m2, 1), scache, (m1, m2)) :
+              get!(() -> central_family(params_ho, m1, m2, 1; nlevels = max(row.n, 1)), ccache, (m1, m2))
         M = fam.levels[row.n]
         wave = RadialWaveOnUniformMesh(fix_outer_antinode_positive!(copy(fam.vecs[:, row.n])), fam.r)
         A = two_photon_amplitude(row.kind, wave, m1, M, row.q_eff; npoints = NPTS)   # GeV^½
@@ -317,16 +354,13 @@ const GG_MIXED = [   # (CSV label, block column, physical M_P GeV)
     ("eta'_r -> gamma gamma",  4, 1.440),   # ~ iota(1440)
 ]
 
-function run_two_photon_mixed(params, mq, paper)
+function run_two_photon_mixed(params, params_ho, mq, paper)
     mu, ms = mq["q"], mq["s"]
     Qnn = (4 / 9 + 1 / 9) / sqrt(2)     # (uū+dd̄)/√2 effective charge
     Qss = 1 / 9                          # ss̄
     function psfam(m1, m2)               # pure-flavor ¹S₀ 1S,2S waves
-        _, _, r = channel_solution(params, ConstituentMasses(m1, m2), 0;
-            nlevels = 3, ngrid = NGRID, rmax = RMAX)
-        lv, vec, r2 = contact_hyperfine_nonperturbative_states(params,
-            ConstituentMasses(m1, m2), "S", 1, r, 3)
-        return [RadialWaveOnUniformMesh(fix_outer_antinode_positive!(copy(vec[:, n])), r2) for n in 1:2]
+        fam = swave_family(params, params_ho, m1, m2, 1; nlevels = 3)
+        return [RadialWaveOnUniformMesh(fix_outer_antinode_positive!(copy(fam.vecs[:, n])), fam.r) for n in 1:2]
     end
     NN, SS = psfam(mu, mu), psfam(ms, ms)
     comp = [(NN[1], mu, Qnn), (SS[1], ms, Qss), (NN[2], mu, Qnn), (SS[2], ms, Qss)]  # [1nn,1ss,2nn,2ss]
@@ -392,16 +426,13 @@ function load_radius_predictions(path)
     return preds
 end
 
-function run_charge_radii(params, mq, paper)
+function run_charge_radii(params, params_ho, mq, paper)
     results = NamedTuple[]
     for row in CHARGE_RADIUS_ROWS
         m1, m2 = mq[row.f1], mq[row.f2]
-        # ¹S₀ ground-state wave for the flavor pair
-        _, _, r = channel_solution(params, ConstituentMasses(m1, m2), 0;
-            nlevels = 2, ngrid = NGRID, rmax = RMAX)
-        lv, vec, r2 = contact_hyperfine_nonperturbative_states(params,
-            ConstituentMasses(m1, m2), "S", 1, r, 2)
-        wave = RadialWaveOnUniformMesh(vec[:, 1], r2)
+        # ¹S₀ ground-state wave for the flavor pair (paper-order distorted)
+        fam = swave_family(params, params_ho, m1, m2, 1; nlevels = 2)
+        wave = RadialWaveOnUniformMesh(fam.vecs[:, 1], fam.r)
         rE2 = charge_radius_squared(wave, m1, row.e1, m2, row.e2) * HBARC_FM2   # fm²
         pap = get(paper, row.decay, NaN)
         ratio = isnan(pap) || pap == 0 ? NaN : rE2 / pap                        # signed
@@ -421,12 +452,13 @@ signed_sqrt(x) = sign(x) * sqrt(abs(x))
 
 function main()
     params, mq = load_parameters_and_quark_masses(PARAMS_PATH)
-    glu = run_gluonic(params, mq, load_paper_predictions(TABLE, "gluonic"))
-    lep = run_leptonic(params, mq, load_paper_predictions(TABLE, "leptonic"))
+    params_ho = with_basis(params, HarmonicOscillatorBasis)
+    glu = run_gluonic(params, params_ho, mq, load_paper_predictions(TABLE, "gluonic"))
+    lep = run_leptonic(params, params_ho, mq, load_paper_predictions(TABLE, "leptonic"))
     gg_paper = load_gg_predictions(TABLE)
-    gg = run_two_photon(params, mq, gg_paper)
-    ggm = run_two_photon_mixed(params, mq, gg_paper)
-    cr = run_charge_radii(params, mq, load_radius_predictions(TABLE))
+    gg = run_two_photon(params, params_ho, mq, gg_paper)
+    ggm = run_two_photon_mixed(params, params_ho, mq, gg_paper)
+    cr = run_charge_radii(params, params_ho, mq, load_radius_predictions(TABLE))
 
     gratios = filter(!isnan, [r.ratio for r in glu])
     lratios = filter(!isnan, [r.ratio for r in lep])
@@ -468,8 +500,11 @@ function main()
         println(io)
         println(io, "`S_L(Ψ)` is the Eq. (17) smeared wavefunction-at-origin")
         println(io, "(`wavefunction_origin_smearing`), `α_s = α_s(M)` at the meson mass, `m_Q`")
-        println(io, "the constituent quark mass; central (spin-averaged) waves. Amplitudes in")
-        println(io, "`MeV^(1/2)`.")
+        println(io, "the constituent quark mass. Waves are the paper-order **finite-HO-basis")
+        println(io, "full diagonalization** of `H_central + V_spin` (`ho_full_distorted_states`):")
+        println(io, "the smeared contact for the S-waves (singlet/triplet split) and the")
+        println(io, "calibrated spin-orbit+tensor operator for the ³P_J chi rows — the same")
+        println(io, "treatment used for every other subtable below (W6). Amplitudes in `MeV^(1/2)`.")
         println(io)
         println(io, @sprintf("**%d gluonic rows scored; median |model|/|paper| = %.2f; signs agree on %d/%d.** ",
             length(gratios), gmed, gsign, length(gratios)),
@@ -608,10 +643,15 @@ function main()
         println(io, "- **Zero-parameter reproduction.** No constant is fit in either slice:")
         println(io, "  amplitudes follow from the solved wavefunctions, the constituent masses,")
         println(io, "  and (for gluonic) `α_s(M)`.")
+        println(io, "- **One wave treatment across all four subtables** (W6): the paper-order")
+        println(io, "  finite-HO-basis full diagonalization of `H_central + V_spin`. This gives")
+        println(io, "  the gluonic rows their spin-dependent origin distortion — the singlet-low/")
+        println(io, "  triplet-high and ³P₀-low/³P₂-high structure of the spin-independent")
+        println(io, "  central waves collapses, and every row lands in `[0.92, 1.14]` (median")
+        println(io, "  1.02) — while keeping the light `¹S₀` pseudoscalars resummed (a")
+        println(io, "  first-order-PT treatment would over-raise the pion mass and halve `f_π`).")
         println(io, "- **Heavy quarkonia are near-exact** in both slices (`f_ψ` and the `Υ`")
-        println(io, "  tower within ~10%, gluonic bottomonium within a few percent); light and")
-        println(io, "  charm rows are more sensitive to the wavefunction at the origin — the")
-        println(io, "  FD-vs-HO fidelity theme (W6).")
+        println(io, "  tower within ~10%, gluonic bottomonium within a few percent).")
         println(io, "- **`f_π` is the largest miss (1.55×)** and is a pure meson-mass")
         println(io, "  sensitivity: `P_P ∝ 1/M`, and the model's hyperfine-driven `¹S₀`")
         println(io, "  nonstrange mass (~0.10 GeV) is well below the physical `m_π`; using the")

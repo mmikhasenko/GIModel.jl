@@ -1698,3 +1698,36 @@ end
     @test 0.90 < ratios[:eta_c] / ratios[:psi] < 1.10
     @test ratios[:chi_0c] / ratios[:chi_2c] > 0.80   # central-wave value ≈ 0.68
 end
+
+@testset "W6 paper-order full diagonalization (light-mass discriminator)" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    params_ho = with_basis(params, HarmonicOscillatorBasis)
+    ngrid, rmax = 900, 24.0
+    r, h = GIModel.radial_grid(ngrid, rmax)
+    outer!(u) = (pk = maximum(abs, u); i = findlast(x -> abs(x) > 0.2pk, u);
+                 (i !== nothing && u[i] < 0) && (u .*= -1); u)
+
+    # 1. The paper's treatment is FULL diagonalization in the finite HO basis,
+    #    not first-order PT. The light ¹S₀ (pion) mass discriminates: full-diag
+    #    keeps it resummed (≈0.10 GeV) like the fine-grid FD, while first-order
+    #    PT over-raises it (≈0.28 GeV).
+    nn = ConstituentMasses(mq["q"], mq["q"])
+    Vpi = GIModel.contact_hyperfine_operator(params, nn, "S", 1, r)
+    m_full = ho_full_distorted_states(params_ho, nn, 0, Vpi; nlevels = 4, ngrid = ngrid, rmax = rmax)[1][1]
+    m_pt = ho_first_order_distorted_states(params_ho, nn, 0, Vpi; nlevels = 4, ngrid = ngrid, rmax = rmax)[1][1]
+    m_fd = GIModel.lowest_eigenpairs(
+        Symmetric(Matrix(GIModel.relativistic_hamiltonian(params, nn, 0; ngrid = ngrid, rmax = rmax)[1]) + Matrix(Vpi)), 1)[1][1]
+    @test m_full < 0.15               # resummed, light pion
+    @test abs(m_full - m_fd) < 0.02   # matches the fine-grid FD resummation
+    @test m_pt > 0.20                 # first-order PT over-raises it
+
+    # 2. full diagonalization still lands the charm gluonic singlet on the paper
+    #    (the spin distortion the central wave misses), so both subtable regimes
+    #    are served by ONE treatment.
+    mc = mq["c"]; cc = ConstituentMasses(mc, mc)
+    V1 = GIModel.contact_hyperfine_operator(params, cc, "S", 1, r)
+    v, w, rr = ho_full_distorted_states(params_ho, cc, 0, V1; nlevels = 4, ngrid = ngrid, rmax = rmax)
+    S = wavefunction_origin_smearing(RadialWaveOnUniformMesh(outer!(copy(w[:, 1])), rr), mc; L = 0)
+    eta_c = abs(gluonic_annihilation_amplitude(:S0_2g, S, GIModel.alpha_s_q(v[1]), mc)) * sqrt(1000) / 4.700
+    @test 0.95 < eta_c < 1.20
+end

@@ -17,17 +17,19 @@
 #     wavefunction at the origin away from the central wave, with exactly the
 #     observed signs on all five splitting patterns.
 #
-#  3. The paper's treatment is FIRST ORDER in the HO eigenbasis: resumming the
-#     distortion nonperturbatively (FD) overshoots (the wave collapses into
-#     the smeared attraction; e.g. eta_c 0.87 -> 1.11, chi_0b 0.81 -> 1.32),
-#     while first-order perturbation theory in the HO central eigenbasis with
-#     the calibrated k_spin_orbit/k_tensor scales lands all 16 gluonic rows in
-#     [0.92, 1.09] (median ~1.02).
+#  3. The paper's treatment is FULL DIAGONALIZATION in the FINITE HO basis, not
+#     first-order PT. The light ¹S₀ (pion) mass discriminates (§1b): first-order
+#     PT over-raises it to ~0.28 GeV, while the finite-HO full diagonalization
+#     keeps it light (~0.10 GeV) like the fine-grid FD resummation. Full
+#     diagonalization in the finite paper-β basis lands all 16 gluonic rows in
+#     [0.92, 1.14] (median 1.02); the fine-grid FD *over*-resums (eta_b 1.21 vs
+#     the finite-basis 1.14) — a grid-resolution effect, not perturbation order.
+#     First-order PT coincides only in the heavy-quark (small-V) limit.
 #
 # Wave sources: contact_hyperfine_operator (S-waves, mult 1/3),
-# fine_structure_grid_operator (3P_J), ho_first_order_distorted_states
-# (paper-order treatment), contact_hyperfine_nonperturbative_states /
-# H_central + V (nonperturbative FD reference).
+# fine_structure_grid_operator (3P_J), ho_full_distorted_states (paper-order
+# treatment), ho_first_order_distorted_states (heavy-quark PT proxy),
+# H_central + V on the fine grid (nonperturbative FD reference).
 
 using Pkg
 Pkg.activate(joinpath(@__DIR__, ".."); io = devnull)
@@ -66,23 +68,26 @@ function spin_operator(masses, L, mult, J, r, h)
     return fine_structure_grid_operator(params, masses, J, r, h; L = L)
 end
 
-# --- the three treatments of one (flavor, L, mult/J) sector -----------------
+# --- the four treatments of one (flavor, L, mult/J) sector ------------------
 function sector_waves(fl::Symbol, L::Int, mult::Int, J::Int; nlevels = 4)
     mQ = mq[String(fl)]
     masses = ConstituentMasses(mQ, mQ)
     r, h = GIModel.radial_grid(NGRID, RMAX)
     V = spin_operator(masses, L, mult, J, r, h)
-    # central (spin-independent) FD wave — the W4 audit's choice
+    # central (spin-independent) FD wave — the pre-harmonization gluonic choice
     cvals, cvecs, cr = channel_solution(params, masses, L;
         nlevels = max(nlevels, 4), ngrid = NGRID, rmax = RMAX)
-    # paper-order: first-order PT in the HO central eigenbasis
+    # first-order PT in the HO central eigenbasis (heavy-quark proxy)
     pvals, pwaves, pr = ho_first_order_distorted_states(params_ho, masses, L, V;
         nlevels = max(nlevels, 4), ngrid = NGRID, rmax = RMAX, nbasis = NB)
-    # nonperturbative FD resummation (overshoots — kept as the reference)
+    # paper-order: FULL diagonalization of H_central + V in the finite HO basis
+    fvals, fwaves, fr = ho_full_distorted_states(params_ho, masses, L, V;
+        nlevels = max(nlevels, 4), ngrid = NGRID, rmax = RMAX, nbasis = NB)
+    # nonperturbative FD resummation on the fine grid (over-resums)
     H, hr = GIModel.relativistic_hamiltonian(params, masses, L; ngrid = NGRID, rmax = RMAX)
     nvals, nvecs = GIModel.lowest_eigenpairs(Symmetric(Matrix(H) + Matrix(V)), max(nlevels, 4))
-    return (central = (cvals, cvecs, cr), paper = (pvals, pwaves, pr),
-            nonpert = (nvals, Matrix(nvecs), collect(Float64, hr)))
+    return (central = (cvals, cvecs, cr), first_order = (pvals, pwaves, pr),
+            paper = (fvals, fwaves, fr), nonpert = (nvals, Matrix(nvecs), collect(Float64, hr)))
 end
 
 # --- Table VII gluonic rows --------------------------------------------------
@@ -129,7 +134,21 @@ function run_audit()
         end
     end
 
-    # Part 2: gluonic rows under the three treatments
+    # Part 1b: light ¹S₀ (pion) mass discriminator — first-order PT vs the
+    # finite-HO full diagonalization vs the fine-grid FD resummation. This is
+    # what rules out first-order PT as the paper's actual mechanism.
+    mn = ConstituentMasses(mq["q"], mq["q"])
+    r0, _ = GIModel.radial_grid(NGRID, RMAX)
+    Vpi = GIModel.contact_hyperfine_operator(params, mn, "S", 1, r0)
+    fo, _, _ = ho_first_order_distorted_states(params_ho, mn, 0, Vpi;
+        nlevels = 4, ngrid = NGRID, rmax = RMAX, nbasis = NB)
+    fu, _, _ = ho_full_distorted_states(params_ho, mn, 0, Vpi;
+        nlevels = 4, ngrid = NGRID, rmax = RMAX, nbasis = NB)
+    Hn, _ = GIModel.relativistic_hamiltonian(params, mn, 0; ngrid = NGRID, rmax = RMAX)
+    nv, _ = GIModel.lowest_eigenpairs(Symmetric(Matrix(Hn) + Matrix(Vpi)), 4)
+    pion = (first_order = fo[1], full = fu[1], nonpert = nv[1])
+
+    # Part 2: gluonic rows under the four treatments
     cache = Dict{Tuple{Symbol,Int,Int,Int},Any}()
     part2 = NamedTuple[]
     for (label, fl, L, n, mult, J, ch, paper) in ROWS
@@ -139,28 +158,33 @@ function run_audit()
         end
         row = Dict{Symbol,Any}(:label => label, :paper => paper)
         for (key, (vals, vecs, r)) in
-            ((:central, sec.central), (:paper_order, sec.paper), (:nonpert, sec.nonpert))
+            ((:central, sec.central), (:first_order, sec.first_order),
+             (:full, sec.paper), (:nonpert, sec.nonpert))
             S = smeared_S(vecs[:, n], r, mQ, L)
             model = gluonic_amp(ch, S, vals[n], mQ)
             row[key] = (M = vals[n], S = S, model = model, ratio = abs(model) / abs(paper),
                         sign_ok = sign(model) == sign(paper))
         end
-        push!(part2, (; (k => row[k] for k in (:label, :paper, :central, :paper_order, :nonpert))...))
+        push!(part2, (; (k => row[k] for k in
+            (:label, :paper, :central, :first_order, :full, :nonpert))...))
     end
-    return part1, part2
+    return part1, pion, part2
 end
 
-function write_report(part1, part2)
+function write_report(part1, pion, part2)
     mkpath(dirname(REPORT))
     open(REPORT, "w") do io
-        println(io, "# W6 — paper-order (HO first-order) validation of the spin-distorted waves")
+        println(io, "# W6 — paper-order (finite HO-basis) validation of the spin-distorted waves")
         println(io)
-        println(io, "Scores the Table VII gluonic subtable under three treatments of the")
+        println(io, "Scores the Table VII gluonic subtable under four treatments of the")
         println(io, "spin-dependent operators (smeared contact for S-waves, calibrated")
-        println(io, "spin-orbit + tensor for ³P_J), against the central-wave W4 baseline")
-        println(io, "(`table_vii_annihilation_em.md`). Zero new parameters: the operators are")
-        println(io, "the spectrum-calibrated blocks (`contact_hyperfine_operator`,")
-        println(io, "`fine_structure_grid_operator` with k_spin_orbit/k_tensor).")
+        println(io, "spin-orbit + tensor for ³P_J), against the spin-independent central-wave")
+        println(io, "baseline. Zero new parameters: the operators are the spectrum-calibrated")
+        println(io, "blocks (`contact_hyperfine_operator`, `fine_structure_grid_operator` with")
+        println(io, "k_spin_orbit/k_tensor). The **paper-order** treatment — full diagonalization")
+        println(io, "of `H_central + V_spin` in the finite paper-β HO basis")
+        println(io, "(`ho_full_distorted_states`) — is what the harmonized Table VII audit uses")
+        println(io, "for every subtable.")
         println(io)
         println(io, "## 1. Basis fidelity control: central-wave S_L, HO vs FD")
         println(io)
@@ -176,22 +200,44 @@ function write_report(part1, part2)
                 p.fl, p.L, p.n, p.Sfd, p.Sho, p.ratio)
         end
         println(io)
-        println(io, "## 2. Gluonic subtable under the three treatments")
+        println(io, "## 1b. What order is \"paper order\"? The light ¹S₀ mass discriminator")
         println(io)
-        println(io, "`ratio` = |model|/|paper| per treatment. `central` = spin-independent")
-        println(io, "wave (the W4 audit); `paper-order` = first-order PT in the HO central")
-        println(io, "eigenbasis (`ho_first_order_distorted_states`); `nonpert` = the operator")
-        println(io, "resummed exactly on the FD grid.")
+        println(io, "The residuals are spin-dependent wavefunction distortion (§2). But *how*")
+        println(io, "the paper carries the distortion is settled by the light `¹S₀` nonstrange")
+        println(io, "mass, where the contact term is enormous. First-order PT and full")
+        println(io, "diagonalization agree for heavy spin splittings but diverge sharply here:")
         println(io)
-        println(io, "| decay | paper | central | paper-order | nonpert FD | M_paper-order |")
-        println(io, "|---|---:|:-:|:-:|:-:|---:|")
+        @printf(io, "| treatment | pion ¹S₀ mass (GeV) |\n")
+        println(io, "|---|---:|")
+        @printf(io, "| first-order PT (`ho_first_order_distorted_states`) | %.4f |\n", pion.first_order)
+        @printf(io, "| **finite-HO full diag (`ho_full_distorted_states`)** | **%.4f** |\n", pion.full)
+        @printf(io, "| nonperturbative FD (fine grid) | %.4f |\n", pion.nonpert)
+        println(io)
+        println(io, "First-order PT over-raises the pion to ≈0.28 GeV; the paper keeps it light")
+        println(io, "(≈0.10 GeV), which BOTH the finite-HO full diagonalization and the fine-grid")
+        println(io, "FD resummation reproduce. So the paper's mechanism is **full diagonalization**")
+        println(io, "(the contact is resummed, not truncated at first order); first-order PT is")
+        println(io, "only a heavy-quark proxy. The finite HO basis — not a perturbation order —")
+        println(io, "is why the heavy gluonic ratios sit *below* the fine-grid FD overshoot (§2):")
+        println(io, "a finite basis resums the contact less aggressively than the fine FD grid.")
+        println(io)
+        println(io, "## 2. Gluonic subtable under the four treatments")
+        println(io)
+        println(io, "`ratio` = |model|/|paper| per treatment. `central` = spin-independent wave;")
+        println(io, "`1st-PT` = first-order PT in the HO central eigenbasis; **`paper` = full")
+        println(io, "diagonalization in the finite HO basis** (the harmonized-audit treatment);")
+        println(io, "`nonpert` = the operator resummed on the fine FD grid.")
+        println(io)
+        println(io, "| decay | paper amp | central | 1st-PT | **paper** | nonpert FD | M_paper |")
+        println(io, "|---|---:|:-:|:-:|:-:|:-:|---:|")
         for p in part2
-            @printf(io, "| `%s` | %+.3f | %.2f | **%.2f** | %.2f | %.3f |\n",
-                p.label, p.paper, p.central.ratio, p.paper_order.ratio,
-                p.nonpert.ratio, p.paper_order.M)
+            @printf(io, "| `%s` | %+.3f | %.2f | %.2f | **%.2f** | %.2f | %.3f |\n",
+                p.label, p.paper, p.central.ratio, p.first_order.ratio,
+                p.full.ratio, p.nonpert.ratio, p.full.M)
         end
         println(io)
-        for (key, name) in ((:central, "central"), (:paper_order, "paper-order"), (:nonpert, "nonpert FD"))
+        for (key, name) in ((:central, "central"), (:first_order, "1st-order PT"),
+                            (:full, "paper (full diag)"), (:nonpert, "nonpert FD"))
             rs = [getfield(p, key).ratio for p in part2]
             @printf(io, "- %s: median %.3f, spread [%.2f, %.2f]\n",
                 name, median_of(rs), minimum(rs), maximum(rs))
@@ -202,7 +248,7 @@ function write_report(part1, part2)
         println(io, "Ratio-of-ratios inside a multiplet sharing one central wave; 1.00 means")
         println(io, "the treatment carries the paper's full spin-splitting of the origin.")
         println(io)
-        println(io, "| pattern | central | paper-order |")
+        println(io, "| pattern | central | paper (full diag) |")
         println(io, "|---|:-:|:-:|")
         pairs = [("eta_c/psi", 1, 2), ("eta'_c/psi'", 3, 4), ("eta_b/Upsilon", 5, 6),
                  ("eta'_b/Upsilon'", 7, 8), ("chi_0c/chi_2c", 12, 11),
@@ -210,31 +256,38 @@ function write_report(part1, part2)
         for (name, i, j) in pairs
             @printf(io, "| `%s` | %.2f | %.2f |\n", name,
                 part2[i].central.ratio / part2[j].central.ratio,
-                part2[i].paper_order.ratio / part2[j].paper_order.ratio)
+                part2[i].full.ratio / part2[j].full.ratio)
         end
         println(io)
         println(io, "## Conclusion")
         println(io)
-        println(io, "The W4 residual structure (singlet low / triplet high, ³P₀ low / ³P₂")
-        println(io, "high) is the paper's spin-dependent wavefunction distortion, treated at")
-        println(io, "first order in the HO eigenbasis. The nonperturbative resummation")
-        println(io, "overshoots — evidence that the paper's Table VII waves carry the spin")
-        println(io, "blocks at paper order, consistent with the calibrated k_spin_orbit/")
-        println(io, "k_tensor bridge used for the mass spectrum. The former attribution of")
-        println(io, "the charm rows to FD-vs-HO wavefunction-at-origin infidelity is refuted")
-        println(io, "by part 1.")
+        println(io, "The W4 residual structure (singlet low / triplet high, ³P₀ low / ³P₂ high)")
+        println(io, "is the paper's spin-dependent wavefunction distortion, carried by **full")
+        println(io, "diagonalization of `H_central + V_spin` in the finite paper-β HO basis** —")
+        println(io, "the paper's literal method, now used across the whole harmonized Table VII")
+        println(io, "audit. First-order PT reproduces the heavy gluonic ratios (its perturbative")
+        println(io, "limit) but is refuted as the mechanism by the light `¹S₀` mass (§1b): it")
+        println(io, "over-raises the pion, whereas full diagonalization keeps it light like the")
+        println(io, "FD resummation. The fine-grid FD *over*-resums (η_b 1.21 vs the finite-basis")
+        println(io, "1.14) — a grid-resolution effect, not perturbation order. The former")
+        println(io, "attribution of the charm rows to FD-vs-HO wavefunction-at-origin infidelity")
+        println(io, "is refuted by §1; the former attribution to a first-order treatment is")
+        println(io, "refuted by §1b.")
     end
 end
 
-part1, part2 = run_audit()
-write_report(part1, part2)
+part1, pion, part2 = run_audit()
+write_report(part1, pion, part2)
 
 println("Part 1 — central S_L HO/FD: worst |1-ratio| = ",
     @sprintf("%.4f", maximum(abs(1 - p.ratio) for p in part1)))
-for (key, name) in ((:central, "central"), (:paper_order, "paper-order"), (:nonpert, "nonpert"))
+@printf("Part 1b — pion ¹S₀ mass: 1st-PT %.4f | full-diag %.4f | nonpert FD %.4f\n",
+    pion.first_order, pion.full, pion.nonpert)
+for (key, name) in ((:central, "central"), (:first_order, "1st-PT"),
+                    (:full, "paper full"), (:nonpert, "nonpert"))
     rs = [getfield(p, key).ratio for p in part2]
     @printf("Part 2 — %-11s median %.3f  spread [%.2f, %.2f]\n",
         name, median_of(rs), minimum(rs), maximum(rs))
 end
-all(p -> p.paper_order.sign_ok, part2) || error("paper-order sign mismatch")
+all(p -> p.full.sign_ok, part2) || error("paper full-diag sign mismatch")
 println("report: ", REPORT)

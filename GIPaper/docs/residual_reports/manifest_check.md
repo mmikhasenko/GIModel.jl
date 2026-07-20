@@ -32,7 +32,7 @@ Projected from every `missing`/`partial`/`todo` unit — not a separate list, so
 |---|---|:-:|:-:|---|
 | Eq. (A16) | Appendix A — Relativistic smearing & operator ordering | partial | research | Unequal-mass antisymmetric spin-orbit as a standalone operator (currently folded into the open-flavor same-J assignment at the mixing stage). |
 | Eq. (19) | Sec. IV — Meson decays | partial | research | Deeper decay model: apply the (g sigma.q + h sigma.p') operator to the model wavefunctions instead of the SU(6)/single-beta SHO limit. |
-| Table VI | Sec. IV — Meson decays | partial | medium | Re-score the eta<->eta' ordering / Upsilon''->eta_b gamma sign rows with the W6 paper-order distorted waves (ho_first_order_distorted_states) and promote the Appendix-D mock-meson kernels into src/ with tests. |
+| Table VI | Sec. IV — Meson decays | partial | medium | Refine the eta<->eta' P1 mixing weights (the ordering is a mixing-block eigenvector property, not a wave one) and promote the Appendix-D mock-meson kernels into src/ with tests. The two open rows were re-scored with the W6 paper-order waves -- neither is a wave-distortion residual (see notes). |
 | Eq. (D7) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: leptonic width Gamma(P->l nu) from f_P (after D4-D6). |
 | Eq. (D8) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: dilepton width Gamma(V->l+l-) from f_V (after D4-D6). |
 | Eq. (D9) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: axial-current width Gamma(tau->A1 nu) from f_A1 (after D4-D6). |
