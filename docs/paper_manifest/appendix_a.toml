@@ -195,12 +195,14 @@ kind = "equation"
 label = "Eq. (A15)"
 page = 37
 statement = "Effective Coulomb-side spin operators (contact, tensor, spin-orbit) with the two-sided (m/E)^(1/2+eps) momentum sandwich."
-status = "implemented"
-code = ["src/contact_hyperfine.jl:contact_hyperfine_operator", "src/contact_hyperfine.jl:gi_spin_dependent_side_exponent", "src/spin_fine_structure.jl:tensor_kernel_smeared_coulomb", "src/spin_fine_structure.jl:fine_structure_components"]
-tests = ["post-A14 spin-dependent momentum exponent gives energy denominators", "OGE tensor kernel matches finite-difference derivatives of G(r)"]
+status = "reproduced"
+code = ["src/contact_hyperfine.jl:contact_hyperfine_operator", "src/contact_hyperfine.jl:gi_spin_dependent_side_exponent", "src/spin_fine_structure.jl:tensor_kernel_smeared_coulomb", "src/spin_fine_structure.jl:fine_structure_components", "src/spin_fine_structure.jl:fine_structure_grid_operator", "GIPaper/scripts/audit_w6_ho_order.jl"]
+tests = ["post-A14 spin-dependent momentum exponent gives energy denominators", "OGE tensor kernel matches finite-difference derivatives of G(r)", "W6 paper-order spin-distorted waves"]
+report = "GIPaper/docs/residual_reports/w6_ho_order_validation.md"
+metric = "paper-order (HO first-order) treatment of these blocks reproduces all 16 Table VII gluonic rows in [0.92,1.11] (median 1.03); every singlet/triplet and 3P0/3P2 splitting pattern collapses"
 anchor = "paper/vision_ocr/page_images/page-037.png"
 parent = "app-A"
-notes = "Smeared-kernel branch is implemented and the post-A14 (m1 m2/E1 E2)^(1/2+eps) sandwich is active for contact/tensor/spin-orbit expectations. CAVEAT (open item W6): paper-order HO-basis validation of this operator ordering is still pending; the FD splitting magnitudes currently carry two global O(1) scales (k_spin_orbit, k_tensor)."
+notes = "Smeared-kernel branch is implemented and the post-A14 (m1 m2/E1 E2)^(1/2+eps) sandwich is active for contact/tensor/spin-orbit expectations. W6 closed the paper-order caveat: fine_structure_grid_operator packages the calibrated spin-orbit+tensor blocks as a mesh operator, and first-order treatment in the HO central eigenbasis (ho_first_order_distorted_states) reproduces the paper's spin-distorted wavefunctions at the origin — cross-validating the k_spin_orbit/k_tensor scales on wavefunctions, not just masses (they remain fitted tier-C scales). Nonperturbative resummation overshoots the paper; first order is the paper's effective treatment."
 
 [[unit]]
 id = "A16"
@@ -210,12 +212,12 @@ page = 38
 statement = "Scalar/Thomas-precession spin-orbit operator, including the unequal-mass antisymmetric piece."
 status = "partial"
 effort = "research"
-next = "W6: paper-order HO validation of the scalar/Thomas spin-orbit operator; removes the tier-C k_spin_orbit scale."
+next = "Unequal-mass antisymmetric spin-orbit as a standalone operator (currently folded into the open-flavor same-J assignment at the mixing stage)."
 code = ["src/spin_fine_structure.jl:spin_orbit_mixing_components", "src/spin_fine_structure.jl:same_j_mixing"]
 tests = ["same-J spin-orbit mixing diagnostics"]
 anchor = "paper/vision_ocr/page_images/page-038.png"
 parent = "app-A"
-notes = "Equal-mass radial convention is implemented; the unequal-mass antisymmetric spin-orbit mixing is folded into the open-flavor same-J physical assignment at the mixing stage rather than as a standalone operator. Part of the open W6 HO-order item."
+notes = "Equal-mass radial convention is implemented; the unequal-mass antisymmetric spin-orbit mixing is folded into the open-flavor same-J physical assignment at the mixing stage rather than as a standalone operator. The equal-mass symmetric part passed the W6 paper-order HO validation (w6_ho_order_validation.md, via fine_structure_grid_operator) — the k_spin_orbit scale is cross-validated at paper order but stays a fitted tier-C bridge; the antisymmetric piece is what keeps this unit partial."
 
 # --- A17: HO matrix-element factorization -------------------------------------
 
@@ -225,12 +227,10 @@ kind = "equation"
 label = "Eq. (A17)"
 page = 38
 statement = "Harmonic-oscillator matrix-element factorization for the smeared/momentum-dependent operators."
-status = "partial"
-effort = "research"
-next = "W6: extend the sub-MeV central FD/HO agreement to the spin and mixing blocks (A15-A17 fidelity)."
-code = ["src/harmonic_oscillator_basis.jl:ho_reduced_radial", "src/harmonic_oscillator_basis.jl:ho_basis_matrix"]
-tests = ["HarmonicOscillatorBasis channel solve returns mesh wavefunctions"]
+status = "implemented"
+code = ["src/harmonic_oscillator_basis.jl:ho_reduced_radial", "src/harmonic_oscillator_basis.jl:ho_basis_matrix", "src/harmonic_oscillator_basis.jl:ho_first_order_distorted_states"]
+tests = ["HarmonicOscillatorBasis channel solve returns mesh wavefunctions", "W6 paper-order spin-distorted waves"]
 report = "GIPaper/docs/residual_reports/appendix_a_ho_comparison.md"
 anchor = "paper/vision_ocr/page_images/page-038.png"
 parent = "app-A"
-notes = "HarmonicOscillatorBasis projects radial and momentum operators; the central FD-vs-HO comparison agrees at sub-MeV (appendix_a_ho_comparison.md). CAVEAT (open item W6): post-diagonalization tensor/spin/mixing HO-order validation is still pending, so this is partial rather than reproduced."
+notes = "HarmonicOscillatorBasis projects radial and momentum operators; the central FD-vs-HO comparison agrees at sub-MeV (appendix_a_ho_comparison.md) and the smeared wavefunction-at-origin to <=3% (w6_ho_order_validation.md part 1). W6 extended the validation to the spin blocks: ho_first_order_distorted_states realizes the paper's first-order treatment of contact/spin-orbit/tensor in the HO eigenbasis and reproduces the Table VII gluonic subtable ([0.92,1.11], 16/16). Mixing blocks (annihilation, tensor/spin-orbit off-diagonal) still run on FD waves — the remaining, now-bounded gap to 'reproduced'."

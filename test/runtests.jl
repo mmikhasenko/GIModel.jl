@@ -1653,3 +1653,48 @@ end
     @test 0.6 < abs(Aη) / 0.5 < 1.6
     @test 0.6 < abs(Aη′) / 1.3 < 1.4
 end
+
+@testset "W6 paper-order spin-distorted waves (HO first order)" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    params_ho = with_basis(params, HarmonicOscillatorBasis)
+    mc = mq["c"]
+    masses = ConstituentMasses(mc, mc)
+    outer!(u) = (pk = maximum(abs, u); i = findlast(x -> abs(x) > 0.2pk, u);
+                 (i !== nothing && u[i] < 0) && (u .*= -1); u)
+    ngrid, rmax = 900, 24.0
+    r, h = GIModel.radial_grid(ngrid, rmax)
+    tomev(a) = abs(a) * sqrt(1000)
+    sm(u, rr, L) = wavefunction_origin_smearing(
+        RadialWaveOnUniformMesh(outer!(copy(u)), rr), mc; L = L)
+
+    # 1. basis-fidelity control: HO central S_L matches FD to <2% for charm —
+    #    the 15-20% gluonic row residuals were never a basis artifact
+    _, fdv, fdr = channel_solution(params, masses, 0; nlevels = 2, ngrid = ngrid, rmax = rmax)
+    _, hov, hor = channel_solution(params_ho, masses, 0; nlevels = 2, ngrid = ngrid, rmax = rmax)
+    @test 0.98 < sm(hov[:, 1], hor, 0) / sm(fdv[:, 1], fdr, 0) < 1.02
+
+    # 2. paper-order treatment: first-order PT in the HO central eigenbasis with
+    #    the calibrated spin blocks lands the charm gluonic rows on the paper
+    V1 = GIModel.contact_hyperfine_operator(params, masses, "S", 1, r)
+    V3 = GIModel.contact_hyperfine_operator(params, masses, "S", 3, r)
+    VP0 = fine_structure_grid_operator(params, masses, 0, r, h)
+    VP2 = fine_structure_grid_operator(params, masses, 2, r, h)
+    amp(ch, S, M) = tomev(gluonic_annihilation_amplitude(ch, S, GIModel.alpha_s_q(M), mc))
+    ratios = Dict{Symbol,Float64}()
+    for (key, L, V, ch, paper) in ((:eta_c, 0, V1, :S0_2g, 4.700), (:psi, 0, V3, :S1_3g, 0.420),
+                                   (:chi_0c, 1, VP0, :P0_2g, 2.500), (:chi_2c, 1, VP2, :P2_2g, 0.880))
+        vals, waves, rr = ho_first_order_distorted_states(params_ho, masses, L, V;
+            nlevels = 4, ngrid = ngrid, rmax = rmax)
+        ratios[key] = amp(ch, sm(waves[:, 1], rr, L), vals[1]) / paper
+        @test 0.85 < ratios[key] < 1.15
+    end
+
+    # 3. the splitting patterns the central wave misses collapse at paper order:
+    #    central waves give ratio-of-ratios eta_c/psi ≈ 0.78, chi_0c/chi_2c ≈ 0.68
+    Sc0 = sm(fdv[:, 1], fdr, 0)
+    Mc0 = channel_solution(params, masses, 0; nlevels = 1, ngrid = ngrid, rmax = rmax)[1][1]
+    central_eta_psi = (amp(:S0_2g, Sc0, Mc0) / 4.700) / (amp(:S1_3g, Sc0, Mc0) / 0.420)
+    @test central_eta_psi < 0.85
+    @test 0.90 < ratios[:eta_c] / ratios[:psi] < 1.10
+    @test ratios[:chi_0c] / ratios[:chi_2c] > 0.80   # central-wave value ≈ 0.68
+end

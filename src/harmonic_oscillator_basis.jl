@@ -142,3 +142,66 @@ function oscillator_channel_solution(
     end
     return collect(best.values), Matrix(waves), r
 end
+
+"""
+    ho_first_order_distorted_states(params, masses, L, V; nlevels, ngrid, rmax, nbasis)
+        -> (values, waves, r)
+
+Paper-order spin-distorted radial waves: diagonalize the central Hamiltonian in
+the harmonic-oscillator subspace (paper β convention — one β per sector,
+minimizing the `nlevels`-th state), then treat the spin-dependent grid operator
+`V` in first-order perturbation theory within that eigenbasis:
+
+    |n⟩₁ = |n⟩ + Σ_{k≠n} |k⟩ ⟨k|V|n⟩ / (Eₙ - Eₖ),   Mₙ = Eₙ + ⟨n|V|n⟩.
+
+`V` is a dense operator on the same uniform mesh (e.g.
+[`contact_hyperfine_operator`](@ref GIModel.contact_hyperfine_operator) for
+S-waves or [`fine_structure_grid_operator`](@ref) for `³P_J`). Returned waves
+are physically normalized (`∫u² dr = 1`). This is the W6-validated paper-order
+treatment: resumming `V` nonperturbatively (FD or HO) overshoots the paper's
+Table VII wavefunction-at-origin distortions, while this first-order form
+reproduces them.
+"""
+function ho_first_order_distorted_states(
+    params::GIParameters{HarmonicOscillatorBasis},
+    masses::ConstituentMasses,
+    L::Integer,
+    V::AbstractMatrix;
+    nlevels::Integer = 6,
+    ngrid::Integer = 450,
+    rmax::Real = 24.0,
+    nbasis::Integer = max(HO_DEFAULT_NBASIS, nlevels + 4),
+)
+    r, h = radial_grid(ngrid, rmax)
+    size(V, 1) == length(r) || error("V must live on the (ngrid, rmax) mesh")
+    best = nothing
+    for β in oscillator_beta_candidates(masses, L)
+        H, U = oscillator_hamiltonian_for_beta(params, masses, L, r, h, β; nbasis = nbasis)
+        F = eigen(Symmetric(Matrix(H)))
+        if isnothing(best) || F.values[nlevels] < best.values[nlevels]
+            best = (values = F.values, coeffs = F.vectors, basis = U)
+        end
+    end
+    waves = best.basis * best.coeffs
+    for col in axes(waves, 2)
+        nrm = sqrt(sum(abs2, waves[:, col]) * h)
+        nrm > 0 && (waves[:, col] ./= nrm)
+    end
+    # V in the central eigenbasis: ⟨k|V|n⟩ = h · wₖ' V wₙ (physical normalization)
+    Vkn = h .* (waves' * (Matrix(V) * waves))
+    values = Float64[]
+    distorted = Matrix{Float64}(undef, length(r), nlevels)
+    for n = 1:nlevels
+        ψ = copy(waves[:, n])
+        for k in axes(waves, 2)
+            k == n && continue
+            denom = best.values[n] - best.values[k]
+            abs(denom) < 1.0e-9 && continue
+            ψ .+= (Vkn[k, n] / denom) .* waves[:, k]
+        end
+        ψ ./= sqrt(sum(abs2, ψ) * h)
+        distorted[:, n] = ψ
+        push!(values, best.values[n] + Vkn[n, n])
+    end
+    return values, distorted, r
+end

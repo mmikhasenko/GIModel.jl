@@ -414,6 +414,70 @@ function fine_structure_components(
     )
 end
 
+"""
+    fine_structure_grid_operator(params, masses, J, r, h; L = 1) -> Symmetric
+
+Triplet `³L_J` spin-orbit + tensor potential as a dense operator on the uniform
+radial mesh `r`, term-by-term identical to the expectation values taken by
+[`fine_structure_components`](@ref) on the active research path (smeared
+kernels, two-sided `(m₁m₂/E₁E₂)^(1/2+ε)` momentum sandwich, calibrated
+`k_spin_orbit`/`k_tensor` scales). Adding it to the central Hamiltonian — or
+treating it in first-order perturbation theory in the HO eigenbasis — yields
+spin-distorted radial waves; the first-order HO treatment is the paper-order
+prescription validated against the Table VII gluonic subtable (W6).
+
+Requires `fine_structure_momentum_sandwich` and `fine_structure_smeared_kernels`
+(the calibration of the `k` scales assumes them); throws otherwise.
+"""
+function fine_structure_grid_operator(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    J::Integer,
+    r::AbstractVector,
+    h::Real;
+    L::Integer = 1,
+)
+    params.factors.fine_structure_momentum_sandwich &&
+        params.factors.fine_structure_smeared_kernels ||
+        error("fine_structure_grid_operator: only the smeared momentum-sandwich path is calibrated")
+    m1 = masses.m1_GeV
+    m2 = masses.m2_GeV
+    n = length(r)
+    (params.fine_structure.enabled && L >= 1) || return Symmetric(zeros(Float64, n, n))
+    p2_fact = eigen(p2_operator(params, m1, L, r, h))
+    side(eps) = momentum_relativization_matrix(
+        m1,
+        m2,
+        gi_spin_dependent_side_exponent(eps),
+        p2_fact,
+    )
+    K_cm = Diagonal([
+        (1.0 / max(ri, 1.0e-8)) *
+        smeared_coulomb_G_prime_closed(params, m1, m2, max(ri, 1.0e-8)) for ri in r
+    ])
+    K_tp = Diagonal([
+        (1.0 / (2.0 * max(ri, 1.0e-8))) * (
+            smeared_confinement_S_prime_closed(params, m1, m2, max(ri, 1.0e-8)) +
+            smeared_coulomb_G_prime_closed(params, m1, m2, max(ri, 1.0e-8))
+        ) for ri in r
+    ])
+    K_tk = Diagonal([tensor_kernel_smeared_coulomb(params, m1, m2, ri) for ri in r])
+    B_v = side(params.factors.epsilon_so_vector)
+    B_s = side(params.factors.epsilon_so_scalar)
+    B_t = side(params.factors.epsilon_t)
+    inv2_tp = 0.5 * (1.0 / m1^2 + 1.0 / m2^2)
+    inv2_cm = 0.5 * (1.0 / m1^2 + 1.0 / m2^2 + 2.0 / (m1 * m2))
+    ls = LdotS(Int(L), 1, Int(J))
+    k_so = params.fine_structure.k_spin_orbit
+    k_t = params.fine_structure.k_tensor
+    V =
+        k_so * inv2_cm * ls * (B_v * K_cm * B_v) .-
+        k_so * inv2_tp * ls * (B_s * K_tp * B_s) .+
+        k_t * (1.0 / (3.0 * m1 * m2)) * tensor_triplet_LJ(Int(L), Int(J), 1) *
+        (B_t * K_tk * B_t)
+    return Symmetric(Matrix(V))
+end
+
 function spin_orbit_radial_integrals(
     params::GIParameters,
     masses::ConstituentMasses,
