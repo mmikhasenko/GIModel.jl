@@ -1570,6 +1570,68 @@ end
     @test_throws ArgumentError leptonic_decay_factor(:bogus, wψ, mq["c"], mq["c"], Mψ)
 end
 
+@testset "Decay widths from decay constants (Eqs. D7-D9)" begin
+    hbar = 6.582119e-25   # GeV·s
+
+    # D7: Γ(P→ℓν) reproduces the measured π→μν width when fed the EXPERIMENTAL
+    # f_π/M_π and physical masses (the ~4% excess is the Cabibbo cos²θ_C the
+    # paper's reduced G² omits).
+    f_pi = 0.1307 / 0.13957
+    Γ_pi = leptonic_pseudoscalar_width(f_pi, 0.13957, 0.10566)
+    Γ_pi_pdg = hbar / 2.6033e-8
+    @test 0.98 < Γ_pi / Γ_pi_pdg < 1.08
+    @test leptonic_pseudoscalar_width(f_pi, 0.10, 0.10566) == 0.0   # m_ℓ ≥ M_P: closed
+    @test leptonic_pseudoscalar_width(0.0, 0.13957, 0.10566) == 0.0 # f=0
+
+    # D8: Γ(V→ℓ⁺ℓ⁻) round-trips the measured ψ→ee width; scales as M·f².
+    f_V = sqrt(5.55e-6 / ((4π / 3) * GIModel.ALPHA_EM^2 * 3.0969))
+    @test isapprox(dilepton_vector_width(f_V, 3.0969), 5.55e-6; rtol = 1e-6)
+    @test isapprox(dilepton_vector_width(2f_V, 3.0969), 4 * 5.55e-6; rtol = 1e-6)  # ∝ f²
+
+    # D9: analytic value + kinematic bracket (closes as M_A1 → m_τ).
+    @test isapprox(axial_tau_width(0.15, 1.26, 1.777), 5.412e-13; rtol = 5e-3)
+    @test axial_tau_width(0.15, 1.777, 1.777) == 0.0          # M_A1 = m_τ: closed
+    @test axial_tau_width(0.15, 1.80, 1.777) == 0.0           # M_A1 > m_τ: closed
+    @test axial_tau_width(0.15, 1.26, 1.777) > 0
+end
+
+@testset "Appendix-D mock-meson overlap kernels (D2-D3)" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m = mq["q"]
+    masses = ConstituentMasses(m, m)
+    H, r = GIModel.relativistic_hamiltonian(params, masses, 0; ngrid = 450, rmax = 24.0)
+    # hyperfine-distinct nn 1S waves: ¹S₀ (pi), ³S₁ (rho); physical ∫u²dr=1
+    op1 = GIModel.contact_hyperfine_operator(params, masses, "S", 1, r)
+    op3 = GIModel.contact_hyperfine_operator(params, masses, "S", 3, r)
+    _, v1 = GIModel.lowest_eigenpairs(Symmetric(Matrix(H) + Matrix(op1)), 2)
+    _, v3 = GIModel.lowest_eigenpairs(Symmetric(Matrix(H) + Matrix(op3)), 2)
+    h = r[2] - r[1]
+    phase!(u) = (sum(r .* u) < 0 && (u .*= -1); u)
+    u_pi = phase!(v1[:, 1] ./ sqrt(h)); u_rho = phase!(v3[:, 1] ./ sqrt(h))
+    w_pi = RadialWaveOnUniformMesh(u_pi, r); w_rho = RadialWaveOnUniformMesh(u_rho, r)
+
+    mw_pi = mock_momentum_wave(w_pi, 0); mw_rho = mock_momentum_wave(w_rho, 0)
+    # momentum wave normalized ∫p²Φ²dp=1; mock mass ≥ 2m and finite
+    @test isapprox(sum(0.5 * (mw_pi.p[2:end] .^ 2 .* mw_pi.phi[2:end] .^ 2 .+
+                              mw_pi.p[1:end-1] .^ 2 .* mw_pi.phi[1:end-1] .^ 2) .*
+                        diff(mw_pi.p)), 1.0; atol = 1e-3)
+    @test mock_mean_energy(mw_pi, m) ≥ m
+    Mpi = mock_wave_mass(mw_pi, m, m); Mrho = mock_wave_mass(mw_rho, m, m)
+    @test 2m ≤ Mpi ≤ 2m + 2.0
+
+    # I_i drives ρ→πγ, the paper's 0.7-exponent fit row: μ = (1/3) I_ρπ M_N ≈ +0.69
+    M_N = 0.93827
+    μ_rho = (1 / 3) * mock_meson_overlap(mw_pi, mw_rho, m; Mx = Mpi, My = Mrho) * M_N
+    @test 0.60 < μ_rho < 0.72        # audit/report value +0.650, paper +0.69
+
+    # Eₙⁱ radial moment: mesh guard + the n=1 self-moment recovers ⟨r⟩ scaling
+    @test_throws ArgumentError mock_meson_radial_moment(
+        w_pi, RadialWaveOnUniformMesh(u_pi, r .+ 1.0), 1.0, 1.0, m)
+    E1 = mock_meson_radial_moment(w_pi, w_pi, m, m, m; n = 1, exponent = 0.0)
+    @test isapprox(E1, sum(@. u_pi^2 * r) * h; rtol = 1e-9)   # exponent 0 ⇒ ∫u²r dr
+    @test mock_meson_radial_moment(w_pi, w_pi, m, m, m; n = 1) > 0
+end
+
 @testset "Table VII two-photon amplitudes (part b)" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     outer!(u) = (pk = maximum(abs, u); i = findlast(x -> abs(x) > 0.2pk, u);

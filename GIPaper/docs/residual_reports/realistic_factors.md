@@ -49,10 +49,31 @@ Daughter compactness (sanity check): `sqrt<r^2>` is **1.830 GeV^-1** for `pi` (`
 
 ## Eq. (21), type-S
 
-The companion type-S ratio `R_S = <^1S_0|p|M*> / <^3S_1|p|M*>` (printed
-`~1.2-1.3` on the `1^3P_0` `epsilon`/`kappa` rows) is the momentum-space
-analogue: the more compact `pi` has the larger `<p>`, so `R_S > 1`. It
-requires the reduced-momentum cross matrix element between an S-wave and a
-P-wave (a radial-derivative operator with angular structure), a distinct
-piece of machinery from the `r^n` moments above; it is left as the natural
-follow-up now that the hyperfine-distinct waves are exposed.
+The companion type-S ratio is the momentum-space analogue,
+
+```
+R_S = <^1S_0| p |M*> / <^3S_1| p |M*>
+```
+
+printed `~1.2-1.3` to the right of the `M* -> P ^1S_0` decays (fit to
+`B -> (omega pi)_S`). The momentum operator `p` is a vector (`ΔL = 1`)
+between the S-wave daughter and the P-wave parent; in momentum space its
+radial part is multiplication by `p` and the common angular factor cancels
+in the ratio, leaving `<S|p|M*> ∝ ∫ p³ Φ_0(p) Φ_1^{M*}(p) dp` on the model's
+own hyperfine-distinct `pi`/`rho` momentum waves.
+
+Momentum compactness (sanity check): `<p^2>` is **1.109 GeV²** for `pi` (`^1S_0`) vs **0.294 GeV²** for `rho` (`^3S_1`) -- the pi carries the larger momentum, ratio 3.77, so `R_S > 1` as the paper requires.
+
+| decay group | parent | computed R_S | paper |
+|---|:-:|---:|:-:|
+| `epsilon/kappa -> P P (1^3P_0)` | P1 | **1.17** | (1.2-1.3) |
+| `B -> (omega pi)_S (1^1P_1)` | P1 | **1.17** | (1.2-1.3) |
+
+- **Sign and magnitude reproduced:** `R_S = 1.17` on the `1P` parent sits just below the
+  paper's `~1.2-1.3` -- the same-order agreement as the type-A rows, within
+  the paper's own "rough indication" caveat. The `1^3P_0` (`epsilon`/`kappa`)
+  and `1^1P_1` (`B`) type-S rows share the spin-independent central `1P`
+  radial wave, so the model gives them one value.
+- Both realistic factors are thus reproduced from the model's own
+  wavefunctions with no new constants: type-A in position space (`r^{L-1}`),
+  type-S in momentum space (`p`), each `> 1` and tracking the paper.

@@ -158,7 +158,19 @@ export wavefunction_origin_smearing,
     LEPTONIC_FACTOR_KINDS,
     two_photon_amplitude,
     charge_radius_squared,
+    leptonic_pseudoscalar_width,
+    dilepton_vector_width,
+    axial_tau_width,
+    G_FERMI_GEV,
     HBARC_FM2
 include("annihilation_widths.jl")
+
+export MockMomentumWave,
+    mock_momentum_wave,
+    mock_mean_energy,
+    mock_wave_mass,
+    mock_meson_overlap,
+    mock_meson_radial_moment
+include("mock_meson_overlaps.jl")
 
 end

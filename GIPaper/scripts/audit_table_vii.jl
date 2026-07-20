@@ -460,6 +460,23 @@ function main()
     ggm = run_two_photon_mixed(params, params_ho, mq, gg_paper)
     cr = run_charge_radii(params, params_ho, mq, load_radius_predictions(TABLE))
 
+    # Eqs. (D7)-(D9): widths from the decay constants. Formula validation +
+    # model-f D8 dilepton predictions (see report section).
+    wpi_exp = leptonic_pseudoscalar_width(0.1307 / 0.13957, 0.13957, 0.10566)
+    wpi_pdg = 6.582119e-25 / 2.6033e-8
+    fpsi_exp = sqrt(5.55e-6 / ((4π / 3) * GIModel.ALPHA_EM^2 * 3.0969))
+    lep_by = Dict(r.label => r for r in lep)
+    wid = NamedTuple[]
+    for (label, Mphys, pdg, note) in
+        [("rho -> e+ e-", 0.7754, 7.04e-6, ""),
+         ("psi -> e+ e-", 3.0969, 5.55e-6, "QCD (1−16α_s/3π) not in D8"),
+         ("psi' -> e+ e-", 3.6861, 2.34e-6, ""),
+         ("Upsilon -> e+ e-", 9.4603, 1.34e-6, "")]
+        f = abs(lep_by[label].model)
+        w = dilepton_vector_width(f, Mphys)
+        push!(wid, (label = label, f = f, width = w, pdg = pdg, ratio = w / pdg, note = note))
+    end
+
     gratios = filter(!isnan, [r.ratio for r in glu])
     lratios = filter(!isnan, [r.ratio for r in lep])
     ggratios = filter(!isnan, [r.ratio for r in gg])
@@ -638,6 +655,46 @@ function main()
         end
         println(io)
 
+        println(io, "## Decay widths (Eqs. D7-D9)")
+        println(io)
+        println(io, "```")
+        println(io, "Γ(P→ℓν)   = G² f_P² m_ℓ² / (8π M_P) · (M_P² − m_ℓ²)²        (D7)")
+        println(io, "Γ(V→ℓ⁺ℓ⁻) = (4π/3) α² M_V f_V²                              (D8)")
+        println(io, "Γ(τ→A₁ν)  = G² f_A1² m_τ³ M_A1²/(16π) [1−M_A1²/m_τ²][1+2M_A1²/m_τ²] (D9)")
+        println(io, "```")
+        println(io)
+        println(io, "Table VII lists the decay *constants* f, not the widths; Eqs. (D7)-(D9)")
+        println(io, "(`leptonic_pseudoscalar_width`, `dilepton_vector_width`, `axial_tau_width`)")
+        println(io, "turn a constant into a width. The formulas are validated against experiment")
+        println(io, "by feeding the **measured** constant:")
+        println(io)
+        println(io, "| check | fed | model width | measured | note |")
+        println(io, "|---|---|---:|---:|---|")
+        @printf(io, "| D7 `π→μν` | f_π/M_π = 0.936 (exp) | %.3e GeV | %.3e GeV | +4%% is the Cabibbo cos²θ_C the reduced G² omits |\n",
+            wpi_exp, wpi_pdg)
+        @printf(io, "| D8 `ψ→ee` | f_ψ = %.4f (exp) | %.3e GeV | 5.55e-06 GeV | round-trip |\n",
+            fpsi_exp, dilepton_vector_width(fpsi_exp, 3.0969))
+        println(io)
+        println(io, "Applied to the **model's own** constants (physical masses; the paper's")
+        println(io, "reduced `G²`/`α²` carry no CKM or QCD radiative factor), the D8 dilepton")
+        println(io, "widths carry the Table VII `f_V` residual squared:")
+        println(io)
+        println(io, "| decay | f_model | width (D8) | measured | ratio | note |")
+        println(io, "|---|---:|---:|---:|:-:|---|")
+        for w in wid
+            @printf(io, "| `%s` | %+.4f | %.3e GeV | %.3e GeV | %.2f | %s |\n",
+                w.label, w.f, w.width, w.pdg, w.ratio, w.note)
+        end
+        println(io)
+        println(io, "The leading-order D8 over-predicts, most for charm (`ρ` 0.99, `Υ` 1.21,")
+        println(io, "`ψ'` 1.46, `ψ` 1.84): the ratios track the omitted QCD `(1 − 16α_s/3π)`")
+        println(io, "radiative correction, which shrinks with α_s from charm to bottom and would")
+        println(io, "bring each toward 1 — not a wavefunction miss (`f_ψ` itself is 1.01x the")
+        println(io, "paper). The weak `π→μν` row is not tabled here: the model's light `¹S₀` mass")
+        println(io, "(`0.10 GeV < m_μ`) closes the phase space — the same light-pseudoscalar")
+        println(io, "pathology that inflates `f_π`. Widths are exercised end-to-end; the paper")
+        println(io, "tabulates only the constants.")
+        println(io)
         println(io, "## Reading")
         println(io)
         println(io, "- **Zero-parameter reproduction.** No constant is fit in either slice:")

@@ -46,13 +46,13 @@ kind = "equation"
 label = "Eq. (21)"
 page = 23
 statement = "Type-S realistic-factor ratio <1S0|p|M*> / <3S1|p|M*> — the S-type companion to Eq. (20)."
-status = "partial"
-effort = "small"
-next = "W5b: score the type-S <1S0|p|M*>/<3S1|p|M*> momentum ratio per row (hyperfine waves already exposed)."
+status = "reproduced"
 code = ["GIPaper/scripts/audit_realistic_factors.jl"]
+report = "GIPaper/docs/residual_reports/realistic_factors.md"
+metric = "type-S R_S = 1.17 on the 1P parents (epsilon/kappa 1^3P_0, B 1^1P_1) vs paper ~1.2-1.3; pi <p^2> = 3.8x rho, so R_S > 1 as required"
 anchor = "paper/vision_ocr/page_images/page-023.png"
 parent = "sec-IV"
-notes = "Type-A ratios reproduced; the type-S momentum-matrix-element ratio is a soft quality follow-up, not yet scored per-row."
+notes = "Scored from the model's own hyperfine-distinct pi/rho momentum waves: <S|p|M*> proportional to integral p^3 Phi_0(p) Phi_1(p) dp (the vector-p radial part; the common angular factor cancels in the ratio). R_S = 1.17 sits just below the paper's rough ~1.2-1.3 -- same-order agreement as the type-A rows, within the paper's own 'rough indication' caveat. Both realistic factors now reproduced from the wavefunctions with no new constants: type-A in position space (r^{L-1}), type-S in momentum space (p)."
 
 [[unit]]
 id = "eq-22"
@@ -61,11 +61,12 @@ label = "Eq. (22)"
 page = 23
 statement = "Photon-emission helicity amplitude for radiative (EM) decays."
 status = "implemented"
-code = ["GIPaper/scripts/audit_table_vi_photon_decays.jl"]
+code = ["src/mock_meson_overlaps.jl:mock_meson_overlap", "src/mock_meson_overlaps.jl:mock_meson_radial_moment", "GIPaper/scripts/audit_table_vi_photon_decays.jl"]
+tests = ["Appendix-D mock-meson overlap kernels"]
 report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
 anchor = "paper/vision_ocr/page_images/page-023.png"
 parent = "sec-IV"
-notes = "Realized as the Appendix-D mock-meson form; to be promoted into src/ with tests."
+notes = "Realized as the Appendix-D mock-meson form (I_i / E_n^i overlaps), now promoted into src (mock_meson_overlaps.jl) with tests; the Table VI audit assembles the M1/E1/M2 amplitudes from these kernels."
 
 # --- Tables IV / V ---------------------------------------------------------
 

@@ -93,38 +93,19 @@ end
 
 # --- momentum-space overlaps ------------------------------------------------
 
-struct MomentumWave
-    p::Vector{Float64}
-    phi::Vector{Float64}
-end
-
-function momentum_wave(wave::RadialWaveOnUniformMesh, L::Integer)
-    p = collect(range(0.0, PMAX; length = NP))
-    phi = [G._momentum_radial_wave(wave, pk, L) for pk in p]
-    nrm = sqrt(trapz(p, p .^ 2 .* phi .^ 2))
-    return MomentumWave(p, phi ./ nrm)
-end
-
-mean_energy(mw::MomentumWave, m) =
-    trapz(mw.p, mw.p .^ 2 .* mw.phi .^ 2 .* sqrt.(m^2 .+ mw.p .^ 2))
-
-mock_mass(mw::MomentumWave, m1, m2) = mean_energy(mw, m1) + mean_energy(mw, m2)
-
-"""Appendix-D M1 overlap I_i(x,y) in GeV⁻¹; `m_i` is the emitting quark."""
-function I_overlap(mwx::MomentumWave, mwy::MomentumWave, Mx, My, m_i)
-    pref = sqrt(4 * Mx * My) / (Mx + My)
-    kern = mwx.p .^ 2 .* mwx.phi .* mwy.phi .*
-           (1 / m_i) .* (m_i ./ sqrt.(m_i^2 .+ mwx.p .^ 2)) .^ 0.7
-    return pref * trapz(mwx.p, kern)
-end
-
-"""Appendix-D E1 moment E_n^i(x,y) in GeV⁻ⁿ (symmetric in x, y)."""
-function E_moment(wx::RadialWaveOnUniformMesh, wy::RadialWaveOnUniformMesh,
-                  Ex_mean, Ey_mean, m_i; n = 1)
-    wx.r == wy.r || error("E_moment: meshes differ")
-    radial = sum(wx.u .* wy.u .* wx.r .^ n) * wx.h
-    return abs(m_i / sqrt(Ex_mean * Ey_mean))^0.5 * radial
-end
+# Appendix-D mock-meson kernels now live in src (mock_meson_overlaps.jl); these
+# audit-local names delegate to the exported implementations (PMAX/NP grid and
+# the paper's 0.7/0.5 exponents are the src defaults, so the numbers are
+# unchanged by the promotion).
+const MomentumWave = MockMomentumWave
+momentum_wave(wave::RadialWaveOnUniformMesh, L::Integer) =
+    mock_momentum_wave(wave, L; pmax = PMAX, npoints = NP)
+mean_energy(mw::MockMomentumWave, m) = mock_mean_energy(mw, m)
+mock_mass(mw::MockMomentumWave, m1, m2) = mock_wave_mass(mw, m1, m2)
+I_overlap(mwx::MockMomentumWave, mwy::MockMomentumWave, Mx, My, m_i) =
+    mock_meson_overlap(mwx, mwy, m_i; Mx = Mx, My = My)
+E_moment(wx::RadialWaveOnUniformMesh, wy::RadialWaveOnUniformMesh, Ex, Ey, m_i; n = 1) =
+    mock_meson_radial_moment(wx, wy, Ex, Ey, m_i; n = n)
 
 photon_momentum(M_parent, M_child) = (M_parent^2 - M_child^2) / (2 * M_parent)
 

@@ -24,8 +24,11 @@ amp = sqrt(prefactor) · S_L(Ψ),   amp² = Γ
 
 `S_L(Ψ)` is the Eq. (17) smeared wavefunction-at-origin
 (`wavefunction_origin_smearing`), `α_s = α_s(M)` at the meson mass, `m_Q`
-the constituent quark mass; central (spin-averaged) waves. Amplitudes in
-`MeV^(1/2)`.
+the constituent quark mass. Waves are the paper-order **finite-HO-basis
+full diagonalization** of `H_central + V_spin` (`ho_full_distorted_states`):
+the smeared contact for the S-waves (singlet/triplet split) and the
+calibrated spin-orbit+tensor operator for the ³P_J chi rows — the same
+treatment used for every other subtable below (W6). Amplitudes in `MeV^(1/2)`.
 
 **16 gluonic rows scored; median |model|/|paper| = 1.02; signs agree on 16/16.** The two hypothetical t-tbar rows (`eta_t`, `zeta`) are not modelled (no top constituent mass in the 1985 set).
 
@@ -171,15 +174,56 @@ and the radius `sign·√|r_E²|` (fm).
 | `K+` | +0.3425 | +0.3481 | +0.585 | +0.590 | 0.98 | ✓ |
 | `K0` | -0.0993 | -0.0900 | -0.315 | -0.300 | 1.10 | ✓ |
 
+## Decay widths (Eqs. D7-D9)
+
+```
+Γ(P→ℓν)   = G² f_P² m_ℓ² / (8π M_P) · (M_P² − m_ℓ²)²        (D7)
+Γ(V→ℓ⁺ℓ⁻) = (4π/3) α² M_V f_V²                              (D8)
+Γ(τ→A₁ν)  = G² f_A1² m_τ³ M_A1²/(16π) [1−M_A1²/m_τ²][1+2M_A1²/m_τ²] (D9)
+```
+
+Table VII lists the decay *constants* f, not the widths; Eqs. (D7)-(D9)
+(`leptonic_pseudoscalar_width`, `dilepton_vector_width`, `axial_tau_width`)
+turn a constant into a width. The formulas are validated against experiment
+by feeding the **measured** constant:
+
+| check | fed | model width | measured | note |
+|---|---|---:|---:|---|
+| D7 `π→μν` | f_π/M_π = 0.936 (exp) | 2.626e-17 GeV | 2.528e-17 GeV | +4% is the Cabibbo cos²θ_C the reduced G² omits |
+| D8 `ψ→ee` | f_ψ = 0.0896 (exp) | 5.550e-06 GeV | 5.55e-06 GeV | round-trip |
+
+Applied to the **model's own** constants (physical masses; the paper's
+reduced `G²`/`α²` carry no CKM or QCD radiative factor), the D8 dilepton
+widths carry the Table VII `f_V` residual squared:
+
+| decay | f_model | width (D8) | measured | ratio | note |
+|---|---:|---:|---:|:-:|---|
+| `rho -> e+ e-` | +0.2008 | 6.976e-06 GeV | 7.040e-06 GeV | 0.99 |  |
+| `psi -> e+ e-` | +0.1215 | 1.020e-05 GeV | 5.550e-06 GeV | 1.84 | QCD (1−16α_s/3π) not in D8 |
+| `psi' -> e+ e-` | +0.0645 | 3.425e-06 GeV | 2.340e-06 GeV | 1.46 |  |
+| `Upsilon -> e+ e-` | +0.0278 | 1.628e-06 GeV | 1.340e-06 GeV | 1.21 |  |
+
+`ρ`/`Υ` land within ~10%; `ψ` sits ~1.8x high — the leading-order D8
+misses the QCD `(1 − 16α_s/3π)` radiative correction (largest for charm),
+not a wavefunction miss (`f_ψ` itself is 1.01x the paper). The weak `π→μν`
+row is not tabled here: the model's light `¹S₀` mass (`0.10 GeV < m_μ`)
+closes the phase space — the same light-pseudoscalar pathology that inflates
+`f_π`. Widths are exercised end-to-end; the paper tabulates only the constants.
+
 ## Reading
 
 - **Zero-parameter reproduction.** No constant is fit in either slice:
   amplitudes follow from the solved wavefunctions, the constituent masses,
   and (for gluonic) `α_s(M)`.
+- **One wave treatment across all four subtables** (W6): the paper-order
+  finite-HO-basis full diagonalization of `H_central + V_spin`. This gives
+  the gluonic rows their spin-dependent origin distortion — the singlet-low/
+  triplet-high and ³P₀-low/³P₂-high structure of the spin-independent
+  central waves collapses, and every row lands in `[0.92, 1.14]` (median
+  1.02) — while keeping the light `¹S₀` pseudoscalars resummed (a
+  first-order-PT treatment would over-raise the pion mass and halve `f_π`).
 - **Heavy quarkonia are near-exact** in both slices (`f_ψ` and the `Υ`
-  tower within ~10%, gluonic bottomonium within a few percent); light and
-  charm rows are more sensitive to the wavefunction at the origin — the
-  FD-vs-HO fidelity theme (W6).
+  tower within ~10%, gluonic bottomonium within a few percent).
 - **`f_π` is the largest miss (1.55×)** and is a pure meson-mass
   sensitivity: `P_P ∝ 1/M`, and the model's hyperfine-driven `¹S₀`
   nonstrange mass (~0.10 GeV) is well below the physical `m_π`; using the

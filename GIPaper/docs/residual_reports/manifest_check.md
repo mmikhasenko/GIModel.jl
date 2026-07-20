@@ -17,11 +17,11 @@ None — every reference resolves.
 | Appendix A — Relativistic smearing & operator ordering | 17 | 1 | 1 | 9 | 0 | 6 | 0 | partial |
 | Appendix B — Flavor/spin operators & SHO wavefunctions | 8 | 0 | 0 | 3 | 4 | 1 | 0 | implemented |
 | Appendix C — Helicity to partial-wave decay amplitudes | 3 | 0 | 0 | 1 | 1 | 1 | 0 | implemented |
-| Appendix D — Mock-meson electromagnetic matrix elements | 8 | 1 | 0 | 2 | 2 | 0 | 3 | partial |
+| Appendix D — Mock-meson electromagnetic matrix elements | 8 | 3 | 0 | 3 | 2 | 0 | 0 | implemented |
 | Sec. I — Introduction | 0 | 0 | 0 | 0 | 0 | 0 | 0 | todo |
 | Sec. II — The model | 21 | 2 | 0 | 12 | 3 | 4 | 0 | implemented |
 | Sec. III — Meson spectroscopy | 14 | 8 | 0 | 4 | 0 | 2 | 0 | implemented |
-| Sec. IV — Meson decays | 14 | 6 | 3 | 1 | 0 | 4 | 0 | partial |
+| Sec. IV — Meson decays | 14 | 7 | 2 | 1 | 0 | 4 | 0 | partial |
 | Sec. V — Discussion | 9 | 0 | 0 | 0 | 4 | 5 | 0 | folded |
 
 ## Remaining work
@@ -32,8 +32,4 @@ Projected from every `missing`/`partial`/`todo` unit — not a separate list, so
 |---|---|:-:|:-:|---|
 | Eq. (A16) | Appendix A — Relativistic smearing & operator ordering | partial | research | Unequal-mass antisymmetric spin-orbit as a standalone operator (currently folded into the open-flavor same-J assignment at the mixing stage). |
 | Eq. (19) | Sec. IV — Meson decays | partial | research | Deeper decay model: apply the (g sigma.q + h sigma.p') operator to the model wavefunctions instead of the SU(6)/single-beta SHO limit. |
-| Table VI | Sec. IV — Meson decays | partial | medium | Refine the eta<->eta' P1 mixing weights (the ordering is a mixing-block eigenvector property, not a wave one) and promote the Appendix-D mock-meson kernels into src/ with tests. The two open rows were re-scored with the W6 paper-order waves -- neither is a wave-distortion residual (see notes). |
-| Eq. (D7) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: leptonic width Gamma(P->l nu) from f_P (after D4-D6). |
-| Eq. (D8) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: dilepton width Gamma(V->l+l-) from f_V (after D4-D6). |
-| Eq. (D9) | Appendix D — Mock-meson electromagnetic matrix elements | missing | small | W4: axial-current width Gamma(tau->A1 nu) from f_A1 (after D4-D6). |
-| Eq. (21) | Sec. IV — Meson decays | partial | small | W5b: score the type-S <1S0|p|M*>/<3S1|p|M*> momentum ratio per row (hyperfine waves already exposed). |
+| Table VI | Sec. IV — Meson decays | partial | medium | Refine the eta<->eta' P1 mixing weights (research: the ordering is a mixing-block eigenvector property, not a wave one, so distorted waves cannot move it). The Appendix-D mock-meson kernels are now promoted into src (mock_meson_overlaps.jl) with tests, and both open rows were re-scored with the W6 paper-order waves -- neither is a wave-distortion residual (see notes). |

@@ -314,3 +314,79 @@ function charge_radius_squared(
         ei * ((mj / Mtot)^2 * r2 + (3 / (4 * mi^2)) * _rel_momentum_average(wave, mi, 2f; npoints = npoints))
     return term(m1, e1, m2) + term(m2, e2, m1)
 end
+
+# -----------------------------------------------------------------------------
+# Decay widths from the mock-meson decay constants — Eqs. (D7)-(D9), page 40.
+# -----------------------------------------------------------------------------
+# The paper's decay constants f_P, f_V, f_{A1} (Eqs. D4-D6) are the DIMENSIONLESS
+# tabulated Table VII(a) amplitudes (`leptonic_decay_factor` × flavor coefficient;
+# e.g. f_π/M_π = 131/140 ≈ 0.95). Eqs. (D7)-(D9) turn those constants into widths.
+# Table VII lists the constants, not the widths, so these are the widths the
+# constants imply; validate them by feeding the EXPERIMENTAL constant and
+# recovering the measured width (see the tests).
+
+"""Fermi coupling G_F in GeV⁻² (the `G` of Eqs. D7/D9)."""
+const G_FERMI_GEV = 1.1663787e-5
+
+"""
+    leptonic_pseudoscalar_width(f_P, M_P_GeV, m_lepton_GeV; G=G_FERMI_GEV) -> Γ (GeV)
+
+Eq. (D7): the leptonic width of a pseudoscalar,
+
+    Γ(P → ℓν) = G² f_P² m_ℓ² / (8π M_P) · (M_P² − m_ℓ²)² ,
+
+with `f_P` the paper's dimensionless decay constant (= `f_P/M_P` in the
+mass-dimension convention, i.e. the Table VII(a) tabulated value). Cabibbo/CKM
+mixing is not included (the paper writes the reduced `G²`); multiply the result
+by `|V_CKM|²` for a specific quark transition. Returns 0 if `m_ℓ ≥ M_P`.
+"""
+function leptonic_pseudoscalar_width(
+    f_P::Real,
+    M_P_GeV::Real,
+    m_lepton_GeV::Real;
+    G::Real = G_FERMI_GEV,
+)
+    M, mℓ = float(M_P_GeV), float(m_lepton_GeV)
+    (M > 0 && mℓ >= 0) || throw(ArgumentError("masses must be nonnegative, M_P > 0"))
+    mℓ >= M && return 0.0
+    return G^2 * float(f_P)^2 * mℓ^2 / (8π * M) * (M^2 - mℓ^2)^2
+end
+
+"""
+    dilepton_vector_width(f_V, M_V_GeV; alpha=ALPHA_EM) -> Γ (GeV)
+
+Eq. (D8): the dilepton width of a vector,
+
+    Γ(V → ℓ⁺ℓ⁻) = (4π/3) α² M_V f_V² ,
+
+with `f_V` the paper's dimensionless vector decay constant (the Table VII(a)
+value). The lepton mass is neglected (massless-lepton limit, as written).
+"""
+function dilepton_vector_width(f_V::Real, M_V_GeV::Real; alpha::Real = ALPHA_EM)
+    M = float(M_V_GeV)
+    M > 0 || throw(ArgumentError("meson mass must be positive"))
+    return (4π / 3) * float(alpha)^2 * M * float(f_V)^2
+end
+
+"""
+    axial_tau_width(f_A1, M_A1_GeV, m_tau_GeV; G=G_FERMI_GEV) -> Γ (GeV)
+
+Eq. (D9): the τ → A₁ ν_τ width from the axial decay constant,
+
+    Γ = G² f_{A1}² m_τ³ M_{A1}² / (16π) · [1 − M_{A1}²/m_τ²] · [1 + 2 M_{A1}²/m_τ²] ,
+
+with `f_A1` the paper's dimensionless axial decay constant. Cabibbo mixing is not
+included (reduced `G²`). Returns 0 if `M_A1 ≥ m_τ` (channel closed).
+"""
+function axial_tau_width(
+    f_A1::Real,
+    M_A1_GeV::Real,
+    m_tau_GeV::Real;
+    G::Real = G_FERMI_GEV,
+)
+    M, mτ = float(M_A1_GeV), float(m_tau_GeV)
+    (M > 0 && mτ > 0) || throw(ArgumentError("masses must be positive"))
+    M >= mτ && return 0.0
+    x = M^2 / mτ^2
+    return G^2 * float(f_A1)^2 * mτ^3 * M^2 / (16π) * (1 - x) * (1 + 2x)
+end
