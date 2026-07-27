@@ -1193,8 +1193,12 @@ end
     @test reduced_decay_amplitude(model, :A_c, 3.0) == model.A
     @test reduced_decay_amplitude(model, :S_c, 1.0) ≈ reduced_decay_amplitude(model, :S, 1.0)
 
-    m_c, m_d = GIModel.CHARM_M_C_GEV, GIModel.CHARM_M_D_GEV
+    # The charm mass ratio comes from the parameters TOML, not from constants
+    # frozen inside src/ (which used to shadow it).
+    _, mq_charm = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    m_c, m_d = mq_charm["c"], mq_charm["d"]
     r = m_c / (m_c + m_d)
+    @test r ≈ 1.628 / (1.628 + 0.220)   # unfreezing changed no value
 
     # The charmed form factor exp[-(1/4)(m_c/(m_c+m_d))^2 q^2/beta^2] replaces
     # the light exp(-q^2/16 beta^2); at fixed q, coefficient, and class the
@@ -1203,7 +1207,7 @@ end
         light = strong_decay_amplitude(model, c, :A, L, q)
         # rebuild the light amplitude under the :A_c class = same reduced value,
         # so the only difference is the form factor and (optionally) recoil.
-        charm = charm_decay_amplitude(model, c, :A_c, L, q)
+        charm = strong_decay_amplitude(model, c, :A_c, L, q; heavy_fraction = r)
         ratio = exp(-0.25 * r^2 * q^2 / beta^2) / exp(-q^2 / (16 * beta^2))
         @test isapprox(charm / light, ratio; rtol = 1e-10)
     end
@@ -1211,21 +1215,24 @@ end
     # The recoil multiplier m_c*beta/((m_c+m_d)*beta_c) = m_c/(m_c+m_d) with
     # beta_c=beta; A_c P-wave rows carry it, S-wave/1^3S_1 rows do not.
     let q = 0.5, c = -sqrt(1 / 5), L = 2
-        no_rec = charm_decay_amplitude(model, c, :A_c, L, q; recoil = false)
-        with_rec = charm_decay_amplitude(model, c, :A_c, L, q; recoil = true)
+        no_rec = strong_decay_amplitude(model, c, :A_c, L, q; heavy_fraction = r, recoil = false)
+        with_rec = strong_decay_amplitude(model, c, :A_c, L, q; heavy_fraction = r, recoil = true)
+        # The multiplier itself is exactly r when beta_c = beta, but this ratio
+        # is a quotient of two products, so it carries its own rounding and is
+        # not bit-exact (it lands 1 ulp off r).
         @test isapprox(with_rec / no_rec, r; rtol = 1e-10)
     end
 
     # below threshold -> zero
-    @test charm_decay_amplitude(model, 1.0, :A_c, 1, 0.0) == 0.0
+    @test strong_decay_amplitude(model, 1.0, :A_c, 1, 0.0; heavy_fraction = r) == 0.0
 
     # Clean 1^3S_1 D* -> D pi rows reproduce the paper's column with NO refit
     # (masses: D*+=2.010, D0=1.865, pi+=0.1396; D*0=2.007, pi0=0.135).
     q_dstarp = decay_momentum(2.010, 1.865, 0.1396)
-    @test isapprox(charm_decay_amplitude(model, -sqrt(2 / 3), :A_c, 1, q_dstarp),
+    @test isapprox(strong_decay_amplitude(model, -sqrt(2 / 3), :A_c, 1, q_dstarp; heavy_fraction = r),
         -0.34; atol = 0.05)
     q_dstar0 = decay_momentum(2.007, 1.865, 0.135)
-    @test isapprox(charm_decay_amplitude(model, -sqrt(1 / 3), :A_c, 1, q_dstar0),
+    @test isapprox(strong_decay_amplitude(model, -sqrt(1 / 3), :A_c, 1, q_dstar0; heavy_fraction = r),
         -0.27; atol = 0.05)
 end
 
@@ -1272,7 +1279,8 @@ end
     ch_c = DecayChannel("Kstar_c", "D", "pi", -sqrt(1 / 5), :A_c, 2; heavy_fraction = r_c)
     q_c = 0.4
     got = decay_amplitude(model, ch_c, q_c; convention = :leading).total
-    want = charm_decay_amplitude(model, -sqrt(1 / 5), :A_c, 2, q_c; recoil = true, convention = :leading)
+    want = strong_decay_amplitude(model, -sqrt(1 / 5), :A_c, 2, q_c;
+        heavy_fraction = r_c, recoil = true, convention = :leading)
     @test got ≈ want
 
     # Omitting it on an unequal-mass class is a construction error, never a

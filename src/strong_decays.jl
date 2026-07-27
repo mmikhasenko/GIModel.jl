@@ -39,7 +39,7 @@
 #
 # Public API (exported from GIModel.jl):
 #   StrongDecayModel, decay_momentum, reduced_decay_amplitude, spatial_overlap,
-#   strong_decay_amplitude, charm_decay_amplitude, calibrate_strong_decay_model,
+#   strong_decay_amplitude, calibrate_strong_decay_model,
 #   DecayChannel, StrongDecayAmplitude, decay_amplitude, matrix_element,
 #   decay_width, MesonMasses, mass, load_table_v
 
@@ -99,14 +99,9 @@ function reduced_decay_amplitude(
     throw(ArgumentError("unknown reduced-amplitude class `$class`"))
 end
 
-# Default charm-meson quark masses (GeV): m_c and the light spectator m_d, from
-# data/parameters.provisional.toml (Table II). Used by the charm form factor.
-const CHARM_M_C_GEV = 1.628
-const CHARM_M_D_GEV = 0.220
-
 """
     spatial_overlap(q_GeV, L, beta_GeV; heavy_fraction=0.5, recoil=false,
-                    m_c_GeV=CHARM_M_C_GEV, m_d_GeV=CHARM_M_D_GEV, beta_c_GeV=beta_GeV)
+                    beta_c_GeV=beta_GeV)
 
 [DERIVED] The harmonic-oscillator momentum-space overlap factor
 
@@ -132,30 +127,32 @@ additionally carry the unequal-mass recoil multiplier
 function spatial_overlap(
     q_GeV::Real, L::Integer, beta_GeV::Real;
     heavy_fraction::Real = 0.5, recoil::Bool = false,
-    m_c_GeV::Real = CHARM_M_C_GEV, m_d_GeV::Real = CHARM_M_D_GEV,
     beta_c_GeV::Real = beta_GeV,
 )
     q_GeV <= 0 && return 0.0
     qbar = q_GeV / beta_c_GeV
     form_factor = exp(-0.25 * heavy_fraction^2 * q_GeV^2 / beta_c_GeV^2)
-    recoil_mult = recoil ? m_c_GeV * beta_GeV / ((m_c_GeV + m_d_GeV) * beta_c_GeV) : 1.0
+    recoil_mult = recoil ? heavy_fraction * beta_GeV / beta_c_GeV : 1.0
     return qbar^L * sqrt(1000q_GeV / (2π)) * form_factor * recoil_mult
 end
-
-# The charm heavy fraction while the class still selects it (removed in S4,
-# when DecayChannel carries the fraction directly).
-_charm_heavy_fraction() = CHARM_M_C_GEV / (CHARM_M_C_GEV + CHARM_M_D_GEV)
 
 # Back-compat private aliases (used by the scalar amplitude functions below).
 _suppressed_factor(q_GeV::Real, beta_GeV::Real) = spatial_overlap(q_GeV, 0, beta_GeV)
 
 """
-    strong_decay_amplitude(model, coefficient, class, qbar_power, q_GeV; convention=:table_iv)
+    strong_decay_amplitude(model, coefficient, class, qbar_power, q_GeV;
+                           heavy_fraction=0.5, recoil=false,
+                           beta_c_GeV=model.beta_GeV, convention=:table_iv)
 
 Scalar (compat) Table V amplitude in `MeV^(1/2)`: `coefficient` is the signed
 flavor/spin factor, `class` the reduced-amplitude class, `qbar_power` the
 explicit `qbar^L` power, `q_GeV` the breakup momentum. Prefer the row-oriented
 [`decay_amplitude`](@ref) for new code; this returns only the product.
+
+`heavy_fraction` is `r = m_Q/(m_Q + m_q)`; the default `0.5` is the equal-mass
+(light) case. Charmed rows pass `r = m_c/(m_c+m_d)` and, on the A_c P-waves,
+`recoil=true` for the footnote-d multiplier `r * beta/beta_c`. There is no
+separate charm entry point — the mass ratio is the only difference.
 """
 function strong_decay_amplitude(
     model::StrongDecayModel,
@@ -163,34 +160,8 @@ function strong_decay_amplitude(
     class::Symbol,
     qbar_power::Integer,
     q_GeV::Real;
-    convention::Symbol = :table_iv,
-)
-    q_GeV <= 0 && return 0.0
-    qbar = q_GeV / model.beta_GeV
-    return coefficient *
-           reduced_decay_amplitude(model, class, qbar; convention) *
-           spatial_overlap(q_GeV, qbar_power, model.beta_GeV)
-end
-
-"""
-    charm_decay_amplitude(model, coefficient, class, qbar_power, q_GeV;
-                          recoil=false, m_c_GeV=CHARM_M_C_GEV, m_d_GeV=CHARM_M_D_GEV,
-                          beta_c_GeV=model.beta_GeV, convention=:table_iv)
-
-Scalar (compat) Table V charmed-meson amplitude in `MeV^(1/2)` (footnote d):
-the charmed Gaussian form factor with `beta_c = beta` numerically, the
-`:A_c` / `:S_c` classes, and (with `recoil=true`) the unequal-mass multiplier
-`m_c beta / ((m_c+m_d) beta_c)` printed on the A_c P-wave rows.
-"""
-function charm_decay_amplitude(
-    model::StrongDecayModel,
-    coefficient::Real,
-    class::Symbol,
-    qbar_power::Integer,
-    q_GeV::Real;
+    heavy_fraction::Real = 0.5,
     recoil::Bool = false,
-    m_c_GeV::Real = CHARM_M_C_GEV,
-    m_d_GeV::Real = CHARM_M_D_GEV,
     beta_c_GeV::Real = model.beta_GeV,
     convention::Symbol = :table_iv,
 )
@@ -199,8 +170,8 @@ function charm_decay_amplitude(
     return coefficient *
            reduced_decay_amplitude(model, class, qbar; convention) *
            spatial_overlap(q_GeV, qbar_power, model.beta_GeV;
-               heavy_fraction = m_c_GeV / (m_c_GeV + m_d_GeV), recoil = recoil,
-               m_c_GeV = m_c_GeV, m_d_GeV = m_d_GeV, beta_c_GeV = beta_c_GeV)
+               heavy_fraction = heavy_fraction, recoil = recoil,
+               beta_c_GeV = beta_c_GeV)
 end
 
 """
