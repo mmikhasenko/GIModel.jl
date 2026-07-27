@@ -77,20 +77,31 @@ end
 `A' ~ A'' ~ A0 ~ A` convention).
 
 Structure-dependent classes (`:S`, `:S_c`, `:D`, `:P`) depend on `convention`:
-- `:table_iv` (default) returns `S0 - k A qbar^2` with `k = 1/2, 3/10, 3/4` — the
-  formula printed in Table IV.
+- `:table_iv` (default) returns `S0 - k A qbar^2` — the formula printed in
+  Table IV, with `k = 3/10` for `:D` and `3/4` for `:P`.
 - `:leading` returns the constant `S0` — the convention the paper actually used
   for the numeric column (drops the `-k A qbar^2` polynomial), reproducing the
   tabulated D/P amplitudes to ~1%.
+
+For the S family, Table IV (page-image 13) prints
+
+    S   = [3h - (1/2) (g + h/4) q^2/beta^2] beta
+    S_c = [3h - (m_c A_c/((m_d+m_c) beta)) q^2/beta_c^2] beta_c
+
+so `k` is `1/2` for `:S` and `r = m_c/(m_d+m_c)` for `:S_c` — and at equal
+constituent masses `r = 1/2`, i.e. the light `S` *is* the equal-mass case of
+`S_c`, exactly as the light Gaussian is the `r = 1/2` case of the charmed form
+factor. Both therefore take `k = heavy_fraction`, which defaults to `0.5`.
 """
 function reduced_decay_amplitude(
-    model::StrongDecayModel, class::Symbol, qbar::Real; convention::Symbol = :table_iv,
+    model::StrongDecayModel, class::Symbol, qbar::Real;
+    convention::Symbol = :table_iv, heavy_fraction::Real = 0.5,
 )
     class in (:A, :Aprime, :Adoubleprime, :A0, :A_c) && return model.A
     if convention === :leading
         class in (:S, :S_c, :D, :P) && return model.S0
     elseif convention === :table_iv
-        class in (:S, :S_c) && return model.S0 - 0.5 * model.A * qbar^2
+        class in (:S, :S_c) && return model.S0 - heavy_fraction * model.A * qbar^2
         class === :D && return model.S0 - 0.3 * model.A * qbar^2
         class === :P && return model.S0 - 0.75 * model.A * qbar^2
     else
@@ -168,7 +179,7 @@ function strong_decay_amplitude(
     q_GeV <= 0 && return 0.0
     qbar = q_GeV / beta_c_GeV
     return coefficient *
-           reduced_decay_amplitude(model, class, qbar; convention) *
+           reduced_decay_amplitude(model, class, qbar; convention, heavy_fraction) *
            spatial_overlap(q_GeV, qbar_power, model.beta_GeV;
                heavy_fraction = heavy_fraction, recoil = recoil,
                beta_c_GeV = beta_c_GeV)
@@ -321,7 +332,7 @@ function decay_amplitude(
 )
     hf = ch.heavy_fraction
     qbar = q_GeV / model.beta_GeV
-    reduced = reduced_decay_amplitude(model, ch.class, qbar; convention)
+    reduced = reduced_decay_amplitude(model, ch.class, qbar; convention, heavy_fraction = hf)
     overlap = spatial_overlap(q_GeV, ch.qbar_power, model.beta_GeV;
         heavy_fraction = hf, recoil = channel_has_recoil(ch))
     total = ch.coefficient * reduced * overlap

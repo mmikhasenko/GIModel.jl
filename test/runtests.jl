@@ -1188,10 +1188,8 @@ end
     q_B = decay_momentum(1.231, 0.7826, 0.138)
     model = calibrate_strong_decay_model(q_rho, q_B)
 
-    # Charm classes reuse the light reduced-amplitude algebra unchanged
-    # (footnote d: A_c/S_c are the charm analogues; beta_c = beta).
+    # A_c is structure-independent, so it is the light A unchanged.
     @test reduced_decay_amplitude(model, :A_c, 3.0) == model.A
-    @test reduced_decay_amplitude(model, :S_c, 1.0) ≈ reduced_decay_amplitude(model, :S, 1.0)
 
     # The charm mass ratio comes from the parameters TOML, not from constants
     # frozen inside src/ (which used to shadow it).
@@ -1199,6 +1197,19 @@ end
     m_c, m_d = mq_charm["c"], mq_charm["d"]
     r = m_c / (m_c + m_d)
     @test r ≈ 1.628 / (1.628 + 0.220)   # unfreezing changed no value
+
+    # Table IV (paper/vision_ocr/pages/page-013.md:39,55) prints
+    #   S   = [3h - (1/2)      (g + h/4) q^2/beta^2  ] beta
+    #   S_c = [3h - m_c/(m_d+m_c) A_c/beta q^2/beta_c^2] beta_c
+    # so the S-family polynomial coefficient is the heavy fraction r, and the
+    # light 1/2 is simply r at equal constituent masses. S_c must therefore be
+    # MORE suppressed than S (r = 0.881 > 1/2); it is not the light formula.
+    @test reduced_decay_amplitude(model, :S_c, 1.0; heavy_fraction = 0.5) ≈
+          reduced_decay_amplitude(model, :S, 1.0)
+    @test reduced_decay_amplitude(model, :S_c, 1.0; heavy_fraction = r) ≈
+          model.S0 - r * model.A
+    @test reduced_decay_amplitude(model, :S_c, 1.0; heavy_fraction = r) <
+          reduced_decay_amplitude(model, :S, 1.0)
 
     # The charmed form factor exp[-(1/4)(m_c/(m_c+m_d))^2 q^2/beta^2] replaces
     # the light exp(-q^2/16 beta^2); at fixed q, coefficient, and class the
