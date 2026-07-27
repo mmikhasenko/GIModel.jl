@@ -1264,12 +1264,22 @@ end
     @test decay_amplitude(model, ch_rho, masses; convention = :table_iv).total ≈ 12.4 atol = 1e-9
     @test_throws Exception mass(masses, "unregistered")
 
-    # Charmed channel derives its footnote-d form factor + recoil from the class.
-    ch_c = DecayChannel("Kstar_c", "D", "pi", -sqrt(1 / 5), :A_c, 2)
+    # A charmed channel now carries its OWN mass ratio r = m_c/(m_c+m_d) rather
+    # than having it inferred from the class; the A_c P-wave recoil multiplier is
+    # still keyed on the class.
+    _, mq_row = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    r_c = mq_row["c"] / (mq_row["c"] + mq_row["d"])
+    ch_c = DecayChannel("Kstar_c", "D", "pi", -sqrt(1 / 5), :A_c, 2; heavy_fraction = r_c)
     q_c = 0.4
     got = decay_amplitude(model, ch_c, q_c; convention = :leading).total
     want = charm_decay_amplitude(model, -sqrt(1 / 5), :A_c, 2, q_c; recoil = true, convention = :leading)
     @test got ≈ want
+
+    # Omitting it on an unequal-mass class is a construction error, never a
+    # silent fallback to the light (r = 1/2) form factor.
+    @test_throws ArgumentError DecayChannel("Kstar_c", "D", "pi", 1.0, :A_c, 2)
+    @test_throws ArgumentError DecayChannel("x", "y", "z", 1.0, :A, 1; heavy_fraction = 1.5)
+    @test DecayChannel("rho", "pi", "pi", 1.0, :A, 1).heavy_fraction == 0.5
 end
 
 @testset "Quark types (mass is dynamics, charge is the only discrete datum)" begin

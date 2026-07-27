@@ -243,8 +243,15 @@ A named Table V decay row. `parent`/`daughter1`/`daughter2` are meson names
 resolved to masses by a [`MesonMasses`](@ref); `coefficient` is the signed
 flavor-spin factor `c` [PAPER], `class` the reduced-amplitude class, `qbar_power`
 the orbital power `L`. Built by [`load_table_v`](@ref) from the canonical CSV or
-by hand. Charmed-row behavior (footnote d form factor + A_c P-wave recoil) is
-derived from `class`.
+by hand.
+
+`heavy_fraction` is `r = m_Q/(m_Q + m_q)`, the constituent-mass ratio driving the
+form factor (see [`spatial_overlap`](@ref)). It defaults to `0.5` (equal masses,
+the light rows) but is **required** for the unequal-mass `:A_c`/`:S_c` classes —
+constructing one without it throws rather than silently applying the light
+Gaussian. Unlike the other fields it is *derived*, not digitized: the canonical
+CSV has no quark-content column, so the caller resolves it from the parent's
+flavor content. The A_c P-wave recoil multiplier is still keyed on `class`.
 """
 struct DecayChannel
     parent::String
@@ -255,15 +262,32 @@ struct DecayChannel
     qbar_power::Int
     label::String
     section::String
+    heavy_fraction::Float64
 end
 
 function DecayChannel(
     parent, daughter1, daughter2, coefficient, class, qbar_power;
     label::AbstractString = "", section::AbstractString = "",
+    heavy_fraction::Union{Nothing,Real} = nothing,
 )
+    cls = Symbol(class)
+    hf = if heavy_fraction === nothing
+        # Loud, not silent: an unequal-mass row that falls back to the equal-mass
+        # default would quietly get the light form factor (0.5 vs ~0.881).
+        is_charm_class(cls) && throw(ArgumentError(
+            "channel `$parent -> $daughter1 $daughter2` has unequal-mass class " *
+            "`$cls` but no `heavy_fraction`; pass r = m_Q/(m_Q+m_q) explicitly",
+        ))
+        0.5
+    else
+        Float64(heavy_fraction)
+    end
+    0 < hf < 1 || throw(ArgumentError(
+        "heavy_fraction is m_Q/(m_Q+m_q) and must lie in (0,1), got $hf",
+    ))
     return DecayChannel(String(parent), String(daughter1), String(daughter2),
-        Float64(coefficient), Symbol(class), Int(qbar_power),
-        String(label), String(section))
+        Float64(coefficient), cls, Int(qbar_power),
+        String(label), String(section), hf)
 end
 
 is_charm_class(class::Symbol) = class in (:A_c, :S_c)
@@ -324,7 +348,7 @@ function decay_amplitude(
     model::StrongDecayModel, ch::DecayChannel, q_GeV::Real;
     convention::Symbol = :leading,
 )
-    hf = is_charm_class(ch.class) ? _charm_heavy_fraction() : 0.5
+    hf = ch.heavy_fraction
     qbar = q_GeV / model.beta_GeV
     reduced = reduced_decay_amplitude(model, ch.class, qbar; convention)
     overlap = spatial_overlap(q_GeV, ch.qbar_power, model.beta_GeV;
@@ -383,15 +407,25 @@ const _CLASS_SYMBOL = Dict(
 )
 
 """
-    load_table_v(rows) -> Vector{DecayChannel}
+    load_table_v(rows; heavy_fraction_for = _ -> nothing) -> Vector{DecayChannel}
 
 Turn parsed canonical `table_v_strong_decays.csv` rows into `DecayChannel`s.
 Accepts any row iterator (e.g. `CSV.File(path)`) so `src/` takes no CSV
 dependency. Rows with a non-amplitude class (`mixing_only`, `unlisted`) are
 skipped. Each row needs the columns `parent`, `daughter1`, `daughter2`,
 `coefficient`, `amp_class`, `qbar_power`, `decay`, `section`.
+
+`heavy_fraction_for(row)` supplies each row's `r = m_Q/(m_Q + m_q)`. The CSV has
+no quark-content column, so this cannot be inferred here — and because the table
+contains unequal-mass (`Ac`/`Sc`) rows, **the default resolver deliberately fails
+on them** rather than silently applying the light `r = 1/2` form factor. Callers
+loading the full table must pass one, e.g.
+
+    load_table_v(CSV.File(path);
+                 heavy_fraction_for = r -> occursin("charmed", String(r.section)) ?
+                                           m_c / (m_c + m_q) : 0.5)
 """
-function load_table_v(rows)
+function load_table_v(rows; heavy_fraction_for = _ -> nothing)
     channels = DecayChannel[]
     for row in rows
         class_str = String(row.amp_class)
@@ -400,6 +434,7 @@ function load_table_v(rows)
             String(row.parent), String(row.daughter1), String(row.daughter2),
             Float64(row.coefficient), _CLASS_SYMBOL[class_str], Int(row.qbar_power);
             label = String(row.decay), section = String(row.section),
+            heavy_fraction = heavy_fraction_for(row),
         ))
     end
     return channels

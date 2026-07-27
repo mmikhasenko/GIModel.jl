@@ -52,6 +52,18 @@ function parent_flavor(parent)
     error("unknown parent flavor for `$parent`")
 end
 
+# Heavy-quark share of the constituent mass, r = m_Q/(m_Q + m_q), which selects
+# the decay form factor (see GIModel.spatial_overlap). Read from the same TOML
+# as everything else — the value is NOT frozen in src.
+#
+# Note what this makes visible: the paper applies its footnote-d unequal-mass
+# form factor to the CHARMED rows only. Strange rows are also unequal-mass
+# (m_s = 419 vs m_ud = 220 MeV, r = 0.66) yet keep the equal-mass SHO Gaussian.
+# So 0.5 here encodes the paper's convention, not the kinematics.
+const _QUARK_MASSES = load_quark_masses(PARAMS_PATH)
+const CHARM_FRACTION = _QUARK_MASSES["c"] / (_QUARK_MASSES["c"] + _QUARK_MASSES["d"])
+heavy_fraction_of(parent) = parent in CHARMED ? CHARM_FRACTION : 0.5
+
 # --- (n, L, multiplicity, J) from the section header (+ parent for mixed Q's) -
 function parent_level(section, parent)
     s = section
@@ -166,7 +178,8 @@ function main()
         section = String(r.section); parent = String(r.parent)
         d1 = String(r.daughter1); d2 = String(r.daughter2)
         ch = DecayChannel(parent, d1, d2, Float64(r.coefficient), CLASS[class_str],
-            Int(r.qbar_power); label = String(r.decay), section = section)
+            Int(r.qbar_power); label = String(r.decay), section = section,
+            heavy_fraction = heavy_fraction_of(parent))
 
         M, msrc = parent_mass(section, parent)
         m1 = get(DAUGHTER_MASS, d1, NaN); m2 = get(DAUGHTER_MASS, d2, NaN)
@@ -226,7 +239,8 @@ function mixing_pass(model, model_mass)
             m2 = get(DAUGHTER_MASS, String(r.daughter2), NaN)
             q = decay_momentum(M, m1, m2)
             ch = DecayChannel(String(r.parent), String(r.daughter1), String(r.daughter2),
-                Float64(r.coefficient), CLASS[String(r.amp_class)], Int(r.qbar_power))
+                Float64(r.coefficient), CLASS[String(r.amp_class)], Int(r.qbar_power);
+                heavy_fraction = heavy_fraction_of(String(r.parent)))
             (decay_amplitude(model, ch, q; convention = :leading).total, q,
              String(r.daughter1), String(r.daughter2))
         end
