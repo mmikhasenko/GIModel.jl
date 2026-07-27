@@ -127,7 +127,14 @@ mixing rows).
 ```{julia}
 csv = joinpath("..", "GIPaper", "data", "raw", "digitized_tables",
                "table_v_strong_decays.csv")
-channels = load_table_v(CSV.File(csv))
+# `heavy_fraction_for` supplies each row's r = m_Q/(m_Q + m_q), which selects
+# the form factor. The CSV has no quark-content column, so `load_table_v`
+# cannot infer it and deliberately refuses to guess on the unequal-mass
+# (Ac/Sc) rows rather than silently applying the light r = 1/2 Gaussian.
+mq = load_quark_masses(joinpath("..", "data", "parameters.provisional.toml"))
+r_charm = mq["c"] / (mq["c"] + mq["d"])
+channels = load_table_v(CSV.File(csv);
+    heavy_fraction_for = row -> occursin("charmed", String(row.section)) ? r_charm : 0.5)
 length(channels)
 ```
 

@@ -52,11 +52,11 @@ An amplitude factorizes as `amp = c * X(qbar) * spatial_overlap`
 | factor | symbol | provenance | where |
 |---|---|---|---|
 | flavor-spin coefficient | `c` | **[PAPER]** App. B, one per row | canonical CSV `coefficient` |
-| reduced-amplitude class algebra | `X` form, `k = 1/2,3/10,3/4` | **[PAPER]** Table IV | `reduced_decay_amplitude` |
+| reduced-amplitude class algebra | `X` form, `k = r,3/10,3/4` (`r = m_Q/(m_Q+m_q)`, `1/2` at equal mass) | **[PAPER]** Table IV | `reduced_decay_amplitude` |
 | fitted strengths | `A`, `S0` | **[DERIVED]** solved from 2 fit rows | `calibrate_strong_decay_model` |
-| spatial overlap | `qbar^L sqrt(q/2pi) e^{-q^2/16b^2}` | **[DERIVED]** SHO integral | `spatial_overlap` |
+| spatial overlap | `qbar^L sqrt(q/2pi) e^{-(1/4) r^2 q^2/b_c^2}` (`r=1/2` is the light `e^{-q^2/16b^2}`) | **[DERIVED]** SHO integral | `spatial_overlap` |
 | breakup momentum | `q` | **[DERIVED]** Kallen | `decay_momentum` |
-| charm form factor + recoil | footnote d | **[PAPER]** shape, **[DERIVED]** value | `spatial_overlap(; charm)` |
+| unequal-mass form factor + recoil | footnote d | **[PAPER]** shape, **[DERIVED]** value | `spatial_overlap(; heavy_fraction, recoil)` |
 | partial width | `|amp|^2` | **[DERIVED]** GI normalization | `decay_width` |
 
 **Leading-S0 convention.** The paper's structure-dependent (S/D/P) numeric

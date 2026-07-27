@@ -83,7 +83,7 @@ report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
 metric = "light calibration (A, S0) transfers to charm with no refit; :leading vs :table_iv conventions"
 anchor = "paper/vision_ocr/page_images/page-013.png"
 parent = "sec-IV"
-notes = "Structure-dependent classes carry the S0 - k A qbar^2 polynomial (:table_iv) or the leading constant S0 (:leading, the paper's numeric-column convention)."
+notes = "Structure-dependent classes carry the S0 - k A qbar^2 polynomial (:table_iv) or the leading constant S0 (:leading, the paper's numeric-column convention). CORRECTION (S5): Table IV prints the S-family coefficient as k = 1/2 for S but k = m_c/(m_d+m_c) for S_c (page-013 lines 39 and 55); the code had used the light 1/2 for both. Reading the rows together shows the light case IS the equal-mass point of the charmed one (r = 1/2), the same collapse as the Gaussian form factor, so both now take k = heavy_fraction. Under :table_iv the charmed S_c moves 3.085 -> 2.450 (21%); :leading -- the convention every scored report uses -- is bit-identical, so no reproduction number changes. Currently unexercised: nothing runs :table_iv on a charmed row."
 
 [[unit]]
 id = "table-V"
@@ -113,7 +113,7 @@ status = "reproduced"
 code = ["src/strong_decays.jl:spatial_overlap"]
 anchor = "paper/vision_ocr/page_images/page-014.png"
 parent = "sec-IV"
-notes = "Paper's own input, not fitted."
+notes = "Paper's own input, not fitted. The form factor is now one expression exp[-(1/4) r^2 q^2/beta_c^2] parametrized by the heavy fraction r = m_Q/(m_Q+m_q); the light Gaussian exp(-q^2/16 beta^2) is exactly its r = 1/2 point (verified bitwise), so there is no separate charm branch and a b-flavored row would simply pass a larger r. r is carried per row on DecayChannel and resolved by the harness from the parent's flavor content, since the canonical CSV has no quark-content column. Note the paper applies this unequal-mass treatment to CHARMED rows only: strange rows are also unequal-mass (r = 0.66) yet keep the equal-mass Gaussian, so 0.5 there is the paper's convention, not the kinematics."
 
 [[unit]]
 id = "fit-A-S0"
