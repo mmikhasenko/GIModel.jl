@@ -36,6 +36,10 @@ include("parameters.jl")
 export QuarkMassTable, load_quark_masses, load_parameters_and_quark_masses
 include("quark_mass_table.jl")
 
+export AbstractQuark, LightQuark, StrangeQuark, HeavyQuark
+export charge, flavor_symbol, mass_GeV
+include("quark.jl")
+
 export Meson, is_equal_flavor, flavor_label
 include("meson.jl")
 

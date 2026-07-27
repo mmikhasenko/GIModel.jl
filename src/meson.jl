@@ -48,6 +48,22 @@ struct Meson
     end
 end
 
+"""
+    Meson(q1::AbstractQuark, q2::AbstractQuark)
+
+The ``q_1 \\bar q_2`` meson built from two quark objects: each contributes its
+mass and its [`flavor_symbol`](@ref). Equivalent to the explicit-mass form, so
+`Meson(HeavyQuark{:up}(1.628, :c), HeavyQuark{:up}(1.628, :c))` is the same
+channel as `Meson(mq, :c, :c)`.
+"""
+function Meson(q1::AbstractQuark, q2::AbstractQuark)
+    return Meson(
+        flavor_symbol(q1),
+        flavor_symbol(q2),
+        ConstituentMasses(mass_GeV(q1), mass_GeV(q2)),
+    )
+end
+
 function Meson(quark_masses::QuarkMassTable, flavor1::Symbol, flavor2::Symbol)
     f1 = _canonical_flavor(flavor1)
     f2 = _canonical_flavor(flavor2)
