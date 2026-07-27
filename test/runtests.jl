@@ -1343,6 +1343,54 @@ end
     @test charge(up_at_mb) != charge(b)
 end
 
+@testset "Resolution walls are detected, not silent" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+
+    # Grid points spanned by the ground state's RMS radius. The FD grid is fixed,
+    # so a compact enough state falls between points and comes back silently
+    # under-resolved (at 30 GeV the hyperfine splitting collapses to 0.0025).
+    function points_across(m; ngrid = 450, rmax = 24.0)
+        vals, vecs, r = channel_solution(params, ConstituentMasses(m, m), 0;
+            nlevels = 2, ngrid = ngrid, rmax = rmax)
+        h = r[2] - r[1]
+        u = vecs[:, 1]
+        rms = sqrt(sum(abs2.(u) .* r .^ 2) * h / (sum(abs2, u) * h))
+        return rms / h
+    end
+    # Every sector the paper actually uses must sit clear of the threshold.
+    for m in (mq["q"], mq["s"], mq["c"], mq["b"])
+        @test points_across(m) > GIModel.MIN_POINTS_ACROSS_STATE
+    end
+    # ...including bottomonium on the deliberately coarser grid the Table III
+    # mixing audit uses (ngrid = 220, rmax = 22): 10.3 points is ~2 MeV of
+    # error, imprecise but not broken, so it must NOT warn.
+    @test points_across(mq["b"]; ngrid = 220, rmax = 22.0) > GIModel.MIN_POINTS_ACROSS_STATE
+    # The genuinely broken case must be caught: at 6.9 points the hyperfine
+    # splitting collapses.
+    @test points_across(30.0) < GIModel.MIN_POINTS_ACROSS_STATE
+
+    # Same story in the oscillator basis: the fixed HO_BETA_GRID rails, i.e. the
+    # variational optimum lands on the last candidate, only well above bottomonium.
+    function best_beta(m)
+        ph = with_basis(params, HarmonicOscillatorBasis)
+        mm = ConstituentMasses(m, m)
+        r, h = GIModel.radial_grid(450, 24.0)
+        best = nothing
+        for b in GIModel.HO_BETA_GRID
+            H, _ = GIModel.oscillator_hamiltonian_for_beta(ph, mm, 0, r, h, b; nbasis = 24)
+            v, _ = GIModel.lowest_eigenpairs(Matrix(H), 2; eigensolver = :full)
+            (isnothing(best) || v[end] < best[2]) && (best = (b, v[end]))
+        end
+        return best[1]
+    end
+    @test best_beta(mq["b"]) < last(GIModel.HO_BETA_GRID)     # bottomonium is fine
+    @test best_beta(30.0) == last(GIModel.HO_BETA_GRID)       # railed
+
+    # And the detector is wired to warn (maxlog=1, so this is the first trigger).
+    @test_logs (:warn,) match_mode = :any channel_solution(
+        params, ConstituentMasses(30.0, 30.0), 0; nlevels = 2)
+end
+
 @testset "Isoscalar coherence factor is stated, not string-matched" begin
     r = collect(range(0.05, 6.0; length = 64))
     wave = RadialWaveOnUniformMesh(exp.(-r), r)

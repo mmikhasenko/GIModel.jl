@@ -107,6 +107,23 @@ function oscillator_hamiltonian_for_beta(
     return Symmetric(kinetic + potential), U
 end
 
+# The beta grid is fixed and does not adapt to the masses. If the variational
+# optimum lands on the LAST candidate, the true optimum lies outside the grid:
+# the basis is too diffuse to represent a state this compact, and the result is
+# silently under-resolved rather than obviously wrong. Bottomonium picks
+# beta = 1.55 and m_Q = 8 GeV picks 1.95, so this stays quiet for every sector
+# the paper uses and first fires around m_Q ~ 15 GeV.
+function _warn_if_beta_railed(best_beta::Real, candidates, masses::ConstituentMasses, L::Integer)
+    best_beta == last(candidates) || return nothing
+    @warn """
+    Harmonic-oscillator basis railed: the optimal beta hit the top of the fixed \
+    HO_BETA_GRID ($(last(candidates))), so this state is more compact than the \
+    basis can represent and the result is under-resolved. Extend HO_BETA_GRID \
+    for constituent masses well above bottomonium.""" m1 = masses.m1_GeV m2 =
+        masses.m2_GeV L maxlog = 1
+    return nothing
+end
+
 function oscillator_beta_candidates(masses::ConstituentMasses, L::Integer)
     # The broad grid is deliberately not tuned per sector. It spans diffuse
     # light states and compact bottomonia well enough for an audit comparison.
@@ -135,6 +152,7 @@ function oscillator_channel_solution(
             best = (beta = β, values = vals, coeffs = vecs, basis = U)
         end
     end
+    _warn_if_beta_railed(best.beta, oscillator_beta_candidates(masses, L), masses, L)
     waves = best.basis * best.coeffs
     for col in axes(waves, 2)
         nrm = sqrt(sum(abs2, waves[:, col]) * h)
@@ -185,9 +203,10 @@ function ho_full_distorted_states(
         Vproj = projected_matrix(U, h, Matrix(V))
         F = eigen(Symmetric(Matrix(H) + Matrix(Vproj)))
         if isnothing(best) || F.values[nlevels] < best.values[nlevels]
-            best = (values = F.values, coeffs = F.vectors, basis = U)
+            best = (beta = β, values = F.values, coeffs = F.vectors, basis = U)
         end
     end
+    _warn_if_beta_railed(best.beta, oscillator_beta_candidates(masses, L), masses, L)
     waves = best.basis * best.coeffs
     for col in axes(waves, 2)
         nrm = sqrt(sum(abs2, waves[:, col]) * h)
@@ -232,9 +251,10 @@ function ho_first_order_distorted_states(
         H, U = oscillator_hamiltonian_for_beta(params, masses, L, r, h, β; nbasis = nbasis)
         F = eigen(Symmetric(Matrix(H)))
         if isnothing(best) || F.values[nlevels] < best.values[nlevels]
-            best = (values = F.values, coeffs = F.vectors, basis = U)
+            best = (beta = β, values = F.values, coeffs = F.vectors, basis = U)
         end
     end
+    _warn_if_beta_railed(best.beta, oscillator_beta_candidates(masses, L), masses, L)
     waves = best.basis * best.coeffs
     for col in axes(waves, 2)
         nrm = sqrt(sum(abs2, waves[:, col]) * h)
