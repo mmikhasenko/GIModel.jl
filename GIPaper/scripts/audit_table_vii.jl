@@ -367,8 +367,8 @@ function run_two_photon_mixed(params, params_ho, mq, paper)
 
     psl = [GIModel.BasisState(1, "S", 1, 0), GIModel.BasisState(2, "S", 1, 0)]
     vl = [GIModel.BasisState(1, "S", 3, 1)]
-    nn_spec = GIModel.compute_spectrum(params, Meson(:q, :q, ConstituentMasses(mu, mu)); levels = vcat(psl, vl))
-    ss_spec = GIModel.compute_spectrum(params, Meson(:s, :s, ConstituentMasses(ms, ms)); levels = vcat(psl, vl))
+    nn_spec = GIModel.compute_spectrum(params, Meson(LightQuark(mu), LightQuark(mu)); levels = vcat(psl, vl))
+    ss_spec = GIModel.compute_spectrum(params, Meson(StrangeQuark(ms), StrangeQuark(ms)); levels = vcat(psl, vl))
     psb = GIModel.pseudoscalar_annihilation_block(GIModel.PaperP1Annihilation(), params, nn_spec, ss_spec)
 
     results = NamedTuple[]

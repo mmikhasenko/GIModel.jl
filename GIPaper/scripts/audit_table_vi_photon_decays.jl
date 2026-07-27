@@ -234,8 +234,8 @@ end
 
 println("solving isoscalar P1/S1 mixing blocks (Table III machinery) ...")
 let
-    nn_meson = G.Meson(:q, :q, G.ConstituentMasses(m_ud, m_ud))
-    ss_meson = G.Meson(:s, :s, G.ConstituentMasses(m_s, m_s))
+    nn_meson = G.Meson(G.LightQuark(m_ud), G.LightQuark(m_ud))
+    ss_meson = G.Meson(G.StrangeQuark(m_s), G.StrangeQuark(m_s))
     ps_levels = [G.BasisState(1, "S", 1, 0), G.BasisState(2, "S", 1, 0)]
     v_level = G.BasisState(1, "S", 3, 1)
     nn_spec = G.compute_spectrum(params, nn_meson; levels = vcat(ps_levels, [v_level]))
@@ -542,8 +542,8 @@ open_row_rescore = let
 end
 # P1 pseudoscalar mixing weights (wave-independent): recompute the block.
 eta_ordering = let
-    nn_meson = G.Meson(:q, :q, G.ConstituentMasses(m_ud, m_ud))
-    ss_meson = G.Meson(:s, :s, G.ConstituentMasses(m_s, m_s))
+    nn_meson = G.Meson(G.LightQuark(m_ud), G.LightQuark(m_ud))
+    ss_meson = G.Meson(G.StrangeQuark(m_s), G.StrangeQuark(m_s))
     ps_levels = [G.BasisState(1, "S", 1, 0), G.BasisState(2, "S", 1, 0)]
     v_level = G.BasisState(1, "S", 3, 1)
     nn_spec = G.compute_spectrum(params, nn_meson; levels = vcat(ps_levels, [v_level]))

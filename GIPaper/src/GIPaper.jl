@@ -16,7 +16,7 @@ include("paths.jl")
 export ReferenceState, load_reference_spectrum
 include("reference_state.jl")
 
-export reference_meson
+export reference_meson, quark_for
 include("reference_meson.jl")
 
 export GI_PSEUDOSCALAR_FIG5_TARGETS_GEV, table_iii_amplitude

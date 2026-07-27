@@ -34,16 +34,19 @@ end
     @test m.constituent_masses.m1_GeV ≈ m.constituent_masses.m2_GeV ≈ mq["c"]
     m = reference_meson(mq, row("charmonium", "c cbar"))
     @test (m.flavor1, m.flavor2) == (:c, :c)
+    # u/d/n/q all resolve to the one LightQuark the model can represent, so the
+    # light leg reads `:q` regardless of how the CSV spells it. Masses are
+    # unchanged (m_u = m_d = m_q in the parameter set).
     m = reference_meson(mq, row("charmed", "-c dbar; c ubar"))
-    @test (m.flavor1, m.flavor2) == (:c, :d)
+    @test (m.flavor1, m.flavor2) == (:c, :q)
     @test m.constituent_masses.m1_GeV ≈ mq["c"]
     @test m.constituent_masses.m2_GeV ≈ mq["d"]
     m = reference_meson(mq, row("charmed_strange", "c sbar"))
     @test (m.flavor1, m.flavor2) == (:c, :s)
     m = reference_meson(mq, row("bottom_light", "b ubar; -b dbar"))
-    @test (m.flavor1, m.flavor2) == (:b, :u)
+    @test (m.flavor1, m.flavor2) == (:b, :q)
     m = reference_meson(mq, row("strange", "-u sbar; -d sbar"))
-    @test (m.flavor1, m.flavor2) == (:u, :s)
+    @test (m.flavor1, m.flavor2) == (:q, :s)
     m = reference_meson(mq, row("isoscalar", "n nbar / s sbar mixed"))
     @test (m.flavor1, m.flavor2) == (:q, :q)
     @test m.constituent_masses.m1_GeV ≈ 0.5 * (mq["u"] + mq["d"])

@@ -467,7 +467,7 @@ function compare_reference(
         iso = findfirst(m -> any(kept[i].sector == "isoscalar" for i in group_rows[group_of[m]]), mesons)
         if !isnothing(iso)
             nn_spec = specs[iso]
-            strange_meson = Meson(:s, :s, ConstituentMasses(strange_mass_GeV, strange_mass_GeV))
+            strange_meson = Meson(StrangeQuark(strange_mass_GeV), StrangeQuark(strange_mass_GeV))
             seen = Set{Tuple{Int,String,Int,Int}}()
             ss_levels = BasisState[]
             for i in group_rows[iso]

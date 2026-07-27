@@ -218,7 +218,7 @@ open(joinpath(report_dir, "basis_nonmixing_comparison.md"), "w") do io
 end
 
 function compare_isoscalar_branch(params, reference, mass)
-    meson = Meson(:q, :q, ConstituentMasses(mass, mass))
+    meson = Meson(LightQuark(mass), LightQuark(mass))
     levels = [BasisState(r.n, r.L, r.multiplicity, r.J) for r in reference]
     spec = compute_spectrum(
         params,

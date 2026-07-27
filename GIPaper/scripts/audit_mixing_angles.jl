@@ -26,6 +26,7 @@ using Printf
 
 root = dirname(@__DIR__)
 using GIModel
+using GIPaper: quark_for   # paper flavor label -> quark object
 
 params_path = joinpath(dirname(root), "data", "parameters.provisional.toml")
 params, mq = load_parameters_and_quark_masses(params_path)
@@ -70,7 +71,7 @@ for sec in sectors
         push!(levels, BasisState(n, L, 1, L_OF[L]))
         push!(levels, BasisState(n, L, 3, L_OF[L]))
     end
-    meson = Meson(mq, sec.f1, sec.f2)
+    meson = Meson(quark_for(mq, sec.f1), quark_for(mq, sec.f2))
     println("computing spectrum for ", flavor_label(meson), " ...")
     # Production solver settings (defaults): ngrid = 450, rmax = 24.0.
     spec = compute_spectrum(params, meson; levels = levels)

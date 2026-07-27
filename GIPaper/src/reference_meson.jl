@@ -2,7 +2,29 @@
 # GIModel.Meson. Replaces the old masses_from_content.jl: parsing failures
 # throw ArgumentError naming the row — there is no silent fallback mass.
 #
-# Public API (exported from GIPaper.jl): reference_meson
+# Public API (exported from GIPaper.jl): reference_meson, quark_for
+
+"""
+    quark_for(quark_masses, flavor::Symbol) -> AbstractQuark
+
+Map a paper flavor label to a GIModel quark object. This is the comparison
+layer's job: the paper names flavors, the engine only needs mass and charge.
+
+`:u`, `:d`, `:n` and `:q` all resolve to the same [`LightQuark`](@ref) — the GI
+parameter set gives u and d one mass and nothing in the dynamics branches on
+which, so that distinction is CSV spelling rather than physics. (The digitized
+tables are inconsistent about it anyway: `_SECTOR_FLAVORS` labels isovector and
+isoscalar `:q` while the open-flavor rows spell the same light quark `d` or `u`.)
+"""
+function quark_for(quark_masses::QuarkMassTable, flavor::Symbol)
+    flavor in (:u, :d, :n, :q) && return LightQuark(quark_masses["q"])
+    flavor === :s && return StrangeQuark(quark_masses["s"])
+    flavor === :c && return HeavyQuark{:up}(quark_masses["c"], :c)
+    flavor === :b && return HeavyQuark{:down}(quark_masses["b"], :b)
+    throw(ArgumentError(
+        "no quark for flavor `$flavor` (expected :u/:d/:n/:q, :s, :c or :b)",
+    ))
+end
 
 # Sectors whose flavor content is fixed by the sector name alone.
 const _SECTOR_FLAVORS = Dict{String,Tuple{Symbol,Symbol}}(
@@ -67,11 +89,11 @@ deliberately no fallback mass.
 function reference_meson(quark_masses::QuarkMassTable, state::ReferenceState)
     flavors = get(_SECTOR_FLAVORS, state.sector, nothing)
     if !isnothing(flavors)
-        return Meson(quark_masses, flavors...)
+        return Meson((quark_for(quark_masses, f) for f in flavors)...)
     end
     state.sector in _OPEN_FLAVOR_SECTORS || throw(ArgumentError(
         "unknown sector `$(state.sector)` for flavor resolution (quark_content=`$(state.quark_content)`)",
     ))
     f1, f2 = _open_flavor_pair(state)
-    return Meson(quark_masses, f1, f2)
+    return Meson(quark_for(quark_masses, f1), quark_for(quark_masses, f2))
 end
