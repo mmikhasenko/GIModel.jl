@@ -58,7 +58,11 @@ function annihilation_basis_input(
         label,
         spec.meson.constituent_masses.m1_GeV,
         state.mass_GeV,
-        wave,
+        wave;
+        # Coherent exactly for the nonstrange (u ubar + d dbar)/sqrt(2) channel —
+        # the same predicate `_annihilation_flavor_tag` uses to emit "ns", so this
+        # reproduces the old label-substring behavior identically.
+        isoscalar_coherent = spec.meson.flavor1 in (:u, :d, :q),
     )
 end
 

@@ -38,19 +38,42 @@ struct PseudoscalarAnnihilationBasisInput
     constituent_mass_GeV::Float64
     diagonal_GeV::Float64
     radial::RadialWaveOnUniformMesh
+    # Whether this channel is the coherent (u ubar + d dbar)/sqrt(2) combination,
+    # which carries a sqrt(2) amplitude factor relative to a single flavor. This
+    # is a property of the flavor state, so it is stated, not guessed.
+    isoscalar_coherent::Bool
 end
+
+# DEPRECATED historical rule: the sqrt(2) used to be selected by substring-matching
+# the DISPLAY label. It is fragile -- any label containing "ns" fires it, so a
+# quark named `:sn` would silently gain a 41% factor. Kept only so that callers
+# which have not yet been migrated (archived forensics scripts) reproduce their
+# original numbers, with a warning.
+_label_implies_coherent(label::AbstractString) =
+    (l = lowercase(label); occursin("ns", l) || occursin("n nbar", l))
 
 function pseudoscalar_annihilation_basis_input(
     label::AbstractString,
     constituent_mass_GeV::Real,
     diagonal_GeV::Real,
-    radial::RadialWaveOnUniformMesh,
+    radial::RadialWaveOnUniformMesh;
+    isoscalar_coherent::Union{Nothing,Bool} = nothing,
 )
+    coherent = if isoscalar_coherent === nothing
+        @warn """
+        pseudoscalar_annihilation_basis_input: inferring `isoscalar_coherent` from \
+        the label string is deprecated and fragile (any label containing "ns" \
+        triggers a sqrt(2) amplitude factor). Pass it explicitly.""" maxlog = 1
+        _label_implies_coherent(label)
+    else
+        isoscalar_coherent
+    end
     return PseudoscalarAnnihilationBasisInput(
         String(label),
         float(constituent_mass_GeV),
         float(diagonal_GeV),
         radial,
+        coherent,
     )
 end
 
@@ -203,10 +226,8 @@ function fix_annihilation_phase!(vecs::AbstractMatrix{<:Real}, r::AbstractVector
     return vecs
 end
 
-function _flavor_coherence_factor(input::PseudoscalarAnnihilationBasisInput)
-    label = lowercase(input.label)
-    return (occursin("ns", label) || occursin("n nbar", label)) ? sqrt(2.0) : 1.0
-end
+_flavor_coherence_factor(input::PseudoscalarAnnihilationBasisInput) =
+    input.isoscalar_coherent ? sqrt(2.0) : 1.0
 
 function _annihilation_overlap_factor(
     scheme::PseudoscalarSmearingScheme,

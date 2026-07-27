@@ -35,7 +35,10 @@ function wavefunction_origin_smearing(
     nrm = sqrt(sum(abs2, u) * radial.h)
     nrm > 0 || throw(ArgumentError("wavefunction_origin_smearing: zero-norm radial wave"))
     wave = RadialWaveOnUniformMesh(u ./ nrm, radial.r)
-    input = PseudoscalarAnnihilationBasisInput("", float(mass_GeV), 0.0, wave)
+    # `false`: this input goes straight to _sL_smearing_factor and never reaches
+    # the coherence factor, so the flag is inert here — stated rather than left
+    # to an empty label.
+    input = PseudoscalarAnnihilationBasisInput("", float(mass_GeV), 0.0, wave, false)
     return _sL_smearing_factor(FDMomentumIntegralSmearing(npoints), input, L)
 end
 

@@ -87,7 +87,10 @@ function s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
                 label,
                 channel.mass,
                 channel.levels[n],
-                RadialWaveOnUniformMesh(channel.solution, n),
+                RadialWaveOnUniformMesh(channel.solution, n);
+                # TARGET_BASIS is ["1 ns", "1 ss", "1 cc", "1 bb", ...]; only the
+                # nonstrange rows are the coherent (u ubar + d dbar)/sqrt(2) state.
+                isoscalar_coherent = flavor == "ns",
             ),
         )
     end

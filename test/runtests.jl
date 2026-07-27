@@ -1343,6 +1343,32 @@ end
     @test charge(up_at_mb) != charge(b)
 end
 
+@testset "Isoscalar coherence factor is stated, not string-matched" begin
+    r = collect(range(0.05, 6.0; length = 64))
+    wave = RadialWaveOnUniformMesh(exp.(-r), r)
+    mk(label, coh) = pseudoscalar_annihilation_basis_input(label, 0.22, 0.9, wave;
+        isoscalar_coherent = coh)
+
+    # The sqrt(2) follows the flag...
+    @test GIModel._flavor_coherence_factor(mk("1 ns", true)) ≈ sqrt(2)
+    @test GIModel._flavor_coherence_factor(mk("1 ss", false)) == 1.0
+
+    # ...and NOT the label. Previously the factor was chosen by
+    # occursin("ns", lowercase(label)), so a channel whose name merely contained
+    # those letters silently gained a 41% amplitude factor. Both directions must
+    # now be decided by the flag alone.
+    @test GIModel._flavor_coherence_factor(mk("1 snsn", false)) == 1.0
+    @test GIModel._flavor_coherence_factor(mk("1 cc", true)) ≈ sqrt(2)
+
+    # The deprecated label inference still reproduces the historical rule for
+    # unmigrated callers (archived forensics), and warns.
+    @test GIModel._label_implies_coherent("1 ns")
+    @test GIModel._label_implies_coherent("2 n nbar")
+    @test !GIModel._label_implies_coherent("1 ss")
+    @test (@test_logs (:warn,) match_mode = :any pseudoscalar_annihilation_basis_input(
+        "1 ns", 0.22, 0.9, wave)).isoscalar_coherent
+end
+
 @testset "Meson construction and flavor resolution" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     cc = Meson(mq, :c, :c)
