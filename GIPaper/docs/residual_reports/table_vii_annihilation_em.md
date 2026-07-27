@@ -203,12 +203,14 @@ widths carry the Table VII `f_V` residual squared:
 | `psi' -> e+ e-` | +0.0645 | 3.425e-06 GeV | 2.340e-06 GeV | 1.46 |  |
 | `Upsilon -> e+ e-` | +0.0278 | 1.628e-06 GeV | 1.340e-06 GeV | 1.21 |  |
 
-`ρ`/`Υ` land within ~10%; `ψ` sits ~1.8x high — the leading-order D8
-misses the QCD `(1 − 16α_s/3π)` radiative correction (largest for charm),
-not a wavefunction miss (`f_ψ` itself is 1.01x the paper). The weak `π→μν`
-row is not tabled here: the model's light `¹S₀` mass (`0.10 GeV < m_μ`)
-closes the phase space — the same light-pseudoscalar pathology that inflates
-`f_π`. Widths are exercised end-to-end; the paper tabulates only the constants.
+The leading-order D8 over-predicts, most for charm (`ρ` 0.99, `Υ` 1.21,
+`ψ'` 1.46, `ψ` 1.84): the ratios track the omitted QCD `(1 − 16α_s/3π)`
+radiative correction, which shrinks with α_s from charm to bottom and would
+bring each toward 1 — not a wavefunction miss (`f_ψ` itself is 1.01x the
+paper). The weak `π→μν` row is not tabled here: the model's light `¹S₀` mass
+(`0.10 GeV < m_μ`) closes the phase space — the same light-pseudoscalar
+pathology that inflates `f_π`. Widths are exercised end-to-end; the paper
+tabulates only the constants.
 
 ## Reading
 
