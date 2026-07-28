@@ -5,6 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ ce2ee43c-82a7-4438-a428-de2798083c90
+# ╠═╡ show_logs = false
 begin
 	using Pkg
 	Pkg.offline()
