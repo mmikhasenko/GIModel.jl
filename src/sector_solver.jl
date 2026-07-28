@@ -100,25 +100,18 @@ function solve_sector(
     equal_mass_GeV::Real;
     maxn::Integer = 6,
     solver::RadialSolver = RadialSolver(),
-    ngrid::Integer = solver.ngrid,
-    rmax::Real = solver.rmax,
-    kinetic::Symbol = solver.kinetic,
-    eigensolver::Symbol = solver.eigensolver,
+    ngrid = nothing,
+    rmax = nothing,
+    kinetic = nothing,
+    eigensolver = nothing,
 )
+    solver = _solver_with_legacy(solver, "solve_sector"; ngrid = ngrid, rmax = rmax,
+        kinetic = kinetic, eigensolver = eigensolver)
     m = Float64(equal_mass_GeV)
     mm = ConstituentMasses(m, m)
     results = Dict{Tuple{Int,String},Float64}()
     for (symbol, L) in L_SYMBOLS
-        levels = solve_channel(
-            params,
-            mm,
-            L;
-            nlevels = maxn,
-            ngrid = ngrid,
-            rmax = rmax,
-            kinetic = kinetic,
-            eigensolver = eigensolver,
-        )
+        levels = solve_channel(params, mm, L; nlevels = maxn, solver = solver)
         for n = 1:length(levels)
             results[(n, symbol)] = levels[n]
         end

@@ -1385,6 +1385,24 @@ end
     tuned = RadialSolver(RadialSolver(ngrid = 900); rmax = 32.0)
     @test tuned.ngrid == 900 && tuned.rmax == 32.0 && tuned.kinetic === :relativistic
 
+    # The deprecated loose keywords still work, still win, and now say so.
+    # Clean paths must stay silent — the shims fold legacy keywords in once at
+    # the public entry point, so internal forwarding cannot self-trigger.
+    @test_logs compute_spectrum(params, meson; levels = levels)
+    @test_logs compute_spectrum(params, meson; levels = levels,
+        solver = RadialSolver(), terms = SpinTerms())
+    @test_logs central_spectrum(params, meson; levels = levels)
+    @test_logs channel_solution(params, meson.constituent_masses, 0;
+        solver = RadialSolver())
+    @test (@test_logs (:warn,) match_mode = :any masses(
+        compute_spectrum(params, meson; levels = levels, ngrid = 450))) == masses(base)
+    @test (@test_logs (:warn,) match_mode = :any masses(
+        compute_spectrum(params, meson; levels = levels, tensor_mixing = true))) == masses(base)
+    # The silent-override edge the warning exists to expose: the loose keyword
+    # beats the object, so this is the 450 answer, not the 900 one.
+    @test (@test_logs (:warn,) match_mode = :any masses(compute_spectrum(params, meson;
+        levels = levels, solver = RadialSolver(ngrid = 900), ngrid = 450))) == masses(base)
+
     # Invalid settings are construction errors, not silent fallbacks.
     @test_throws ArgumentError RadialSolver(kinetic = :newtonian)
     @test_throws ArgumentError RadialSolver(eigensolver = :lanczos)

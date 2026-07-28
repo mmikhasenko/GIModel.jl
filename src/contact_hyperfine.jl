@@ -164,7 +164,8 @@ function contact_hyperfine_nonperturbative_levels(
     h = r[2] - r[1]
     rmax = h * (length(r) + 1)
     hamiltonian, rebuilt_r =
-        relativistic_hamiltonian(params, masses, 0; ngrid = length(r), rmax = rmax)
+        relativistic_hamiltonian(params, masses, 0;
+            solver = RadialSolver(ngrid = length(r), rmax = rmax))
     length(rebuilt_r) == length(r) || error("rebuilt S-wave grid changed length")
     operator = contact_hyperfine_operator(params, masses, L, multiplicity, rebuilt_r)
     levels, _vectors =
@@ -198,7 +199,8 @@ function contact_hyperfine_nonperturbative_states(
     h = r[2] - r[1]
     rmax = h * (length(r) + 1)
     hamiltonian, rebuilt_r =
-        relativistic_hamiltonian(params, masses, 0; ngrid = length(r), rmax = rmax)
+        relativistic_hamiltonian(params, masses, 0;
+            solver = RadialSolver(ngrid = length(r), rmax = rmax))
     length(rebuilt_r) == length(r) || error("rebuilt S-wave grid changed length")
     operator = contact_hyperfine_operator(params, masses, L, multiplicity, rebuilt_r)
     levels, vectors =

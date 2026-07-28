@@ -44,19 +44,24 @@ function channel_solution(
     L::Integer;
     solver::RadialSolver = RadialSolver(),
     nlevels::Integer = solver.nlevels_per_channel,
-    ngrid::Integer = solver.ngrid,
-    rmax::Real = solver.rmax,
-    kinetic::Symbol = solver.kinetic,
-    eigensolver::Symbol = solver.eigensolver,
+    ngrid = nothing,
+    rmax = nothing,
+    kinetic = nothing,
+    eigensolver = nothing,
 )
+    solver = _solver_with_legacy(solver, "channel_solution"; ngrid = ngrid,
+        rmax = rmax, kinetic = kinetic, eigensolver = eigensolver)
+    # `nlevels` is a per-call quantity, not a solver setting (the HO wave cache
+    # legitimately asks for fewer), so it is not deprecated.
+    kinetic, eigensolver = solver.kinetic, solver.eigensolver
     hamiltonian, r = if kinetic == :relativistic
-        relativistic_hamiltonian(params, masses, L; ngrid = ngrid, rmax = rmax)
+        relativistic_hamiltonian(params, masses, L; solver = solver)
     elseif kinetic == :nonrelativistic
-        nonrelativistic_hamiltonian(params, masses, L; ngrid = ngrid, rmax = rmax)
+        nonrelativistic_hamiltonian(params, masses, L; solver = solver)
     else
         error("unknown kinetic mode: $kinetic")
     end
-    values, vectors = lowest_eigenpairs(hamiltonian, nlevels; eigensolver = eigensolver)
+    values, vectors = lowest_eigenpairs(hamiltonian, nlevels; solver = solver)
     _warn_if_underresolved(values, vectors, r, length(r) > 1 ? r[2] - r[1] : 0.0, masses, L)
     if kinetic == :relativistic
         values, vectors, r
@@ -71,11 +76,16 @@ function channel_solution(
     L::Integer;
     solver::RadialSolver = RadialSolver(),
     nlevels::Integer = solver.nlevels_per_channel,
-    ngrid::Integer = solver.ngrid,
-    rmax::Real = solver.rmax,
-    kinetic::Symbol = solver.kinetic,
-    eigensolver::Symbol = solver.eigensolver,
+    ngrid = nothing,
+    rmax = nothing,
+    kinetic = nothing,
+    eigensolver = nothing,
 )
+    solver = _solver_with_legacy(solver, "channel_solution"; ngrid = ngrid,
+        rmax = rmax, kinetic = kinetic, eigensolver = eigensolver)
+    # `nlevels` is a per-call quantity, not a solver setting (the HO wave cache
+    # legitimately asks for fewer), so it is not deprecated.
+    kinetic, eigensolver = solver.kinetic, solver.eigensolver
     kinetic == :relativistic ||
         error("HarmonicOscillatorBasis currently supports only relativistic kinetic mode")
     eigensolver == :full ||
@@ -85,8 +95,7 @@ function channel_solution(
         masses,
         L;
         nlevels = nlevels,
-        ngrid = ngrid,
-        rmax = rmax,
+        solver = solver,
     )
 end
 

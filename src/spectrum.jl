@@ -199,14 +199,18 @@ function central_spectrum(
     meson::Meson;
     levels::AbstractVector{BasisState} = spectrum_levels(2),
     solver::RadialSolver = RadialSolver(),
-    ngrid::Integer = solver.ngrid,
-    rmax::Real = solver.rmax,
-    kinetic::Symbol = solver.kinetic,
-    eigensolver::Symbol = solver.eigensolver,
-    nlevels_per_channel::Integer = solver.nlevels_per_channel,
+    ngrid = nothing,
+    rmax = nothing,
+    kinetic = nothing,
+    eigensolver = nothing,
+    nlevels_per_channel = nothing,
     annihilation_wave_basis::Symbol = :ho,
     ho_wave_L::Tuple{Vararg{String}} = ("S",),
 )
+    solver = _solver_with_legacy(solver, "central_spectrum"; ngrid = ngrid, rmax = rmax,
+        kinetic = kinetic, eigensolver = eigensolver,
+        nlevels_per_channel = nlevels_per_channel)
+    nlevels_per_channel = solver.nlevels_per_channel
     isempty(levels) && throw(ArgumentError("central_spectrum: empty `levels`"))
     masses = meson.constituent_masses
     for level in levels
@@ -228,10 +232,7 @@ function central_spectrum(
             masses,
             L_SYMBOLS[L_label];
             nlevels = nlevels_per_channel,
-            ngrid = ngrid,
-            rmax = rmax,
-            kinetic = kinetic,
-            eigensolver = eigensolver,
+            solver = solver,
         )
         channel_cache[key] = ChannelRadialSolution(ev, vecs, r)
     end
@@ -246,9 +247,7 @@ function central_spectrum(
                 masses,
                 L_SYMBOLS[L_label];
                 nlevels = 2,
-                ngrid = ngrid,
-                rmax = rmax,
-                kinetic = kinetic,
+                solver = solver,
             )
             # The eigensolver returns arbitrary-sign columns; without a fixed
             # phase the S_L smearing factor can flip sign between quark masses
@@ -291,9 +290,12 @@ off, the corresponding shifts are zero (and the fine-structure convention is
 function add_spin_corrections(
     spec::CentralSpectrum;
     terms::SpinTerms = SpinTerms(),
-    contact_hyperfine::Bool = terms.contact_hyperfine,
-    use_fine_structure::Bool = terms.fine_structure,
+    contact_hyperfine = nothing,
+    use_fine_structure = nothing,
 )
+    terms = _terms_with_legacy(terms, "add_spin_corrections";
+        contact_hyperfine = contact_hyperfine, use_fine_structure = use_fine_structure)
+    contact_hyperfine, use_fine_structure = terms.contact_hyperfine, terms.fine_structure
     params = parameters(spec)
     masses = spec.meson.constituent_masses
     channel_cache = spec.computation.channel_cache
@@ -380,9 +382,12 @@ block so other orderings can be reconstructed downstream.
 function add_intra_meson_mixing(
     spec::CorrectedSpectrum;
     terms::SpinTerms = SpinTerms(),
-    same_j_spin_orbit_mixing::Bool = terms.same_j_spin_orbit,
-    tensor_mixing::Bool = terms.tensor,
+    same_j_spin_orbit_mixing = nothing,
+    tensor_mixing = nothing,
 )
+    terms = _terms_with_legacy(terms, "add_intra_meson_mixing";
+        same_j_spin_orbit_mixing = same_j_spin_orbit_mixing, tensor_mixing = tensor_mixing)
+    same_j_spin_orbit_mixing, tensor_mixing = terms.same_j_spin_orbit, terms.tensor
     params = parameters(spec)
     masses = spec.meson.constituent_masses
     channel_cache = spec.computation.channel_cache
@@ -415,40 +420,37 @@ function compute_spectrum(
     levels::AbstractVector{BasisState} = spectrum_levels(2),
     solver::RadialSolver = RadialSolver(),
     terms::SpinTerms = SpinTerms(),
-    ngrid::Integer = solver.ngrid,
-    rmax::Real = solver.rmax,
-    kinetic::Symbol = solver.kinetic,
-    eigensolver::Symbol = solver.eigensolver,
-    nlevels_per_channel::Integer = solver.nlevels_per_channel,
-    contact_hyperfine::Bool = terms.contact_hyperfine,
-    use_fine_structure::Bool = terms.fine_structure,
-    same_j_spin_orbit_mixing::Bool = terms.same_j_spin_orbit,
-    tensor_mixing::Bool = terms.tensor,
+    ngrid = nothing,
+    rmax = nothing,
+    kinetic = nothing,
+    eigensolver = nothing,
+    nlevels_per_channel = nothing,
+    contact_hyperfine = nothing,
+    use_fine_structure = nothing,
+    same_j_spin_orbit_mixing = nothing,
+    tensor_mixing = nothing,
     annihilation_wave_basis::Symbol = :ho,
     ho_wave_L::Tuple{Vararg{String}} = ("S",),
 )
+    # Fold any deprecated keywords in once, here, then hand the stages the
+    # objects — so a plain `compute_spectrum(params, meson)` never trips the
+    # deprecation path on its way down.
+    solver = _solver_with_legacy(solver, "compute_spectrum"; ngrid = ngrid, rmax = rmax,
+        kinetic = kinetic, eigensolver = eigensolver,
+        nlevels_per_channel = nlevels_per_channel)
+    terms = _terms_with_legacy(terms, "compute_spectrum";
+        contact_hyperfine = contact_hyperfine, use_fine_structure = use_fine_structure,
+        same_j_spin_orbit_mixing = same_j_spin_orbit_mixing, tensor_mixing = tensor_mixing)
     central = central_spectrum(
         params,
         meson;
         levels = levels,
-        ngrid = ngrid,
-        rmax = rmax,
-        kinetic = kinetic,
-        eigensolver = eigensolver,
-        nlevels_per_channel = nlevels_per_channel,
+        solver = solver,
         annihilation_wave_basis = annihilation_wave_basis,
         ho_wave_L = ho_wave_L,
     )
-    corrected = add_spin_corrections(
-        central;
-        contact_hyperfine = contact_hyperfine,
-        use_fine_structure = use_fine_structure,
-    )
-    return add_intra_meson_mixing(
-        corrected;
-        same_j_spin_orbit_mixing = same_j_spin_orbit_mixing,
-        tensor_mixing = tensor_mixing,
-    )
+    corrected = add_spin_corrections(central; terms = terms)
+    return add_intra_meson_mixing(corrected; terms = terms)
 end
 
 # Assign ascending block eigenvalues to block members ordered by ascending
