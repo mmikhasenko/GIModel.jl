@@ -1,6 +1,21 @@
 # Public API (exported from GIModel.jl):
-#   spin_dot
+#   spin_dot, contact_smearing_sigma
 
+"""
+    contact_smearing_sigma(params, m1, m2) -> Float64
+    contact_smearing_sigma(params, masses::ConstituentMasses) -> Float64
+
+The Appendix A (A9) universal smearing width ``\\sigma(m_1, m_2)`` in GeV,
+
+    σ² = σ₀² (1/2 + 1/2 [4 m₁m₂/(m₁+m₂)²]⁴) + s² (2 m₁m₂/(m₁+m₂))²
+
+built from the Table II inputs `σ₀` and `s`. Together with the relativistic
+weight ``(m_1 m_2 / E_1 E_2)^{1/2 + \\epsilon_i}`` this is **the entire route by
+which quark mass enters the model** — the potential parameters (`b`, `c`) and
+[`alpha_s_q`](@ref) never see a mass or a flavor. σ grows monotonically with the
+constituent masses, which is why the smeared contact term (and with it the
+hyperfine splitting) collapses toward heavy quarkonium.
+"""
 contact_smearing_sigma(params::GIParameters, m::ConstituentMasses) =
     contact_smearing_sigma(params, m.m1_GeV, m.m2_GeV)
 

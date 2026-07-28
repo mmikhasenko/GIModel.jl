@@ -99,10 +99,11 @@ function solve_sector(
     params::GIParameters,
     equal_mass_GeV::Real;
     maxn::Integer = 6,
-    ngrid::Integer = 450,
-    rmax::Real = 24.0,
-    kinetic::Symbol = :relativistic,
-    eigensolver::Symbol = :full,
+    solver::RadialSolver = RadialSolver(),
+    ngrid::Integer = solver.ngrid,
+    rmax::Real = solver.rmax,
+    kinetic::Symbol = solver.kinetic,
+    eigensolver::Symbol = solver.eigensolver,
 )
     m = Float64(equal_mass_GeV)
     mm = ConstituentMasses(m, m)

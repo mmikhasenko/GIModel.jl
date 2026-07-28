@@ -1277,10 +1277,10 @@ end
 
     # MesonMasses resolves the momentum internally.
     masses = MesonMasses(Dict("rho" => 0.769, "pi" => 0.138))
-    @test mass(masses, "rho") == 0.769
+    @test meson_mass(masses, "rho") == 0.769
     @test masses["pi"] == 0.138
     @test decay_amplitude(model, ch_rho, masses; convention = :table_iv).total ≈ 12.4 atol = 1e-9
-    @test_throws Exception mass(masses, "unregistered")
+    @test_throws Exception meson_mass(masses, "unregistered")
 
     # A charmed channel now carries its OWN mass ratio r = m_c/(m_c+m_d) rather
     # than having it inferred from the class; the A_c P-wave recoil multiplier is
@@ -1341,6 +1341,56 @@ end
     @test Meson(up_at_mb, up_at_mb).constituent_masses ==
           Meson(b, b).constituent_masses
     @test charge(up_at_mb) != charge(b)
+end
+
+@testset "RadialSolver is numerics, SpinTerms is physics" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    meson = Meson(mq, :q, :s)          # unequal mass: every mixing mechanism is live
+    levels = spectrum_levels(2)
+    base = compute_spectrum(params, meson; levels = levels)
+    masses(spec) = [s.mass_GeV for s in spec.states]
+
+    # The struct defaults ARE the old inline defaults: passing them explicitly
+    # must reproduce the default call bit for bit.
+    @test masses(compute_spectrum(params, meson; levels = levels,
+        ngrid = 450, rmax = 24.0, kinetic = :relativistic, eigensolver = :full,
+        nlevels_per_channel = 6, contact_hyperfine = true, use_fine_structure = true,
+        same_j_spin_orbit_mixing = true, tensor_mixing = true)) == masses(base)
+    @test masses(compute_spectrum(params, meson; levels = levels,
+        solver = RadialSolver(), terms = SpinTerms())) == masses(base)
+
+    # RadialSolver is "how well": refining the mesh must not move a mass more
+    # than the discretization error it removes (sub-MeV here).
+    fine = compute_spectrum(params, meson; levels = levels,
+        solver = RadialSolver(ngrid = 900, rmax = 32.0))
+    @test maximum(abs.(masses(fine) .- masses(base))) < 0.003   # < 3 MeV
+
+    # SpinTerms is "what physics": every switch must move a mass, and turning
+    # them all off must land exactly on the central eigenvalues.
+    for sw in (:contact_hyperfine, :fine_structure, :same_j_spin_orbit, :tensor)
+        off = compute_spectrum(params, meson; levels = levels,
+            terms = SpinTerms(; sw => false))
+        @test maximum(abs.(masses(off) .- masses(base))) > 1e-4   # > 0.1 MeV
+    end
+    none = compute_spectrum(params, meson; levels = levels,
+        terms = SpinTerms(contact_hyperfine = false, fine_structure = false,
+            same_j_spin_orbit = false, tensor = false))
+    @test all(s.mass_GeV === s.central_GeV for s in none.states)
+
+    # The solver threads down to the low tier, and its copy constructor keeps
+    # the untouched fields.
+    ev, _, _ = channel_solution(params, meson.constituent_masses, 0;
+        solver = RadialSolver(nlevels_per_channel = 3))
+    @test length(ev) == 3
+    tuned = RadialSolver(RadialSolver(ngrid = 900); rmax = 32.0)
+    @test tuned.ngrid == 900 && tuned.rmax == 32.0 && tuned.kinetic === :relativistic
+
+    # Invalid settings are construction errors, not silent fallbacks.
+    @test_throws ArgumentError RadialSolver(kinetic = :newtonian)
+    @test_throws ArgumentError RadialSolver(eigensolver = :lanczos)
+    @test_throws ArgumentError RadialSolver(ngrid = 1)
+    @test_throws ArgumentError RadialSolver(rmax = 0)
+    @test_throws ArgumentError RadialSolver(nlevels_per_channel = 0)
 end
 
 @testset "Resolution walls are detected, not silent" begin
@@ -1775,6 +1825,38 @@ end
     E1 = mock_meson_radial_moment(w_pi, w_pi, m, m, m; n = 1, exponent = 0.0)
     @test isapprox(E1, sum(@. u_pi^2 * r) * h; rtol = 1e-9)   # exponent 0 ⇒ ∫u²r dr
     @test mock_meson_radial_moment(w_pi, w_pi, m, m, m; n = 1) > 0
+
+    # --- Eq. (22) assembly, promoted out of the Table VI audit ---------------
+    # Photon momentum q = (M² - M'²)/2M, and q → 0 as the masses close up.
+    @test isapprox(photon_momentum(3.686, 2.980), (3.686^2 - 2.980^2) / (2 * 3.686);
+        rtol = 1e-12)
+    @test photon_momentum(1.0, 1.0) == 0.0
+
+    # m1_transition_moment is Σ c·I_i·M_N: the ρ→πγ fit row rebuilt through the
+    # public assembly must equal the hand-written kernel product above.
+    @test isapprox(m1_transition_moment(mw_pi, mw_rho, m, m, [(1 / 3, m)]), μ_rho;
+        rtol = 1e-12)
+    @test NUCLEON_MASS_GEV == M_N
+    # Coefficients are linear and the antiquark charge enters flipped, so the
+    # neutral combination (+2/3, -1/3) is the sum of its two single-line terms.
+    @test isapprox(
+        m1_transition_moment(mw_pi, mw_rho, m, m, [(2 / 3, m), (-1 / 3, m)]),
+        m1_transition_moment(mw_pi, mw_rho, m, m, [(1 / 3, m)]); rtol = 1e-12)
+
+    # e1_transition_amplitude = coeff(q)·E₁ⁱ·√(α q_MeV); an explicit q overrides
+    # the mass-implied one, and the amplitude is linear in the row coefficient.
+    amp = e1_transition_amplitude(w_pi, mw_pi, w_rho, mw_rho, m, q -> 4q / 9, 1.5, 1.0)
+    q_implied = photon_momentum(1.5, 1.0)
+    E1i = mock_meson_radial_moment(w_pi, w_rho, mock_mean_energy(mw_pi, m),
+        mock_mean_energy(mw_rho, m), m; n = 1)
+    @test isapprox(amp, (4 * q_implied / 9) * E1i * sqrt(ALPHA_EM * 1000 * q_implied);
+        rtol = 1e-12)
+    @test isapprox(
+        e1_transition_amplitude(w_pi, mw_pi, w_rho, mw_rho, m, q -> 4q / 9, 9.9, 9.9;
+            q = q_implied), amp; rtol = 1e-12)
+    @test isapprox(
+        e1_transition_amplitude(w_pi, mw_pi, w_rho, mw_rho, m, q -> 8q / 9, 1.5, 1.0),
+        2amp; rtol = 1e-12)
 end
 
 @testset "Table VII two-photon amplitudes (part b)" begin

@@ -19,25 +19,6 @@ function _annihilation_flavor_tag(m::Meson)
     return string(m.flavor1, m.flavor1)
 end
 
-function _annihilation_wave(
-    spec::SpinResolvedSpectrum,
-    L_label::AbstractString,
-    n::Integer;
-    wave_basis::Symbol = :ho,
-)
-    key = RadialChannelKey(spec.meson.constituent_masses, L_label)
-    fd = spec.computation.channel_cache
-    haskey(fd, key) || throw(ArgumentError(
-        "spectrum for $(flavor_label(spec.meson)) has no `$L_label` channel; include it in `levels`",
-    ))
-    sol = wave_basis == :ho ?
-          get(spec.computation.ho_wave_cache, key, fd[key]) : fd[key]
-    n <= size(sol.eigenvectors, 2) || throw(ArgumentError(
-        "cached `$L_label` waves for $(flavor_label(spec.meson)) hold $(size(sol.eigenvectors, 2)) levels; requested n=$n",
-    ))
-    return RadialWaveOnUniformMesh(sol, n)
-end
-
 """
     annihilation_basis_input(spec::Spectrum, level::BasisState; wave_basis=:ho)
 
@@ -52,7 +33,7 @@ function annihilation_basis_input(
     wave_basis::Symbol = :ho,
 )
     state = spectrum_state(spec, level)
-    wave = _annihilation_wave(spec, level.L_label, level.n; wave_basis = wave_basis)
+    wave = radial_wave(spec, level.L_label, level.n; wave_basis = wave_basis)
     label = "$(level.n) $(_annihilation_flavor_tag(spec.meson))"
     return pseudoscalar_annihilation_basis_input(
         label,

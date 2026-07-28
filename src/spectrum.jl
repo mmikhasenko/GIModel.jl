@@ -198,11 +198,12 @@ function central_spectrum(
     params::GIParameters,
     meson::Meson;
     levels::AbstractVector{BasisState} = spectrum_levels(2),
-    ngrid::Integer = 450,
-    rmax::Real = 24.0,
-    kinetic::Symbol = :relativistic,
-    eigensolver::Symbol = :full,
-    nlevels_per_channel::Integer = 6,
+    solver::RadialSolver = RadialSolver(),
+    ngrid::Integer = solver.ngrid,
+    rmax::Real = solver.rmax,
+    kinetic::Symbol = solver.kinetic,
+    eigensolver::Symbol = solver.eigensolver,
+    nlevels_per_channel::Integer = solver.nlevels_per_channel,
     annihilation_wave_basis::Symbol = :ho,
     ho_wave_L::Tuple{Vararg{String}} = ("S",),
 )
@@ -289,8 +290,9 @@ off, the corresponding shifts are zero (and the fine-structure convention is
 """
 function add_spin_corrections(
     spec::CentralSpectrum;
-    contact_hyperfine::Bool = true,
-    use_fine_structure::Bool = parameters(spec).fine_structure.enabled,
+    terms::SpinTerms = SpinTerms(),
+    contact_hyperfine::Bool = terms.contact_hyperfine,
+    use_fine_structure::Bool = terms.fine_structure,
 )
     params = parameters(spec)
     masses = spec.meson.constituent_masses
@@ -377,8 +379,9 @@ block so other orderings can be reconstructed downstream.
 """
 function add_intra_meson_mixing(
     spec::CorrectedSpectrum;
-    same_j_spin_orbit_mixing::Bool = true,
-    tensor_mixing::Bool = true,
+    terms::SpinTerms = SpinTerms(),
+    same_j_spin_orbit_mixing::Bool = terms.same_j_spin_orbit,
+    tensor_mixing::Bool = terms.tensor,
 )
     params = parameters(spec)
     masses = spec.meson.constituent_masses
@@ -410,15 +413,17 @@ function compute_spectrum(
     params::GIParameters,
     meson::Meson;
     levels::AbstractVector{BasisState} = spectrum_levels(2),
-    ngrid::Integer = 450,
-    rmax::Real = 24.0,
-    kinetic::Symbol = :relativistic,
-    eigensolver::Symbol = :full,
-    nlevels_per_channel::Integer = 6,
-    contact_hyperfine::Bool = true,
-    use_fine_structure::Bool = params.fine_structure.enabled,
-    same_j_spin_orbit_mixing::Bool = true,
-    tensor_mixing::Bool = true,
+    solver::RadialSolver = RadialSolver(),
+    terms::SpinTerms = SpinTerms(),
+    ngrid::Integer = solver.ngrid,
+    rmax::Real = solver.rmax,
+    kinetic::Symbol = solver.kinetic,
+    eigensolver::Symbol = solver.eigensolver,
+    nlevels_per_channel::Integer = solver.nlevels_per_channel,
+    contact_hyperfine::Bool = terms.contact_hyperfine,
+    use_fine_structure::Bool = terms.fine_structure,
+    same_j_spin_orbit_mixing::Bool = terms.same_j_spin_orbit,
+    tensor_mixing::Bool = terms.tensor,
     annihilation_wave_basis::Symbol = :ho,
     ho_wave_L::Tuple{Vararg{String}} = ("S",),
 )
@@ -604,9 +609,13 @@ end
 """
     spectrum_state(spectrum, n, L_label, multiplicity, J)
     spectrum_state(spectrum, level::BasisState)
+    spectrum_state(spectrum, label::AbstractString)
 
 Look up one state by quantum numbers at any stage; throws `ArgumentError` when
 absent. The return type is the spectrum's state type.
+
+The string form takes the state's own `label` (`"1^3S_1"`), which is the handle
+every state carries and every report prints.
 """
 function spectrum_state(
     spec::Spectrum,
@@ -631,3 +640,117 @@ end
 
 spectrum_state(spec::Spectrum, level::BasisState) =
     spectrum_state(spec, level.n, level.L_label, level.multiplicity, level.J)
+
+function spectrum_state(spec::Spectrum, label::AbstractString)
+    idx = findfirst(s -> s.label == label, spec.states)
+    isnothing(idx) && throw(ArgumentError(
+        "spectrum has no state `$label` for meson $(flavor_label(spec.meson)); " *
+        "available: $(join((s.label for s in spec.states), ", "))",
+    ))
+    return spec.states[idx]
+end
+
+"""
+    radial_wave(spec, label; wave_basis=:fd) -> RadialWaveOnUniformMesh
+    radial_wave(spec, L_label, n; wave_basis=:fd) -> RadialWaveOnUniformMesh
+
+The radial wavefunction behind a level of `spec` — `radial_wave(spec, "1^3S_1")`
+is the wave whose eigenvalue is `spectrum_state(spec, "1^3S_1").central_GeV`.
+
+This is the hand-off from the spectrum to every wavefunction-level observable:
+annihilation and leptonic widths, two-photon amplitudes, charge radii and the
+radiative transition moments all take a `RadialWaveOnUniformMesh`. The solve is
+already cached on the spectrum, so this is a lookup, not a recomputation.
+
+`wave_basis` selects which cached solve to read: `:fd` is the model's own
+finite-difference wave (the default — this is the wavefunction the eigenvalues
+came from), while `:ho` reads the phase-fixed harmonic-oscillator wave that the
+paper's annihilation prescription requires, falling back to `:fd` when no HO
+wave was cached for that channel (see `central_spectrum`'s `ho_wave_L`).
+
+Throws `ArgumentError` when the orbital was not in `levels` or when `n` exceeds
+the levels kept per channel.
+"""
+function radial_wave(
+    spec::Spectrum,
+    L_label::AbstractString,
+    n::Integer;
+    wave_basis::Symbol = :fd,
+)
+    wave_basis in (:fd, :ho) || throw(ArgumentError(
+        "radial_wave: `wave_basis` must be :fd or :ho, got `$wave_basis`",
+    ))
+    key = RadialChannelKey(spec.meson.constituent_masses, String(L_label))
+    fd = spec.computation.channel_cache
+    haskey(fd, key) || throw(ArgumentError(
+        "spectrum for $(flavor_label(spec.meson)) has no `$L_label` channel; include it in `levels`",
+    ))
+    sol = wave_basis === :ho ?
+          get(spec.computation.ho_wave_cache, key, fd[key]) : fd[key]
+    n <= size(sol.eigenvectors, 2) || throw(ArgumentError(
+        "cached `$L_label` waves for $(flavor_label(spec.meson)) hold $(size(sol.eigenvectors, 2)) levels; requested n=$n",
+    ))
+    return RadialWaveOnUniformMesh(sol, n)
+end
+
+function radial_wave(spec::Spectrum, label::AbstractString; wave_basis::Symbol = :fd)
+    state = spectrum_state(spec, label)
+    return radial_wave(spec, state.L, state.n; wave_basis = wave_basis)
+end
+
+# --- Display -----------------------------------------------------------------
+# A spectrum carries its radial eigenvectors, so the default struct dump is
+# ~200 kB of nested constructors. These methods print the physics instead: one
+# row per level, one column per contribution, so the mass decomposition is
+# readable at the REPL without knowing any field names.
+
+_stage_name(::Type{CentralState}) = "CentralSpectrum"
+_stage_name(::Type{CorrectedState}) = "CorrectedSpectrum"
+_stage_name(::Type{MixedState}) = "MixedSpectrum"
+
+_stage_columns(::Type{CentralState}) = ("central",)
+_stage_columns(::Type{CorrectedState}) = ("central", "contact", "fine str", "mass")
+_stage_columns(::Type{MixedState}) = ("central", "contact", "fine str", "mixing", "mass")
+
+_stage_values(s::CentralState) = (s.central_GeV,)
+_stage_values(s::CorrectedState) =
+    (s.central_GeV, s.contact_shift_GeV, s.fine_structure_shift_GeV, s.mass_GeV)
+_stage_values(s::MixedState) = (
+    s.central_GeV,
+    s.contact_shift_GeV,
+    s.fine_structure_shift_GeV,
+    s.mass_GeV - s.corrected.mass_GeV,
+    s.mass_GeV,
+)
+
+function Base.show(io::IO, ::MIME"text/plain", spec::Spectrum{S}) where {S}
+    m = spec.meson
+    cols = _stage_columns(S)
+    println(
+        io,
+        _stage_name(S), ": ", m.flavor1, " ", m.flavor2, "bar  (m = ",
+        m.constituent_masses.m1_GeV, ", ", m.constituent_masses.m2_GeV, " GeV), ",
+        length(spec.states), " levels — all values in GeV",
+    )
+    width = isempty(spec.states) ? 8 : maximum(length(s.label) for s in spec.states)
+    print(io, "  ", rpad("level", width))
+    for c in cols
+        print(io, lpad(c, 11))
+    end
+    for s in spec.states
+        print(io, "\n  ", rpad(s.label, width))
+        for v in _stage_values(s)
+            print(io, lpad(@sprintf("%.4f", v), 11))
+        end
+    end
+    if S !== CentralState
+        nmix = count(s -> !isempty(s.mixings), spec.states)
+        nmix > 0 && print(io, "\n  (", nmix, " levels carry intra-meson mixing; see `.mixings`)")
+    end
+    return nothing
+end
+
+Base.show(io::IO, spec::Spectrum{S}) where {S} = print(
+    io, _stage_name(S), "(", flavor_label(spec.meson), ", ",
+    length(spec.states), " levels)",
+)

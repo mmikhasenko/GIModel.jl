@@ -97,15 +97,18 @@ function reduced_decay_amplitude(
     model::StrongDecayModel, class::Symbol, qbar::Real;
     convention::Symbol = :table_iv, heavy_fraction::Real = 0.5,
 )
+    # Validate the convention before the structure-independent shortcut, so a
+    # typo cannot pass silently on an A-class row and then throw on an S-class
+    # one in the same table.
+    convention in (:table_iv, :leading) ||
+        throw(ArgumentError("unknown convention `$convention` (:table_iv | :leading)"))
     class in (:A, :Aprime, :Adoubleprime, :A0, :A_c) && return model.A
     if convention === :leading
         class in (:S, :S_c, :D, :P) && return model.S0
-    elseif convention === :table_iv
+    else
         class in (:S, :S_c) && return model.S0 - heavy_fraction * model.A * qbar^2
         class === :D && return model.S0 - 0.3 * model.A * qbar^2
         class === :P && return model.S0 - 0.75 * model.A * qbar^2
-    else
-        throw(ArgumentError("unknown convention `$convention` (:table_iv | :leading)"))
     end
     throw(ArgumentError("unknown reduced-amplitude class `$class`"))
 end
@@ -348,7 +351,7 @@ end
 
 A simple meson-name -> mass (GeV) resolver shared by every `DecayChannel`. Built
 by the reproduction harness from experimental values and/or model-predicted
-masses (`compute_spectrum`). Access with [`mass`](@ref) or indexing.
+masses (`compute_spectrum`). Access with [`meson_mass`](@ref) or indexing.
 """
 struct MesonMasses
     lookup::Dict{String,Float64}
@@ -356,16 +359,16 @@ end
 MesonMasses() = MesonMasses(Dict{String,Float64}())
 
 """
-    mass(m::MesonMasses, name) -> Float64
+    meson_mass(m::MesonMasses, name) -> Float64
 
 Mass (GeV) of a meson by name; throws with a clear message if the name is not
 registered.
 """
-function mass(m::MesonMasses, name::AbstractString)
+function meson_mass(m::MesonMasses, name::AbstractString)
     haskey(m.lookup, name) || throw(KeyError("no mass registered for meson `$name`"))
     return m.lookup[name]
 end
-Base.getindex(m::MesonMasses, name::AbstractString) = mass(m, name)
+Base.getindex(m::MesonMasses, name::AbstractString) = meson_mass(m, name)
 Base.setindex!(m::MesonMasses, v::Real, name::AbstractString) = (m.lookup[name] = Float64(v))
 Base.haskey(m::MesonMasses, name::AbstractString) = haskey(m.lookup, name)
 
@@ -373,8 +376,8 @@ function decay_amplitude(
     model::StrongDecayModel, ch::DecayChannel, masses::MesonMasses;
     convention::Symbol = :leading,
 )
-    q = decay_momentum(mass(masses, ch.parent),
-        mass(masses, ch.daughter1), mass(masses, ch.daughter2))
+    q = decay_momentum(meson_mass(masses, ch.parent),
+        meson_mass(masses, ch.daughter1), meson_mass(masses, ch.daughter2))
     return decay_amplitude(model, ch, q; convention)
 end
 
@@ -421,3 +424,38 @@ function load_table_v(rows; heavy_fraction_for = _ -> nothing)
     end
     return channels
 end
+
+# --- Display -----------------------------------------------------------------
+# The point of `StrongDecayAmplitude` is that the three factors stay separate;
+# print them that way, with the product shown as the product it is.
+
+function Base.show(io::IO, ::MIME"text/plain", a::StrongDecayAmplitude)
+    println(io, "StrongDecayAmplitude  (q = ", @sprintf("%.4f", a.q_GeV), " GeV)")
+    println(io, "  coefficient      ", @sprintf("%10.4f", a.coefficient), "   [PAPER]  App. B flavor-spin")
+    println(io, "  reduced          ", @sprintf("%10.4f", a.reduced), "   [PAPER]  Table IV class")
+    println(io, "  spatial_overlap  ", @sprintf("%10.4f", a.spatial_overlap), "   [DERIVED] SHO integral")
+    println(io, "  " * "-"^58)
+    println(io, "  total            ", @sprintf("%10.4f", a.total), "   MeV^(1/2)  = the product")
+    print(io, "  width            ", @sprintf("%10.4f", decay_width(a)), "   MeV       = total^2")
+    return nothing
+end
+
+Base.show(io::IO, a::StrongDecayAmplitude) =
+    print(io, "StrongDecayAmplitude(total = ", @sprintf("%.4f", a.total), " MeV^(1/2))")
+
+function Base.show(io::IO, ::MIME"text/plain", ch::DecayChannel)
+    reaction = string(ch.parent, " -> ", ch.daughter1, " + ", ch.daughter2)
+    println(io, "DecayChannel: ", reaction)
+    isempty(ch.label) || ch.label == reaction || println(io, "  label          ", ch.label)
+    println(io, "  coefficient    ", ch.coefficient)
+    println(io, "  class          :", ch.class, "   (Table IV)")
+    println(io, "  qbar_power L   ", ch.qbar_power)
+    print(io, "  heavy_fraction ", ch.heavy_fraction,
+        ch.heavy_fraction == 0.5 ? "   (equal-mass: the light Gaussian)" : "   r = m_Q/(m_Q+m_q)")
+    isempty(ch.section) || print(io, "\n  section        ", ch.section)
+    return nothing
+end
+
+Base.show(io::IO, ch::DecayChannel) = print(
+    io, "DecayChannel(", ch.parent, " -> ", ch.daughter1, " + ", ch.daughter2, ", :", ch.class, ")",
+)

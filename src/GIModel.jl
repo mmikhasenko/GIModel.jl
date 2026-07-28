@@ -36,6 +36,9 @@ include("parameters.jl")
 export QuarkMassTable, load_quark_masses, load_parameters_and_quark_masses
 include("quark_mass_table.jl")
 
+export RadialSolver, SpinTerms
+include("solver_options.jl")
+
 export AbstractQuark, LightQuark, StrangeQuark, HeavyQuark
 export charge, flavor_symbol, mass_GeV
 include("quark.jl")
@@ -47,6 +50,7 @@ include("meson.jl")
 # Numerics: potentials, Hamiltonian, radial solves, spin-dependent corrections
 # =============================================================================
 
+export alpha_s_q, alpha_s_r
 include("running_coupling.jl")
 include("smearing_appendix_a.jl")
 include("radial_1d_coulomb_smear.jl")
@@ -63,7 +67,7 @@ include("harmonic_oscillator_basis.jl")
 export channel_solution
 include("channel_solver.jl")
 
-export spin_dot, contact_hyperfine_nonperturbative_states
+export spin_dot, contact_smearing_sigma, contact_hyperfine_nonperturbative_states
 include("contact_hyperfine.jl")
 
 export MixingMechanism,
@@ -108,7 +112,8 @@ include("appendix_a_status.jl")
 export RadialChannelKey, ChannelRadialSolution, SectorComputation, solve_sector
 include("sector_solver.jl")
 
-export spectrum_levels,
+export radial_wave,
+    spectrum_levels,
     StateMixing,
     CentralState,
     CorrectedState,
@@ -144,7 +149,7 @@ export StrongDecayModel,
     matrix_element,
     decay_width,
     MesonMasses,
-    mass,
+    meson_mass,
     load_table_v
 include("strong_decays.jl")
 
@@ -169,6 +174,11 @@ export wavefunction_origin_smearing,
 include("annihilation_widths.jl")
 
 export MockMomentumWave,
+    ALPHA_EM,
+    NUCLEON_MASS_GEV,
+    photon_momentum,
+    m1_transition_moment,
+    e1_transition_amplitude,
     mock_momentum_wave,
     mock_mean_energy,
     mock_wave_mass,

@@ -34,8 +34,6 @@ params, mq = load_parameters_and_quark_masses(params_path)
 
 const NGRID = 450
 const RMAX = 24.0
-const M_N_GEV = 0.93827
-const ALPHA_EM = 1 / 137.036
 const PMAX = 30.0
 const NP = 1501
 
@@ -107,7 +105,6 @@ I_overlap(mwx::MockMomentumWave, mwy::MockMomentumWave, Mx, My, m_i) =
 E_moment(wx::RadialWaveOnUniformMesh, wy::RadialWaveOnUniformMesh, Ex, Ey, m_i; n = 1) =
     mock_meson_radial_moment(wx, wy, Ex, Ey, m_i; n = n)
 
-photon_momentum(M_parent, M_child) = (M_parent^2 - M_child^2) / (2 * M_parent)
 
 # --- assemble the flavor systems --------------------------------------------
 
@@ -147,14 +144,10 @@ sys = Dict(
     "bb" => SWaveSystem("bb", m_b, m_b),
 )
 
-"""M1 moment μ/μ_N for V(nV) → P(nP) γ given `(coeff, m_i)` terms."""
-function m1_moment(system::SWaveSystem, nP, nV, terms)
-    mwx = system.singlet_p[nP]
-    mwy = system.triplet_p[nV]
-    Mx = mock_mass(mwx, system.m1, system.m2)
-    My = mock_mass(mwy, system.m1, system.m2)
-    return sum(c * I_overlap(mwx, mwy, Mx, My, m_i) for (c, m_i) in terms) * M_N_GEV
-end
+# Row-selection wrapper: picks this system's singlet/triplet momentum waves and
+# hands them to the src assembly (`m1_transition_moment`).
+m1_moment(system::SWaveSystem, nP, nV, terms) = m1_transition_moment(
+    system.singlet_p[nP], system.triplet_p[nV], system.m1, system.m2, terms)
 
 # --- M1 rows (mixing-free entries of Table VI) -------------------------------
 
@@ -208,7 +201,7 @@ let s = sys["cc"]
     I_direct = I_overlap(s.singlet_p[1], s.triplet_p[2], Mx, My, m_c)
     E2 = E_moment(s.singlet[1], s.triplet[2],
         mean_energy(s.singlet_p[1], m_c), mean_energy(s.triplet_p[2], m_c), m_c; n = 2)
-    mu = (4 / 3) * (I_direct - q^2 / (24 * m_c) * E2) * M_N_GEV
+    mu = (4 / 3) * (I_direct - q^2 / (24 * m_c) * E2) * NUCLEON_MASS_GEV
     push!(m1_rows, ("psi' -> eta_c gamma (hindered, with recoil)", mu, "-0.056"))
 end
 
@@ -317,13 +310,9 @@ ss_P = central_waves(params, ConstituentMasses(m_s, m_s), 1; nlevels = 1)
 nn_P_p = [momentum_wave(w, 1) for w in nn_P]
 ss_P_p = [momentum_wave(w, 1) for w in ss_P]
 
-"""E1 amplitude `coeff(q_GeV) * E_1^i * sqrt(alpha * q_MeV)` in MeV^(1/2).
-Pass an explicit `q` to override the measured-mass photon momentum."""
-function e1_amplitude(wS, mwS, wP, mwP, m_i, coeff_of_q, M_parent, M_child; q = nothing)
-    q === nothing && (q = photon_momentum(M_parent, M_child))
-    E1 = E_moment(wS, wP, mean_energy(mwS, m_i), mean_energy(mwP, m_i), m_i; n = 1)
-    return coeff_of_q(q) * E1 * sqrt(ALPHA_EM * 1000 * q)
-end
+# The E1/M2 amplitude itself is src (`e1_transition_amplitude`); this alias only
+# keeps the audit's row calls short.
+const e1_amplitude = e1_transition_amplitude
 
 e1_rows = Vector{Tuple{String,Float64,String}}()
 
@@ -447,7 +436,7 @@ let s = sys["bb"]
         I_direct = I_overlap(s.singlet_p[1], s.triplet_p[nV], Mx, My, m_b)
         E2 = E_moment(s.singlet[1], s.triplet[nV],
             mean_energy(s.singlet_p[1], m_b), mean_energy(s.triplet_p[nV], m_b), m_b; n = 2)
-        mu = (-2 / 3) * (I_direct - q^2 / (24 * m_b) * E2) * M_N_GEV
+        mu = (-2 / 3) * (I_direct - q^2 / (24 * m_b) * E2) * NUCLEON_MASS_GEV
         push!(m1_rows, (name, mu, target))
     end
 end
@@ -535,7 +524,7 @@ open_row_rescore = let
         Mx = mock_mass(s1p[1], m_b, m_b); My = mock_mass(t3p[nV], m_b, m_b)
         I_direct = I_overlap(s1p[1], t3p[nV], Mx, My, m_b)
         E2 = E_moment(s1[1], t3[nV], mean_energy(s1p[1], m_b), mean_energy(t3p[nV], m_b), m_b; n = 2)
-        mu = (-2 / 3) * (I_direct - q^2 / (24 * m_b) * E2) * M_N_GEV
+        mu = (-2 / 3) * (I_direct - q^2 / (24 * m_b) * E2) * NUCLEON_MASS_GEV
         push!(rows, (name, mu, target, I_direct))
     end
     rows
@@ -734,7 +723,7 @@ open(outpath, "w") do io
     println(io, "## Conventions used")
     println(io)
     println(io, "- `mu/mu_N = coefficient * I_i * M_N` (Table VI lists moments in units")
-    println(io, "  of `e/2`; `M_N = ", M_N_GEV, " GeV`).")
+    println(io, "  of `e/2`; `M_N = ", NUCLEON_MASS_GEV, " GeV`).")
     println(io, "- E1 amplitude = `coeff(q_GeV) * E_1^i * sqrt(alpha * q_MeV)`.")
     println(io, "- Mock masses `M~ = <E_1> + <E_2>` from the momentum-space waves.")
     println(io, "- Phase convention: `Phi(0) > 0` for every radial level (matches the")

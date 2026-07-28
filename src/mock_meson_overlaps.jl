@@ -75,3 +75,76 @@ function mock_meson_radial_moment(wx::RadialWaveOnUniformMesh, wy::RadialWaveOnU
     radial = sum(@. wx.u * wy.u * wx.r^n) * wx.h
     return abs(float(m_emit) / sqrt(Ex * Ey))^exponent * radial
 end
+
+# --- Radiative transition assembly (Eq. 22, Table VI) ------------------------
+# The kernels above are the Appendix-D matrix elements; these three assemble
+# them into the multipole amplitudes the paper tabulates. Promoted out of the
+# Table VI audit script, where they sat next to the paper-comparison rows.
+
+"""Proton mass in GeV — the unit of the M1 moments, which Table VI prints as μ/μ_N."""
+const NUCLEON_MASS_GEV = 0.93827
+
+"""
+    photon_momentum(M_parent_GeV, M_child_GeV) -> Float64
+
+Photon momentum `q = (M² - M'²) / 2M` for the radiative transition
+`parent → child + γ`, in GeV.
+"""
+photon_momentum(M_parent_GeV::Real, M_child_GeV::Real) =
+    (float(M_parent_GeV)^2 - float(M_child_GeV)^2) / (2 * float(M_parent_GeV))
+
+"""
+    m1_transition_moment(singlet, triplet, m1_GeV, m2_GeV, terms) -> Float64
+
+The M1 transition moment `μ/μ_N` for `V → P γ` between two mock mesons given by
+their momentum-space waves, in Table VI's units of `e/2`.
+
+`terms` is an iterable of `(coefficient, m_i)` pairs — one per contributing
+quark line — summed as `Σ c·I_i`. The coefficients follow the transition-moment
+rule `μ = e_q I_q - e_q̄ I_q̄` (the antiquark charge enters flipped), so
+charmonium is `+4/3 I_c` and bottomonium `-2/3 I_b`.
+"""
+function m1_transition_moment(
+    singlet::MockMomentumWave,
+    triplet::MockMomentumWave,
+    m1_GeV::Real,
+    m2_GeV::Real,
+    terms,
+)
+    Mx = mock_wave_mass(singlet, m1_GeV, m2_GeV)
+    My = mock_wave_mass(triplet, m1_GeV, m2_GeV)
+    return sum(
+        c * mock_meson_overlap(singlet, triplet, m_i; Mx = Mx, My = My) for (c, m_i) in terms
+    ) * NUCLEON_MASS_GEV
+end
+
+"""
+    e1_transition_amplitude(wave_S, mom_S, wave_P, mom_P, m_i, coeff_of_q,
+                            M_parent_GeV, M_child_GeV; q = nothing) -> Float64
+
+The E1 (and M2) amplitude `coeff(q) · E₁ⁱ · √(α q)` in `MeV^(1/2)`, with `q` in
+MeV inside the square root — Table VI's amplitude convention.
+
+`coeff_of_q` is the row's angular/charge factor as a function of `q` in GeV, so
+the paper's printed q-dependence stays visible at the call site. Pass an
+explicit `q` (GeV) to override the photon momentum implied by the two masses,
+e.g. to use model rather than measured masses.
+"""
+function e1_transition_amplitude(
+    wave_S::RadialWaveOnUniformMesh,
+    mom_S::MockMomentumWave,
+    wave_P::RadialWaveOnUniformMesh,
+    mom_P::MockMomentumWave,
+    m_i::Real,
+    coeff_of_q,
+    M_parent_GeV::Real,
+    M_child_GeV::Real;
+    q = nothing,
+)
+    q_GeV = isnothing(q) ? photon_momentum(M_parent_GeV, M_child_GeV) : float(q)
+    E1 = mock_meson_radial_moment(
+        wave_S, wave_P,
+        mock_mean_energy(mom_S, m_i), mock_mean_energy(mom_P, m_i), m_i; n = 1,
+    )
+    return coeff_of_q(q_GeV) * E1 * sqrt(ALPHA_EM * 1000 * q_GeV)
+end

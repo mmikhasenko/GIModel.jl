@@ -85,3 +85,15 @@ is_equal_flavor(m::Meson) = m.flavor1 == m.flavor2
 reduced_mass(m::Meson) = reduced_mass(m.constituent_masses)
 
 flavor_label(m::Meson) = string(m.flavor1, m.flavor2)
+
+function Base.show(io::IO, ::MIME"text/plain", m::Meson)
+    print(
+        io, "Meson: ", m.flavor1, " ", m.flavor2, "bar   (m1 = ",
+        m.constituent_masses.m1_GeV, ", m2 = ", m.constituent_masses.m2_GeV,
+        " GeV, reduced = ", round(reduced_mass(m), digits = 4), " GeV)",
+    )
+    is_equal_flavor(m) && print(io, "\n  self-conjugate: same-J antisymmetric spin-orbit mixing vanishes")
+    return nothing
+end
+
+Base.show(io::IO, m::Meson) = print(io, "Meson(", m.flavor1, " ", m.flavor2, "bar)")

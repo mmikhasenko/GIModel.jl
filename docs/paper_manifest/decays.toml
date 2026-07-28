@@ -61,12 +61,12 @@ label = "Eq. (22)"
 page = 23
 statement = "Photon-emission helicity amplitude for radiative (EM) decays."
 status = "implemented"
-code = ["src/mock_meson_overlaps.jl:mock_meson_overlap", "src/mock_meson_overlaps.jl:mock_meson_radial_moment", "GIPaper/scripts/audit_table_vi_photon_decays.jl"]
+code = ["src/mock_meson_overlaps.jl:mock_meson_overlap", "src/mock_meson_overlaps.jl:mock_meson_radial_moment", "src/mock_meson_overlaps.jl:m1_transition_moment", "src/mock_meson_overlaps.jl:e1_transition_amplitude", "src/mock_meson_overlaps.jl:photon_momentum", "GIPaper/scripts/audit_table_vi_photon_decays.jl"]
 tests = ["Appendix-D mock-meson overlap kernels"]
 report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
 anchor = "paper/vision_ocr/page_images/page-023.png"
 parent = "sec-IV"
-notes = "Realized as the Appendix-D mock-meson form (I_i / E_n^i overlaps), now promoted into src (mock_meson_overlaps.jl) with tests; the Table VI audit assembles the M1/E1/M2 amplitudes from these kernels."
+notes = "Realized as the Appendix-D mock-meson form (I_i / E_n^i overlaps). Both halves now live in src: the kernels (mock_meson_overlap, mock_meson_radial_moment) and, since T2, the multipole assembly on top of them (m1_transition_moment, e1_transition_amplitude, photon_momentum) — formulas belong to GIModel, so the Table VI audit keeps only row selection and the paper comparison. Report byte-identical across the promotion."
 
 # --- Tables IV / V ---------------------------------------------------------
 

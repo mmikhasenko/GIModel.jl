@@ -130,3 +130,19 @@ raises `MethodError` instead of guessing.
 charge(::StrangeQuark) = -1 // 3
 charge(::HeavyQuark{:up}) = 2 // 3
 charge(::HeavyQuark{:down}) = -1 // 3
+
+# LightQuark deliberately has no `charge` method (m_u = m_d, so the model cannot
+# resolve isospin); say so rather than printing a blank or a wrong number.
+_charge_label(q::AbstractQuark) =
+    applicable(charge, q) ? string(charge(q)) : "undefined (no isospin resolution)"
+
+function Base.show(io::IO, ::MIME"text/plain", q::AbstractQuark)
+    print(
+        io, typeof(q), ": ", flavor_symbol(q),
+        "   m = ", mass_GeV(q), " GeV,  charge = ", _charge_label(q),
+    )
+    return nothing
+end
+
+Base.show(io::IO, q::AbstractQuark) =
+    print(io, nameof(typeof(q)), "(", mass_GeV(q), ", :", flavor_symbol(q), ")")

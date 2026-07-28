@@ -42,11 +42,12 @@ function channel_solution(
     params::GIParameters,
     masses::ConstituentMasses,
     L::Integer;
-    nlevels::Integer = 6,
-    ngrid::Integer = 450,
-    rmax::Real = 24.0,
-    kinetic::Symbol = :relativistic,
-    eigensolver::Symbol = :full,
+    solver::RadialSolver = RadialSolver(),
+    nlevels::Integer = solver.nlevels_per_channel,
+    ngrid::Integer = solver.ngrid,
+    rmax::Real = solver.rmax,
+    kinetic::Symbol = solver.kinetic,
+    eigensolver::Symbol = solver.eigensolver,
 )
     hamiltonian, r = if kinetic == :relativistic
         relativistic_hamiltonian(params, masses, L; ngrid = ngrid, rmax = rmax)
@@ -68,11 +69,12 @@ function channel_solution(
     params::GIParameters{HarmonicOscillatorBasis},
     masses::ConstituentMasses,
     L::Integer;
-    nlevels::Integer = 6,
-    ngrid::Integer = 450,
-    rmax::Real = 24.0,
-    kinetic::Symbol = :relativistic,
-    eigensolver::Symbol = :full,
+    solver::RadialSolver = RadialSolver(),
+    nlevels::Integer = solver.nlevels_per_channel,
+    ngrid::Integer = solver.ngrid,
+    rmax::Real = solver.rmax,
+    kinetic::Symbol = solver.kinetic,
+    eigensolver::Symbol = solver.eigensolver,
 )
     kinetic == :relativistic ||
         error("HarmonicOscillatorBasis currently supports only relativistic kinetic mode")

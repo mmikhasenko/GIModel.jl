@@ -134,9 +134,10 @@ function oscillator_channel_solution(
     params::GIParameters{HarmonicOscillatorBasis},
     masses::ConstituentMasses,
     L::Integer;
-    nlevels::Integer = 6,
-    ngrid::Integer = 450,
-    rmax::Real = 24.0,
+    solver::RadialSolver = RadialSolver(),
+    nlevels::Integer = solver.nlevels_per_channel,
+    ngrid::Integer = solver.ngrid,
+    rmax::Real = solver.rmax,
     nbasis::Integer = max(HO_DEFAULT_NBASIS, nlevels + 4),
 )
     r, h = radial_grid(ngrid, rmax)
@@ -190,9 +191,10 @@ function ho_full_distorted_states(
     masses::ConstituentMasses,
     L::Integer,
     V::AbstractMatrix;
-    nlevels::Integer = 6,
-    ngrid::Integer = 450,
-    rmax::Real = 24.0,
+    solver::RadialSolver = RadialSolver(),
+    nlevels::Integer = solver.nlevels_per_channel,
+    ngrid::Integer = solver.ngrid,
+    rmax::Real = solver.rmax,
     nbasis::Integer = max(HO_DEFAULT_NBASIS, nlevels + 4),
 )
     r, h = radial_grid(ngrid, rmax)
@@ -239,9 +241,10 @@ function ho_first_order_distorted_states(
     masses::ConstituentMasses,
     L::Integer,
     V::AbstractMatrix;
-    nlevels::Integer = 6,
-    ngrid::Integer = 450,
-    rmax::Real = 24.0,
+    solver::RadialSolver = RadialSolver(),
+    nlevels::Integer = solver.nlevels_per_channel,
+    ngrid::Integer = solver.ngrid,
+    rmax::Real = solver.rmax,
     nbasis::Integer = max(HO_DEFAULT_NBASIS, nlevels + 4),
 )
     r, h = radial_grid(ngrid, rmax)

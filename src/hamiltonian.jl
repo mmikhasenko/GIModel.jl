@@ -4,8 +4,9 @@ function nonrelativistic_hamiltonian(
     params::GIParameters,
     masses::ConstituentMasses,
     L::Integer;
-    ngrid::Integer = 900,
-    rmax::Real = 24.0,
+    solver::RadialSolver = RadialSolver(),
+    ngrid::Integer = solver.ngrid,
+    rmax::Real = solver.rmax,
 )
     mu = reduced_mass(masses)
     r, h = radial_grid(ngrid, rmax)
@@ -26,7 +27,8 @@ end
 function lowest_eigenpairs(
     hamiltonian::AbstractMatrix,
     nlevels::Integer;
-    eigensolver::Symbol = :full,
+    solver::RadialSolver = RadialSolver(),
+    eigensolver::Symbol = solver.eigensolver,
 )
     if eigensolver == :full
         fact = eigen(hamiltonian)
@@ -65,8 +67,9 @@ function relativistic_hamiltonian(
     params::GIParameters,
     masses::ConstituentMasses,
     L::Integer;
-    ngrid::Integer = 450,
-    rmax::Real = 24.0,
+    solver::RadialSolver = RadialSolver(),
+    ngrid::Integer = solver.ngrid,
+    rmax::Real = solver.rmax,
 )
     m1 = masses.m1_GeV
     m2 = masses.m2_GeV
