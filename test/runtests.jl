@@ -1343,6 +1343,82 @@ end
     @test charge(up_at_mb) != charge(b)
 end
 
+@testset "RadialWave interface: invariants, not fixed numbers" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    r, h = GIModel.radial_grid(450, 24.0)
+
+    @test MeshWave <: RadialWave
+    @test RadialWaveOnUniformMesh === MeshWave
+
+    # --- closed-form cross-checks: the operations must reproduce integrals we
+    # --- can do by hand, independently of any solver.
+    # u = r e^{-r}  =>  <r^n> = Gamma(3+n)/(2^n Gamma(3)) exactly.
+    u = r .* exp.(-r)
+    w = MeshWave(u ./ sqrt(sum(abs2, u) * h), r)
+    @test isapprox(wave_norm(w), 1.0; rtol = 1e-10)
+    @test isapprox(radial_expect(w, x -> 1.0), 1.0; rtol = 1e-10)
+    @test isapprox(radial_expect(w, x -> x), 1.5; rtol = 1e-5)          # 3/2
+    @test isapprox(radial_expect(w, x -> x^2), 3.0; rtol = 1e-5)        # 3
+    # A normalized wave overlapped with itself is 1, and the overlap is
+    # invariant under rescaling either wave (it normalizes internally).
+    @test isapprox(radial_overlap(w, w, x -> 1.0), 1.0; rtol = 1e-10)
+    w_scaled = MeshWave(7.3 .* w.u, r)
+    @test isapprox(radial_overlap(w, w_scaled, x -> 1.0), 1.0; rtol = 1e-10)
+    @test isapprox(radial_expect(w_scaled, x -> x), radial_expect(w, x -> x); rtol = 1e-12)
+
+    # Two different waves: overlap is symmetric and bounded by 1 (Cauchy-Schwarz).
+    v = r .* exp.(-0.7 .* r)
+    wv = MeshWave(v ./ sqrt(sum(abs2, v) * h), r)
+    ov = radial_overlap(w, wv, x -> 1.0)
+    @test isapprox(ov, radial_overlap(wv, w, x -> 1.0); rtol = 1e-12)
+    @test abs(ov) <= 1.0 + 1e-10
+
+    # --- Parseval: the transform must conserve probability. This ties the
+    # --- position-space and momentum-space halves of the interface together.
+    for key in ("q", "c", "b")
+        masses = ConstituentMasses(mq[key], mq[key])
+        _e, waves, rr = channel_solution(params, masses, 0; nlevels = 2)
+        for n in 1:2
+            wn = MeshWave(waves[:, n], rr)
+            mw = momentum_wave(wn, 0)
+            @test isapprox(wave_norm(wn), 1.0; rtol = 1e-10)
+            @test isapprox(momentum_expect(mw, p -> 1.0), 1.0; rtol = 1e-6)
+            # <E> >= m for a relativistic quark energy, with equality only at p=0.
+            @test momentum_expect(mw, p -> sqrt(mq[key]^2 + p^2)) > mq[key]
+        end
+    end
+
+    # --- orthogonality: distinct radial levels of one channel are orthogonal.
+    # --- Nothing in the solve enforces this; it is a property of the operator,
+    # --- so it is a real check on the solve rather than on the interface.
+    masses = ConstituentMasses(mq["c"], mq["c"])
+    _e, waves, rr = channel_solution(params, masses, 0; nlevels = 3)
+    for i in 1:3, j in 1:3
+        w_i = MeshWave(waves[:, i], rr)
+        w_j = MeshWave(waves[:, j], rr)
+        target = i == j ? 1.0 : 0.0
+        @test isapprox(abs(radial_overlap(w_i, w_j, x -> 1.0)), target; atol = 1e-8)
+    end
+
+    # --- node counting: the n-th radial level has n-1 interior nodes. Count only
+    # --- where the wave is physically present: the exponential tail flips sign
+    # --- in floating point (measured: crossings at r = 17.6 and 23.8 with |u|
+    # --- at 2e-12 and 2e-16 of the peak), so a naive sign count reports phantom
+    # --- nodes in the ground state.
+    for n in 1:3
+        u_n = waves[:, n]
+        cut = 1e-8 * maximum(abs, u_n)
+        big = [i for i in eachindex(u_n) if abs(u_n[i]) > cut]
+        signs = sign.(u_n[big])
+        nodes = count(i -> signs[i] != signs[i+1], 1:(length(signs)-1))
+        @test nodes == n - 1
+    end
+
+    # Mismatched meshes are an error, not a silently wrong overlap.
+    other, _ = GIModel.radial_grid(200, 24.0)
+    @test_throws ArgumentError radial_overlap(w, MeshWave(other .* 0 .+ 1.0, other), x -> 1.0)
+end
+
 @testset "Every solve returns u with the same normalization" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     ho = with_basis(params, HarmonicOscillatorBasis)

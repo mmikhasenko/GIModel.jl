@@ -12,7 +12,10 @@ using SpecialFunctions: erf, gamma
 
 include("constants.jl")
 
-export ConstituentMasses, reduced_mass, FineStructureMultiplet, RadialWaveOnUniformMesh
+export ConstituentMasses, reduced_mass, FineStructureMultiplet
+export RadialWave, MeshWave, RadialWaveOnUniformMesh
+export radial_expect, radial_overlap, momentum_wave, momentum_expect,
+    origin_amplitude, wave_norm
 include("model_objects.jl")
 
 # =============================================================================

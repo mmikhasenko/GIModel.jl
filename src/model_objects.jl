@@ -56,8 +56,36 @@ struct FineStructureMultiplet
 end
 
 """
-    RadialWaveOnUniformMesh(u, r, h)
-    RadialWaveOnUniformMesh(u, r)
+    abstract type RadialWave
+
+One radial eigenlevel, however it was computed. Consumers ask a `RadialWave`
+for **six operations** and never touch its representation:
+
+| operation | meaning |
+|---|---|
+| `radial_expect(w, f)` | integral of u^2 f(r) dr |
+| `radial_overlap(wx, wy, f)` | integral of u_x u_y f(r) dr |
+| `momentum_wave(w, L)` | the momentum-space wave Phi(p) |
+| `momentum_expect(mw, g)` | integral of p^2 |Phi|^2 g(p) dp |
+| `origin_amplitude(w)` | the (smeared) value at r = 0 |
+| `wave_norm(w)` | integral of u^2 dr, guaranteed 1 |
+
+Two implementations, in separate files, that never refer to each other:
+
+  - [`MeshWave`](@ref) — samples on a uniform mesh. This is the finite-difference
+    solver's native form, and it is also what the oscillator solver currently
+    returns after reconstructing its coefficients onto the mesh.
+  - `OscillatorWave` — the analytic oscillator representation (β + expansion
+    coefficients). It implements an operation **only** when that operation has a
+    closed form; anything not yet derived has no method and fails loudly rather
+    than quietly discretizing.
+"""
+abstract type RadialWave end
+
+"""
+    MeshWave(u, r, h)
+    MeshWave(u, r)
+    RadialWaveOnUniformMesh(u, r)   # the original name, still accepted
 
 Reduced radial wavefunction ``u(r)`` on a **uniform** interior grid: samples `uᵢ` and radii `rᵢ`
 with spacing `h` (for `length(r) ≥ 2`, the two-argument form sets `h = r[2] - r[1]`).
@@ -72,27 +100,27 @@ column `radial_level` of `solution.eigenvectors` together with `solution.r`.
 
 The explicit `h` argument must agree with the uniform spacing implied by `r` (guardrail).
 """
-struct RadialWaveOnUniformMesh
+struct MeshWave <: RadialWave
     u::Vector{Float64}
     r::Vector{Float64}
     h::Float64
-    function RadialWaveOnUniformMesh(
+    function MeshWave(
         u::AbstractVector{<:Real},
         r::AbstractVector{<:Real},
         h::Real,
     )
         length(u) == length(r) ||
-            throw(ArgumentError("RadialWaveOnUniformMesh: length(u) != length(r)"))
-        length(r) >= 1 || throw(ArgumentError("RadialWaveOnUniformMesh: empty r"))
+            throw(ArgumentError("MeshWave: length(u) != length(r)"))
+        length(r) >= 1 || throw(ArgumentError("MeshWave: empty r"))
         hf = float(h)
         isfinite(hf) && hf > 0 ||
-            throw(ArgumentError("RadialWaveOnUniformMesh: invalid mesh spacing h=$h"))
+            throw(ArgumentError("MeshWave: invalid mesh spacing h=$h"))
         if length(r) >= 2
             hinfer = float(r[2]) - float(r[1])
             isapprox(hinfer, hf; rtol = 1e-10, atol = 1e-12) ||
                 throw(
                     ArgumentError(
-                        "RadialWaveOnUniformMesh: h=$hf inconsistent with r spacing $hinfer",
+                        "MeshWave: h=$hf inconsistent with r spacing $hinfer",
                     ),
                 )
         end
@@ -100,10 +128,13 @@ struct RadialWaveOnUniformMesh
     end
 end
 
-function RadialWaveOnUniformMesh(u::AbstractVector{<:Real}, r::AbstractVector{<:Real})
+"""The original name for [`MeshWave`](@ref); the mesh is what it always was."""
+const RadialWaveOnUniformMesh = MeshWave
+
+function MeshWave(u::AbstractVector{<:Real}, r::AbstractVector{<:Real})
     length(r) >= 2 ||
-        throw(ArgumentError("RadialWaveOnUniformMesh(u,r): need length(r) ≥ 2 to infer h"))
-    return RadialWaveOnUniformMesh(u, r, r[2] - r[1])
+        throw(ArgumentError("MeshWave(u,r): need length(r) ≥ 2 to infer h"))
+    return MeshWave(u, r, r[2] - r[1])
 end
 
 
@@ -130,4 +161,55 @@ function physically_normalized_waves(waves::AbstractMatrix{<:Real}, h::Real)
         nrm > 0 && (out[:, col] ./= nrm)
     end
     return out
+end
+
+
+# =============================================================================
+# The RadialWave interface, implemented for MeshWave by mesh quadrature.
+#
+# Every consumer of a wave goes through these six. Nothing downstream reads
+# `.u`, `.r` or `.h`, so a second implementation (the analytic oscillator one)
+# can be dropped in without touching a single consumer.
+# =============================================================================
+
+"""
+    wave_norm(w::RadialWave) -> Float64
+
+The physical norm `integral u^2 dr`. Guaranteed to be 1 for any wave produced by
+a solve; exposed so the invariant can be asserted rather than assumed.
+"""
+wave_norm(w::MeshWave) = sum(abs2, w.u) * w.h
+
+"""
+    radial_expect(w::RadialWave, f) -> Float64
+
+`integral u^2 f(r) dr` with `u` normalized. `f` is called as `f(r)`.
+"""
+function radial_expect(w::MeshWave, f)
+    nrm = wave_norm(w)
+    nrm > 0 || throw(ArgumentError("radial_expect: zero-norm wave"))
+    s = 0.0
+    @inbounds for i in eachindex(w.r)
+        s += w.u[i]^2 * f(w.r[i])
+    end
+    return s * w.h / nrm
+end
+
+"""
+    radial_overlap(wx::RadialWave, wy::RadialWave, f) -> Float64
+
+`integral u_x u_y f(r) dr`, each wave normalized. Both must share a mesh.
+"""
+function radial_overlap(wx::MeshWave, wy::MeshWave, f)
+    length(wx.r) == length(wy.r) ||
+        throw(ArgumentError("radial_overlap: waves live on different meshes"))
+    isapprox(wx.h, wy.h; rtol = 1e-10) ||
+        throw(ArgumentError("radial_overlap: mesh spacings differ"))
+    nx, ny = wave_norm(wx), wave_norm(wy)
+    (nx > 0 && ny > 0) || throw(ArgumentError("radial_overlap: zero-norm wave"))
+    s = 0.0
+    @inbounds for i in eachindex(wx.r)
+        s += wx.u[i] * wy.u[i] * f(wx.r[i])
+    end
+    return s * wx.h / sqrt(nx * ny)
 end

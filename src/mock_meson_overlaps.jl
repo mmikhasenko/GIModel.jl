@@ -148,3 +148,38 @@ function e1_transition_amplitude(
     )
     return coeff_of_q(q_GeV) * E1 * sqrt(ALPHA_EM * 1000 * q_GeV)
 end
+
+
+# --- RadialWave interface: the momentum-space and origin operations ----------
+# MeshWave implements these by numerical transform on the mesh. The oscillator
+# implementation will not: for oscillator functions the Fourier-Bessel transform
+# is exact (scale beta -> 1/beta) and the origin value is closed form.
+
+"""
+    momentum_wave(w::RadialWave, L; pmax=30.0, npoints=1501) -> MockMomentumWave
+
+The momentum-space radial wave `Phi(p)`, normalized so `integral p^2 Phi^2 dp = 1`.
+For a [`MeshWave`](@ref) this is a numerical spherical-Bessel transform.
+"""
+momentum_wave(w::MeshWave, L::Integer; pmax::Real = 30.0, npoints::Integer = 1501) =
+    mock_momentum_wave(w, L; pmax = pmax, npoints = npoints)
+
+"""
+    momentum_expect(mw::MockMomentumWave, g) -> Float64
+
+`integral p^2 Phi(p)^2 g(p) dp`. `g` is called as `g(p)`; `g = p -> sqrt(m^2+p^2)`
+gives the mean relativistic quark energy.
+"""
+momentum_expect(mw::MockMomentumWave, g) =
+    _mm_trapz(mw.p, mw.p .^ 2 .* mw.phi .^ 2 .* map(g, mw.p))
+
+"""
+    origin_amplitude(w::RadialWave, mass_GeV; L=0, npoints=900) -> Float64
+
+The smeared wavefunction amplitude at the origin that the annihilation widths
+need (Eq. 17 `S_L`). For a [`MeshWave`](@ref) it is reconstructed through a
+momentum integral, since a mesh has no sample at `r = 0`; for oscillator
+functions it is a closed form.
+"""
+origin_amplitude(w::MeshWave, mass_GeV::Real; L::Integer = 0, npoints::Integer = 900) =
+    wavefunction_origin_smearing(w, mass_GeV; L = L, npoints = npoints)
