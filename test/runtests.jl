@@ -1414,6 +1414,26 @@ end
         @test nodes == n - 1
     end
 
+    # --- momentum space is its own noun, with a linear and a quadratic operation.
+    # --- momentum_expect is quadratic in Phi, momentum_functional is linear;
+    # --- conflating them is a whole class of factor-of-Phi bug.
+    @test MeshMomentumWave <: MomentumWave
+    @test MockMomentumWave === MeshMomentumWave
+    mc = mq["c"]
+    _e2, wv2, rr2 = channel_solution(params, ConstituentMasses(mc, mc), 0; nlevels = 1)
+    wq = MeshWave(wv2[:, 1], rr2)
+    mwq = momentum_wave(wq, 0)
+    # quadratic with g = 1 is the norm; linear with K = 1 is NOT (different object)
+    @test isapprox(momentum_expect(mwq, p -> 1.0), 1.0; rtol = 1e-6)
+    @test !isapprox(momentum_functional(mwq, p -> 1.0), 1.0; rtol = 1e-3)
+    # both are linear in their kernel argument
+    @test isapprox(momentum_expect(mwq, p -> 3.0), 3 * momentum_expect(mwq, p -> 1.0); rtol = 1e-12)
+    @test isapprox(momentum_functional(mwq, p -> 3.0), 3 * momentum_functional(mwq, p -> 1.0); rtol = 1e-12)
+    # the functional scales linearly in Phi, the expectation quadratically
+    scaled = MeshMomentumWave(mwq.p, 2 .* mwq.phi)
+    @test isapprox(momentum_functional(scaled, p -> 1.0), 2 * momentum_functional(mwq, p -> 1.0); rtol = 1e-12)
+    @test isapprox(momentum_expect(scaled, p -> 1.0), 4 * momentum_expect(mwq, p -> 1.0); rtol = 1e-12)
+
     # Mismatched meshes are an error, not a silently wrong overlap.
     other, _ = GIModel.radial_grid(200, 24.0)
     @test_throws ArgumentError radial_overlap(w, MeshWave(other .* 0 .+ 1.0, other), x -> 1.0)

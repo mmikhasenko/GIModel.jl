@@ -12,11 +12,25 @@
 # exponents (0.7 for I_i, 0.5 for Eₙⁱ). I_i drives the M1 magnetic moments; Eₙⁱ
 # the E1/M2 multipole amplitudes and the hindered-transition recoil term.
 
-"""A mock meson's normalized momentum-space radial wave Φ_L(p) on a p-grid."""
-struct MockMomentumWave
+"""
+    abstract type MomentumWave
+
+A radial wave in momentum space. Separate from [`RadialWave`](@ref) because the
+two spaces are different objects — *except* in the oscillator basis, where the
+Fourier–Bessel transform maps the family onto itself (scale `β → 1/β`), so an
+oscillator wave transformed is still an oscillator wave. A mesh wave transformed
+is samples on a different grid, hence [`MeshMomentumWave`](@ref).
+"""
+abstract type MomentumWave end
+
+"""A normalized momentum-space radial wave Φ_L(p) sampled on a p-grid."""
+struct MeshMomentumWave <: MomentumWave
     p::Vector{Float64}
     phi::Vector{Float64}
 end
+
+"""The original name for [`MeshMomentumWave`](@ref)."""
+const MockMomentumWave = MeshMomentumWave
 
 _mm_trapz(x, y) = sum(0.5 * (y[i] + y[i+1]) * (x[i+1] - x[i]) for i = 1:length(x)-1)
 
@@ -170,16 +184,17 @@ momentum_wave(w::MeshWave, L::Integer; pmax::Real = 30.0, npoints::Integer = 150
 `integral p^2 Phi(p)^2 g(p) dp`. `g` is called as `g(p)`; `g = p -> sqrt(m^2+p^2)`
 gives the mean relativistic quark energy.
 """
-momentum_expect(mw::MockMomentumWave, g) =
+momentum_expect(mw::MeshMomentumWave, g) =
     _mm_trapz(mw.p, mw.p .^ 2 .* mw.phi .^ 2 .* map(g, mw.p))
 
 """
-    origin_amplitude(w::RadialWave, mass_GeV; L=0, npoints=900) -> Float64
+    momentum_functional(mw::MomentumWave, K) -> Float64
 
-The smeared wavefunction amplitude at the origin that the annihilation widths
-need (Eq. 17 `S_L`). For a [`MeshWave`](@ref) it is reconstructed through a
-momentum integral, since a mesh has no sample at `r = 0`; for oscillator
-functions it is a closed form.
+`integral p^2 Phi(p) K(p) dp` — **linear** in `Phi`, unlike
+[`momentum_expect`](@ref) which is quadratic. `K` is supplied by the physics
+that needs it, not by the wave: the annihilation amplitude `S_L` uses
+`K(p) = (m/E) (p/E)^L`, which is why the mass belongs to the kernel and not to
+the wave interface.
 """
-origin_amplitude(w::MeshWave, mass_GeV::Real; L::Integer = 0, npoints::Integer = 900) =
-    wavefunction_origin_smearing(w, mass_GeV; L = L, npoints = npoints)
+momentum_functional(mw::MeshMomentumWave, K) =
+    _mm_trapz(mw.p, mw.p .^ 2 .* mw.phi .* map(K, mw.p))

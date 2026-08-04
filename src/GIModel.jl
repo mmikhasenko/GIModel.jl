@@ -14,8 +14,9 @@ include("constants.jl")
 
 export ConstituentMasses, reduced_mass, FineStructureMultiplet
 export RadialWave, MeshWave, RadialWaveOnUniformMesh
-export radial_expect, radial_overlap, momentum_wave, momentum_expect,
-    origin_amplitude, wave_norm
+export radial_expect, radial_overlap, wave_norm
+export MomentumWave, MeshMomentumWave, momentum_wave, momentum_expect,
+    momentum_functional
 include("model_objects.jl")
 
 # =============================================================================
