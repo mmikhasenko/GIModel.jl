@@ -150,6 +150,57 @@ function _contact_hyperfine_shift_momentum_sandwich_diagonal(
     euclidean_expectation(vector, operator)
 end
 
+"""
+    resummed_channel_solution(params, masses, L, V; solver, nlevels)
+        -> (values, waves, r)
+
+Diagonalize the central Hamiltonian **plus** a spin-dependent operator `V`,
+resumming `V` rather than treating it at first order. This is one of the two
+places in the model where numerics actually happen (the other is the central
+solve, [`channel_solution`](@ref)); everything downstream consumes the returned
+`u(r)`.
+
+Two methods, one per basis, both returning the same physical quantity:
+
+  - `GIParameters{FiniteDifferenceBasis}` — build `H` on the uniform mesh, add
+    `V`, diagonalize (this method).
+  - `GIParameters{HarmonicOscillatorBasis}` — project `V` into the finite
+    oscillator space and diagonalize there (the paper's own method; see
+    `harmonic_oscillator_basis.jl`).
+
+`V` is a dense operator on the same uniform mesh, e.g.
+[`contact_hyperfine_operator`](@ref GIModel.contact_hyperfine_operator).
+
+**Normalization is physical for both methods: `∫u² dr = 1`.** The finite-
+difference path used to return Euclidean eigenvectors (`Σu² = 1`) instead,
+differing from the oscillator path by exactly `√h`; consumers had to know which
+convention they held, and anything quadratic in `u` given the wrong one was off
+by `h`. Both now agree.
+"""
+function resummed_channel_solution(
+    params::GIParameters{FiniteDifferenceBasis},
+    masses::ConstituentMasses,
+    L::Integer,
+    V::AbstractMatrix;
+    solver::RadialSolver = RadialSolver(),
+    nlevels::Integer = solver.nlevels_per_channel,
+    ngrid::Integer = solver.ngrid,
+    rmax::Real = solver.rmax,
+)
+    r, h = radial_grid(ngrid, rmax)
+    size(V, 1) == length(r) || error("V must live on the (ngrid, rmax) mesh")
+    hamiltonian, _ = relativistic_hamiltonian(
+        params, masses, L; solver = RadialSolver(ngrid = ngrid, rmax = rmax))
+    values, vectors = lowest_eigenpairs(
+        Symmetric(Matrix(hamiltonian) + Matrix(V)), nlevels)
+    waves = Matrix(vectors)
+    for col in axes(waves, 2)
+        nrm = sqrt(sum(abs2, waves[:, col]) * h)
+        nrm > 0 && (waves[:, col] ./= nrm)
+    end
+    return collect(values), waves, collect(Float64, r)
+end
+
 function contact_hyperfine_nonperturbative_levels(
     params::GIParameters{FiniteDifferenceBasis},
     masses::ConstituentMasses,
@@ -161,15 +212,7 @@ function contact_hyperfine_nonperturbative_levels(
     if !params.factors.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
         return Float64[]
     end
-    h = r[2] - r[1]
-    rmax = h * (length(r) + 1)
-    hamiltonian, rebuilt_r =
-        relativistic_hamiltonian(params, masses, 0;
-            solver = RadialSolver(ngrid = length(r), rmax = rmax))
-    length(rebuilt_r) == length(r) || error("rebuilt S-wave grid changed length")
-    operator = contact_hyperfine_operator(params, masses, L, multiplicity, rebuilt_r)
-    levels, _vectors =
-        lowest_eigenpairs(Symmetric(Matrix(hamiltonian) + Matrix(operator)), nlevels)
+    levels, _waves, _r = _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels)
     return levels
 end
 
@@ -196,16 +239,20 @@ function contact_hyperfine_nonperturbative_states(
     if !params.factors.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
         return Float64[], zeros(Float64, 0, 0), Float64[]
     end
+    return _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels)
+end
+
+# Shared body: build the contact operator for this (L, multiplicity) and hand it
+# to the basis-dispatched resummed solve.
+function _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels)
     h = r[2] - r[1]
     rmax = h * (length(r) + 1)
-    hamiltonian, rebuilt_r =
-        relativistic_hamiltonian(params, masses, 0;
-            solver = RadialSolver(ngrid = length(r), rmax = rmax))
+    solver = RadialSolver(ngrid = length(r), rmax = rmax)
+    rebuilt_r, _ = radial_grid(length(r), rmax)
     length(rebuilt_r) == length(r) || error("rebuilt S-wave grid changed length")
-    operator = contact_hyperfine_operator(params, masses, L, multiplicity, rebuilt_r)
-    levels, vectors =
-        lowest_eigenpairs(Symmetric(Matrix(hamiltonian) + Matrix(operator)), nlevels)
-    return levels, Matrix(vectors), collect(Float64, rebuilt_r)
+    V = contact_hyperfine_operator(params, masses, L, multiplicity, rebuilt_r)
+    return resummed_channel_solution(
+        params, masses, 0, Matrix(V); solver = solver, nlevels = nlevels)
 end
 
 # The two methods above are finite-difference: they build the FD Hamiltonian and
@@ -225,9 +272,10 @@ function _no_resummed_contact_path(params::GIParameters)
     throw(ArgumentError("""
     Non-perturbative contact solve is not implemented for $(basis_type(params)).
 
-    Only `FiniteDifferenceBasis` has a method here. The oscillator-basis
-    equivalent of this job is `ho_full_distorted_states(params, masses, L, V)`,
-    which resums `V` inside the finite oscillator space.
+    Only `FiniteDifferenceBasis` has a method here. The basis-generic solve is
+    `resummed_channel_solution(params, masses, L, V)`, which has methods for
+    both bases; this wrapper is the contact-operator convenience on top of it
+    and has not been wired for the oscillator basis yet.
 
     This used to return an empty result, which callers read as "not available"
     and silently replaced with first-order perturbation theory -- for the light

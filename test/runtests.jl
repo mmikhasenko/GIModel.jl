@@ -1343,6 +1343,42 @@ end
     @test charge(up_at_mb) != charge(b)
 end
 
+@testset "Both bases solve H+V to the same quantity, same normalization" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    ho = with_basis(params, HarmonicOscillatorBasis)
+    r, h = GIModel.radial_grid(450, 24.0)
+
+    for key in ("q", "c", "b")
+        masses = ConstituentMasses(mq[key], mq[key])
+        V = Matrix(GIModel.contact_hyperfine_operator(params, masses, "S", 1, r))
+        e_fd, u_fd, r_fd = resummed_channel_solution(params, masses, 0, V; nlevels = 2)
+        e_ho, u_ho, r_ho = resummed_channel_solution(ho, masses, 0, V; nlevels = 2)
+
+        # Same mesh out.
+        @test r_fd == r_ho == collect(r)
+        # Same normalization: physical, integral u^2 dr = 1, for BOTH bases.
+        # FD used to return Euclidean eigenvectors (sum u^2 = 1), differing from
+        # HO by exactly sqrt(h); anything quadratic in u was then off by h.
+        for u in (u_fd, u_ho), col in axes(u, 2)
+            @test isapprox(sum(abs2, u[:, col]) * h, 1.0; rtol = 1e-10)
+        end
+        # Same quantity: the two algorithms agree on the ground-state energy to
+        # well under an MeV across light, charm and bottom.
+        @test abs(e_ho[1] - e_fd[1]) < 1e-3
+    end
+
+    # The original exported name is the oscillator method of the unified solve.
+    masses = ConstituentMasses(mq["c"], mq["c"])
+    V = Matrix(GIModel.contact_hyperfine_operator(params, masses, "S", 1, r))
+    @test ho_full_distorted_states(ho, masses, 0, V; nlevels = 2)[1] ==
+          resummed_channel_solution(ho, masses, 0, V; nlevels = 2)[1]
+
+    # V must live on the solver's mesh, in either basis.
+    bad = zeros(10, 10)
+    @test_throws Exception resummed_channel_solution(params, masses, 0, bad; nlevels = 1)
+    @test_throws Exception resummed_channel_solution(ho, masses, 0, bad; nlevels = 1)
+end
+
 @testset "An unimplemented solve fails instead of degrading" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     masses = ConstituentMasses(mq["q"], mq["q"])

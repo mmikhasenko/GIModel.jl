@@ -67,7 +67,8 @@ include("harmonic_oscillator_basis.jl")
 export channel_solution
 include("channel_solver.jl")
 
-export spin_dot, contact_smearing_sigma, contact_hyperfine_nonperturbative_states
+export spin_dot, contact_smearing_sigma, resummed_channel_solution,
+    contact_hyperfine_nonperturbative_states
 include("contact_hyperfine.jl")
 
 export MixingMechanism,

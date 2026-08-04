@@ -186,7 +186,7 @@ nonperturbative-FD overshoot) yet fully for the light pion. This is the single
 treatment that harmonizes the whole Table VII audit (gluonic distortion +
 light-pseudoscalar leptonic rows) on the paper's own basis.
 """
-function ho_full_distorted_states(
+function resummed_channel_solution(
     params::GIParameters{HarmonicOscillatorBasis},
     masses::ConstituentMasses,
     L::Integer,
@@ -281,3 +281,18 @@ function ho_first_order_distorted_states(
     end
     return values, distorted, r
 end
+
+
+"""
+    ho_full_distorted_states(params, masses, L, V; ...)
+
+The oscillator-basis method of [`resummed_channel_solution`](@ref), under its
+original name. Kept because the Table VI and W6 audits call it directly.
+"""
+ho_full_distorted_states(
+    params::GIParameters{HarmonicOscillatorBasis},
+    masses::ConstituentMasses,
+    L::Integer,
+    V::AbstractMatrix;
+    kwargs...,
+) = resummed_channel_solution(params, masses, L, V; kwargs...)
