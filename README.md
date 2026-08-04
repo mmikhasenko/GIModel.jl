@@ -39,6 +39,18 @@ The repository has three first-class deliverables:
   diagnostics.
 - `GIPaper/scripts/audit_nonmixing_contact.jl` regenerates the
   non-mixing/contact scorecards.
+- `examples/` collects worked examples of GIModel driven as a physics tool —
+  public API only, no paper data — in their own environment
+  (`examples/Project.toml`: GIModel + CairoMakie + PlutoUI). See
+  [examples/README.md](examples/README.md), which doubles as the "how is this
+  package used" walkthrough. Currently two:
+  - `examples/heavy_quark_transition.jl`, a Pluto notebook that dials `m_Q` from
+    charm to bottom — `Q Q̄` / `Q q̄` / `Q s̄` switch, the level scheme in
+    `n^{2S+1}L_J` and in `J^P` (axis following the spectrum, so only the shape
+    moves), and an optional recorded GIF of either sweep.
+  - `examples/chi_c_annihilation_widths.jl`, a script computing `χ_c0`/`χ_c2`
+    two-gluon and two-photon widths and splitting their ratio into the `15/4`
+    spin algebra times the J-dependent distortion of the wave at the origin.
 - `docs/formula_map.md` maps active code paths to paper equations.
 - `docs/paper_gap_ledger.md` is the current “what remains vs the paper” list.
 - `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` is the preferred
