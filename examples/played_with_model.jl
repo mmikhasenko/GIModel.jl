@@ -10,7 +10,7 @@ begin
 	using Pkg
 	Pkg.offline()
 	# GIPaper (comparison layer) dev-depends on GIModel (pure computation).
-	Pkg.activate("/Users/mikhailmikhasenko/Documents/GotfreyIsgur.CAT/GIModel.jl/GIPaper")
+	Pkg.activate(joinpath(@__DIR__, "..", "GIPaper"))
 	Pkg.instantiate()
 	#
 	using GIModel
@@ -64,7 +64,7 @@ spectrum = compute_spectrum(
 	params,
 	bbbar;
 	levels = spectrum_levels(2; L_labels = ("S", "P", "D")),
-	kinetic = :relativistic,
+	solver = RadialSolver(; kinetic = :relativistic),
 )
 
 # ╔═╡ 35378712-12cf-4322-9683-f58b5048416a

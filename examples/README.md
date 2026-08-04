@@ -1,13 +1,14 @@
 # Examples
 
 Worked examples of **GIModel** used as a physics tool rather than as a paper
-reproduction. Each one is self-contained and runs against the model's public
-API only — no reaching into internals, no reference data. The comparison layer
-lives in `GIPaper/`; nothing here depends on it.
+reproduction. Each one is self-contained; the curated two run against the
+model's public API only — no reaching into internals, no reference data.
 
-Examples share one environment (`examples/Project.toml`): GIModel (dev-path to
-the repository root) plus CairoMakie, PlutoUI and LaTeXStrings. Each file
-activates it itself, so no setup step is needed.
+The curated examples share one environment (`examples/Project.toml`): GIModel
+(dev-path to the repository root) plus CairoMakie, PlutoUI and LaTeXStrings.
+The exception is `played_with_model.jl`, the scratch notebook, which wants the
+comparison layer and so activates `GIPaper/` instead. Either way each file
+activates its own environment, so there is no setup step.
 
 One caveat on "public API only": `chi_c_annihilation_widths.jl` calls
 `GIModel.radial_grid`, which is not exported even though the exported
@@ -156,3 +157,23 @@ Points worth copying:
   rescales by the coefficient ratio `√3/√(4/5) = √15/2` — same kernel, same
   wave, different front factor. Worth promoting to a real `:P0` kind if χ_c
   γγ rows are ever added to the audit.
+
+## `played_with_model.jl` — the scratch pad
+
+The oldest of the three and the only uncurated one, kept because it is what
+poking at this model actually looks like: display `params` and the quark-mass
+table, build `Meson(all_masses, :b, :b)`, put `central_spectrum` next to the
+full `compute_spectrum`, then hand the same parameters to GIPaper's
+`compare_reference` and read the bottomonium residuals against the digitized
+paper spectrum.
+
+```bash
+julia -e 'using Pluto; Pluto.run(notebook="examples/played_with_model.jl")'
+```
+
+It runs on the **GIPaper** environment (`Pkg.activate(joinpath(@__DIR__, "..",
+"GIPaper"))`), not the examples one, because it needs the comparison layer —
+which also makes it the one file here that touches reference data.
+
+No narrative, cells in the order they were typed. Treat it as a starting point
+for your own poking, not as a document.
