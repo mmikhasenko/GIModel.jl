@@ -1434,6 +1434,24 @@ end
     @test isapprox(momentum_functional(scaled, p -> 1.0), 2 * momentum_functional(mwq, p -> 1.0); rtol = 1e-12)
     @test isapprox(momentum_expect(scaled, p -> 1.0), 4 * momentum_expect(mwq, p -> 1.0); rtol = 1e-12)
 
+    # --- scale invariance: every consumer of a wave must give the same answer
+    # --- for a rescaled wave, because the amplitude of u carries no physics.
+    # --- This is what catches a deleted normalization: migrating
+    # --- charge_radius_squared onto `radial_expect` removed the normalization
+    # --- that `_rel_momentum_average` was silently relying on, and only a
+    # --- rescaled input revealed it (the value moved by a factor of 13.7^2).
+    _e3, wv3, rr3 = channel_solution(params, ConstituentMasses(mq["q"], mq["s"]), 0; nlevels = 1)
+    w_one = MeshWave(wv3[:, 1], rr3)
+    w_big = MeshWave(13.7 .* wv3[:, 1], rr3)
+    for probe in (
+        w -> charge_radius_squared(w, mq["q"], 2 // 3, mq["s"], 1 // 3),
+        w -> radial_expect(w, x -> x^2),
+        w -> wave_norm(w) / wave_norm(w),
+        w -> momentum_expect(momentum_wave(w, 0), p -> 1.0),
+    )
+        @test isapprox(probe(w_one), probe(w_big); rtol = 1e-10)
+    end
+
     # Mismatched meshes are an error, not a silently wrong overlap.
     other, _ = GIModel.radial_grid(200, 24.0)
     @test_throws ArgumentError radial_overlap(w, MeshWave(other .* 0 .+ 1.0, other), x -> 1.0)

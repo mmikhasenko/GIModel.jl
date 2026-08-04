@@ -276,7 +276,14 @@ function _rel_momentum_average(wave::RadialWaveOnUniformMesh, m::Real, power::Re
         Φ = _momentum_radial_wave(wave, p, 0)
         accum += weight * p^2 * Φ^2 * (m / sqrt(m^2 + p^2))^power
     end
-    return accum * dp
+    # Φ is linear in `wave.u`, so this integral is quadratic in the wave's
+    # amplitude. Divide by the norm here rather than requiring every caller to
+    # hand in a pre-normalized wave — that requirement was invisible, and
+    # removing one caller's normalization silently rescaled the result.
+    # Parseval makes ∫u² dr the right divisor; for a normalized wave it is 1.
+    nrm = wave_norm(wave)
+    nrm > 0 || throw(ArgumentError("_rel_momentum_average: zero-norm radial wave"))
+    return accum * dp / nrm
 end
 
 """Conversion (ħc)² : an r² in GeV⁻² is `HBARC_FM2 · r²` in fm²."""
@@ -308,13 +315,11 @@ function charge_radius_squared(
     m1, m2 = float(m1_GeV), float(m2_GeV)
     Mtot = m1 + m2
     Mtot > 0 || throw(ArgumentError("total constituent mass must be positive"))
-    u, h = radial.u, radial.h
-    nrm = sum(abs2, u) * h
-    nrm > 0 || throw(ArgumentError("charge_radius_squared: zero-norm radial wave"))
-    r2 = sum(@. u^2 * radial.r^2) * h / nrm
-    wave = RadialWaveOnUniformMesh(u ./ sqrt(nrm), radial.r)
+    # <r^2> through the interface: `radial_expect` normalizes internally, so
+    # this function no longer carries its own copy of that arithmetic.
+    r2 = radial_expect(radial, x -> x^2)
     term(mi, ei, mj) =
-        ei * ((mj / Mtot)^2 * r2 + (3 / (4 * mi^2)) * _rel_momentum_average(wave, mi, 2f; npoints = npoints))
+        ei * ((mj / Mtot)^2 * r2 + (3 / (4 * mi^2)) * _rel_momentum_average(radial, mi, 2f; npoints = npoints))
     return term(m1, e1, m2) + term(m2, e2, m1)
 end
 
