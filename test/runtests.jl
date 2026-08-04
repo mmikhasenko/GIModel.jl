@@ -1343,6 +1343,35 @@ end
     @test charge(up_at_mb) != charge(b)
 end
 
+@testset "An unimplemented solve fails instead of degrading" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    masses = ConstituentMasses(mq["q"], mq["q"])
+    r, _ = GIModel.radial_grid(450, 24.0)
+
+    # FD has the non-perturbative contact solve, and returns it.
+    levels, vectors, _ = contact_hyperfine_nonperturbative_states(params, masses, "S", 1, r, 2)
+    @test length(levels) == 2 && size(vectors, 2) == 2
+
+    # Empty is still the right answer where the path is genuinely inactive:
+    # not an S wave, or a multiplicity the contact term does not touch.
+    @test contact_hyperfine_nonperturbative_states(params, masses, "P", 1, r, 2)[1] == Float64[]
+    @test GIModel.contact_hyperfine_nonperturbative_levels(params, masses, "S", 2, r, 2) == Float64[]
+
+    # But a basis with no implementation must NOT answer "empty". It used to,
+    # and `add_spin_corrections` read that as "fall back to first-order PT",
+    # which for the light 1S0 gave 0.2842 GeV against the resummed 0.0950 GeV
+    # — a 3x wrong pion with no warning.
+    ho = with_basis(params, HarmonicOscillatorBasis)
+    @test_throws ArgumentError contact_hyperfine_nonperturbative_states(ho, masses, "S", 1, r, 2)
+    @test_throws ArgumentError GIModel.contact_hyperfine_nonperturbative_levels(ho, masses, "S", 1, r, 2)
+    @test_throws ArgumentError compute_spectrum(ho, Meson(mq, :q, :q); levels = spectrum_levels(1))
+
+    # The FD front door is untouched and still resums.
+    fd_pi = spectrum_state(
+        compute_spectrum(params, Meson(mq, :q, :q); levels = spectrum_levels(1)), "1^1S_0")
+    @test fd_pi.mass_GeV < 0.15        # resummed; first-order PT lands near 0.28
+end
+
 @testset "RadialSolver is numerics, SpinTerms is physics" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     meson = Meson(mq, :q, :s)          # unequal mass: every mixing mechanism is live
@@ -1712,10 +1741,16 @@ end
     @test r2(vec1[:, 1]) < r2(vec3[:, 1])
     @test lvl1[1] < lvl3[1]
 
-    # inactive path (non-FD basis) returns empties, not an error
-    lvlho, vecho, rho = contact_hyperfine_nonperturbative_states(
+    # A basis with no implementation now throws. This reverses an earlier
+    # deliberate choice ("inactive path (non-FD basis) returns empties, not an
+    # error"), because "inactive" conflated two different things: a
+    # configuration the contact term genuinely does not touch (non-S wave,
+    # sandwich off -- still empty, asserted above) and a basis nobody wrote the
+    # solve for. Callers read empty as "not available" and substitute
+    # first-order PT, which for the light 1S0 gives 0.2842 GeV against the
+    # resummed 0.0950 GeV. No caller relied on the empty-for-HO return.
+    @test_throws ArgumentError contact_hyperfine_nonperturbative_states(
         with_basis(params, HarmonicOscillatorBasis), masses, "S", 1, r, 2)
-    @test isempty(lvlho) && isempty(vecho) && isempty(rho)
 end
 
 @testset "Table VII gluonic annihilation (Eq. 17 S_L)" begin

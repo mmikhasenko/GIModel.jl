@@ -208,27 +208,51 @@ function contact_hyperfine_nonperturbative_states(
     return levels, Matrix(vectors), collect(Float64, rebuilt_r)
 end
 
-function contact_hyperfine_nonperturbative_states(
-    params::GIParameters,
-    masses::ConstituentMasses,
-    L::AbstractString,
-    multiplicity::Integer,
-    r::AbstractVector,
-    nlevels::Integer,
-)
-    return Float64[], zeros(Float64, 0, 0), Float64[]
+# The two methods above are finite-difference: they build the FD Hamiltonian and
+# diagonalize `H + V` on the mesh. There IS an oscillator-basis counterpart of
+# the same job -- `ho_full_distorted_states`, which projects `V` into the finite
+# oscillator space and diagonalizes there -- but it has a different name and
+# signature, so nothing routes to it automatically.
+#
+# These catch-alls used to return empty arrays for any non-FD basis, which
+# `add_spin_corrections` reads as "no non-perturbative result available" and
+# silently answers with first-order perturbation theory instead. For the light
+# `1S0` that is the difference between ~0.10 GeV (resummed) and ~0.28 GeV
+# (first order) -- a wrong pion, with no warning. Returning empty is reserved
+# for the genuinely inactive cases (non-S wave, momentum sandwich off), which
+# the FD methods handle themselves; an unsupported basis is now an error.
+function _no_resummed_contact_path(params::GIParameters)
+    throw(ArgumentError("""
+    Non-perturbative contact solve is not implemented for $(basis_type(params)).
+
+    Only `FiniteDifferenceBasis` has a method here. The oscillator-basis
+    equivalent of this job is `ho_full_distorted_states(params, masses, L, V)`,
+    which resums `V` inside the finite oscillator space.
+
+    This used to return an empty result, which callers read as "not available"
+    and silently replaced with first-order perturbation theory -- for the light
+    1S0 that is ~0.28 GeV instead of ~0.10 GeV. Failing is the honest answer
+    until the two paths are unified behind one entry point.
+    """))
 end
 
-function contact_hyperfine_nonperturbative_levels(
+contact_hyperfine_nonperturbative_states(
     params::GIParameters,
-    masses::ConstituentMasses,
-    L::AbstractString,
-    multiplicity::Integer,
-    r::AbstractVector,
-    nlevels::Integer,
-)
-    return Float64[]
-end
+    ::ConstituentMasses,
+    ::AbstractString,
+    ::Integer,
+    ::AbstractVector,
+    ::Integer,
+) = _no_resummed_contact_path(params)
+
+contact_hyperfine_nonperturbative_levels(
+    params::GIParameters,
+    ::ConstituentMasses,
+    ::AbstractString,
+    ::Integer,
+    ::AbstractVector,
+    ::Integer,
+) = _no_resummed_contact_path(params)
 
 """
 First-order smeared contact hyperfine shift for S-waves.
