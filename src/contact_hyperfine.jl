@@ -193,11 +193,7 @@ function resummed_channel_solution(
         params, masses, L; solver = RadialSolver(ngrid = ngrid, rmax = rmax))
     values, vectors = lowest_eigenpairs(
         Symmetric(Matrix(hamiltonian) + Matrix(V)), nlevels)
-    waves = Matrix(vectors)
-    for col in axes(waves, 2)
-        nrm = sqrt(sum(abs2, waves[:, col]) * h)
-        nrm > 0 && (waves[:, col] ./= nrm)
-    end
+    waves = physically_normalized_waves(Matrix(vectors), h)
     return collect(values), waves, collect(Float64, r)
 end
 

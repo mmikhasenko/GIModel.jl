@@ -105,3 +105,29 @@ function RadialWaveOnUniformMesh(u::AbstractVector{<:Real}, r::AbstractVector{<:
         throw(ArgumentError("RadialWaveOnUniformMesh(u,r): need length(r) ≥ 2 to infer h"))
     return RadialWaveOnUniformMesh(u, r, r[2] - r[1])
 end
+
+
+"""
+    physically_normalized_waves(waves, h) -> Matrix{Float64}
+
+Scale each column of `waves` to the physical radial normalization
+`∫u² dr = Σuᵢ² h = 1`.
+
+Every solve in the model returns its waves through this, so "the wave from a
+solve" means the same thing in every basis. It exists because the raw
+eigensolver hands back Euclidean-normalized columns (`Σuᵢ² = 1`) while the
+oscillator path reconstructs already-physical ones — the two differ by `√h`,
+and anything quadratic in `u` given the wrong convention is off by `h`.
+
+Zero columns (below-threshold or empty channels) are left alone.
+"""
+function physically_normalized_waves(waves::AbstractMatrix{<:Real}, h::Real)
+    out = Matrix{Float64}(waves)
+    hf = float(h)
+    hf > 0 || return out
+    for col in axes(out, 2)
+        nrm = sqrt(sum(abs2, view(out, :, col)) * hf)
+        nrm > 0 && (out[:, col] ./= nrm)
+    end
+    return out
+end

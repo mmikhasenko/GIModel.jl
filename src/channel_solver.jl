@@ -63,10 +63,11 @@ function channel_solution(
     end
     values, vectors = lowest_eigenpairs(hamiltonian, nlevels; solver = solver)
     _warn_if_underresolved(values, vectors, r, length(r) > 1 ? r[2] - r[1] : 0.0, masses, L)
+    waves = physically_normalized_waves(Matrix(vectors), length(r) > 1 ? r[2] - r[1] : 1.0)
     if kinetic == :relativistic
-        values, vectors, r
+        values, waves, r
     else
-        values .+ (masses.m1_GeV + masses.m2_GeV), vectors, r
+        values .+ (masses.m1_GeV + masses.m2_GeV), waves, r
     end
 end
 

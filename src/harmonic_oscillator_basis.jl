@@ -154,11 +154,7 @@ function oscillator_channel_solution(
         end
     end
     _warn_if_beta_railed(best.beta, oscillator_beta_candidates(masses, L), masses, L)
-    waves = best.basis * best.coeffs
-    for col in axes(waves, 2)
-        nrm = sqrt(sum(abs2, waves[:, col]) * h)
-        nrm > 0 && (waves[:, col] ./= nrm)
-    end
+    waves = physically_normalized_waves(best.basis * best.coeffs, h)
     return collect(best.values), Matrix(waves), r
 end
 
@@ -209,11 +205,7 @@ function resummed_channel_solution(
         end
     end
     _warn_if_beta_railed(best.beta, oscillator_beta_candidates(masses, L), masses, L)
-    waves = best.basis * best.coeffs
-    for col in axes(waves, 2)
-        nrm = sqrt(sum(abs2, waves[:, col]) * h)
-        nrm > 0 && (waves[:, col] ./= nrm)
-    end
+    waves = physically_normalized_waves(best.basis * best.coeffs, h)
     return collect(best.values[1:nlevels]), Matrix(waves[:, 1:nlevels]), r
 end
 
@@ -258,11 +250,7 @@ function ho_first_order_distorted_states(
         end
     end
     _warn_if_beta_railed(best.beta, oscillator_beta_candidates(masses, L), masses, L)
-    waves = best.basis * best.coeffs
-    for col in axes(waves, 2)
-        nrm = sqrt(sum(abs2, waves[:, col]) * h)
-        nrm > 0 && (waves[:, col] ./= nrm)
-    end
+    waves = physically_normalized_waves(best.basis * best.coeffs, h)
     # V in the central eigenbasis: ⟨k|V|n⟩ = h · wₖ' V wₙ (physical normalization)
     Vkn = h .* (waves' * (Matrix(V) * waves))
     values = Float64[]
