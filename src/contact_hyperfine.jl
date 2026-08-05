@@ -198,7 +198,7 @@ function resummed_channel_solution(
 end
 
 function contact_hyperfine_nonperturbative_levels(
-    params::GIParameters{FiniteDifferenceBasis},
+    params::GIParameters,
     masses::ConstituentMasses,
     L::AbstractString,
     multiplicity::Integer,
@@ -225,7 +225,7 @@ Eq. (20)/(21) realistic-factor ratios. Returns `(Float64[], zeros(0,0),
 Float64[])` when the non-perturbative contact path is inactive.
 """
 function contact_hyperfine_nonperturbative_states(
-    params::GIParameters{FiniteDifferenceBasis},
+    params::GIParameters,
     masses::ConstituentMasses,
     L::AbstractString,
     multiplicity::Integer,
@@ -251,52 +251,16 @@ function _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels)
         params, masses, 0, Matrix(V); solver = solver, nlevels = nlevels)
 end
 
-# The two methods above are finite-difference: they build the FD Hamiltonian and
-# diagonalize `H + V` on the mesh. There IS an oscillator-basis counterpart of
-# the same job -- `ho_full_distorted_states`, which projects `V` into the finite
-# oscillator space and diagonalizes there -- but it has a different name and
-# signature, so nothing routes to it automatically.
+# Both methods above are basis-generic. The guard (S-wave, multiplicity 1 or 3,
+# momentum sandwich on) is physics; building the contact operator is
+# basis-free (`p2_operator` returns the same mesh operator either way); and the
+# solve itself is `resummed_channel_solution`, which dispatches on the basis.
 #
-# These catch-alls used to return empty arrays for any non-FD basis, which
-# `add_spin_corrections` reads as "no non-perturbative result available" and
-# silently answers with first-order perturbation theory instead. For the light
-# `1S0` that is the difference between ~0.10 GeV (resummed) and ~0.28 GeV
-# (first order) -- a wrong pion, with no warning. Returning empty is reserved
-# for the genuinely inactive cases (non-S wave, momentum sandwich off), which
-# the FD methods handle themselves; an unsupported basis is now an error.
-function _no_resummed_contact_path(params::GIParameters)
-    throw(ArgumentError("""
-    Non-perturbative contact solve is not implemented for $(basis_type(params)).
-
-    Only `FiniteDifferenceBasis` has a method here. The basis-generic solve is
-    `resummed_channel_solution(params, masses, L, V)`, which has methods for
-    both bases; this wrapper is the contact-operator convenience on top of it
-    and has not been wired for the oscillator basis yet.
-
-    This used to return an empty result, which callers read as "not available"
-    and silently replaced with first-order perturbation theory -- for the light
-    1S0 that is ~0.28 GeV instead of ~0.10 GeV. Failing is the honest answer
-    until the two paths are unified behind one entry point.
-    """))
-end
-
-contact_hyperfine_nonperturbative_states(
-    params::GIParameters,
-    ::ConstituentMasses,
-    ::AbstractString,
-    ::Integer,
-    ::AbstractVector,
-    ::Integer,
-) = _no_resummed_contact_path(params)
-
-contact_hyperfine_nonperturbative_levels(
-    params::GIParameters,
-    ::ConstituentMasses,
-    ::AbstractString,
-    ::Integer,
-    ::AbstractVector,
-    ::Integer,
-) = _no_resummed_contact_path(params)
+# Until U2 unified that solve, this function inlined the finite-difference one,
+# so it had to be FD-only -- and its catch-all returned empty for any other
+# basis, which callers read as "unavailable" and replaced with first-order PT
+# (the light 1S0 came out 0.2842 GeV instead of 0.0950). U1 turned that into a
+# loud failure; with the paths unified there is nothing left to fail about.
 
 """
 First-order smeared contact hyperfine shift for S-waves.

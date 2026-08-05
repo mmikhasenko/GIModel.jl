@@ -1534,14 +1534,21 @@ end
     @test contact_hyperfine_nonperturbative_states(params, masses, "P", 1, r, 2)[1] == Float64[]
     @test GIModel.contact_hyperfine_nonperturbative_levels(params, masses, "S", 2, r, 2) == Float64[]
 
-    # But a basis with no implementation must NOT answer "empty". It used to,
-    # and `add_spin_corrections` read that as "fall back to first-order PT",
-    # which for the light 1S0 gave 0.2842 GeV against the resummed 0.0950 GeV
-    # — a 3x wrong pion with no warning.
+    # The oscillator basis used to answer "empty" here, which
+    # `add_spin_corrections` read as "fall back to first-order PT": the light
+    # 1S0 came out 0.2842 GeV against the resummed 0.0950. U1 made that a loud
+    # failure, U2 unified the solve, and B1 made this wrapper basis-generic — so
+    # the oscillator path now resums in its own space and lands on the same
+    # answer. That agreement is what the throw was standing in for.
     ho = with_basis(params, HarmonicOscillatorBasis)
-    @test_throws ArgumentError contact_hyperfine_nonperturbative_states(ho, masses, "S", 1, r, 2)
-    @test_throws ArgumentError GIModel.contact_hyperfine_nonperturbative_levels(ho, masses, "S", 1, r, 2)
-    @test_throws ArgumentError compute_spectrum(ho, Meson(mq, :q, :q); levels = spectrum_levels(1))
+    lvl_ho, vec_ho, _ = contact_hyperfine_nonperturbative_states(ho, masses, "S", 1, r, 2)
+    @test length(lvl_ho) == 2 && size(vec_ho, 2) == 2
+    @test abs(lvl_ho[1] - levels[1]) < 1e-3          # sub-MeV across the two bases
+    @test lvl_ho[1] < 0.15                           # resummed, not first-order (~0.28)
+    @test GIModel.contact_hyperfine_nonperturbative_levels(ho, masses, "S", 1, r, 2) ≈ lvl_ho
+    ho_pi = spectrum_state(
+        compute_spectrum(ho, Meson(mq, :q, :q); levels = spectrum_levels(1)), "1^1S_0")
+    @test ho_pi.mass_GeV < 0.15
 
     # The FD front door is untouched and still resums.
     fd_pi = spectrum_state(
@@ -1918,16 +1925,14 @@ end
     @test r2(vec1[:, 1]) < r2(vec3[:, 1])
     @test lvl1[1] < lvl3[1]
 
-    # A basis with no implementation now throws. This reverses an earlier
-    # deliberate choice ("inactive path (non-FD basis) returns empties, not an
-    # error"), because "inactive" conflated two different things: a
-    # configuration the contact term genuinely does not touch (non-S wave,
-    # sandwich off -- still empty, asserted above) and a basis nobody wrote the
-    # solve for. Callers read empty as "not available" and substitute
-    # first-order PT, which for the light 1S0 gives 0.2842 GeV against the
-    # resummed 0.0950 GeV. No caller relied on the empty-for-HO return.
-    @test_throws ArgumentError contact_hyperfine_nonperturbative_states(
+    # The oscillator basis resums the same operator in its own space and lands
+    # on the same answer, so this wrapper is basis-generic. "Empty" is reserved
+    # for the genuinely inactive cases (non-S wave, sandwich off); it is never
+    # "this basis has no implementation", which is what used to make callers
+    # substitute first-order PT and report 0.2842 GeV for the light 1S0.
+    lvl_ho, _, _ = contact_hyperfine_nonperturbative_states(
         with_basis(params, HarmonicOscillatorBasis), masses, "S", 1, r, 2)
+    @test abs(lvl_ho[1] - lvl1[1]) < 1e-3
 end
 
 @testset "Table VII gluonic annihilation (Eq. 17 S_L)" begin

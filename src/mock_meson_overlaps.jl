@@ -86,7 +86,12 @@ function mock_meson_radial_moment(wx::RadialWaveOnUniformMesh, wy::RadialWaveOnU
                                   Ex::Real, Ey::Real, m_emit::Real;
                                   n::Integer = 1, exponent::Real = 0.5)
     wx.r == wy.r || throw(ArgumentError("mock_meson_radial_moment: meshes differ"))
-    radial = sum(@. wx.u * wy.u * wx.r^n) * wx.h
+    # This kernel IS `radial_overlap` with f(r) = r^n, times the Appendix-D
+    # energy prefactor. Going through the interface normalizes both waves, which
+    # this used to leave to the caller without saying so -- the same unstated
+    # requirement that `_rel_momentum_average` carried. For the normalized waves
+    # every solve now returns, the divisor is 1 and no number moves.
+    radial = radial_overlap(wx, wy, x -> x^n)
     return abs(float(m_emit) / sqrt(Ex * Ey))^exponent * radial
 end
 
