@@ -81,10 +81,35 @@ function ho_basis_matrix(L::Integer, β::Real, r::AbstractVector, nbasis::Intege
     return U
 end
 
+"""
+    orthonormalize_physical_basis(U, h) -> Matrix
+
+Orthonormalize mesh-sampled basis columns under the physical inner product
+`integral f g dr = h * sum(f_i g_i)`, **with the phase of the input preserved**.
+
+The phase fix is not cosmetic. LAPACK's QR assigns each column whatever sign its
+algorithm produces, and those signs vary with `nbasis`, `β` and the mesh (at
+`β = 0.65, nbasis = 24` they flipped at n = 10 and n = 18 — isolated, so not a
+convention). That is invisible while everything is numerical, because a column
+sign flip is a unitary transformation and leaves every eigenvalue and observable
+alone. It becomes fatal the moment a **closed-form** matrix element is used, since
+analytic formulas are written in `ho_reduced_radial`'s convention: mixing the two
+put the oscillator charmonium 1S 9.4 MeV *below* the finite-difference answer,
+which a variational calculation in a finite basis cannot do.
+
+Same lesson as [`fix_annihilation_phase!`](@ref), which exists because eigenvector
+signs are arbitrary and the Table III amplitudes depend on them. A basis that will
+ever meet an analytic expression needs a stated phase.
+"""
 function orthonormalize_physical_basis(U::AbstractMatrix, h::Real)
     F = qr(sqrt(h) .* Matrix(U))
     cols = min(size(U, 2), size(F.Q, 2))
-    return Matrix(F.Q[:, 1:cols]) ./ sqrt(h)
+    Q = Matrix(F.Q[:, 1:cols]) ./ sqrt(h)
+    for j in 1:cols
+        # keep the sign of the basis function this column came from
+        sum(view(Q, :, j) .* view(U, :, j)) < 0 && (Q[:, j] .*= -1)
+    end
+    return Q
 end
 
 function projected_matrix(U::AbstractMatrix, h::Real, A::AbstractMatrix)

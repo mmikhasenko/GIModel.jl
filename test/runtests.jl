@@ -1343,6 +1343,39 @@ end
     @test charge(up_at_mb) != charge(b)
 end
 
+@testset "The oscillator basis has a fixed phase" begin
+    # LAPACK's QR picks its own column signs, and they varied with nbasis, beta
+    # and the mesh (flips at n = 10 and n = 18 for beta = 0.65, nbasis = 24).
+    # Invisible numerically -- a sign flip is unitary -- but fatal once a closed
+    # form enters, since analytic elements are written in ho_reduced_radial's
+    # convention. Wiring exact p^2 into an unfixed basis put charmonium 1S
+    # 9.4 MeV BELOW the finite-difference answer, which a variational
+    # calculation in a finite basis cannot do.
+    r, h = GIModel.radial_grid(450, 24.0)
+    for β in (0.25, 0.65, 1.35, 2.35), nb in (6, 12, 24)
+        B = GIModel.ho_basis_matrix(0, β, r, nb)
+        U = GIModel.orthonormalize_physical_basis(B, h)
+        # every column keeps the sign of the basis function it came from
+        @test all(sum(view(U, :, j) .* view(B, :, j)) > 0 for j in 1:nb)
+        # and it is still orthonormal under the physical inner product
+        @test maximum(abs, h * (transpose(U) * U) - I) < 1e-10
+    end
+
+    # With the phase fixed, the projected p^2 agrees with the closed form up to
+    # mesh error, and that error is a property of the mesh vs beta: fine at the
+    # variational optimum, poor where the basis is too compact or too diffuse
+    # for the grid (the resolution wall and the beta railing, as numbers).
+    ana(β, nb) = Matrix(ho_p2_matrix(0, β, nb))
+    proj(β, nb) = Matrix(GIModel.projected_matrix(
+        GIModel.orthonormalize_physical_basis(GIModel.ho_basis_matrix(0, β, r, nb), h),
+        h, GIModel.p2_operator(1.0, 0, r, h)))
+    rel(β, nb) = maximum(abs, proj(β, nb) - ana(β, nb)) / maximum(abs, ana(β, nb))
+    @test rel(0.65, 12) < 0.01          # near the variational optimum
+    @test rel(0.65, 24) < 0.01
+    @test rel(2.35, 24) > 0.05          # too compact for h: the resolution wall
+    @test rel(0.25, 24) > 1.0           # too diffuse for rmax: the beta railing
+end
+
 @testset "Exact oscillator p^2 (A17 momentum side)" begin
     # p^2 = 2*mu*H_osc - beta^4 r^2 is tridiagonal in the oscillator basis:
     #   <n|p^2|n>   = beta^2 (2n + L + 3/2)
