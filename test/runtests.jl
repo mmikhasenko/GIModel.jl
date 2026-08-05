@@ -1343,6 +1343,38 @@ end
     @test charge(up_at_mb) != charge(b)
 end
 
+@testset "Exact oscillator p^2 (A17 momentum side)" begin
+    # p^2 = 2*mu*H_osc - beta^4 r^2 is tridiagonal in the oscillator basis:
+    #   <n|p^2|n>   = beta^2 (2n + L + 3/2)
+    #   <n|p^2|n+1> = beta^2 sqrt((n+1)(n + L + 3/2))
+    # Checked against the mesh projection it is meant to replace -- and the
+    # check is CONVERGENCE, not a tolerance: the difference must shrink as the
+    # mesh refines, which is what shows the formula is exact and the mesh is
+    # the approximation.
+    for (L, β, nb) in ((0, 0.55, 6), (1, 0.75, 6), (2, 0.45, 5))
+        ana = Matrix(ho_p2_matrix(L, β, nb))
+        errs = Float64[]
+        for (ng, rm) in ((450, 24.0), (2000, 40.0), (8000, 56.0))
+            r, h = GIModel.radial_grid(ng, rm)
+            U = GIModel.orthonormalize_physical_basis(GIModel.ho_basis_matrix(L, β, r, nb), h)
+            num = Matrix(GIModel.projected_matrix(U, h, GIModel.p2_operator(1.0, L, r, h)))
+            push!(errs, maximum(abs, num .- ana))
+        end
+        @test errs[1] > errs[2] > errs[3]        # monotone convergence to the formula
+        @test errs[3] < 1e-3
+    end
+
+    # Structure: symmetric, tridiagonal, positive definite (p^2 is).
+    M = Matrix(ho_p2_matrix(0, 0.6, 8))
+    @test M ≈ transpose(M)
+    @test all(iszero, [M[i, j] for i in 1:8, j in 1:8 if abs(i - j) > 1])
+    @test all(>(0), eigvals(Symmetric(M)))
+    # beta scaling: p^2 has dimensions of beta^2.
+    @test Matrix(ho_p2_matrix(0, 1.2, 5)) ≈ 4 .* Matrix(ho_p2_matrix(0, 0.6, 5))
+    @test_throws ArgumentError ho_p2_matrix(0, -1.0, 4)
+    @test_throws ArgumentError ho_p2_matrix(0, 0.5, 0)
+end
+
 @testset "RadialWave interface: invariants, not fixed numbers" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     r, h = GIModel.radial_grid(450, 24.0)

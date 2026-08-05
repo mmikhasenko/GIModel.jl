@@ -66,6 +66,7 @@ export central_potential_values
 include("central_potential_dispatch.jl")
 
 include("hamiltonian.jl")
+export ho_p2_matrix
 include("harmonic_oscillator_basis.jl")
 
 export channel_solution

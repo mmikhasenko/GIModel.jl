@@ -28,6 +28,48 @@ function ho_reduced_radial(nr::Integer, L::Integer, β::Real, r::Real)
     return norm * (β * r)^(L + 1) * exp(-0.5 * x) * generalized_laguerre(nr, α, x)
 end
 
+"""
+    ho_p2_matrix(L, β, nbasis) -> SymTridiagonal
+
+Exact matrix elements of `p²` in the 3D harmonic-oscillator basis — the first
+ingredient of Eq. (A17), with no mesh anywhere.
+
+The oscillator Hamiltonian `H = p²/2μ + ½μω²r²` is diagonal with eigenvalue
+`(2n+L+3/2)ω`, and `r²` is tridiagonal with known elements, so
+
+    p² = 2μH − β⁴r²,    β² = μω
+
+is tridiagonal too:
+
+    ⟨n|p²|n⟩   = β² (2n + L + 3/2)
+    ⟨n|p²|n+1⟩ = β² √((n+1)(n + L + 3/2))
+
+Verified against the mesh projection this is intended to replace: the difference
+falls from 4.3e-3 at `(ngrid, rmax) = (450, 24)` to 7.4e-5 at `(8000, 56)`,
+i.e. it is the mesh's error and not this formula's.
+
+**Not yet wired into `oscillator_hamiltonian_for_beta`.** Substituting it there
+moves the charmonium `1S` by 9.4 MeV and turns a 0.01 MeV finite-difference /
+oscillator agreement into a 9.4 MeV disagreement, with the oscillator result
+landing *below* the finite-difference one — the wrong side for a variational
+calculation in a finite basis. Two candidate explanations were tested and
+rejected: the mesh basis is orthonormal to 1.2e-15 (so quadrature error in the
+basis is not it), and the QR sign convention is a uniform -1 that cancels in
+the matrix. The remaining suspect is that Eq. (A17) cannot be done half
+analytically: the potential side is still projected through the mesh, and
+mixing an exact momentum side with an approximate position side need not be
+variational. Resolving that is the position-space half of A3', not this
+function.
+"""
+function ho_p2_matrix(L::Integer, β::Real, nbasis::Integer)
+    nbasis >= 1 || throw(ArgumentError("ho_p2_matrix: nbasis must be ≥ 1"))
+    β > 0 || throw(ArgumentError("ho_p2_matrix: β must be positive"))
+    b2 = float(β)^2
+    diagonal = [b2 * (2n + L + 1.5) for n = 0:(nbasis-1)]
+    offdiag = [b2 * sqrt((n + 1) * (n + L + 1.5)) for n = 0:(nbasis-2)]
+    return SymTridiagonal(diagonal, offdiag)
+end
+
 function ho_basis_matrix(L::Integer, β::Real, r::AbstractVector, nbasis::Integer)
     U = Matrix{Float64}(undef, length(r), nbasis)
     for j = 1:nbasis
