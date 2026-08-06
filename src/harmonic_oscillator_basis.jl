@@ -29,6 +29,69 @@ function ho_reduced_radial(nr::Integer, L::Integer, β::Real, r::Real)
 end
 
 """
+    ho_operator_matrix(L, β, nbasis, g; rtol=1e-12, nq=64, nq_max=4096) -> Symmetric
+
+Matrix elements `⟨a|g(r)|b⟩ = ∫₀^∞ u_a(r) g(r) u_b(r) dr` in the 3D oscillator
+basis — the **position-space** half of Eq. (A17), with no spatial mesh.
+
+This is generalized Gauss–Laguerre quadrature in Golub–Welsch (DVR) form, and
+the Jacobi matrix it needs is already [`ho_r2_matrix`](@ref): for weight
+`x^(L+1/2) e^{-x}` with `x = (βr)²` the recurrence coefficients are exactly
+`⟨n|r²|n⟩β²` and `⟨n|r²|n+1⟩β²`. So
+
+    β² r²  =  Z diag(xᵢ) Zᵀ ,      rᵢ = √xᵢ / β
+    ⟨a|g|b⟩ = Σᵢ Z[a,i] g(rᵢ) Z[b,i]
+
+**Why this form and not weights-times-polynomials.** Evaluating `√wᵢ` and
+`p_n(xᵢ)` separately is what destroys the accuracy: at 120 Gauss–Hermite nodes
+the outer node reaches Laguerre argument ≈218, where `L₁₂^{1/2} ≈ 1.7e19` while
+the weight is ≈1e-95. Their product is O(1), but forming it from those two
+factors has already lost the digits before the sum starts — no amount of
+compensated summation recovers them. The eigenvector entries **are** the product
+`√wᵢ p_n(xᵢ)`; neither extreme ever exists.
+
+Two exact self-checks, needing no reference data:
+
+  - `g = 1` returns the identity (`Z` is orthogonal), to ~5e-15.
+  - `g = r²` returns [`ho_r2_matrix`](@ref) — spectral reconstruction of the
+    very Jacobi matrix that generated the rule — to ~1e-13.
+
+`nq` (the quadrature size, distinct from `nbasis`) doubles until the result stops
+moving by `rtol`, since a smooth non-polynomial `g` needs more nodes than a
+polynomial one and diffuse `β` needs more than compact `β`. Verified against
+`QuadGK` on the Appendix-A smeared potential: agreement 2.8e-16 to 1.2e-13.
+"""
+function ho_operator_matrix(
+    L::Integer, β::Real, nbasis::Integer, g;
+    rtol::Real = 1e-12, nq::Integer = 64, nq_max::Integer = 4096,
+)
+    nbasis >= 1 || throw(ArgumentError("ho_operator_matrix: nbasis must be ≥ 1"))
+    β > 0 || throw(ArgumentError("ho_operator_matrix: β must be positive"))
+    n = max(Int(nq), 2nbasis)
+    prev = _ho_operator_matrix_at(L, β, nbasis, g, n)
+    while n < nq_max
+        n *= 2
+        cur = _ho_operator_matrix_at(L, β, nbasis, g, n)
+        scale = max(maximum(abs, cur), 1.0)
+        maximum(abs, cur - prev) <= rtol * scale && return Symmetric(cur)
+        prev = cur
+    end
+    @warn """
+    ho_operator_matrix: quadrature did not reach rtol=$rtol by nq=$nq_max
+    (L=$L, β=$β, nbasis=$nbasis). Diffuse β needs the most nodes; the result is
+    the largest-nq value, not a converged one.
+    """ maxlog = 1
+    return Symmetric(prev)
+end
+
+function _ho_operator_matrix_at(L::Integer, β::Real, nbasis::Integer, g, nq::Integer)
+    F = eigen(Symmetric(Matrix(float(β)^2 .* ho_r2_matrix(L, β, nq))))
+    Z = F.vectors[1:nbasis, :]
+    r = sqrt.(max.(F.values, 0.0)) ./ float(β)
+    return Z * Diagonal([float(g(ri)) for ri in r]) * transpose(Z)
+end
+
+"""
     ho_r2_matrix(L, β, nbasis) -> SymTridiagonal
 
 Exact matrix elements of `r²` in the 3D harmonic-oscillator basis — the

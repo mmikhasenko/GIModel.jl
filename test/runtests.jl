@@ -1430,6 +1430,53 @@ end
     @test_throws ArgumentError ho_r2_matrix(0, 0.5, 0)
 end
 
+@testset "A17 position side: Gauss-Laguerre in Golub-Welsch form" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+
+    # The Jacobi matrix for weight x^(L+1/2) e^{-x}, x = (beta r)^2, IS
+    # beta^2 * ho_r2_matrix. Diagonalizing it gives nodes as eigenvalues and
+    # sqrt(w_i) p_n(x_i) as eigenvector entries -- so the 1e19 polynomial value
+    # and the 1e-95 weight never exist separately. That is the whole trick:
+    # forming them apart loses the digits before any summation happens, which no
+    # compensated summation can undo.
+    for L in (0, 1, 2), β in (0.25, 0.65, 2.35)
+        # g = 1 must be the identity, because Z is orthogonal
+        @test maximum(abs, Matrix(ho_operator_matrix(L, β, 24, r -> 1.0)) - I) < 1e-13
+        # g = r^2 must reconstruct the very Jacobi matrix that generated the rule
+        @test maximum(abs, Matrix(ho_operator_matrix(L, β, 24, r -> r^2)) -
+                           Matrix(ho_r2_matrix(L, β, 24))) < 1e-10
+    end
+
+    # Higher pure moments too, against the Gaussian-moment closed form
+    # <n|r^0|n> = 1 and the r^2 case above; r^4 is checked for consistency
+    # between two independent quadrature sizes rather than a closed form.
+    for L in (0, 1), β in (0.45, 1.35)
+        a = Matrix(ho_operator_matrix(L, β, 12, r -> r^4; nq = 64))
+        b = Matrix(ho_operator_matrix(L, β, 12, r -> r^4; nq = 256))
+        @test maximum(abs, a - b) < 1e-9
+    end
+
+    # The real operator: the Appendix-A smeared Coulomb + confinement, checked
+    # against independent adaptive quadrature (QuadGK), not against itself.
+    mc = mq["c"]
+    g(r) = GIModel.smeared_coulomb_G_closed(params, mc, mc, r) +
+           GIModel.smeared_confinement_S_closed(params, mc, mc, r)
+    L, β, nb = 0, 0.65, 24
+    M = Matrix(ho_operator_matrix(L, β, nb, g))
+    for (a, b) in ((1, 1), (1, 2), (3, 3), (5, 8), (12, 12))
+        ref, _ = quadgk(r -> GIModel.ho_reduced_radial(a - 1, L, β, r) * g(r) *
+                             GIModel.ho_reduced_radial(b - 1, L, β, r),
+                        0, Inf; rtol = 1e-13, order = 21)
+        @test isapprox(M[a, b], ref; atol = 1e-11)
+    end
+
+    # Symmetry, and independence of the quadrature size once converged.
+    @test M ≈ transpose(M)
+    @test maximum(abs, M - Matrix(ho_operator_matrix(L, β, nb, g; nq = 512))) < 1e-10
+    @test_throws ArgumentError ho_operator_matrix(0, -1.0, 4, r -> 1.0)
+    @test_throws ArgumentError ho_operator_matrix(0, 0.5, 0, r -> 1.0)
+end
+
 @testset "Exact oscillator p^2 (A17 momentum side)" begin
     # p^2 = 2*mu*H_osc - beta^4 r^2 is tridiagonal in the oscillator basis:
     #   <n|p^2|n>   = beta^2 (2n + L + 3/2)
