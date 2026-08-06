@@ -57,13 +57,15 @@ Two exact self-checks, needing no reference data:
     very Jacobi matrix that generated the rule — to ~1e-13.
 
 `nq` (the quadrature size, distinct from `nbasis`) doubles until the result stops
-moving by `rtol`, since a smooth non-polynomial `g` needs more nodes than a
+moving by `rtol`. The default 1e-10 is well below what the eigenvalues need
+(~1e-6 GeV) and is reached by every `(L, β)` in `HO_BETA_GRID`; the most diffuse
+`β = 0.25` needs the most nodes, since a smooth non-polynomial `g` needs more nodes than a
 polynomial one and diffuse `β` needs more than compact `β`. Verified against
 `QuadGK` on the Appendix-A smeared potential: agreement 2.8e-16 to 1.2e-13.
 """
 function ho_operator_matrix(
     L::Integer, β::Real, nbasis::Integer, g;
-    rtol::Real = 1e-12, nq::Integer = 64, nq_max::Integer = 4096,
+    rtol::Real = 1e-10, nq::Integer = 64, nq_max::Integer = 8192,
 )
     nbasis >= 1 || throw(ArgumentError("ho_operator_matrix: nbasis must be ≥ 1"))
     β > 0 || throw(ArgumentError("ho_operator_matrix: β must be positive"))
@@ -85,7 +87,10 @@ function ho_operator_matrix(
 end
 
 function _ho_operator_matrix_at(L::Integer, β::Real, nbasis::Integer, g, nq::Integer)
-    F = eigen(Symmetric(Matrix(float(β)^2 .* ho_r2_matrix(L, β, nq))))
+    # Keep the Jacobi matrix TRIDIAGONAL. Densifying it costs O(nq³) where the
+    # tridiagonal solver is O(nq²), and the diffuse end of HO_BETA_GRID needs
+    # nq ≈ 2048 — the difference between a fast gate and an unusable one.
+    F = eigen(float(β)^2 * ho_r2_matrix(L, β, nq))
     Z = F.vectors[1:nbasis, :]
     r = sqrt.(max.(F.values, 0.0)) ./ float(β)
     return Z * Diagonal([float(g(ri)) for ri in r]) * transpose(Z)
@@ -243,26 +248,33 @@ function oscillator_hamiltonian_for_beta(
 )
     m1 = masses.m1_GeV
     m2 = masses.m2_GeV
+    # `U` is built only to reconstruct waves back onto the reporting mesh; no
+    # operator is assembled through it on the Appendix-A path below.
     U = orthonormalize_physical_basis(ho_basis_matrix(L, β, r, nbasis), h)
+    if params.central isa AppendixAMomentumSandwich
+        # Eq. (A17) with the paper's own ingredients, both sides exact and no
+        # spatial mesh: p² has closed-form oscillator matrix elements, and the
+        # smeared G̃/S̃ are integrated by generalized Gauss-Laguerre in
+        # Golub-Welsch form. The momentum factor A(p) is a spectral function of
+        # p², which is what makes the f(p) g(r) ordering of A17 assemble as a
+        # matrix product.
+        p2_basis = Symmetric(Matrix(ho_p2_matrix(L, β, nbasis)))
+        kinetic = oscillator_kinetic_matrix(p2_basis, m1) +
+                  oscillator_kinetic_matrix(p2_basis, m2)
+        A = oscillator_momentum_factor_matrix(p2_basis, m1, m2; power = 0.5)
+        g = ho_operator_matrix(L, β, nbasis, ri -> smeared_coulomb_G_closed(params, m1, m2, ri))
+        s = ho_operator_matrix(L, β, nbasis, ri -> smeared_confinement_S_closed(params, m1, m2, ri))
+        return Symmetric(kinetic + Symmetric(A * g * A + s)), U
+    end
+    # Comparator central methods (pointwise, 1D-smeared, 3D-smeared, derivative-G)
+    # are not closed-form functions of r — several smear numerically ON the mesh —
+    # so they keep the mesh projection. Mixing an exact kinetic operator with a
+    # mesh-projected potential is not the Hamiltonian of any single problem, so
+    # both sides stay on the mesh here.
     p2_grid = p2_operator(m1, L, r, h)
     p2_basis = projected_matrix(U, h, p2_grid)
     kinetic = oscillator_kinetic_matrix(p2_basis, m1) + oscillator_kinetic_matrix(p2_basis, m2)
-    potential = if params.central isa AppendixAMomentumSandwich
-        A = oscillator_momentum_factor_matrix(p2_basis, m1, m2; power = 0.5)
-        g = projected_diagonal(
-            U,
-            h,
-            [smeared_coulomb_G_closed(params, m1, m2, ri) for ri in r],
-        )
-        s = projected_diagonal(
-            U,
-            h,
-            [smeared_confinement_S_closed(params, m1, m2, ri) for ri in r],
-        )
-        Symmetric(A * g * A + s)
-    else
-        projected_diagonal(U, h, potential_diagonal(params, m1, m2, r))
-    end
+    potential = projected_diagonal(U, h, potential_diagonal(params, m1, m2, r))
     return Symmetric(kinetic + potential), U
 end
 

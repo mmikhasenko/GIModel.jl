@@ -19,15 +19,15 @@ and truncation lowers S_L, the wrong direction to explain them.
 
 | flavor | L | n | S_FD | S_HO | S_HO/S_FD |
 |:-:|:-:|:-:|---:|---:|:-:|
-| c | 0 | 1 | +0.2820 | +0.2807 | 0.9955 |
-| c | 0 | 2 | -0.2020 | -0.2007 | 0.9936 |
+| c | 0 | 1 | +0.2820 | +0.2807 | 0.9954 |
+| c | 0 | 2 | -0.2020 | -0.2006 | 0.9935 |
 | c | 1 | 1 | +0.1438 | +0.1432 | 0.9956 |
-| b | 0 | 1 | +0.7267 | +0.7097 | 0.9765 |
-| b | 0 | 2 | -0.5171 | -0.5032 | 0.9732 |
-| b | 0 | 3 | +0.4486 | +0.4356 | 0.9708 |
-| b | 0 | 4 | -0.4117 | -0.3996 | 0.9706 |
-| b | 1 | 1 | +0.1997 | +0.1958 | 0.9806 |
-| b | 1 | 2 | -0.2114 | -0.2067 | 0.9777 |
+| b | 0 | 1 | +0.7267 | +0.7093 | 0.9761 |
+| b | 0 | 2 | -0.5171 | -0.5029 | 0.9726 |
+| b | 0 | 3 | +0.4486 | +0.4353 | 0.9702 |
+| b | 0 | 4 | -0.4117 | -0.3993 | 0.9699 |
+| b | 1 | 1 | +0.1997 | +0.1958 | 0.9804 |
+| b | 1 | 2 | -0.2114 | -0.2066 | 0.9775 |
 
 ## 1b. What order is "paper order"? The light ¹S₀ mass discriminator
 
@@ -38,7 +38,7 @@ diagonalization agree for heavy spin splittings but diverge sharply here:
 
 | treatment | pion ¹S₀ mass (GeV) |
 |---|---:|
-| first-order PT (`ho_first_order_distorted_states`) | 0.2844 |
+| first-order PT (`ho_first_order_distorted_states`) | 0.2845 |
 | **finite-HO full diag (`ho_full_distorted_states`)** | **0.0968** |
 | nonperturbative FD (fine grid) | 0.0957 |
 
@@ -64,7 +64,7 @@ diagonalization in the finite HO basis** (the harmonized-audit treatment);
 | `eta'_c -> 2g` | -2.700 | 0.99 | 1.08 | **1.06** | 1.08 | 3.619 |
 | `psi' -> 3g` | -0.280 | 1.06 | 1.01 | **1.01** | 1.01 | 3.680 |
 | `eta_b -> 2g` | +2.500 | 0.98 | 1.11 | **1.14** | 1.21 | 9.394 |
-| `Upsilon -> 3g` | +0.210 | 1.13 | 1.04 | **1.04** | 1.05 | 9.458 |
+| `Upsilon -> 3g` | +0.210 | 1.13 | 1.04 | **1.03** | 1.05 | 9.459 |
 | `eta'_b -> 2g` | -1.700 | 1.01 | 1.10 | **1.10** | 1.18 | 9.974 |
 | `Upsilon' -> 3g` | -0.150 | 1.11 | 1.03 | **1.03** | 1.05 | 10.005 |
 | `Upsilon'' -> 3g` | +0.130 | 1.09 | 1.03 | **1.02** | 1.05 | 10.354 |
@@ -77,7 +77,7 @@ diagonalization in the finite HO basis** (the harmonized-audit treatment);
 | `chi'_0b -> 2g` | -0.820 | 0.85 | 0.96 | **0.98** | 1.01 | 10.231 |
 
 - central: median 0.994, spread [0.78, 1.18]
-- 1st-order PT: median 1.028, spread [0.92, 1.11]
+- 1st-order PT: median 1.027, spread [0.92, 1.11]
 - paper (full diag): median 1.021, spread [0.92, 1.14]
 - nonpert FD: median 1.046, spread [0.94, 1.21]
 

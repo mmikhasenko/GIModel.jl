@@ -14,13 +14,13 @@ With HO-basis wavefunctions in the Eq. (17) smearing and the GI annihilation pha
 
 | state | pole / column | mass GeV | target GeV | mass Δ MeV | Table Δ MeV | vector RMS | max | largest model components |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
-| `eta(548)` | 1 | 0.407 | 0.520 | -113 | 370 | 0.110 | 0.226 | `1 ns`=+0.846, `1 ss`=-0.504, `2 ns`=+0.162 |
+| `eta(548)` | 1 | 0.407 | 0.520 | -113 | 370 | 0.110 | 0.226 | `1 ns`=+0.847, `1 ss`=-0.504, `2 ns`=+0.162 |
 | `eta_c(2980)` | 5 | 2.955 | 2.970 | -15 | n/a | 0.002 | 0.004 | `1 cc`=+1.000, `1 ns`=-0.004, `2 ns`=+0.002 |
-| `eta_prime(958)` | 2 | 0.774 | 0.960 | -186 | 810 | 0.117 | 0.219 | `1 ss`=+0.839, `1 ns`=+0.434, `2 ns`=+0.314 |
-| `eta_r(?)` | 3 | 1.451 | 1.440 | +11 | n/a | 0.058 | 0.131 | `2 ns`=+0.787, `2 ss`=-0.571, `1 ns`=-0.190 |
-| `eta_r_prime(?)` | 4 | 1.685 | 1.630 | +55 | n/a | 0.101 | 0.245 | `2 ss`=+0.813, `2 ns`=+0.505, `1 ns`=-0.245 |
+| `eta_prime(958)` | 2 | 0.774 | 0.960 | -186 | 810 | 0.117 | 0.220 | `1 ss`=+0.840, `1 ns`=+0.433, `2 ns`=+0.313 |
+| `eta_r(?)` | 3 | 1.450 | 1.440 | +10 | n/a | 0.057 | 0.130 | `2 ns`=+0.789, `2 ss`=-0.570, `1 ns`=-0.190 |
+| `eta_r_prime(?)` | 4 | 1.685 | 1.630 | +55 | n/a | 0.100 | 0.244 | `2 ss`=+0.814, `2 ns`=+0.504, `1 ns`=-0.244 |
 
-Mean vector RMS for `P1`: `0.078`; max vector RMS: `0.117`.
+Mean vector RMS for `P1`: `0.077`; max vector RMS: `0.117`.
 Mean abs mass residual for `P1`: `76 MeV` against the paper-model targets.
 
 ## `P2`
@@ -31,7 +31,7 @@ Mean abs mass residual for `P1`: `76 MeV` against the paper-model targets.
 | `eta_c(2980)` | 5 | 2.955 | 2.970 | -15 | n/a | 0.000 | 0.001 | `1 cc`=+1.000, `2 cc`=-0.002, `1 ns`=-0.001 |
 | `eta_prime(958)` | 2 | 0.853 | 0.930 | -77 | 780 | 0.034 | 0.072 | `1 ss`=+0.817, `1 ns`=+0.408, `2 ns`=+0.378 |
 | `eta_r(?)` | 3 | 1.241 | 1.270 | -29 | n/a | 0.006 | 0.011 | `2 ns`=+0.993, `2 ss`=+0.076, `1 ss`=+0.069 |
-| `eta_r_prime(?)` | 4 | 1.530 | 1.550 | -20 | n/a | 0.018 | 0.037 | `2 ss`=+0.976, `2 ns`=-0.197, `1 ns`=+0.067 |
+| `eta_r_prime(?)` | 4 | 1.530 | 1.550 | -20 | n/a | 0.018 | 0.036 | `2 ss`=+0.976, `2 ns`=-0.196, `1 ns`=+0.067 |
 
 Mean vector RMS for `P2`: `0.025`; max vector RMS: `0.066`.
 Mean abs mass residual for `P2`: `47 MeV` against the paper-model targets.

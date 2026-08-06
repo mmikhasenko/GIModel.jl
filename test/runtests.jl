@@ -1669,9 +1669,16 @@ end
         for u in (u_fd, u_ho), col in axes(u, 2)
             @test isapprox(sum(abs2, u[:, col]) * h, 1.0; rtol = 1e-10)
         end
-        # Same quantity: the two algorithms agree on the ground-state energy to
-        # well under an MeV across light, charm and bottom.
-        @test abs(e_ho[1] - e_fd[1]) < 1e-3
+        # Same quantity, to the combined accuracy of two now-INDEPENDENT methods.
+        # This was 1e-3 while the oscillator path projected the finite-difference
+        # p^2 through the mesh: it was then a Galerkin restriction of the FD
+        # problem, inherited FD's discretization error, and so agreed artificially
+        # well. With Eq. (A17) assembled from exact matrix elements the two share
+        # no error, and the gap measures both: +0.18 MeV (charm) and +0.55 MeV
+        # (bottom) with the oscillator answer correctly ABOVE — variational in a
+        # finite basis — and ~1.6 MeV for light quarks, where the finite-difference
+        # mesh is itself least converged and sits above the true value.
+        @test abs(e_ho[1] - e_fd[1]) < 3e-3
     end
 
     # The original exported name is the oscillator method of the unified solve.
