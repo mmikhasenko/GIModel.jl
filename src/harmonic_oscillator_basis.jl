@@ -96,13 +96,43 @@ function ho_operator_matrix(
 end
 
 function _ho_operator_matrix_at(L::Integer, β::Real, nbasis::Integer, g, nq::Integer)
-    # Keep the Jacobi matrix TRIDIAGONAL. Densifying it costs O(nq³) where the
-    # tridiagonal solver is O(nq²), and the diffuse end of HO_BETA_GRID needs
-    # nq ≈ 2048 — the difference between a fast gate and an unusable one.
-    F = eigen(float(β)^2 * ho_r2_matrix(L, β, nq))
-    Z = F.vectors[1:nbasis, :]
-    r = sqrt.(max.(F.values, 0.0)) ./ float(β)
+    sqrt_x, Z = gauss_laguerre_dvr(L, nbasis, nq)
+    r = sqrt_x ./ float(β)
     return Z * Diagonal([float(g(ri)) for ri in r]) * transpose(Z)
+end
+
+# The quadrature rule does not depend on β. In the dimensionless variable
+# `x = (βr)²` the Jacobi matrix is `β² ho_r2_matrix(L, β, nq) = ho_r2_matrix(L, 1, nq)`
+# — every β cancels — so the nodes `xᵢ` and the DVR matrix `Z` are functions of
+# `(L, nq)` alone, and β enters only as the rescaling `rᵢ = √xᵢ / β`.
+#
+# That matters because `oscillator_channel_solution` scans 22 β candidates and
+# assembles two operators (G̃ and S̃) at each, i.e. 44 requests for the same few
+# decompositions per L. Memoizing on `(L, nbasis, nq)` turns the eigensolves from
+# the dominant cost into a one-off; the stored slice is `nbasis × nq`, not
+# `nq × nq`, so the whole cache is a few MB.
+const _GAUSS_LAGUERRE_DVR = Dict{NTuple{3,Int},Tuple{Vector{Float64},Matrix{Float64}}}()
+
+"""
+    gauss_laguerre_dvr(L, nbasis, nq) -> (sqrt_x, Z)
+
+Golub–Welsch data for the generalized Gauss–Laguerre rule with weight
+`x^(L+1/2) e^{-x}`: `sqrt_x[i] = √xᵢ` at the `nq` nodes, and `Z = V[1:nbasis, :]`
+the leading rows of the Jacobi eigenvectors, whose entries **are** the products
+`√wᵢ p_n(xᵢ)`. See [`ho_operator_matrix`](@ref) for why that product must never
+be formed from its two factors.
+
+Depends on `β` not at all — see the note above the cache. Memoized, and the
+memo is exact: same key, same `eigen` call, same bits.
+"""
+function gauss_laguerre_dvr(L::Integer, nbasis::Integer, nq::Integer)
+    return get!(_GAUSS_LAGUERRE_DVR, (Int(L), Int(nbasis), Int(nq))) do
+        # Keep the Jacobi matrix TRIDIAGONAL. Densifying it costs O(nq³) where
+        # the tridiagonal solver is O(nq²), and the diffuse end of HO_BETA_GRID
+        # needs nq ≈ 2048 — the difference between a fast gate and an unusable one.
+        F = eigen(ho_r2_matrix(L, 1, nq))
+        (sqrt.(max.(F.values, 0.0)), Matrix(F.vectors[1:min(nbasis, nq), :]))
+    end
 end
 
 """

@@ -1475,6 +1475,20 @@ end
     @test maximum(abs, M - Matrix(ho_operator_matrix(L, β, nb, g; nq = 512))) < 1e-10
     @test_throws ArgumentError ho_operator_matrix(0, -1.0, 4, r -> 1.0)
     @test_throws ArgumentError ho_operator_matrix(0, 0.5, 0, r -> 1.0)
+
+    # The rule itself carries no beta. In x = (beta r)^2 the Jacobi matrix is
+    # beta^2 * ho_r2_matrix(L, beta, n) = ho_r2_matrix(L, 1, n), every beta
+    # cancelling, so nodes and DVR weights are functions of (L, nq) alone and
+    # beta enters only as r_i = sqrt(x_i)/beta. `gauss_laguerre_dvr` memoizes on
+    # that fact; if it ever stopped holding, the cache would silently hand one
+    # beta's rule to another.
+    for L in (0, 1, 2), β in (0.25, 0.65, 2.35)
+        @test Matrix(β^2 * ho_r2_matrix(L, β, 40)) ≈ Matrix(ho_r2_matrix(L, 1, 40))
+    end
+    sqrt_x, Z = GIModel.gauss_laguerre_dvr(1, 12, 64)
+    @test Z * transpose(Z) ≈ I            # orthogonality of the leading rows
+    @test issorted(sqrt_x)                # nodes come out ordered
+    @test length(sqrt_x) == 64 && size(Z) == (12, 64)
 end
 
 @testset "Exact oscillator p^2 (A17 momentum side)" begin
