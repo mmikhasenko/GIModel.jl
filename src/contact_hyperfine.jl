@@ -204,7 +204,7 @@ function _resummed_channel_solution(
     size(V, 1) == length(r) || error("V must live on the (ngrid, rmax) mesh")
     hamiltonian, _ = relativistic_hamiltonian(params, masses, L; solver = solver)
     values, vectors = lowest_eigenpairs(
-        Symmetric(Matrix(hamiltonian) + Matrix(V)), nlevels)
+        Symmetric(Matrix(hamiltonian) + Matrix(V)), nlevels, solver)
     waves = physically_normalized_waves(Matrix(vectors), h)
     return collect(values), waves, collect(Float64, r)
 end

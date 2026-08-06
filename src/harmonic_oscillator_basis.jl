@@ -111,7 +111,7 @@ end
 function _ho_operator_matrix_at(L::Integer, β::Real, nbasis::Integer, g, nq::Integer)
     sqrt_x, Z = gauss_laguerre_dvr(L, nbasis, nq)
     r = sqrt_x ./ float(β)
-    return Z * Diagonal([float(g(ri)) for ri in r]) * transpose(Z)
+    return Z * Diagonal([g(ri) for ri in r]) * transpose(Z)
 end
 
 # The quadrature rule does not depend on β. In the dimensionless variable
@@ -397,7 +397,7 @@ function oscillator_channel_solution(
     best = nothing
     for β in solver.beta_grid
         H, U = oscillator_hamiltonian_for_beta(params, masses, L, r, h, β; nbasis = nbasis)
-        vals, vecs = lowest_eigenpairs(Matrix(H), nlevels; eigensolver = :full)
+        vals, vecs = lowest_eigenpairs(Matrix(H), nlevels, solver)
         # For an orthogonal set in a fixed sector, use one beta for all reported
         # levels. Following the paper's practical convention, choose the beta
         # that minimizes the last requested state rather than overfitting the

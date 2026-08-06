@@ -12,17 +12,22 @@
     RadialChannelKey(m1_GeV, m2_GeV, L_label)
 
 Dict key for one **spin-independent radial channel**: [`ConstituentMasses`](@ref) and orbital
-label (`S`, `P`, …), same convention as `SpectrumState.L`. Mass rounding lives in
-[`ConstituentMasses`](@ref) so distinct finite-difference solves that share the same physics
-collapse to one cache entry.
+label (`S`, `P`, …), same convention as `SpectrumState.L`. The key normalizes
+masses to 12 significant digits so numerically identical channels collapse to
+one cache entry without rounding the physics values in [`ConstituentMasses`](@ref).
 
 The three-argument form builds [`ConstituentMasses`](@ref)`(m1_GeV, m2_GeV)` for convenience.
 """
 struct RadialChannelKey
-    masses::ConstituentMasses
+    m1_GeV::Float64
+    m2_GeV::Float64
     L_label::String
     function RadialChannelKey(masses::ConstituentMasses, L_label::AbstractString)
-        new(masses, String(L_label))
+        new(
+            round(masses.m1_GeV; sigdigits = 12),
+            round(masses.m2_GeV; sigdigits = 12),
+            String(L_label),
+        )
     end
 end
 
@@ -84,9 +89,9 @@ solves per distinct channel, plus how they were produced.
 [`Spectrum`](@ref) keeps this alive so later stages and two-meson flavor mixing
 can reuse the cached solves.
 """
-struct SectorComputation
-    params::GIParameters
-    solver::RadialSolver
+struct SectorComputation{P<:GIParameters,S<:RadialSolver}
+    params::P
+    solver::S
     channel_cache::Dict{RadialChannelKey,ChannelRadialSolution}
 end
 

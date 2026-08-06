@@ -6,20 +6,18 @@
 
 Constituent quark masses in GeV for a meson **sector** / spin-independent radial channel.
 
-Components are rounded to 12 significant digits so values stay aligned with
-[`RadialChannelKey`](@ref) cache keys and redundant FD solves collapse as intended.
+Components promote together and preserve the resulting real values exactly.
+Cache normalization belongs to [`RadialChannelKey`](@ref), not to physics input.
 
 This is plain physics input (not a subset of [`GIParameters`](@ref)); masses appear in
 spin-dependent operators, smearing widths, and kinetic factors throughout the package.
 """
-struct ConstituentMasses
-    m1_GeV::Float64
-    m2_GeV::Float64
+struct ConstituentMasses{T<:Real}
+    m1_GeV::T
+    m2_GeV::T
     function ConstituentMasses(m1::Real, m2::Real)
-        new(
-            round(Float64(m1); sigdigits = 12),
-            round(Float64(m2); sigdigits = 12),
-        )
+        promoted = promote(m1, m2)
+        new{typeof(first(promoted))}(promoted...)
     end
 end
 

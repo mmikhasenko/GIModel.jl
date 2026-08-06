@@ -57,35 +57,37 @@ function channel_solution(
     solver::RadialSolver = FiniteDifferenceSolver(),
     nlevels::Integer = solver.nlevels_per_channel,
 )
-    # `nlevels` is a per-call quantity rather than a solver setting -- the
-    # annihilation wave cache legitimately asks for fewer levels than the solver
-    # would otherwise keep -- so it stays a keyword here.
+    # `nlevels` is a per-call quantity rather than a solver setting: callers may
+    # legitimately request fewer levels than the solver would otherwise keep.
     return _channel_solution(solver, params, masses, L, nlevels)
 end
 
 function _channel_solution(
-    solver::FiniteDifferenceSolver,
+    solver::FiniteDifferenceSolver{:relativistic},
     params::GIParameters,
     masses::ConstituentMasses,
     L::Integer,
     nlevels::Integer,
 )
-    kinetic = solver.kinetic
-    hamiltonian, r = if kinetic == :relativistic
-        relativistic_hamiltonian(params, masses, L; solver = solver)
-    elseif kinetic == :nonrelativistic
-        nonrelativistic_hamiltonian(params, masses, L; solver = solver)
-    else
-        error("unknown kinetic mode: $kinetic")
-    end
-    values, vectors = lowest_eigenpairs(hamiltonian, nlevels; solver = solver)
+    hamiltonian, r = relativistic_hamiltonian(params, masses, L; solver = solver)
+    values, vectors = lowest_eigenpairs(hamiltonian, nlevels, solver)
     _warn_if_underresolved(values, vectors, r, length(r) > 1 ? r[2] - r[1] : 0.0, masses, L)
     waves = physically_normalized_waves(Matrix(vectors), length(r) > 1 ? r[2] - r[1] : 1.0)
-    if kinetic == :relativistic
-        values, waves, r
-    else
-        values .+ (masses.m1_GeV + masses.m2_GeV), waves, r
-    end
+    return values, waves, r
+end
+
+function _channel_solution(
+    solver::FiniteDifferenceSolver{:nonrelativistic},
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L::Integer,
+    nlevels::Integer,
+)
+    hamiltonian, r = nonrelativistic_hamiltonian(params, masses, L; solver = solver)
+    values, vectors = lowest_eigenpairs(hamiltonian, nlevels, solver)
+    _warn_if_underresolved(values, vectors, r, length(r) > 1 ? r[2] - r[1] : 0.0, masses, L)
+    waves = physically_normalized_waves(Matrix(vectors), length(r) > 1 ? r[2] - r[1] : 1.0)
+    return values .+ (masses.m1_GeV + masses.m2_GeV), waves, r
 end
 
 _channel_solution(

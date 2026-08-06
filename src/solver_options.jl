@@ -62,7 +62,7 @@ Fields:
 `kinetic` and `eigensolver` are deliberately absent from
 [`OscillatorSolver`](@ref), which has neither choice to make.
 """
-struct FiniteDifferenceSolver <: RadialSolver
+struct FiniteDifferenceSolver{Kinetic,Eigensolver} <: RadialSolver
     ngrid::Int
     rmax::Float64
     kinetic::Symbol
@@ -88,7 +88,9 @@ struct FiniteDifferenceSolver <: RadialSolver
         nlevels_per_channel >= 1 || throw(ArgumentError(
             "FiniteDifferenceSolver: nlevels_per_channel must be ≥ 1, got $nlevels_per_channel",
         ))
-        return new(Int(ngrid), Float64(rmax), kinetic, eigensolver, Int(nlevels_per_channel))
+        return new{kinetic,eigensolver}(
+            Int(ngrid), Float64(rmax), kinetic, eigensolver, Int(nlevels_per_channel),
+        )
     end
 end
 

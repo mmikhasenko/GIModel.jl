@@ -54,6 +54,11 @@ The repository has three first-class deliverables:
     two-gluon and two-photon widths and splitting their ratio into the `15/4`
     spin algebra times the J-dependent distortion of the wave at the origin.
 - `docs/formula_map.md` maps active code paths to paper equations.
+- `docs/engineering_work_plan.md` is the **code** stream: settled invariants
+  (normalization, basis phase, the wave interface), the next architecture
+  stages, and the diagnostics already found not to work.
+- `diff_support/` contains the pre-implementation audit, equations, numerical
+  probes, backend research, and staged plan for parameter differentiation.
 - `docs/paper_gap_ledger.md` is the current “what remains vs the paper” list.
 - `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` is the preferred
   searchable Markdown rendering of the paper.

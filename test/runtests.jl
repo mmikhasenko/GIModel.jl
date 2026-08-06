@@ -22,6 +22,105 @@ root = dirname(@__DIR__)
     @test params.factors.epsilon_so_scalar ≈ 0.055
     @test params.fine_structure.enabled == true
     @test params.fine_structure.k_spin_orbit > 0.0
+    @test isconcretetype(typeof(params))
+    @test fieldtype(typeof(params), :central) === AppendixAMomentumSandwich
+
+    varied = GIParameters(params;
+        potential = ConfinementPotential(params.potential; b = 0.19),
+        smearing = RelativisticSmearing(params.smearing; s = 1.6),
+    )
+    @test varied.potential.b == 0.19
+    @test varied.potential.c == params.potential.c
+    @test varied.smearing.s == 1.6
+    @test varied.central === params.central
+    varied_factors = RelativisticFactors(params.factors; epsilon_c = -0.2)
+    @test varied_factors.epsilon_c == -0.2
+    @test varied_factors.epsilon_t == params.factors.epsilon_t
+    varied_fine = FineStructure(params.fine_structure; k_tensor = 0.45)
+    @test varied_fine.k_tensor == 0.45
+    @test varied_fine.enabled == params.fine_structure.enabled
+    varied_annihilation = AnnihilationAmplitudes(params.annihilation; s1_A = 2.6)
+    @test varied_annihilation.s1_A == 2.6
+    @test varied_annihilation.p1_A_np == params.annihilation.p1_A_np
+end
+
+@testset "central numerical boundaries are inferred" begin
+    params, mq = load_parameters_and_quark_masses(
+        joinpath(root, "data", "parameters.provisional.toml"),
+    )
+    masses = ConstituentMasses(mq["c"], mq["c"])
+    r = collect(range(0.1, 4.0; length = 24))
+    @test (@inferred GIModel.potential_diagonal(
+        params, masses.m1_GeV, masses.m2_GeV, r,
+    )) isa Vector{Float64}
+
+    fd = FiniteDifferenceSolver(ngrid = 120, rmax = 12.0, nlevels_per_channel = 2)
+    Hfd, _ = @inferred GIModel.relativistic_hamiltonian(params, masses, 0; solver = fd)
+    @test Hfd isa Symmetric{Float64,Matrix{Float64}}
+    fd_values, fd_vectors, fd_r = @inferred GIModel._channel_solution(
+        fd, params, masses, 0, 2,
+    )
+    @test fd_values isa Vector{Float64}
+    @test fd_vectors isa Matrix{Float64}
+    @test fd_r isa Vector{Float64}
+
+    ho = OscillatorSolver(
+        nbasis = 8,
+        beta_grid = [0.65],
+        nlevels_per_channel = 2,
+        ngrid = 48,
+        rmax = 12.0,
+    )
+    ho_values, ho_vectors, ho_r = @inferred GIModel._channel_solution(
+        ho, params, masses, 0, 2,
+    )
+    @test ho_values isa Vector{Float64}
+    @test ho_vectors isa Matrix{Float64}
+    @test ho_r isa Vector{Float64}
+
+    matrix = Symmetric([2.0 1.0; 1.0 2.0])
+    for eigensolver in (:full, :krylov)
+        solver = FiniteDifferenceSolver(eigensolver = eigensolver)
+        @test typeof(solver) === FiniteDifferenceSolver{:relativistic,eigensolver}
+        values, vectors = @inferred GIModel.lowest_eigenpairs(matrix, 1, solver)
+        @test values isa Vector{Float64}
+        @test vectors isa Matrix{Float64}
+    end
+end
+
+@testset "continuous parameter leaves preserve numeric types" begin
+    potential32 = ConfinementPotential(b = 0.18f0, c = -0.253f0)
+    smearing32 = RelativisticSmearing(sigma0 = 1.8f0, s = 1.55f0)
+    masses32 = ConstituentMasses(1.628f0, 1.628f0)
+    @test potential32 isa ConfinementPotential{Float32}
+    @test smearing32 isa RelativisticSmearing{Float32}
+    @test masses32 isa ConstituentMasses{Float32}
+    @test ConfinementPotential(b = 1, c = 0.5) isa ConfinementPotential{Float64}
+
+    params, mq = load_parameters_and_quark_masses(
+        joinpath(root, "data", "parameters.provisional.toml"),
+    )
+    big_params = GIParameters(
+        params;
+        potential = ConfinementPotential(
+            b = BigFloat(params.potential.b),
+            c = BigFloat(params.potential.c),
+        ),
+        smearing = RelativisticSmearing(
+            sigma0 = BigFloat(params.smearing.sigma0),
+            s = BigFloat(params.smearing.s),
+        ),
+    )
+    big_masses = ConstituentMasses(BigFloat(mq["c"]), BigFloat(mq["c"]))
+    solver = FiniteDifferenceSolver(ngrid = 24, rmax = 8.0)
+    Hfd, _ = GIModel.relativistic_hamiltonian(big_params, big_masses, 0; solver = solver)
+    @test eltype(Hfd) === BigFloat
+
+    r, h = GIModel.radial_grid(24, 8.0)
+    Hho, _ = GIModel.oscillator_hamiltonian_for_beta(
+        big_params, big_masses, 0, r, h, 0.65; nbasis = 6,
+    )
+    @test eltype(Hho) === BigFloat
 end
 
 @testset "baseline solver shape" begin
@@ -1105,12 +1204,16 @@ end
 
 @testset "RadialChannelKey collapses nearly-equal masses" begin
     a = RadialChannelKey(1.628, 1.628, "S")
-    b = RadialChannelKey(1.628 + 1e-20, 1.628 + 1e-20, "S")
+    nearby = 1.6280000000004
+    b = RadialChannelKey(nearby, nearby, "S")
     @test a == b
     @test hash(a) == hash(b)
     @test RadialChannelKey(1.6, 1.6, "S") != RadialChannelKey(1.6, 1.6, "P")
     masses = GIModel.ConstituentMasses(1.6, 1.6)
     @test RadialChannelKey(masses, "S") == RadialChannelKey(1.6, 1.6, "S")
+    exact = ConstituentMasses(nearby, nearby)
+    @test exact.m1_GeV == nearby
+    @test exact.m1_GeV != 1.628
 end
 
 @testset "RadialWaveOnUniformMesh agrees with ChannelRadialSolution column" begin
@@ -1859,7 +1962,7 @@ end
     # `GIParameters` is the model and nothing else: no basis marker, and one
     # object serves both methods. It used to carry a phantom type parameter that
     # no field used, so switching numerical method meant rebuilding the physics.
-    @test isconcretetype(GIParameters)
+    @test isconcretetype(typeof(params))
     @test !any(f -> occursin("asis", String(f)), fieldnames(GIParameters))
 
     # `RadialSolver` is the interface; calling it builds the default
@@ -1873,6 +1976,9 @@ end
     # and agree to a few MeV -- the residual is each one's own truncation error.
     fd = compute_spectrum(params, meson; levels = levels, solver = FiniteDifferenceSolver())
     ho = compute_spectrum(params, meson; levels = levels, solver = OscillatorSolver())
+    @test isconcretetype(typeof(meson))
+    @test isconcretetype(typeof(fd.computation))
+    @test isconcretetype(typeof(fd))
     @test maximum(abs.(masses(fd) .- masses(ho))) < 0.005
 
     # The oscillator path is variational in a finite basis, so it can only sit
@@ -1953,7 +2059,7 @@ end
         best = nothing
         for b in default_grid
             H, _ = GIModel.oscillator_hamiltonian_for_beta(params, mm, 0, r, h, b; nbasis = 24)
-            v, _ = GIModel.lowest_eigenpairs(Matrix(H), 2; eigensolver = :full)
+            v, _ = GIModel.lowest_eigenpairs(Matrix(H), 2, Val(:full))
             (isnothing(best) || v[end] < best[2]) && (best = (b, v[end]))
         end
         return best[1]

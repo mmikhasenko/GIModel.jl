@@ -20,10 +20,21 @@ Linear-plus-constant confinement from Table II: slope `b` in GeV² and offset
 `c` in GeV (the TOML stores `c_MeV`). The Coulomb part comes from the running
 coupling, not from these constants.
 """
-Base.@kwdef struct ConfinementPotential
-    b::Float64
-    c::Float64
+struct ConfinementPotential{T<:Real}
+    b::T
+    c::T
 end
+
+function ConfinementPotential(; b::Real, c::Real)
+    promoted = promote(b, c)
+    return ConfinementPotential(promoted...)
+end
+
+ConfinementPotential(
+    base::ConfinementPotential;
+    b::Real = base.b,
+    c::Real = base.c,
+) = ConfinementPotential(; b = b, c = c)
 
 """
     RelativisticSmearing(; sigma0, s)
@@ -31,10 +42,21 @@ end
 Appendix A (A9) universal smearing width inputs: `sigma0` in GeV and the
 dimensionless `s`, combined per quark-mass pair by `contact_smearing_sigma`.
 """
-Base.@kwdef struct RelativisticSmearing
-    sigma0::Float64
-    s::Float64
+struct RelativisticSmearing{T<:Real}
+    sigma0::T
+    s::T
 end
+
+function RelativisticSmearing(; sigma0::Real, s::Real)
+    promoted = promote(sigma0, s)
+    return RelativisticSmearing(promoted...)
+end
+
+RelativisticSmearing(
+    base::RelativisticSmearing;
+    sigma0::Real = base.sigma0,
+    s::Real = base.s,
+) = RelativisticSmearing(; sigma0 = sigma0, s = s)
 
 """
     CentralPotentialMethod
@@ -134,15 +156,57 @@ the same for first-order spin-orbit/tensor expectations;
 `fine_structure_smeared_kernels` uses derivatives of the closed-form smeared
 `G̃`/`S̃` for those radial kernels instead of the pointwise running-coupling forms.
 """
-Base.@kwdef struct RelativisticFactors
-    epsilon_c::Float64 = 0.0
-    epsilon_t::Float64 = 0.0
-    epsilon_so_vector::Float64 = 0.0
-    epsilon_so_scalar::Float64 = 0.0
-    contact_momentum_sandwich::Bool = false
-    fine_structure_momentum_sandwich::Bool = false
-    fine_structure_smeared_kernels::Bool = false
+struct RelativisticFactors{T<:Real}
+    epsilon_c::T
+    epsilon_t::T
+    epsilon_so_vector::T
+    epsilon_so_scalar::T
+    contact_momentum_sandwich::Bool
+    fine_structure_momentum_sandwich::Bool
+    fine_structure_smeared_kernels::Bool
 end
+
+function RelativisticFactors(;
+    epsilon_c::Real = 0.0,
+    epsilon_t::Real = 0.0,
+    epsilon_so_vector::Real = 0.0,
+    epsilon_so_scalar::Real = 0.0,
+    contact_momentum_sandwich::Bool = false,
+    fine_structure_momentum_sandwich::Bool = false,
+    fine_structure_smeared_kernels::Bool = false,
+)
+    ec, et, esov, esos = promote(
+        epsilon_c, epsilon_t, epsilon_so_vector, epsilon_so_scalar,
+    )
+    return RelativisticFactors(
+        ec,
+        et,
+        esov,
+        esos,
+        contact_momentum_sandwich,
+        fine_structure_momentum_sandwich,
+        fine_structure_smeared_kernels,
+    )
+end
+
+RelativisticFactors(
+    base::RelativisticFactors;
+    epsilon_c::Real = base.epsilon_c,
+    epsilon_t::Real = base.epsilon_t,
+    epsilon_so_vector::Real = base.epsilon_so_vector,
+    epsilon_so_scalar::Real = base.epsilon_so_scalar,
+    contact_momentum_sandwich::Bool = base.contact_momentum_sandwich,
+    fine_structure_momentum_sandwich::Bool = base.fine_structure_momentum_sandwich,
+    fine_structure_smeared_kernels::Bool = base.fine_structure_smeared_kernels,
+) = RelativisticFactors(;
+    epsilon_c = epsilon_c,
+    epsilon_t = epsilon_t,
+    epsilon_so_vector = epsilon_so_vector,
+    epsilon_so_scalar = epsilon_so_scalar,
+    contact_momentum_sandwich = contact_momentum_sandwich,
+    fine_structure_momentum_sandwich = fine_structure_momentum_sandwich,
+    fine_structure_smeared_kernels = fine_structure_smeared_kernels,
+)
 
 """
     FineStructure(; enabled=true, k_spin_orbit=0.5, k_tensor=0.4)
@@ -151,11 +215,31 @@ Vector + Thomas spin-orbit and OGE-tensor first-order corrections on the FD
 radial `u(r)`: master switch and the global scales aligning with the paper's
 HO result.
 """
-Base.@kwdef struct FineStructure
-    enabled::Bool = true
-    k_spin_orbit::Float64 = 0.5
-    k_tensor::Float64 = 0.4
+struct FineStructure{T<:Real}
+    enabled::Bool
+    k_spin_orbit::T
+    k_tensor::T
 end
+
+function FineStructure(;
+    enabled::Bool = true,
+    k_spin_orbit::Real = 0.5,
+    k_tensor::Real = 0.4,
+)
+    spin_orbit, tensor = promote(k_spin_orbit, k_tensor)
+    return FineStructure(enabled, spin_orbit, tensor)
+end
+
+FineStructure(
+    base::FineStructure;
+    enabled::Bool = base.enabled,
+    k_spin_orbit::Real = base.k_spin_orbit,
+    k_tensor::Real = base.k_tensor,
+) = FineStructure(;
+    enabled = enabled,
+    k_spin_orbit = k_spin_orbit,
+    k_tensor = k_tensor,
+)
 
 """
     AnnihilationAmplitudes(; p1_A_np=0.5, p1_m_eta=0.548, p2_A_np=0.55, p2_M0=1.17,
@@ -165,14 +249,43 @@ Table III pseudoscalar/vector/tensor annihilation constants: Eq. (18a) `P1`
 (`p1_A_np`, `p1_m_eta` in GeV), Eq. (18b) `P2` (`p2_A_np`, zero at `p2_M0` GeV),
 and the Eq. (16) channel amplitudes `A(^3S_1) = s1_A`, `A(^3P_2) = a_3p2`.
 """
-Base.@kwdef struct AnnihilationAmplitudes
-    p1_A_np::Float64 = 0.5
-    p1_m_eta::Float64 = 0.548
-    p2_A_np::Float64 = 0.55
-    p2_M0::Float64 = 1.17
-    s1_A::Float64 = 2.5
-    a_3p2::Float64 = -0.8
+struct AnnihilationAmplitudes{T<:Real}
+    p1_A_np::T
+    p1_m_eta::T
+    p2_A_np::T
+    p2_M0::T
+    s1_A::T
+    a_3p2::T
 end
+
+function AnnihilationAmplitudes(;
+    p1_A_np::Real = 0.5,
+    p1_m_eta::Real = 0.548,
+    p2_A_np::Real = 0.55,
+    p2_M0::Real = 1.17,
+    s1_A::Real = 2.5,
+    a_3p2::Real = -0.8,
+)
+    values = promote(p1_A_np, p1_m_eta, p2_A_np, p2_M0, s1_A, a_3p2)
+    return AnnihilationAmplitudes(values...)
+end
+
+AnnihilationAmplitudes(
+    base::AnnihilationAmplitudes;
+    p1_A_np::Real = base.p1_A_np,
+    p1_m_eta::Real = base.p1_m_eta,
+    p2_A_np::Real = base.p2_A_np,
+    p2_M0::Real = base.p2_M0,
+    s1_A::Real = base.s1_A,
+    a_3p2::Real = base.a_3p2,
+) = AnnihilationAmplitudes(;
+    p1_A_np = p1_A_np,
+    p1_m_eta = p1_m_eta,
+    p2_A_np = p2_A_np,
+    p2_M0 = p2_M0,
+    s1_A = s1_A,
+    a_3p2 = a_3p2,
+)
 
 """
     GIParameters
@@ -194,14 +307,56 @@ quotes. How the resulting Schrödinger equation gets solved is a separate choice
 carried by the [`RadialSolver`](@ref) you pass to
 [`channel_solution`](@ref) or [`compute_spectrum`](@ref).
 """
-Base.@kwdef struct GIParameters
-    potential::ConfinementPotential
-    central::CentralPotentialMethod = PointwiseCentral()
-    smearing::RelativisticSmearing
-    factors::RelativisticFactors = RelativisticFactors()
-    fine_structure::FineStructure = FineStructure()
-    annihilation::AnnihilationAmplitudes = AnnihilationAmplitudes()
+struct GIParameters{
+    P<:ConfinementPotential,
+    C<:CentralPotentialMethod,
+    S<:RelativisticSmearing,
+    R<:RelativisticFactors,
+    F<:FineStructure,
+    A<:AnnihilationAmplitudes,
+}
+    potential::P
+    central::C
+    smearing::S
+    factors::R
+    fine_structure::F
+    annihilation::A
 end
+
+function GIParameters(;
+    potential::ConfinementPotential,
+    central::CentralPotentialMethod = PointwiseCentral(),
+    smearing::RelativisticSmearing,
+    factors::RelativisticFactors = RelativisticFactors(),
+    fine_structure::FineStructure = FineStructure(),
+    annihilation::AnnihilationAmplitudes = AnnihilationAmplitudes(),
+)
+    return GIParameters(
+        potential,
+        central,
+        smearing,
+        factors,
+        fine_structure,
+        annihilation,
+    )
+end
+
+GIParameters(
+    base::GIParameters;
+    potential::ConfinementPotential = base.potential,
+    central::CentralPotentialMethod = base.central,
+    smearing::RelativisticSmearing = base.smearing,
+    factors::RelativisticFactors = base.factors,
+    fine_structure::FineStructure = base.fine_structure,
+    annihilation::AnnihilationAmplitudes = base.annihilation,
+) = GIParameters(;
+    potential = potential,
+    central = central,
+    smearing = smearing,
+    factors = factors,
+    fine_structure = fine_structure,
+    annihilation = annihilation,
+)
 
 function gi_parameters_from_raw(raw)::GIParameters
     pot = raw["potential"]

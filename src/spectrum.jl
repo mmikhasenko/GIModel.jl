@@ -156,10 +156,10 @@ stages and two-meson flavor mixing reuse the cached radial solves; see
 that produced the spectrum live in `computation.params`; use [`parameters`](@ref)
 to retrieve them.
 """
-struct Spectrum{S}
-    meson::Meson
+struct Spectrum{S,M<:Meson,C<:SectorComputation}
+    meson::M
     states::Vector{S}
-    computation::SectorComputation
+    computation::C
 end
 
 """[`Spectrum`](@ref) after the central solve: `Spectrum{CentralState}`."""

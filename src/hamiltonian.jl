@@ -10,9 +10,10 @@ function nonrelativistic_hamiltonian(
 )
     mu = reduced_mass(masses)
     r, h = radial_grid(ngrid, rmax)
-    diagonal = similar(r)
-    offdiag = fill(-1 / (2 * mu * h^2), ngrid - 1)
     vdiag = potential_diagonal(params, masses.m1_GeV, masses.m2_GeV, r)
+    T = promote_type(eltype(r), typeof(mu), eltype(vdiag))
+    diagonal = Vector{T}(undef, length(r))
+    offdiag = fill(convert(T, -1 / (2 * mu * h^2)), ngrid - 1)
     for i in eachindex(r)
         ri = r[i]
         diagonal[i] = 1 / (mu * h^2) + L * (L + 1) / (2 * mu * ri^2) + vdiag[i]
@@ -24,25 +25,48 @@ function sqrt_kinetic_matrix_from_eigen(fact, m::Real)
     fact.vectors * Diagonal(sqrt.(max.(fact.values, 0) .+ m^2)) * fact.vectors'
 end
 
-function lowest_eigenpairs(
+lowest_eigenpairs(hamiltonian::AbstractMatrix, nlevels::Integer) =
+    lowest_eigenpairs(hamiltonian, nlevels, Val(:full))
+
+lowest_eigenpairs(
     hamiltonian::AbstractMatrix,
-    nlevels::Integer;
-    solver::RadialSolver = FiniteDifferenceSolver(),
-    eigensolver::Symbol = solver.eigensolver,
-)
-    if eigensolver == :full
-        fact = eigen(hamiltonian)
-        return fact.values[1:nlevels], fact.vectors[:, 1:nlevels]
-    elseif eigensolver == :krylov
-        values, vectors, info = eigsolve(hamiltonian, nlevels, :SR; issymmetric = true)
-        length(values) >= nlevels || error(
-            "Krylov eigensolver converged only $(length(values)) values for nlevels=$nlevels: $info",
-        )
-        order = sortperm(real.(values))[1:nlevels]
-        return real.(values[order]), hcat(vectors[order]...)
-    else
-        error("unknown eigensolver: $eigensolver")
+    nlevels::Integer,
+    ::FiniteDifferenceSolver{Kinetic,Eigensolver},
+) where {Kinetic,Eigensolver} =
+    lowest_eigenpairs(hamiltonian, nlevels, Val(Eigensolver))
+
+lowest_eigenpairs(
+    hamiltonian::AbstractMatrix,
+    nlevels::Integer,
+    ::OscillatorSolver,
+) = lowest_eigenpairs(hamiltonian, nlevels, Val(:full))
+
+function lowest_eigenpairs(
+    hamiltonian::AbstractMatrix{T},
+    nlevels::Integer,
+    ::Val{:full},
+) where {T<:Real}
+    fact = eigen(Symmetric(hamiltonian))
+    return collect(fact.values[1:nlevels]), Matrix(fact.vectors[:, 1:nlevels])
+end
+
+function lowest_eigenpairs(
+    hamiltonian::AbstractMatrix{T},
+    nlevels::Integer,
+    ::Val{:krylov},
+) where {T<:Real}
+    values, vectors, info = eigsolve(hamiltonian, nlevels, :SR; issymmetric = true)
+    length(values) >= nlevels || error(
+        "Krylov eigensolver converged only $(length(values)) values for nlevels=$nlevels: $info",
+    )
+    order = sortperm(real.(values))[1:nlevels]
+    R = typeof(float(real(zero(T))))
+    selected_values = collect(R, real.(values[order]))
+    selected_vectors = Matrix{R}(undef, size(hamiltonian, 1), nlevels)
+    for (column, index) in enumerate(order)
+        selected_vectors[:, column] .= real.(vectors[index])
     end
+    return selected_values, selected_vectors
 end
 
 function appendix_a_momentum_sandwich_matrix(

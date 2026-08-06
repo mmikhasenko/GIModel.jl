@@ -39,12 +39,12 @@ is deliberately no silent fallback mass.
 The second form takes explicit [`ConstituentMasses`](@ref) for parameter scans.
 The antiquark flavor is stored unadorned (`Meson(mq, :c, :u)` is `c ubar`).
 """
-struct Meson
+struct Meson{M<:ConstituentMasses}
     flavor1::Symbol
     flavor2::Symbol
-    constituent_masses::ConstituentMasses
-    function Meson(flavor1::Symbol, flavor2::Symbol, masses::ConstituentMasses)
-        new(_canonical_flavor(flavor1), _canonical_flavor(flavor2), masses)
+    constituent_masses::M
+    function Meson(flavor1::Symbol, flavor2::Symbol, masses::M) where {M<:ConstituentMasses}
+        new{M}(_canonical_flavor(flavor1), _canonical_flavor(flavor2), masses)
     end
 end
 
