@@ -160,13 +160,14 @@ places in the model where numerics actually happen (the other is the central
 solve, [`channel_solution`](@ref)); everything downstream consumes the returned
 `u(r)`.
 
-Two methods, one per basis, both returning the same physical quantity:
+Two methods, one per solver, both returning the same physical quantity:
 
-  - `GIParameters{FiniteDifferenceBasis}` — build `H` on the uniform mesh, add
-    `V`, diagonalize (this method).
-  - `GIParameters{HarmonicOscillatorBasis}` — project `V` into the finite
-    oscillator space and diagonalize there (the paper's own method; see
-    `harmonic_oscillator_basis.jl`).
+  - [`FiniteDifferenceSolver`](@ref) — build `H` on the uniform mesh, add `V`,
+    diagonalize (this method).
+  - [`OscillatorSolver`](@ref) — project `V` into the finite oscillator space and
+    diagonalize there (the paper's own method; see `harmonic_oscillator_basis.jl`).
+
+`V` lives on the mesh either way, so the solver's `ngrid`/`rmax` must match it.
 
 `V` is a dense operator on the same uniform mesh, e.g.
 [`contact_hyperfine_operator`](@ref GIModel.contact_hyperfine_operator).
@@ -178,19 +179,30 @@ convention they held, and anything quadratic in `u` given the wrong one was off
 by `h`. Both now agree.
 """
 function resummed_channel_solution(
-    params::GIParameters{FiniteDifferenceBasis},
+    params::GIParameters,
     masses::ConstituentMasses,
     L::Integer,
     V::AbstractMatrix;
-    solver::RadialSolver = RadialSolver(),
+    solver::RadialSolver = FiniteDifferenceSolver(),
     nlevels::Integer = solver.nlevels_per_channel,
     ngrid::Integer = solver.ngrid,
     rmax::Real = solver.rmax,
 )
-    r, h = radial_grid(ngrid, rmax)
+    return _resummed_channel_solution(
+        with_mesh(solver, ngrid, rmax), params, masses, L, V, nlevels)
+end
+
+function _resummed_channel_solution(
+    solver::FiniteDifferenceSolver,
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L::Integer,
+    V::AbstractMatrix,
+    nlevels::Integer,
+)
+    r, h = radial_grid(solver.ngrid, solver.rmax)
     size(V, 1) == length(r) || error("V must live on the (ngrid, rmax) mesh")
-    hamiltonian, _ = relativistic_hamiltonian(
-        params, masses, L; solver = RadialSolver(ngrid = ngrid, rmax = rmax))
+    hamiltonian, _ = relativistic_hamiltonian(params, masses, L; solver = solver)
     values, vectors = lowest_eigenpairs(
         Symmetric(Matrix(hamiltonian) + Matrix(V)), nlevels)
     waves = physically_normalized_waves(Matrix(vectors), h)
@@ -203,12 +215,14 @@ function contact_hyperfine_nonperturbative_levels(
     L::AbstractString,
     multiplicity::Integer,
     r::AbstractVector,
-    nlevels::Integer,
+    nlevels::Integer;
+    solver::RadialSolver = FiniteDifferenceSolver(),
 )
     if !params.factors.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
         return Float64[]
     end
-    levels, _waves, _r = _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels)
+    levels, _waves, _r =
+        _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels, solver)
     return levels
 end
 
@@ -230,35 +244,39 @@ function contact_hyperfine_nonperturbative_states(
     L::AbstractString,
     multiplicity::Integer,
     r::AbstractVector,
-    nlevels::Integer,
+    nlevels::Integer;
+    solver::RadialSolver = FiniteDifferenceSolver(),
 )
     if !params.factors.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
         return Float64[], zeros(Float64, 0, 0), Float64[]
     end
-    return _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels)
+    return _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels, solver)
 end
 
 # Shared body: build the contact operator for this (L, multiplicity) and hand it
-# to the basis-dispatched resummed solve.
-function _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels)
+# to the solver-dispatched resummed solve. Callers hold `r` rather than a mesh
+# specification, so the solver is re-pointed at exactly that mesh -- the operator
+# `V` is built on it and `resummed_channel_solution` rejects a mismatch.
+function _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels, solver)
     h = r[2] - r[1]
     rmax = h * (length(r) + 1)
-    solver = RadialSolver(ngrid = length(r), rmax = rmax)
     rebuilt_r, _ = radial_grid(length(r), rmax)
     length(rebuilt_r) == length(r) || error("rebuilt S-wave grid changed length")
     V = contact_hyperfine_operator(params, masses, L, multiplicity, rebuilt_r)
     return resummed_channel_solution(
-        params, masses, 0, Matrix(V); solver = solver, nlevels = nlevels)
+        params, masses, 0, Matrix(V);
+        solver = with_mesh(solver, length(r), rmax), nlevels = nlevels,
+    )
 end
 
-# Both methods above are basis-generic. The guard (S-wave, multiplicity 1 or 3,
-# momentum sandwich on) is physics; building the contact operator is
-# basis-free (`p2_operator` returns the same mesh operator either way); and the
-# solve itself is `resummed_channel_solution`, which dispatches on the basis.
+# Both entry points above are solver-generic. The guard (S-wave, multiplicity 1
+# or 3, momentum sandwich on) is physics; building the contact operator is
+# method-free (`p2_operator` returns the same mesh operator either way); and the
+# solve itself is `resummed_channel_solution`, which dispatches on the solver.
 #
 # Until U2 unified that solve, this function inlined the finite-difference one,
 # so it had to be FD-only -- and its catch-all returned empty for any other
-# basis, which callers read as "unavailable" and replaced with first-order PT
+# method, which callers read as "unavailable" and replaced with first-order PT
 # (the light 1S0 came out 0.2842 GeV instead of 0.0950). U1 turned that into a
 # loud failure; with the paths unified there is nothing left to fail about.
 

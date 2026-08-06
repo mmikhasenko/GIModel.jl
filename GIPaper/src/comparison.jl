@@ -369,6 +369,27 @@ Compare the model to a vector of [`ReferenceState`](@ref) rows:
 Rows with `n > 6` are skipped with a warning. The output rows feed
 [`write_residual_report`](@ref) / [`nonmixing_deviation_summary`](@ref).
 """
+# `solver` and the four loose mesh keywords say the same thing, so accepting both
+# means one of them is silently ignored. Either name the solver or name the mesh.
+function _comparison_solver(solver; ngrid, rmax, kinetic, eigensolver)
+    loose = [n for (n, v) in (("ngrid", ngrid), ("rmax", rmax),
+                              ("kinetic", kinetic), ("eigensolver", eigensolver))
+             if !isnothing(v)]
+    if !isnothing(solver)
+        isempty(loose) || throw(ArgumentError(
+            "compare_reference: pass either `solver` or $(join(loose, ", ")), not both — " *
+            "they describe the same thing and one would be discarded.",
+        ))
+        return solver
+    end
+    return FiniteDifferenceSolver(;
+        ngrid = isnothing(ngrid) ? 450 : ngrid,
+        rmax = isnothing(rmax) ? 24.0 : rmax,
+        kinetic = isnothing(kinetic) ? :relativistic : kinetic,
+        eigensolver = isnothing(eigensolver) ? :full : eigensolver,
+    )
+end
+
 function compare_reference(
     params::GIParameters,
     quark_masses::QuarkMassTable,
@@ -380,13 +401,16 @@ function compare_reference(
     isoscalar_pseudoscalar_annihilation::Symbol = :none,
     strange_mass_GeV = nothing,
     mixed_assignment::Symbol = :reference_order,
-    ngrid::Integer = 450,
-    rmax::Real = 24.0,
-    kinetic::Symbol = :relativistic,
-    eigensolver::Symbol = :full,
+    solver::Union{Nothing,RadialSolver} = nothing,
+    ngrid = nothing,
+    rmax = nothing,
+    kinetic = nothing,
+    eigensolver = nothing,
     annihilation_wave_basis::Symbol = :ho,
     ho_wave_L::Tuple{Vararg{String}} = ("S",),
 )
+    solver = _comparison_solver(solver; ngrid = ngrid, rmax = rmax,
+        kinetic = kinetic, eigensolver = eigensolver)
     scheme = isoscalar_pseudoscalar_annihilation
     scheme in (:none, :calibrated_p1, :p1, :paper_p1, :p2, :paper_p2, :general_s1, :p1_and_s1, :table_iii) ||
         throw(ArgumentError("unsupported isoscalar annihilation scheme `$scheme`"))
@@ -435,10 +459,7 @@ function compare_reference(
             params,
             mesons[g];
             levels = levels,
-            ngrid = ngrid,
-            rmax = rmax,
-            kinetic = kinetic,
-            eigensolver = eigensolver,
+            solver = solver,
             contact_hyperfine = contact_hyperfine,
             use_fine_structure = use_fine_structure,
             same_j_spin_orbit_mixing = antisymmetric_spin_orbit_mixing,
@@ -482,10 +503,7 @@ function compare_reference(
                 params,
                 strange_meson;
                 levels = ss_levels,
-                ngrid = ngrid,
-                rmax = rmax,
-                kinetic = kinetic,
-                eigensolver = eigensolver,
+                solver = solver,
                 contact_hyperfine = contact_hyperfine,
                 use_fine_structure = use_fine_structure,
                 same_j_spin_orbit_mixing = false,

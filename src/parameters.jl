@@ -6,26 +6,12 @@
 #   FineStructure, AnnihilationAmplitudes, CentralPotentialMethod and its
 #   singletons, load_parameters
 
-abstract type GIBasis end
-
-"""
-    FiniteDifferenceBasis
-
-Current radial-coordinate finite-difference basis. This is the default basis
-for `GIParameters(...)`; specialized GI/HO-basis paths can be added by defining
-methods on `GIParameters{<:GIBasis}` without adding more runtime switches.
-"""
-struct FiniteDifferenceBasis <: GIBasis end
-
-"""
-    HarmonicOscillatorBasis
-
-Paper-style oscillator expansion path. The implementation uses oscillator
-radial basis functions on the same diagnostic mesh, projects `p^2` and radial
-operators into a finite oscillator space, scans the oscillator scale `beta`,
-and reconstructs eigenvectors onto the mesh for common reporting.
-"""
-struct HarmonicOscillatorBasis <: GIBasis end
+# `GIParameters` used to carry a `Basis` type parameter (`FiniteDifferenceBasis` /
+# `HarmonicOscillatorBasis`) that no field ever used: it existed only to dispatch
+# the radial solve. That put a statement about *how you intend to discretize* in
+# the struct that holds the *model*, and it meant a physics object had to be
+# rebuilt to change a numerical method. The choice now lives where it belongs, on
+# the solver — see [`RadialSolver`](@ref) and its two implementations.
 
 """
     ConfinementPotential(; b, c)
@@ -189,7 +175,7 @@ Base.@kwdef struct AnnihilationAmplitudes
 end
 
 """
-    GIParameters{Basis<:GIBasis}
+    GIParameters
 
 Model parameters grouped by aspect, one field per TOML section:
 
@@ -202,54 +188,19 @@ Model parameters grouped by aspect, one field per TOML section:
 
 Construct via [`load_parameters`](@ref) (TOML) or keywords:
 `GIParameters(potential = ConfinementPotential(b = 0.18, c = -0.253), ...)`.
-The default basis is [`FiniteDifferenceBasis`](@ref); use [`with_basis`](@ref)
-to move to [`HarmonicOscillatorBasis`](@ref).
+
+This is the **model**, and nothing more: every field is a number the paper
+quotes. How the resulting Schrödinger equation gets solved is a separate choice,
+carried by the [`RadialSolver`](@ref) you pass to
+[`channel_solution`](@ref) or [`compute_spectrum`](@ref).
 """
-struct GIParameters{Basis<:GIBasis}
+Base.@kwdef struct GIParameters
     potential::ConfinementPotential
-    central::CentralPotentialMethod
+    central::CentralPotentialMethod = PointwiseCentral()
     smearing::RelativisticSmearing
-    factors::RelativisticFactors
-    fine_structure::FineStructure
-    annihilation::AnnihilationAmplitudes
-end
-
-function GIParameters{Basis}(;
-    potential::ConfinementPotential,
-    central::CentralPotentialMethod = PointwiseCentral(),
-    smearing::RelativisticSmearing,
-    factors::RelativisticFactors = RelativisticFactors(),
-    fine_structure::FineStructure = FineStructure(),
-    annihilation::AnnihilationAmplitudes = AnnihilationAmplitudes(),
-) where {Basis<:GIBasis}
-    return GIParameters{Basis}(
-        potential,
-        central,
-        smearing,
-        factors,
-        fine_structure,
-        annihilation,
-    )
-end
-
-GIParameters(args...; kwargs...) = GIParameters{FiniteDifferenceBasis}(args...; kwargs...)
-
-basis_type(::GIParameters{Basis}) where {Basis<:GIBasis} = Basis
-
-"""
-    with_basis(params::GIParameters, Basis) -> GIParameters{Basis}
-
-Same parameters on a different [`GIBasis`](@ref).
-"""
-function with_basis(params::GIParameters, ::Type{Basis}) where {Basis<:GIBasis}
-    return GIParameters{Basis}(
-        params.potential,
-        params.central,
-        params.smearing,
-        params.factors,
-        params.fine_structure,
-        params.annihilation,
-    )
+    factors::RelativisticFactors = RelativisticFactors()
+    fine_structure::FineStructure = FineStructure()
+    annihilation::AnnihilationAmplitudes = AnnihilationAmplitudes()
 end
 
 function gi_parameters_from_raw(raw)::GIParameters
@@ -301,14 +252,15 @@ function gi_parameters_from_raw(raw)::GIParameters
 end
 
 """
-    load_parameters(path) -> GIParameters{FiniteDifferenceBasis}
+    load_parameters(path) -> GIParameters
 
 Read a solver-parameter TOML file (`data/parameters.provisional.toml` layout:
 `[potential]` with a `central` method name, `[relativistic_smearing]`,
 `[relativistic_factors]`, `[fine_structure]`, optional `[annihilation]`).
 Missing switches default to `false`/paper values. Use
-[`load_parameters_and_quark_masses`](@ref) to also get the `[masses]` table,
-and [`with_basis`](@ref GIModel.with_basis) to move to [`HarmonicOscillatorBasis`](@ref).
+[`load_parameters_and_quark_masses`](@ref) to also get the `[masses]` table.
+The file describes the model only; pick the radial method with a
+[`RadialSolver`](@ref) at the call site.
 """
 function load_parameters(path::AbstractString)
     return gi_parameters_from_raw(TOML.parsefile(path))

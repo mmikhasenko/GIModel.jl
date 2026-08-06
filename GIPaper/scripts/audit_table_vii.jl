@@ -68,17 +68,17 @@ function pwave_operator(params, m1, m2, J)
 end
 
 # distorted radial family for a QQ̄ sector: (levels, vecs, r) with ∫u²dr = 1.
-function distorted_family(params_ho, m1, m2, L, V; nlevels)
-    vals, waves, r = ho_full_distorted_states(params_ho, ConstituentMasses(m1, m2), L, V;
-        nlevels = max(nlevels, 4), ngrid = NGRID, rmax = RMAX, nbasis = NB)
+function distorted_family(params, solver_ho, m1, m2, L, V; nlevels)
+    vals, waves, r = ho_full_distorted_states(params, ConstituentMasses(m1, m2), L, V;
+        solver = solver_ho, nlevels = max(nlevels, 4))
     return (levels = vals, vecs = waves, r = r)
 end
 
 # central (spin-independent) family on the same HO basis (V = 0), for the
 # ³D₁/³P₁ leptonic rows the paper leaves undistorted.
-function central_family(params_ho, m1, m2, L; nlevels = 2)
-    vals, vecs, r = channel_solution(params_ho, ConstituentMasses(m1, m2), L;
-        nlevels = max(nlevels, 4), ngrid = NGRID, rmax = RMAX)
+function central_family(params, solver_ho, m1, m2, L; nlevels = 2)
+    vals, vecs, r = channel_solution(params, ConstituentMasses(m1, m2), L;
+        solver = solver_ho, nlevels = max(nlevels, 4))
     return (levels = vals, vecs = vecs, r = r)
 end
 
@@ -171,7 +171,7 @@ channel_spin(ch::Symbol) =
     ch === :P0_2g ? (1, 3, 0) :
     error("unknown gluonic channel $ch")
 
-function run_gluonic(params, params_ho, mq, paper)
+function run_gluonic(params, solver_ho, mq, paper)
     cache = Dict{Tuple{Symbol,Int,Int,Int},Any}()   # (flavor, L, mult, J)
     results = NamedTuple[]
     for row in GLUONIC_ROWS
@@ -180,7 +180,7 @@ function run_gluonic(params, params_ho, mq, paper)
         fam = get!(cache, (row.flavor, L, mult, J)) do
             V = L == 0 ? contact_operator(params, mQ, mQ, mult) :
                 pwave_operator(params, mQ, mQ, J)
-            distorted_family(params_ho, mQ, mQ, L, V; nlevels = row.n)
+            distorted_family(params, solver_ho, mQ, mQ, L, V; nlevels = row.n)
         end
         u = fix_outer_antinode_positive!(copy(fam.vecs[:, row.n]))
         wave = RadialWaveOnUniformMesh(u, fam.r)
@@ -245,25 +245,25 @@ const LEPTONIC_ROWS = [
 # S-wave hyperfine-distinct family (singlet or triplet) for a flavor pair: the
 # paper-order finite-HO-basis full diagonalization of H_central + smeared contact
 # (levels are the hyperfine-split meson masses).
-function swave_family(params, params_ho, m1, m2, multiplicity; nlevels = 4)
+function swave_family(params, solver_ho, m1, m2, multiplicity; nlevels = 4)
     V = contact_operator(params, m1, m2, multiplicity)
-    return distorted_family(params_ho, m1, m2, 0, V; nlevels = nlevels)
+    return distorted_family(params, solver_ho, m1, m2, 0, V; nlevels = nlevels)
 end
 
-function run_leptonic(params, params_ho, mq, paper)
+function run_leptonic(params, solver_ho, mq, paper)
     scache = Dict{Tuple{Float64,Float64,Int},Any}()      # (m1, m2, multiplicity)
     ccache = Dict{Tuple{Float64,Float64,Int},Any}()      # (m1, m2, L)
     results = NamedTuple[]
     for row in LEPTONIC_ROWS
         m1, m2 = mq[row.f1], mq[row.f2]
         fam = if row.kind === :P_P
-            get!(() -> swave_family(params, params_ho, m1, m2, 1), scache, (m1, m2, 1))
+            get!(() -> swave_family(params, solver_ho, m1, m2, 1), scache, (m1, m2, 1))
         elseif row.kind === :V_V
-            get!(() -> swave_family(params, params_ho, m1, m2, 3), scache, (m1, m2, 3))
+            get!(() -> swave_family(params, solver_ho, m1, m2, 3), scache, (m1, m2, 3))
         elseif row.kind === :Vp_V
-            get!(() -> central_family(params_ho, m1, m2, 2), ccache, (m1, m2, 2))
+            get!(() -> central_family(params, solver_ho, m1, m2, 2), ccache, (m1, m2, 2))
         else # :Pp_A1
-            get!(() -> central_family(params_ho, m1, m2, 1), ccache, (m1, m2, 1))
+            get!(() -> central_family(params, solver_ho, m1, m2, 1), ccache, (m1, m2, 1))
         end
         M = fam.levels[row.n]
         u = fix_outer_antinode_positive!(copy(fam.vecs[:, row.n]))
@@ -314,7 +314,7 @@ const TWO_PHOTON_ROWS = [
 ]
 const GG_DEFERRED = ["eta", "eta'", "eta_r", "eta'_r"]   # isoscalar-pseudoscalar mixing
 
-function run_two_photon(params, params_ho, mq, paper)
+function run_two_photon(params, solver_ho, mq, paper)
     scache = Dict{Tuple{Float64,Float64},Any}()
     ccache = Dict{Tuple{Float64,Float64},Any}()
     results = NamedTuple[]
@@ -323,8 +323,8 @@ function run_two_photon(params, params_ho, mq, paper)
         # ¹S₀ singlets carry the contact distortion; the light ³P₂ (A2/f/f′)
         # radial function is J-independent at the paper's order → central.
         fam = row.kind === :P ?
-              get!(() -> swave_family(params, params_ho, m1, m2, 1), scache, (m1, m2)) :
-              get!(() -> central_family(params_ho, m1, m2, 1; nlevels = max(row.n, 1)), ccache, (m1, m2))
+              get!(() -> swave_family(params, solver_ho, m1, m2, 1), scache, (m1, m2)) :
+              get!(() -> central_family(params, solver_ho, m1, m2, 1; nlevels = max(row.n, 1)), ccache, (m1, m2))
         M = fam.levels[row.n]
         wave = RadialWaveOnUniformMesh(fix_outer_antinode_positive!(copy(fam.vecs[:, row.n])), fam.r)
         A = two_photon_amplitude(row.kind, wave, m1, M, row.q_eff; npoints = NPTS)   # GeV^½
@@ -354,12 +354,12 @@ const GG_MIXED = [   # (CSV label, block column, physical M_P GeV)
     ("eta'_r -> gamma gamma",  4, 1.440),   # ~ iota(1440)
 ]
 
-function run_two_photon_mixed(params, params_ho, mq, paper)
+function run_two_photon_mixed(params, solver_ho, mq, paper)
     mu, ms = mq["q"], mq["s"]
     Qnn = (4 / 9 + 1 / 9) / sqrt(2)     # (uū+dd̄)/√2 effective charge
     Qss = 1 / 9                          # ss̄
     function psfam(m1, m2)               # pure-flavor ¹S₀ 1S,2S waves
-        fam = swave_family(params, params_ho, m1, m2, 1; nlevels = 3)
+        fam = swave_family(params, solver_ho, m1, m2, 1; nlevels = 3)
         return [RadialWaveOnUniformMesh(fix_outer_antinode_positive!(copy(fam.vecs[:, n])), fam.r) for n in 1:2]
     end
     NN, SS = psfam(mu, mu), psfam(ms, ms)
@@ -426,12 +426,12 @@ function load_radius_predictions(path)
     return preds
 end
 
-function run_charge_radii(params, params_ho, mq, paper)
+function run_charge_radii(params, solver_ho, mq, paper)
     results = NamedTuple[]
     for row in CHARGE_RADIUS_ROWS
         m1, m2 = mq[row.f1], mq[row.f2]
         # ¹S₀ ground-state wave for the flavor pair (paper-order distorted)
-        fam = swave_family(params, params_ho, m1, m2, 1; nlevels = 2)
+        fam = swave_family(params, solver_ho, m1, m2, 1; nlevels = 2)
         wave = RadialWaveOnUniformMesh(fam.vecs[:, 1], fam.r)
         rE2 = charge_radius_squared(wave, m1, row.e1, m2, row.e2) * HBARC_FM2   # fm²
         pap = get(paper, row.decay, NaN)
@@ -452,13 +452,14 @@ signed_sqrt(x) = sign(x) * sqrt(abs(x))
 
 function main()
     params, mq = load_parameters_and_quark_masses(PARAMS_PATH)
-    params_ho = with_basis(params, HarmonicOscillatorBasis)
-    glu = run_gluonic(params, params_ho, mq, load_paper_predictions(TABLE, "gluonic"))
-    lep = run_leptonic(params, params_ho, mq, load_paper_predictions(TABLE, "leptonic"))
+    # The paper's own method, at this script's mesh and basis size.
+    solver_ho = OscillatorSolver(nbasis = NB, ngrid = NGRID, rmax = RMAX)
+    glu = run_gluonic(params, solver_ho, mq, load_paper_predictions(TABLE, "gluonic"))
+    lep = run_leptonic(params, solver_ho, mq, load_paper_predictions(TABLE, "leptonic"))
     gg_paper = load_gg_predictions(TABLE)
-    gg = run_two_photon(params, params_ho, mq, gg_paper)
-    ggm = run_two_photon_mixed(params, params_ho, mq, gg_paper)
-    cr = run_charge_radii(params, params_ho, mq, load_radius_predictions(TABLE))
+    gg = run_two_photon(params, solver_ho, mq, gg_paper)
+    ggm = run_two_photon_mixed(params, solver_ho, mq, gg_paper)
+    cr = run_charge_radii(params, solver_ho, mq, load_radius_predictions(TABLE))
 
     # Eqs. (D7)-(D9): widths from the decay constants. Formula validation +
     # model-f D8 dilepton predictions (see report section).

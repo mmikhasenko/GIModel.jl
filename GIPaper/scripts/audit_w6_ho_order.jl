@@ -48,7 +48,7 @@ const NPTS = 900
 const NB = 24
 
 params, mq = load_parameters_and_quark_masses(PARAMS_PATH)
-params_ho = with_basis(params, HarmonicOscillatorBasis)
+solver_ho = OscillatorSolver(nbasis = NB, ngrid = NGRID, rmax = RMAX)
 
 # Phase convention: outermost antinode positive (shared with audit_table_vii.jl).
 function fix_outer_antinode_positive!(u)
@@ -78,11 +78,11 @@ function sector_waves(fl::Symbol, L::Int, mult::Int, J::Int; nlevels = 4)
     cvals, cvecs, cr = channel_solution(params, masses, L;
         nlevels = max(nlevels, 4), ngrid = NGRID, rmax = RMAX)
     # first-order PT in the HO central eigenbasis (heavy-quark proxy)
-    pvals, pwaves, pr = ho_first_order_distorted_states(params_ho, masses, L, V;
-        nlevels = max(nlevels, 4), ngrid = NGRID, rmax = RMAX, nbasis = NB)
+    pvals, pwaves, pr = ho_first_order_distorted_states(params, masses, L, V;
+        solver = solver_ho, nlevels = max(nlevels, 4))
     # paper-order: FULL diagonalization of H_central + V in the finite HO basis
-    fvals, fwaves, fr = ho_full_distorted_states(params_ho, masses, L, V;
-        nlevels = max(nlevels, 4), ngrid = NGRID, rmax = RMAX, nbasis = NB)
+    fvals, fwaves, fr = ho_full_distorted_states(params, masses, L, V;
+        solver = solver_ho, nlevels = max(nlevels, 4))
     # nonperturbative FD resummation on the fine grid (over-resums)
     H, hr = GIModel.relativistic_hamiltonian(params, masses, L; ngrid = NGRID, rmax = RMAX)
     nvals, nvecs = GIModel.lowest_eigenpairs(Symmetric(Matrix(H) + Matrix(V)), max(nlevels, 4))
@@ -125,8 +125,8 @@ function run_audit()
         masses = ConstituentMasses(mQ, mQ)
         _, fdv, fdr = channel_solution(params, masses, L;
             nlevels = max(nmax, 4), ngrid = NGRID, rmax = RMAX)
-        _, hov, hor = channel_solution(params_ho, masses, L;
-            nlevels = max(nmax, 4), ngrid = NGRID, rmax = RMAX)
+        _, hov, hor = channel_solution(params, masses, L;
+            solver = solver_ho, nlevels = max(nmax, 4))
         for n = 1:nmax
             Sfd = smeared_S(fdv[:, n], fdr, mQ, L)
             Sho = smeared_S(hov[:, n], hor, mQ, L)
@@ -140,10 +140,10 @@ function run_audit()
     mn = ConstituentMasses(mq["q"], mq["q"])
     r0, _ = GIModel.radial_grid(NGRID, RMAX)
     Vpi = GIModel.contact_hyperfine_operator(params, mn, "S", 1, r0)
-    fo, _, _ = ho_first_order_distorted_states(params_ho, mn, 0, Vpi;
-        nlevels = 4, ngrid = NGRID, rmax = RMAX, nbasis = NB)
-    fu, _, _ = ho_full_distorted_states(params_ho, mn, 0, Vpi;
-        nlevels = 4, ngrid = NGRID, rmax = RMAX, nbasis = NB)
+    fo, _, _ = ho_first_order_distorted_states(params, mn, 0, Vpi;
+        solver = solver_ho, nlevels = 4)
+    fu, _, _ = ho_full_distorted_states(params, mn, 0, Vpi;
+        solver = solver_ho, nlevels = 4)
     Hn, _ = GIModel.relativistic_hamiltonian(params, mn, 0; ngrid = NGRID, rmax = RMAX)
     nv, _ = GIModel.lowest_eigenpairs(Symmetric(Matrix(Hn) + Matrix(Vpi)), 4)
     pion = (first_order = fo[1], full = fu[1], nonpert = nv[1])

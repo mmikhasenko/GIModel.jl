@@ -38,11 +38,23 @@ function _warn_if_underresolved(values, vectors, r, h, masses, L)
     return nothing
 end
 
+"""
+    channel_solution(params, masses, L; solver, nlevels) -> (values, waves, r)
+
+Solve the radial equation for one orbital channel. Together with
+[`resummed_channel_solution`](@ref) this is where all the numerics in the model
+live; everything downstream consumes the returned `u(r)`.
+
+The `solver` picks the method — [`FiniteDifferenceSolver`](@ref) or
+[`OscillatorSolver`](@ref) — and both return the same physical quantity in the
+same convention: eigenvalues in GeV, and waves normalized `∫u² dr = 1` on the
+returned mesh `r`.
+"""
 function channel_solution(
     params::GIParameters,
     masses::ConstituentMasses,
     L::Integer;
-    solver::RadialSolver = RadialSolver(),
+    solver::RadialSolver = FiniteDifferenceSolver(),
     nlevels::Integer = solver.nlevels_per_channel,
     ngrid = nothing,
     rmax = nothing,
@@ -53,7 +65,17 @@ function channel_solution(
         rmax = rmax, kinetic = kinetic, eigensolver = eigensolver)
     # `nlevels` is a per-call quantity, not a solver setting (the HO wave cache
     # legitimately asks for fewer), so it is not deprecated.
-    kinetic, eigensolver = solver.kinetic, solver.eigensolver
+    return _channel_solution(solver, params, masses, L, nlevels)
+end
+
+function _channel_solution(
+    solver::FiniteDifferenceSolver,
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L::Integer,
+    nlevels::Integer,
+)
+    kinetic = solver.kinetic
     hamiltonian, r = if kinetic == :relativistic
         relativistic_hamiltonian(params, masses, L; solver = solver)
     elseif kinetic == :nonrelativistic
@@ -71,34 +93,13 @@ function channel_solution(
     end
 end
 
-function channel_solution(
-    params::GIParameters{HarmonicOscillatorBasis},
+_channel_solution(
+    solver::OscillatorSolver,
+    params::GIParameters,
     masses::ConstituentMasses,
-    L::Integer;
-    solver::RadialSolver = RadialSolver(),
-    nlevels::Integer = solver.nlevels_per_channel,
-    ngrid = nothing,
-    rmax = nothing,
-    kinetic = nothing,
-    eigensolver = nothing,
-)
-    solver = _solver_with_legacy(solver, "channel_solution"; ngrid = ngrid,
-        rmax = rmax, kinetic = kinetic, eigensolver = eigensolver)
-    # `nlevels` is a per-call quantity, not a solver setting (the HO wave cache
-    # legitimately asks for fewer), so it is not deprecated.
-    kinetic, eigensolver = solver.kinetic, solver.eigensolver
-    kinetic == :relativistic ||
-        error("HarmonicOscillatorBasis currently supports only relativistic kinetic mode")
-    eigensolver == :full ||
-        error("HarmonicOscillatorBasis uses dense finite oscillator matrices; pass eigensolver=:full")
-    return oscillator_channel_solution(
-        params,
-        masses,
-        L;
-        nlevels = nlevels,
-        solver = solver,
-    )
-end
+    L::Integer,
+    nlevels::Integer,
+) = oscillator_channel_solution(params, masses, L; nlevels = nlevels, solver = solver)
 
 function solve_channel(args...; kwargs...)
     values, _vectors, _r = channel_solution(args...; kwargs...)

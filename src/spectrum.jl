@@ -156,10 +156,10 @@ stages and two-meson flavor mixing reuse the cached radial solves; see
 that produced the spectrum live in `computation.params`; use [`parameters`](@ref)
 to retrieve them.
 """
-struct Spectrum{S,C<:SectorComputation}
+struct Spectrum{S}
     meson::Meson
     states::Vector{S}
-    computation::C
+    computation::SectorComputation
 end
 
 """[`Spectrum`](@ref) after the central solve: `Spectrum{CentralState}`."""
@@ -198,7 +198,7 @@ function central_spectrum(
     params::GIParameters,
     meson::Meson;
     levels::AbstractVector{BasisState} = spectrum_levels(2),
-    solver::RadialSolver = RadialSolver(),
+    solver::RadialSolver = FiniteDifferenceSolver(),
     ngrid = nothing,
     rmax = nothing,
     kinetic = nothing,
@@ -221,8 +221,8 @@ function central_spectrum(
         ))
     end
 
-    # One FD solve per distinct orbital; HO waves for the annihilation phase
-    # convention (see fix_annihilation_phase!) where requested.
+    # One solve per distinct orbital with the requested solver; HO waves for the
+    # annihilation phase convention (see fix_annihilation_phase!) where requested.
     observed_L = sort(unique(level.L_label for level in levels))
     channel_cache = Dict{RadialChannelKey,ChannelRadialSolution}()
     for L_label in observed_L
@@ -238,16 +238,21 @@ function central_spectrum(
     end
     ho_wave_cache = Dict{RadialChannelKey,ChannelRadialSolution}()
     if annihilation_wave_basis == :ho
-        ho_params = with_basis(params, HarmonicOscillatorBasis)
+        # Deliberately the oscillator path regardless of `solver`: the Table III
+        # annihilation amplitudes are defined on the paper's own basis. It borrows
+        # only the reporting mesh, so these waves land on the same `r` as the
+        # central ones and can be compared with them.
+        ho_solver = solver isa OscillatorSolver ? solver :
+                    OscillatorSolver(ngrid = solver.ngrid, rmax = solver.rmax)
         for L_label in observed_L
             L_label in ho_wave_L || continue
             key = RadialChannelKey(masses, L_label)
             ev, vecs, r = channel_solution(
-                ho_params,
+                params,
                 masses,
                 L_SYMBOLS[L_label];
                 nlevels = 2,
-                solver = solver,
+                solver = ho_solver,
             )
             # The eigensolver returns arbitrary-sign columns; without a fixed
             # phase the S_L smearing factor can flip sign between quark masses
@@ -258,7 +263,7 @@ function central_spectrum(
             ho_wave_cache[key] = ChannelRadialSolution(ev, vecs, r)
         end
     end
-    computation = SectorComputation(params, channel_cache, ho_wave_cache)
+    computation = SectorComputation(params, solver, channel_cache, ho_wave_cache)
 
     states = map(collect(levels)) do level
         sol = channel_cache[RadialChannelKey(masses, level.L_label)]
@@ -315,7 +320,8 @@ function add_spin_corrections(
                     state.L,
                     state.multiplicity,
                     sol.r,
-                    length(sol.eigenvalues_GeV),
+                    length(sol.eigenvalues_GeV);
+                    solver = spec.computation.solver,
                 )
             end
             if !isempty(nonperturbative) && state.n <= length(nonperturbative)
@@ -418,7 +424,7 @@ function compute_spectrum(
     params::GIParameters,
     meson::Meson;
     levels::AbstractVector{BasisState} = spectrum_levels(2),
-    solver::RadialSolver = RadialSolver(),
+    solver::RadialSolver = FiniteDifferenceSolver(),
     terms::SpinTerms = SpinTerms(),
     ngrid = nothing,
     rmax = nothing,

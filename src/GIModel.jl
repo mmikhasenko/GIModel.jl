@@ -23,7 +23,7 @@ include("model_objects.jl")
 # Setup / bookkeeping: TOML parameters and flavor mass table
 # =============================================================================
 
-export GIParameters, GIBasis, FiniteDifferenceBasis, HarmonicOscillatorBasis, with_basis
+export GIParameters
 export ConfinementPotential,
     RelativisticSmearing, RelativisticFactors, FineStructure, AnnihilationAmplitudes
 export CentralPotentialMethod,
@@ -40,7 +40,7 @@ include("parameters.jl")
 export QuarkMassTable, load_quark_masses, load_parameters_and_quark_masses
 include("quark_mass_table.jl")
 
-export RadialSolver, SpinTerms
+export RadialSolver, FiniteDifferenceSolver, OscillatorSolver, SpinTerms
 include("solver_options.jl")
 
 export AbstractQuark, LightQuark, StrangeQuark, HeavyQuark

@@ -31,15 +31,15 @@ set_theme!(merge(theme_latexfonts(), Theme(fontsize = 16, Axis = (
     rightspinevisible = true, xgridvisible = true, ygridvisible = true))))
 
 params = G.load_parameters(joinpath(dirname(root), "data", "parameters.provisional.toml"))
-ho = G.with_basis(params, HarmonicOscillatorBasis)
+ho = OscillatorSolver()
 m = ConstituentMasses(0.220, 0.419)   # strange q-sbar
 
 fixsign(v) = v .* sign(v[argmax(abs.(v))])
 
 """Return the off-diagonal 3S1-3D1 tensor integrand pieces on the mesh."""
-function pieces(P)
-    _, vS, r = channel_solution(P, m, 0; nlevels = 6)
-    _, vD, _ = channel_solution(P, m, 2; nlevels = 6)
+function pieces(solver)
+    _, vS, r = channel_solution(params, m, 0; solver = solver, nlevels = 6)
+    _, vD, _ = channel_solution(params, m, 2; solver = solver, nlevels = 6)
     uS = fixsign(vS[:, 1]); uD = fixsign(vD[:, 1])
     h = r[2] - r[1]
     side = G.gi_spin_dependent_side_exponent(params.factors.epsilon_t)

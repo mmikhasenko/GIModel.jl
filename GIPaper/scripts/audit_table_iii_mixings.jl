@@ -40,7 +40,7 @@ const MASS_TARGETS_GEV = Dict(
 function s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
     # Annihilation wavefunctions use the HO basis (paper-consistent
     # wavefunction-at-origin scale); diagonal masses use the FD contact levels.
-    ho_params = GIModel.with_basis(params, HarmonicOscillatorBasis)
+    solver_ho = OscillatorSolver(ngrid = ngrid, rmax = rmax)
     channels = Dict{String,Any}()
     for (label, mass_key) in [("ns", "q"), ("ss", "s"), ("cc", "c"), ("bb", "b")]
         masses = ConstituentMasses(mq[mass_key], mq[mass_key])
@@ -54,13 +54,11 @@ function s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
             kinetic = :relativistic,
         )
         ev, vecs, r_ho = channel_solution(
-            ho_params,
+            params,
             masses,
             0;
+            solver = solver_ho,
             nlevels = 2,
-            ngrid = ngrid,
-            rmax = rmax,
-            kinetic = :relativistic,
         )
         fix_annihilation_phase!(vecs, r_ho)
         sol = GIModel.ChannelRadialSolution(ev, vecs, r_ho)

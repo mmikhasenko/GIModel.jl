@@ -171,7 +171,7 @@ of `decay_amplitude`), while `:table_iv` keeps the printed polynomial.
 
 Two independent algorithms solve the same radial problem, behind one interface:
 
-| | `FiniteDifferenceBasis` | `HarmonicOscillatorBasis` |
+| | `FiniteDifferenceSolver` | `OscillatorSolver` |
 |---|---|---|
 | representation | `u(r)` on a uniform mesh | expansion in 24 oscillator states |
 | `⟨i\|f(p)\|n⟩` | spectral function of the FD `p²` | `ho_p2_matrix`, closed form |

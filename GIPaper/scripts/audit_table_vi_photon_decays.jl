@@ -495,15 +495,15 @@ reldev(val, paper) = abs(val - paper) / abs(paper)
 #      (a_eta^nn / a_eta'^nn), which are eigenvector properties of the block and
 #      independent of the radial wave — distorted waves cannot move them.
 println("re-scoring the two open rows with W6 paper-order (ho_full) waves ...")
-params_ho = with_basis(params, HarmonicOscillatorBasis)
+solver_ho = OscillatorSolver(ngrid = NGRID, rmax = RMAX)
 function bb_swave_ho_full(multiplicity; nlevels = 3)
     masses = ConstituentMasses(m_b, m_b)
     r, h = G.radial_grid(NGRID, RMAX)
     V = G.contact_hyperfine_operator(params, masses, "S", multiplicity, r)
     # ho_full_distorted_states already returns physically normalized waves
     # (∫u² dr = 1); do NOT re-run physical_waves (which assumes Euclidean input).
-    _, waves, r2 = ho_full_distorted_states(params_ho, masses, 0, V;
-        nlevels = nlevels, ngrid = NGRID, rmax = RMAX)
+    _, waves, r2 = ho_full_distorted_states(params, masses, 0, V;
+        solver = solver_ho, nlevels = nlevels)
     hh = r2[2] - r2[1]
     out = RadialWaveOnUniformMesh[]
     for n = 1:size(waves, 2)

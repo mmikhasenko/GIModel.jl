@@ -312,7 +312,7 @@ Appendix A, use the checked split markdown pages and
 
 | Paper item | Status | Implementation/readout |
 | --- | --- | --- |
-| Eq. (1a)-(1b), semirelativistic Hamiltonian | FD and HO analogues implemented | `relativistic_hamiltonian` uses `sqrt(p^2+m_1^2)+sqrt(p^2+m_2^2)` on the finite-difference `p^2` operator. `GIParameters{HarmonicOscillatorBasis}` provides the finite oscillator-basis analogue and is tested; FD remains the default headline comparison path. |
+| Eq. (1a)-(1b), semirelativistic Hamiltonian | FD and HO analogues implemented | `relativistic_hamiltonian` uses `sqrt(p^2+m_1^2)+sqrt(p^2+m_2^2)` on the finite-difference `p^2` operator. Passing an `OscillatorSolver` selects the finite oscillator-basis analogue, which is tested; FD remains the default headline comparison path. |
 | Eq. (3), spin-independent color Coulomb plus linear confinement | exact color-singlet sign/normalization for pointwise limit | `central_potential = b*r - 4*alpha_s(r)/(3r) + c`; the color-singlet factor turns Eq. (3) into this form. |
 | Eq. (4), contact hyperfine | active GI-style approximation | S-wave contact uses the smeared delta and the post-A14 `m/E` sandwich. In the FD sector, S-wave contact is diagonalized nonperturbatively with the central Hamiltonian, matching the paper's fixed-`L,S,J` first diagonalization more closely than a first-order shift. |
 | Eq. (4), tensor hyperfine | assigned FD analogue | Angular factors, the Coulomb-limit color factor, and the same-`J` off-diagonal angular factor are tested. Active kernels use derivatives of closed-form smeared `G~` when enabled, and partnered triplet `L=J-1`/`L=J+1` rows are folded into `compare` through `TensorMixing`. |

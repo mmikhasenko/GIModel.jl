@@ -20,19 +20,14 @@ const PSEUDOSCALAR_BASIS = ["1 ns", "1 ss", "2 ns", "2 ss"]
 
 function hidden_s_basis(params, mq, spin; wave_basis = :fd, ngrid = 220, rmax = 22.0)
     out = []
-    wave_params = wave_basis == :ho ? GIModel.with_basis(params, HarmonicOscillatorBasis) : params
+    wave_solver = wave_basis == :ho ?
+        OscillatorSolver(ngrid = ngrid, rmax = rmax) :
+        FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax)
     for (label, mass_key) in [("1 ns", "q"), ("1 ss", "s")]
         m = mq[mass_key]
         masses = ConstituentMasses(m, m)
         ev, vecs, r = channel_solution(
-            wave_params,
-            masses,
-            0;
-            nlevels = 1,
-            ngrid = ngrid,
-            rmax = rmax,
-            kinetic = :relativistic,
-        )
+            params, masses, 0; solver = wave_solver, nlevels = 1)
         fix_annihilation_phase!(vecs, r)
         sol = GIModel.ChannelRadialSolution(ev, vecs, r)
         levels = GIModel.contact_hyperfine_nonperturbative_levels(
@@ -89,20 +84,15 @@ function vector_target()
 end
 
 function pseudoscalar_basis(params, mq; wave_basis = :fd, ngrid = 220, rmax = 22.0)
-    wave_params = wave_basis == :ho ? GIModel.with_basis(params, HarmonicOscillatorBasis) : params
+    wave_solver = wave_basis == :ho ?
+        OscillatorSolver(ngrid = ngrid, rmax = rmax) :
+        FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax)
     channels = Dict{String,Any}()
     for (flavor, mass_key) in [("ns", "q"), ("ss", "s")]
         m = mq[mass_key]
         masses = ConstituentMasses(m, m)
         ev, vecs, r = channel_solution(
-            wave_params,
-            masses,
-            0;
-            nlevels = 2,
-            ngrid = ngrid,
-            rmax = rmax,
-            kinetic = :relativistic,
-        )
+            params, masses, 0; solver = wave_solver, nlevels = 2)
         fix_annihilation_phase!(vecs, r)
         sol = GIModel.ChannelRadialSolution(ev, vecs, r)
         levels = GIModel.contact_hyperfine_nonperturbative_levels(

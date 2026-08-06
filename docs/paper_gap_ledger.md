@@ -18,8 +18,8 @@ handoff/autonomous planning notes.
   `epsilon_so_scalar = +0.055`.
 - The semirelativistic kinetic operator is implemented in the finite-difference
   path.
-- `HarmonicOscillatorBasis` is implemented through `GIParameters{Basis}`
-  dispatch and has regression tests. `scripts/audit_nonmixing_contact.jl`
+- The oscillator path is implemented as `OscillatorSolver` and has regression
+  tests. `scripts/audit_nonmixing_contact.jl`
   compares FD and HO non-mixing scorecards, and
   `scripts/audit_appendix_a_ho_comparison.jl` compares the active Appendix-A
   central operator directly.
@@ -52,10 +52,10 @@ harmonic-oscillator basis, first in fixed `|jm;ls>` sectors, then diagonalizes
 smaller mass matrices for tensor, antisymmetric spin-orbit, and annihilation
 mixing.
 
-What the repo does: both FD and HO radial basis paths exist. The HO path is
-selected through `GIParameters{HarmonicOscillatorBasis}`, projects operators
-into a finite oscillator subspace, scans the oscillator scale, reconstructs
-mesh wavefunctions, and is tested. Current headline sector reports still use
+What the repo does: both FD and HO radial paths exist. The HO path is selected
+by passing an `OscillatorSolver`, builds the Hamiltonian in a finite oscillator
+subspace, scans the oscillator scale, reconstructs mesh wavefunctions, and is
+tested. Current headline sector reports still use
 FD; the HO path is used mainly for basis-comparison audits.
 
 Why it matters: the claim that "HO is missing" is wrong. The central

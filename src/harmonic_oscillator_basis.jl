@@ -14,9 +14,6 @@
 # hybrid: an exact kinetic operator with a mesh-projected potential is not the
 # Hamiltonian of any single problem, and is not variational.
 
-const HO_DEFAULT_NBASIS = 24
-const HO_BETA_GRID = collect(0.25:0.10:2.35)
-
 function generalized_laguerre(n::Integer, α::Real, x::Real)
     n == 0 && return 1.0
     n == 1 && return 1.0 + α - x
@@ -51,13 +48,29 @@ the Jacobi matrix it needs is already [`ho_r2_matrix`](@ref): for weight
     β² r²  =  Z diag(xᵢ) Zᵀ ,      rᵢ = √xᵢ / β
     ⟨a|g|b⟩ = Σᵢ Z[a,i] g(rᵢ) Z[b,i]
 
-**Why this form and not weights-times-polynomials.** Evaluating `√wᵢ` and
-`p_n(xᵢ)` separately is what destroys the accuracy: at 120 Gauss–Hermite nodes
-the outer node reaches Laguerre argument ≈218, where `L₁₂^{1/2} ≈ 1.7e19` while
-the weight is ≈1e-95. Their product is O(1), but forming it from those two
-factors has already lost the digits before the sum starts — no amount of
-compensated summation recovers them. The eigenvector entries **are** the product
-`√wᵢ p_n(xᵢ)`; neither extreme ever exists.
+**Why this form and not weights-times-polynomials.** Not because the huge×tiny
+product loses digits — it does not. At 120 Gauss–Hermite nodes the outer node
+reaches Laguerre argument ≈218, where `L₁₂^{1/2} ≈ 1.7e19` against a weight of
+≈1e-95, but floating-point multiplication preserves relative accuracy and the
+summands of the rule are all comparable in size (the scaled weight `wᵢ·e^{tᵢ²}`
+stays between 0.29 and 0.74 across every node at 60), so there is no
+cancellation for the digits to be lost to. Given correct weights, the
+two-factor form holds 1.3e-15 on `g = 1` and 3e-13 on `g = r²` out to 200
+nodes. Compensated summation is not needed and would not be the fix.
+
+The actual hazard is narrower and lives entirely in the weights. Golub–Welsch
+delivers them as `μ₀·v₁²`, the square of an eigenvector's first component. Once
+the true weight is small enough that `v₁` reaches the eigensolver's noise floor,
+LAPACK returns it as **exactly zero** — first zeros around a true weight of
+1e-36, then 4 of 60 weights, 34 of 120, 88 of 200 — each one silently deleting a
+whole node from the rule. Ordinary Gauss–Hermite users never notice, because
+their integrand is negligible where those nodes sit; here it carries `e^{+tᵢ²}`
+in the polynomial factor, so a deleted node costs a full-size contribution: the
+`g = r²` error jumps from 3.3e-12 at 44 nodes to 2.0e-5 at 60.
+
+The DVR form is immune because it never asks for that number. The eigenvector
+entries **are** the product `√wᵢ p_n(xᵢ)`; neither extreme ever exists. Any
+future rule that takes `√wᵢ` from an eigensolver inherits the trap.
 
 Two exact self-checks, needing no reference data:
 
@@ -119,8 +132,9 @@ const _GAUSS_LAGUERRE_DVR = Dict{NTuple{3,Int},Tuple{Vector{Float64},Matrix{Floa
 Golub–Welsch data for the generalized Gauss–Laguerre rule with weight
 `x^(L+1/2) e^{-x}`: `sqrt_x[i] = √xᵢ` at the `nq` nodes, and `Z = V[1:nbasis, :]`
 the leading rows of the Jacobi eigenvectors, whose entries **are** the products
-`√wᵢ p_n(xᵢ)`. See [`ho_operator_matrix`](@ref) for why that product must never
-be formed from its two factors.
+`√wᵢ p_n(xᵢ)`. Taking them this way is what keeps `wᵢ` itself from ever being
+asked for — see [`ho_operator_matrix`](@ref) for why that matters, and for what
+does and does not go wrong when it is.
 
 Depends on `β` not at all — see the note above the cache. Memoized, and the
 memo is exact: same key, same `eigen` call, same bits.
@@ -180,22 +194,33 @@ is tridiagonal too:
     ⟨n|p²|n⟩   = β² (2n + L + 3/2)
     ⟨n|p²|n+1⟩ = β² √((n+1)(n + L + 3/2))
 
-Verified against the mesh projection this is intended to replace: the difference
-falls from 4.3e-3 at `(ngrid, rmax) = (450, 24)` to 7.4e-5 at `(8000, 56)`,
-i.e. it is the mesh's error and not this formula's.
+Verified against the mesh projection it replaced: the difference falls from
+4.3e-3 at `(ngrid, rmax) = (450, 24)` to 7.4e-5 at `(8000, 56)`, i.e. it is the
+mesh's error and not this formula's.
 
-**Not yet wired into `oscillator_hamiltonian_for_beta`.** Substituting it there
-moves the charmonium `1S` by 9.4 MeV and turns a 0.01 MeV finite-difference /
-oscillator agreement into a 9.4 MeV disagreement, with the oscillator result
-landing *below* the finite-difference one — the wrong side for a variational
-calculation in a finite basis. Two candidate explanations were tested and
-rejected: the mesh basis is orthonormal to 1.2e-15 (so quadrature error in the
-basis is not it), and the QR sign convention is a uniform -1 that cancels in
-the matrix. The remaining suspect is that Eq. (A17) cannot be done half
-analytically: the potential side is still projected through the mesh, and
-mixing an exact momentum side with an approximate position side need not be
-variational. Resolving that is the position-space half of A3', not this
-function.
+**Wired into `oscillator_hamiltonian_for_beta`, but only atomically** — together
+with an exact position side, never alone. On its own it produced a Hamiltonian
+whose kinetic operator belonged to the continuum problem and whose potential
+belonged to the discretized one, which is the Hamiltonian of no single problem
+and not variational: the charmonium `1S` landed 9.4 MeV *below* the
+finite-difference answer, the wrong side for a finite basis, and two Table VII
+gluonic ratios fell out of band. Two prerequisites had to be found first. The
+basis had no phase convention (see [`orthonormalize_physical_basis`](@ref)); an
+earlier note here dismissed the QR signs as a uniform `-1` that cancels, which
+was wrong — they flip on isolated columns (n = 10 and n = 18 at `β = 0.65,
+nbasis = 24`), so they do not cancel. And the potential side was still projected
+through the mesh, now [`ho_operator_matrix`](@ref).
+
+With both sides exact the sign is right: charm sits +0.18 MeV and bottom
++0.55 MeV *above* the finite-difference result, as a variational calculation in
+a finite basis must. The light sectors sit ≈1.5 MeV below, which reads the other
+way — the oscillator answer is a true bound on the continuum one, so it is the
+finite-difference mesh that is high where short-distance structure is hardest to
+resolve. The finite-difference / oscillator tolerance widened from 1e-3 to 3e-3
+at the same time, not from lost accuracy but because the two paths became
+independent: while the oscillator path projected the finite-difference `p²` it
+was a Galerkin restriction of that problem and inherited its discretization
+error, so the two agreed artificially well.
 """
 function ho_p2_matrix(L::Integer, β::Real, nbasis::Integer)
     nbasis >= 1 || throw(ArgumentError("ho_p2_matrix: nbasis must be ≥ 1"))
@@ -277,7 +302,7 @@ function oscillator_momentum_factor_matrix(
 end
 
 function oscillator_hamiltonian_for_beta(
-    params::GIParameters{HarmonicOscillatorBasis},
+    params::GIParameters,
     masses::ConstituentMasses,
     L::Integer,
     r::AbstractVector,
@@ -317,42 +342,40 @@ function oscillator_hamiltonian_for_beta(
     return Symmetric(kinetic + potential), U
 end
 
-# The beta grid is fixed and does not adapt to the masses. If the variational
-# optimum lands on the LAST candidate, the true optimum lies outside the grid:
-# the basis is too diffuse to represent a state this compact, and the result is
-# silently under-resolved rather than obviously wrong. Bottomonium picks
-# beta = 1.55 and m_Q = 8 GeV picks 1.95, so this stays quiet for every sector
-# the paper uses and first fires around m_Q ~ 15 GeV.
-function _warn_if_beta_railed(best_beta::Real, candidates, masses::ConstituentMasses, L::Integer)
-    best_beta == last(candidates) || return nothing
+# The beta grid does not adapt to the masses. If the variational optimum lands on
+# an ENDPOINT, the true optimum lies outside the grid: the basis cannot represent
+# a state this compact (or this diffuse), and the result is silently
+# under-resolved rather than obviously wrong. Bottomonium picks beta = 1.55 and
+# m_Q = 8 GeV picks 1.95, so with the default grid this stays quiet for every
+# sector the paper uses and first fires around m_Q ~ 15 GeV.
+function _warn_if_beta_railed(
+    best_beta::Real, solver::OscillatorSolver, masses::ConstituentMasses, L::Integer,
+)
+    grid = solver.beta_grid
+    length(grid) > 1 || return nothing
+    edge = best_beta == last(grid) ? "top" : best_beta == first(grid) ? "bottom" : return nothing
     @warn """
-    Harmonic-oscillator basis railed: the optimal beta hit the top of the fixed \
-    HO_BETA_GRID ($(last(candidates))), so this state is more compact than the \
-    basis can represent and the result is under-resolved. Extend HO_BETA_GRID \
-    for constituent masses well above bottomonium.""" m1 = masses.m1_GeV m2 =
+    Oscillator basis railed: the optimal beta hit the $edge of `beta_grid` \
+    ($best_beta GeV), so the state lies outside what this basis can represent and \
+    the result is under-resolved. Widen it with \
+    `OscillatorSolver(solver; beta_grid = ...)`.""" m1 = masses.m1_GeV m2 =
         masses.m2_GeV L maxlog = 1
     return nothing
 end
 
-function oscillator_beta_candidates(masses::ConstituentMasses, L::Integer)
-    # The broad grid is deliberately not tuned per sector. It spans diffuse
-    # light states and compact bottomonia well enough for an audit comparison.
-    return HO_BETA_GRID
-end
-
 function oscillator_channel_solution(
-    params::GIParameters{HarmonicOscillatorBasis},
+    params::GIParameters,
     masses::ConstituentMasses,
     L::Integer;
-    solver::RadialSolver = RadialSolver(),
+    solver::OscillatorSolver = OscillatorSolver(),
     nlevels::Integer = solver.nlevels_per_channel,
     ngrid::Integer = solver.ngrid,
     rmax::Real = solver.rmax,
-    nbasis::Integer = max(HO_DEFAULT_NBASIS, nlevels + 4),
+    nbasis::Integer = max(solver.nbasis, nlevels + 4),
 )
     r, h = radial_grid(ngrid, rmax)
     best = nothing
-    for β in oscillator_beta_candidates(masses, L)
+    for β in solver.beta_grid
         H, U = oscillator_hamiltonian_for_beta(params, masses, L, r, h, β; nbasis = nbasis)
         vals, vecs = lowest_eigenpairs(Matrix(H), nlevels; eigensolver = :full)
         # For an orthogonal set in a fixed sector, use one beta for all reported
@@ -363,50 +386,27 @@ function oscillator_channel_solution(
             best = (beta = β, values = vals, coeffs = vecs, basis = U)
         end
     end
-    _warn_if_beta_railed(best.beta, oscillator_beta_candidates(masses, L), masses, L)
+    _warn_if_beta_railed(best.beta, solver, masses, L)
     waves = physically_normalized_waves(best.basis * best.coeffs, h)
     return collect(best.values), Matrix(waves), r
 end
 
-"""
-    ho_full_distorted_states(params, masses, L, V; nlevels, ngrid, rmax, nbasis)
-        -> (values, waves, r)
-
-Paper-order spin-distorted radial waves by **full diagonalization** of the
-central-plus-spin Hamiltonian in the finite harmonic-oscillator subspace — the
-paper's literal method. For each β candidate the spin-dependent grid operator
-`V` is projected into the oscillator basis and added to the central `H`, and the
-full `H + V` is diagonalized; the paper β convention (one β per sector,
-minimizing the `nlevels`-th state) is applied to `H + V`. Returned waves are
-physically normalized (`∫u² dr = 1`).
-
-This differs from [`ho_first_order_distorted_states`](@ref) in resumming `V`
-within the finite basis rather than truncating at first order. The two coincide
-for heavy-quark spin splittings (where `V` is a small perturbation) but diverge
-where `V` is large: for the light `¹S₀` nonstrange sector the huge attractive
-contact term collapses the mass (`≈0.10 GeV`, matching the fine-grid FD
-resummation), whereas first-order PT badly overestimates it (`≈0.28 GeV`). The
-finite basis — not a perturbation order — is the mechanism: it resums less than
-the fine FD grid (so the Table VII heavy gluonic ratios land below the
-nonperturbative-FD overshoot) yet fully for the light pion. This is the single
-treatment that harmonizes the whole Table VII audit (gluonic distortion +
-light-pseudoscalar leptonic rows) on the paper's own basis.
-"""
-function resummed_channel_solution(
-    params::GIParameters{HarmonicOscillatorBasis},
+# The oscillator half of `resummed_channel_solution` (contact_hyperfine.jl holds
+# the entry point and the finite-difference half). See
+# [`ho_full_distorted_states`](@ref) for what this method means physically.
+function _resummed_channel_solution(
+    solver::OscillatorSolver,
+    params::GIParameters,
     masses::ConstituentMasses,
     L::Integer,
-    V::AbstractMatrix;
-    solver::RadialSolver = RadialSolver(),
-    nlevels::Integer = solver.nlevels_per_channel,
-    ngrid::Integer = solver.ngrid,
-    rmax::Real = solver.rmax,
-    nbasis::Integer = max(HO_DEFAULT_NBASIS, nlevels + 4),
+    V::AbstractMatrix,
+    nlevels::Integer,
 )
-    r, h = radial_grid(ngrid, rmax)
+    nbasis = max(solver.nbasis, nlevels + 4)
+    r, h = radial_grid(solver.ngrid, solver.rmax)
     size(V, 1) == length(r) || error("V must live on the (ngrid, rmax) mesh")
     best = nothing
-    for β in oscillator_beta_candidates(masses, L)
+    for β in solver.beta_grid
         H, U = oscillator_hamiltonian_for_beta(params, masses, L, r, h, β; nbasis = nbasis)
         Vproj = projected_matrix(U, h, Matrix(V))
         F = eigen(Symmetric(Matrix(H) + Matrix(Vproj)))
@@ -414,7 +414,7 @@ function resummed_channel_solution(
             best = (beta = β, values = F.values, coeffs = F.vectors, basis = U)
         end
     end
-    _warn_if_beta_railed(best.beta, oscillator_beta_candidates(masses, L), masses, L)
+    _warn_if_beta_railed(best.beta, solver, masses, L)
     waves = physically_normalized_waves(best.basis * best.coeffs, h)
     return collect(best.values[1:nlevels]), Matrix(waves[:, 1:nlevels]), r
 end
@@ -439,27 +439,27 @@ Table VII wavefunction-at-origin distortions, while this first-order form
 reproduces them.
 """
 function ho_first_order_distorted_states(
-    params::GIParameters{HarmonicOscillatorBasis},
+    params::GIParameters,
     masses::ConstituentMasses,
     L::Integer,
     V::AbstractMatrix;
-    solver::RadialSolver = RadialSolver(),
+    solver::OscillatorSolver = OscillatorSolver(),
     nlevels::Integer = solver.nlevels_per_channel,
     ngrid::Integer = solver.ngrid,
     rmax::Real = solver.rmax,
-    nbasis::Integer = max(HO_DEFAULT_NBASIS, nlevels + 4),
+    nbasis::Integer = max(solver.nbasis, nlevels + 4),
 )
     r, h = radial_grid(ngrid, rmax)
     size(V, 1) == length(r) || error("V must live on the (ngrid, rmax) mesh")
     best = nothing
-    for β in oscillator_beta_candidates(masses, L)
+    for β in solver.beta_grid
         H, U = oscillator_hamiltonian_for_beta(params, masses, L, r, h, β; nbasis = nbasis)
         F = eigen(Symmetric(Matrix(H)))
         if isnothing(best) || F.values[nlevels] < best.values[nlevels]
             best = (beta = β, values = F.values, coeffs = F.vectors, basis = U)
         end
     end
-    _warn_if_beta_railed(best.beta, oscillator_beta_candidates(masses, L), masses, L)
+    _warn_if_beta_railed(best.beta, solver, masses, L)
     waves = physically_normalized_waves(best.basis * best.coeffs, h)
     # V in the central eigenbasis: ⟨k|V|n⟩ = h · wₖ' V wₙ (physical normalization)
     Vkn = h .* (waves' * (Matrix(V) * waves))
@@ -482,15 +482,38 @@ end
 
 
 """
-    ho_full_distorted_states(params, masses, L, V; ...)
+    ho_full_distorted_states(params, masses, L, V; solver, nlevels)
+        -> (values, waves, r)
 
-The oscillator-basis method of [`resummed_channel_solution`](@ref), under its
-original name. Kept because the Table VI and W6 audits call it directly.
+Paper-order spin-distorted radial waves by **full diagonalization** of the
+central-plus-spin Hamiltonian in the finite harmonic-oscillator subspace — the
+paper's literal method, and the [`OscillatorSolver`](@ref) case of
+[`resummed_channel_solution`](@ref) under its original name. Kept because the
+Table VI and W6 audits call it directly.
+
+For each β candidate the spin-dependent grid operator `V` is projected into the
+oscillator basis and added to the central `H`, and the full `H + V` is
+diagonalized; the paper β convention (one β per sector, minimizing the
+`nlevels`-th state) is applied to `H + V`. Returned waves are physically
+normalized (`∫u² dr = 1`).
+
+This differs from [`ho_first_order_distorted_states`](@ref) in resumming `V`
+within the finite basis rather than truncating at first order. The two coincide
+for heavy-quark spin splittings (where `V` is a small perturbation) but diverge
+where `V` is large: for the light `¹S₀` nonstrange sector the huge attractive
+contact term collapses the mass (`≈0.10 GeV`, matching the fine-grid FD
+resummation), whereas first-order PT badly overestimates it (`≈0.28 GeV`). The
+finite basis — not a perturbation order — is the mechanism: it resums less than
+the fine FD grid (so the Table VII heavy gluonic ratios land below the
+nonperturbative-FD overshoot) yet fully for the light pion. This is the single
+treatment that harmonizes the whole Table VII audit (gluonic distortion +
+light-pseudoscalar leptonic rows) on the paper's own basis.
 """
 ho_full_distorted_states(
-    params::GIParameters{HarmonicOscillatorBasis},
+    params::GIParameters,
     masses::ConstituentMasses,
     L::Integer,
     V::AbstractMatrix;
+    solver::OscillatorSolver = OscillatorSolver(),
     kwargs...,
-) = resummed_channel_solution(params, masses, L, V; kwargs...)
+) = resummed_channel_solution(params, masses, L, V; solver = solver, kwargs...)

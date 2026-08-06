@@ -13,7 +13,7 @@ using GIPaper
 
 params_path = joinpath(dirname(root), "data", "parameters.provisional.toml")
 params, mq = load_parameters_and_quark_masses(params_path)
-params_ho = GIModel.with_basis(params, HarmonicOscillatorBasis)
+solver_ho = OscillatorSolver()
 active = central_potential_path(params)
 
 const L_VALUES = Dict("S" => 0, "P" => 1, "D" => 2, "F" => 3, "G" => 4)
@@ -24,21 +24,25 @@ mkpath(report_dir)
 
 channel_rows = NamedTuple[]
 
-# Central eigenvalues for one (params, masses, L) radial channel, cached.
+# Central eigenvalues for one (solver, masses, L) radial channel, cached. The
+# whole point of this audit is the same parameters under two radial methods, so
+# the solver -- not the parameters -- is what varies between the two calls.
 solve_cache = Dict{Tuple{UInt64,ConstituentMasses,String},Vector{Float64}}()
-function central_levels(p::GIParameters, masses::ConstituentMasses, L_label::String)
-    key = (objectid(p), masses, L_label)
+function central_levels(solver::RadialSolver, masses::ConstituentMasses, L_label::String)
+    key = (objectid(solver), masses, L_label)
     return get!(solve_cache, key) do
         ev, _, _ = channel_solution(
-            p,
+            params,
             masses,
             L_VALUES[L_label];
+            solver = solver,
             nlevels = 6,
-            kinetic = :relativistic,
         )
         collect(Float64, ev)
     end
 end
+
+solver_fd = FiniteDifferenceSolver()
 
 for fn in sort(readdir(data_dir))
     startswith(fn, "reference_spectrum_") && endswith(fn, ".csv") || continue
@@ -58,8 +62,8 @@ for fn in sort(readdir(data_dir))
         key in seen && continue
         push!(seen, key)
         Lval = L_VALUES[key.L]
-        fd = central_levels(params, masses, key.L)
-        ho = central_levels(params_ho, masses, key.L)
+        fd = central_levels(solver_fd, masses, key.L)
+        ho = central_levels(solver_ho, masses, key.L)
         key.n <= length(fd) || continue
         key.n <= length(ho) || continue
         fd_e = fd[key.n]

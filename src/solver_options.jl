@@ -1,85 +1,187 @@
 # The two kinds of knob a spectrum calculation has, separated because the
 # distinction is physical:
 #
-#   RadialSolver — how well the radial problem is solved. Changing it must NOT
-#                  move a mass. When it does, the grid is under-resolved, which
-#                  is what `_warn_if_underresolved` (channel_solver.jl) detects.
+#   RadialSolver — how the radial problem is solved: which of the two methods,
+#                  and how finely. Changing it must NOT move a mass. When it
+#                  does, the setting was under-resolved, which is what
+#                  `_warn_if_underresolved` and `_warn_if_beta_railed` detect.
 #   SpinTerms    — what is in the Hamiltonian. Each switch is a paper equation,
 #                  so changing it MUST move a mass.
 #
 # Keeping both as structs means the defaults live in exactly one place instead
 # of being restated at every call site.
 #
-# Public API (exported from GIModel.jl): RadialSolver, SpinTerms
+# Public API (exported from GIModel.jl):
+#   RadialSolver, FiniteDifferenceSolver, OscillatorSolver, SpinTerms
 
 """
-    RadialSolver(; ngrid=450, rmax=24.0, kinetic=:relativistic, eigensolver=:full,
-                   nlevels_per_channel=6)
+    RadialSolver
 
-Numerical settings for the radial solve — the discretization and the method,
-never the physics content. Accepted by [`channel_solution`](@ref),
-[`central_spectrum`](@ref) and [`compute_spectrum`](@ref), so one object
-describes a whole calculation:
+Which method solves the radial Schrödinger equation, and how finely — the
+discretization, never the physics content. Two implementations, and **the
+choice of implementation lives here, not in [`GIParameters`](@ref)**: the
+parameters are the model, the solver is how you solve it.
 
-    solver = RadialSolver(ngrid = 900, rmax = 32.0)     # a convergence check
-    compute_spectrum(params, meson; solver = solver)
+  - [`FiniteDifferenceSolver`](@ref) — the uniform-mesh solve (the default).
+  - [`OscillatorSolver`](@ref) — the paper's own oscillator expansion, Eq. (A17).
+
+Accepted by [`channel_solution`](@ref), [`central_spectrum`](@ref) and
+[`compute_spectrum`](@ref), so one object describes a whole calculation:
+
+    compute_spectrum(params, meson; solver = FiniteDifferenceSolver(ngrid = 900))
+    compute_spectrum(params, meson; solver = OscillatorSolver(nbasis = 32))
+
+**Changing a solver setting should never change a physical answer**, and the two
+implementations should agree on every quantity. Where they do not, one of them is
+under-resolved — that disagreement is a measurement, not a convention.
+
+`RadialSolver(; kwargs...)` builds the default implementation, so
+`RadialSolver(ngrid = 900)` still means what it always did.
+"""
+abstract type RadialSolver end
+
+"""
+    FiniteDifferenceSolver(; ngrid=450, rmax=24.0, kinetic=:relativistic,
+                             eigensolver=:full, nlevels_per_channel=6)
+
+Solve on a uniform radial mesh. Here the mesh **is** the method: every operator
+is a matrix on it, so `ngrid` and `rmax` set the accuracy of the answer.
 
 Fields:
 
-  - `ngrid`, `rmax` — the uniform radial mesh `r ∈ (0, rmax]` with `ngrid`
-    points. Heavy quarkonium is compact and needs points, not reach; light
-    mesons need reach. Too coarse and the spin-dependent shifts degrade long
-    before the eigenvalues visibly do — see `MIN_POINTS_ACROSS_STATE`.
+  - `ngrid`, `rmax` — the uniform mesh `r ∈ (0, rmax]` with `ngrid` points.
+    Heavy quarkonium is compact and needs points, not reach; light mesons need
+    reach. Too coarse and the spin-dependent shifts degrade long before the
+    eigenvalues visibly do — see `MIN_POINTS_ACROSS_STATE`.
   - `kinetic` — `:relativistic` (the model's `√(p²+m²)` kinetic term) or
     `:nonrelativistic` (`p²/2μ`, a comparator).
   - `eigensolver` — `:full` (dense `eigen`) or `:krylov`.
   - `nlevels_per_channel` — radial levels kept per orbital channel.
 
-**Changing a `RadialSolver` field should never change a physical answer.** If it
-does, the previous setting was under-resolved.
+`kinetic` and `eigensolver` are deliberately absent from
+[`OscillatorSolver`](@ref), which has neither choice to make.
 """
-struct RadialSolver
+struct FiniteDifferenceSolver <: RadialSolver
     ngrid::Int
     rmax::Float64
     kinetic::Symbol
     eigensolver::Symbol
     nlevels_per_channel::Int
-    function RadialSolver(;
+    function FiniteDifferenceSolver(;
         ngrid::Integer = 450,
         rmax::Real = 24.0,
         kinetic::Symbol = :relativistic,
         eigensolver::Symbol = :full,
         nlevels_per_channel::Integer = 6,
     )
-        ngrid >= 2 || throw(ArgumentError("RadialSolver: ngrid must be ≥ 2, got $ngrid"))
-        rmax > 0 || throw(ArgumentError("RadialSolver: rmax must be positive, got $rmax"))
+        ngrid >= 2 ||
+            throw(ArgumentError("FiniteDifferenceSolver: ngrid must be ≥ 2, got $ngrid"))
+        rmax > 0 ||
+            throw(ArgumentError("FiniteDifferenceSolver: rmax must be positive, got $rmax"))
         kinetic in (:relativistic, :nonrelativistic) || throw(ArgumentError(
-            "RadialSolver: kinetic must be :relativistic or :nonrelativistic, got `$kinetic`",
+            "FiniteDifferenceSolver: kinetic must be :relativistic or :nonrelativistic, got `$kinetic`",
         ))
         eigensolver in (:full, :krylov) || throw(ArgumentError(
-            "RadialSolver: eigensolver must be :full or :krylov, got `$eigensolver`",
+            "FiniteDifferenceSolver: eigensolver must be :full or :krylov, got `$eigensolver`",
         ))
         nlevels_per_channel >= 1 || throw(ArgumentError(
-            "RadialSolver: nlevels_per_channel must be ≥ 1, got $nlevels_per_channel",
+            "FiniteDifferenceSolver: nlevels_per_channel must be ≥ 1, got $nlevels_per_channel",
         ))
         return new(Int(ngrid), Float64(rmax), kinetic, eigensolver, Int(nlevels_per_channel))
     end
 end
 
-"""
-    RadialSolver(base::RadialSolver; ngrid=..., rmax=...)
+# Defaults for the oscillator expansion. `nbasis = 24` converges every sector the
+# paper uses; the β grid deliberately is not tuned per sector, spanning diffuse
+# light states and compact bottomonia in one sweep. Both are now solver fields, so
+# a user who outgrows them passes a bigger `OscillatorSolver` instead of editing
+# this file — which is what `_warn_if_beta_railed` used to have to tell them.
+const HO_DEFAULT_NBASIS = 24
+const HO_BETA_GRID = collect(0.25:0.10:2.35)
 
-Copy with fields overridden — `RadialSolver(solver; ngrid = 900)` for a
+"""
+    OscillatorSolver(; nbasis=24, beta_grid=0.25:0.10:2.35, nlevels_per_channel=6,
+                       ngrid=450, rmax=24.0)
+
+Solve by expansion in harmonic-oscillator radial functions — Godfrey & Isgur's
+own method, Eq. (A17). The Hamiltonian is a finite `nbasis × nbasis` matrix, and
+the oscillator scale `β` is a variational parameter scanned over `beta_grid`.
+
+**There is no operator mesh on this path.** `p²` has closed-form oscillator
+matrix elements ([`ho_p2_matrix`](@ref)) and the smeared potential is integrated
+by Gauss–Laguerre quadrature ([`ho_operator_matrix`](@ref)), so accuracy is set
+by `nbasis` and `beta_grid` alone. `ngrid`/`rmax` describe only the **reporting
+mesh** the converged wavefunctions are drawn onto, shared with
+[`FiniteDifferenceSolver`](@ref) so the two paths return comparable `u(r)` — and
+used by the mixing blocks, which still consume mesh waves.
+
+Fields:
+
+  - `nbasis` — oscillator functions kept. Raising it can only lower an eigenvalue
+    (the calculation is variational), so a mass that keeps falling means the
+    basis was too small.
+  - `beta_grid` — the `β` candidates, in GeV. One `β` is chosen per sector, the
+    one minimizing the highest requested level, following the paper's convention.
+    If the optimum lands on an endpoint the basis cannot represent the state and
+    `_warn_if_beta_railed` says so.
+  - `nlevels_per_channel` — radial levels kept per orbital channel.
+  - `ngrid`, `rmax` — reporting mesh only; see above.
+"""
+struct OscillatorSolver <: RadialSolver
+    nbasis::Int
+    beta_grid::Vector{Float64}
+    nlevels_per_channel::Int
+    ngrid::Int
+    rmax::Float64
+    function OscillatorSolver(;
+        nbasis::Integer = HO_DEFAULT_NBASIS,
+        beta_grid::AbstractVector{<:Real} = HO_BETA_GRID,
+        nlevels_per_channel::Integer = 6,
+        ngrid::Integer = 450,
+        rmax::Real = 24.0,
+    )
+        nbasis >= 1 ||
+            throw(ArgumentError("OscillatorSolver: nbasis must be ≥ 1, got $nbasis"))
+        isempty(beta_grid) &&
+            throw(ArgumentError("OscillatorSolver: beta_grid must not be empty"))
+        all(>(0), beta_grid) || throw(ArgumentError(
+            "OscillatorSolver: every beta must be positive, got $(collect(beta_grid))",
+        ))
+        issorted(beta_grid) || throw(ArgumentError(
+            "OscillatorSolver: beta_grid must be sorted; `_warn_if_beta_railed` reads its endpoints",
+        ))
+        nlevels_per_channel >= 1 || throw(ArgumentError(
+            "OscillatorSolver: nlevels_per_channel must be ≥ 1, got $nlevels_per_channel",
+        ))
+        ngrid >= 2 || throw(ArgumentError("OscillatorSolver: ngrid must be ≥ 2, got $ngrid"))
+        rmax > 0 ||
+            throw(ArgumentError("OscillatorSolver: rmax must be positive, got $rmax"))
+        return new(
+            Int(nbasis), collect(Float64, beta_grid), Int(nlevels_per_channel),
+            Int(ngrid), Float64(rmax),
+        )
+    end
+end
+
+# `RadialSolver(...)` builds the default implementation, so every call site that
+# predates the split keeps working and keeps meaning finite differences.
+RadialSolver(; kwargs...) = FiniteDifferenceSolver(; kwargs...)
+
+"""
+    FiniteDifferenceSolver(base; ngrid=..., rmax=...)
+    OscillatorSolver(base; nbasis=..., beta_grid=...)
+
+Copy with fields overridden — `FiniteDifferenceSolver(solver; ngrid = 900)` for a
 convergence study that changes one knob and keeps the rest.
 """
-RadialSolver(
-    base::RadialSolver;
+FiniteDifferenceSolver(
+    base::FiniteDifferenceSolver;
     ngrid::Integer = base.ngrid,
     rmax::Real = base.rmax,
     kinetic::Symbol = base.kinetic,
     eigensolver::Symbol = base.eigensolver,
     nlevels_per_channel::Integer = base.nlevels_per_channel,
-) = RadialSolver(;
+) = FiniteDifferenceSolver(;
     ngrid = ngrid,
     rmax = rmax,
     kinetic = kinetic,
@@ -87,11 +189,49 @@ RadialSolver(
     nlevels_per_channel = nlevels_per_channel,
 )
 
-function Base.show(io::IO, ::MIME"text/plain", s::RadialSolver)
+OscillatorSolver(
+    base::OscillatorSolver;
+    nbasis::Integer = base.nbasis,
+    beta_grid::AbstractVector{<:Real} = base.beta_grid,
+    nlevels_per_channel::Integer = base.nlevels_per_channel,
+    ngrid::Integer = base.ngrid,
+    rmax::Real = base.rmax,
+) = OscillatorSolver(;
+    nbasis = nbasis,
+    beta_grid = beta_grid,
+    nlevels_per_channel = nlevels_per_channel,
+    ngrid = ngrid,
+    rmax = rmax,
+)
+
+"""
+    with_mesh(solver, ngrid, rmax) -> same kind of solver
+
+The same solver on a different mesh. For [`FiniteDifferenceSolver`](@ref) that
+changes the answer's accuracy; for [`OscillatorSolver`](@ref) it changes only
+where the answer is drawn. Used where a caller already holds a mesh (an operator
+`V`, a cached `r`) and must solve on exactly that one.
+"""
+with_mesh(s::FiniteDifferenceSolver, ngrid::Integer, rmax::Real) =
+    FiniteDifferenceSolver(s; ngrid = ngrid, rmax = rmax)
+with_mesh(s::OscillatorSolver, ngrid::Integer, rmax::Real) =
+    OscillatorSolver(s; ngrid = ngrid, rmax = rmax)
+
+function Base.show(io::IO, ::MIME"text/plain", s::FiniteDifferenceSolver)
     print(
-        io, "RadialSolver: ngrid = ", s.ngrid, ", rmax = ", s.rmax,
+        io, "FiniteDifferenceSolver: ngrid = ", s.ngrid, ", rmax = ", s.rmax,
         " GeV^-1 (h = ", round(s.rmax / s.ngrid, digits = 5), "), ", s.kinetic,
         ", ", s.eigensolver, ", ", s.nlevels_per_channel, " levels/channel",
+    )
+    return nothing
+end
+
+function Base.show(io::IO, ::MIME"text/plain", s::OscillatorSolver)
+    print(
+        io, "OscillatorSolver: nbasis = ", s.nbasis, ", beta in [",
+        first(s.beta_grid), ", ", last(s.beta_grid), "] GeV (",
+        length(s.beta_grid), " candidates), ", s.nlevels_per_channel,
+        " levels/channel; reporting mesh ", s.ngrid, " x ", s.rmax, " GeV^-1",
     )
     return nothing
 end
@@ -187,17 +327,49 @@ function _solver_with_legacy(
         instead of: solver = RadialSolver($(join(["$g = ..." for g in given], ", ")))
 
     They still take effect, and they OVERRIDE the `solver` argument silently —
-    which is the reason to retire them. `RadialSolver` also groups them as what
+    which is the reason to retire them. A solver object also groups them as what
     they are: settings that must never change a physical answer.
     """ maxlog = 1
-    return RadialSolver(
-        solver;
-        ngrid = isnothing(ngrid) ? solver.ngrid : ngrid,
-        rmax = isnothing(rmax) ? solver.rmax : rmax,
-        kinetic = isnothing(kinetic) ? solver.kinetic : kinetic,
-        eigensolver = isnothing(eigensolver) ? solver.eigensolver : eigensolver,
+    return _override_solver(
+        solver; ngrid = ngrid, rmax = rmax, kinetic = kinetic,
+        eigensolver = eigensolver, nlevels_per_channel = nlevels_per_channel,
+    )
+end
+
+_override_solver(
+    s::FiniteDifferenceSolver;
+    ngrid, rmax, kinetic, eigensolver, nlevels_per_channel,
+) = FiniteDifferenceSolver(
+    s;
+    ngrid = isnothing(ngrid) ? s.ngrid : ngrid,
+    rmax = isnothing(rmax) ? s.rmax : rmax,
+    kinetic = isnothing(kinetic) ? s.kinetic : kinetic,
+    eigensolver = isnothing(eigensolver) ? s.eigensolver : eigensolver,
+    nlevels_per_channel = isnothing(nlevels_per_channel) ?
+                          s.nlevels_per_channel : nlevels_per_channel,
+)
+
+# `kinetic` and `eigensolver` are not settings the oscillator path has. Silently
+# dropping them would let a caller believe it had switched something off.
+function _override_solver(
+    s::OscillatorSolver;
+    ngrid, rmax, kinetic, eigensolver, nlevels_per_channel,
+)
+    isnothing(kinetic) || throw(ArgumentError(
+        "OscillatorSolver has no `kinetic` setting: the oscillator path is the model's " *
+        "relativistic Hamiltonian only. Pass a FiniteDifferenceSolver for the " *
+        ":nonrelativistic comparator.",
+    ))
+    isnothing(eigensolver) || throw(ArgumentError(
+        "OscillatorSolver has no `eigensolver` setting: the basis Hamiltonian is a " *
+        "dense nbasis x nbasis matrix, always diagonalized in full.",
+    ))
+    return OscillatorSolver(
+        s;
+        ngrid = isnothing(ngrid) ? s.ngrid : ngrid,
+        rmax = isnothing(rmax) ? s.rmax : rmax,
         nlevels_per_channel = isnothing(nlevels_per_channel) ?
-                              solver.nlevels_per_channel : nlevels_per_channel,
+                              s.nlevels_per_channel : nlevels_per_channel,
     )
 end
 

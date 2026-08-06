@@ -103,7 +103,7 @@ end
 
 @testset "central_potential_path (default = GI momentum sandwich)" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    @test params isa GIParameters{FiniteDifferenceBasis}
+    @test params isa GIParameters
     p = GIModel.central_potential_path(params)
     @test p.name == "appendix_a_momentum_sandwich"
     @test params.central isa AppendixAMomentumSandwich
@@ -116,28 +116,25 @@ end
     @test params.annihilation.a_3p2 ≈ -0.8
 end
 
-@testset "GIParameters basis dispatch keeps FD p² path explicit" begin
+@testset "The mesh p² is method-free" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     r, h = GIModel.radial_grid(12, 3.0)
-    p2_default = GIModel.p2_operator(mq["c"], 1, r, h)
-    p2_param = GIModel.p2_operator(params, mq["c"], 1, r, h)
-    p2_basis = GIModel.p2_operator(FiniteDifferenceBasis, mq["c"], 1, r, h)
-    @test p2_param ≈ p2_default
-    @test p2_basis ≈ p2_default
+    # The convenience form taking parameters is the bare one. It used to dispatch
+    # on a basis type parameter carried by GIParameters, with two methods whose
+    # bodies were identical.
+    @test GIModel.p2_operator(params, mq["c"], 1, r, h) ≈
+          GIModel.p2_operator(mq["c"], 1, r, h)
 end
 
-@testset "HarmonicOscillatorBasis channel solve returns mesh wavefunctions" begin
+@testset "OscillatorSolver channel solve returns mesh wavefunctions" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    params_ho = GIModel.with_basis(params, HarmonicOscillatorBasis)
     vals, vecs, r = channel_solution(
-        params_ho,
+        params,
         ConstituentMasses(mq["c"], mq["c"]),
         0;
+        solver = OscillatorSolver(ngrid = 120, rmax = 14.0),
         nlevels = 3,
-        ngrid = 120,
-        rmax = 14.0,
     )
-    @test params_ho isa GIParameters{HarmonicOscillatorBasis}
     @test length(vals) == 3
     @test size(vecs) == (length(r), 3)
     @test vals[1] < vals[2] < vals[3]
@@ -1639,15 +1636,13 @@ end
 
 @testset "Every solve returns u with the same normalization" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    ho = with_basis(params, HarmonicOscillatorBasis)
-
-    # The central solve, in both bases and every orbital: integral u^2 dr = 1.
+    # The central solve, with both solvers and every orbital: integral u^2 dr = 1.
     # FD used to return Euclidean eigenvectors here (sum u^2 = 1) while HO
     # returned physical ones, differing by sqrt(h).
     for key in ("q", "s", "c", "b"), L in 0:2
         masses = ConstituentMasses(mq[key], mq[key])
-        for prm in (params, ho)
-            _e, u, r = channel_solution(prm, masses, L; nlevels = 2)
+        for slv in (FiniteDifferenceSolver(), OscillatorSolver())
+            _e, u, r = channel_solution(params, masses, L; solver = slv, nlevels = 2)
             h = r[2] - r[1]
             for col in axes(u, 2)
                 @test isapprox(sum(abs2, view(u, :, col)) * h, 1.0; rtol = 1e-10)
@@ -1664,16 +1659,17 @@ end
     @test all(iszero, GIModel.physically_normalized_waves(zeros(5, 1), 0.25))
 end
 
-@testset "Both bases solve H+V to the same quantity, same normalization" begin
+@testset "Both solvers solve H+V to the same quantity, same normalization" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    ho = with_basis(params, HarmonicOscillatorBasis)
     r, h = GIModel.radial_grid(450, 24.0)
 
     for key in ("q", "c", "b")
         masses = ConstituentMasses(mq[key], mq[key])
         V = Matrix(GIModel.contact_hyperfine_operator(params, masses, "S", 1, r))
-        e_fd, u_fd, r_fd = resummed_channel_solution(params, masses, 0, V; nlevels = 2)
-        e_ho, u_ho, r_ho = resummed_channel_solution(ho, masses, 0, V; nlevels = 2)
+        e_fd, u_fd, r_fd = resummed_channel_solution(
+            params, masses, 0, V; solver = FiniteDifferenceSolver(), nlevels = 2)
+        e_ho, u_ho, r_ho = resummed_channel_solution(
+            params, masses, 0, V; solver = OscillatorSolver(), nlevels = 2)
 
         # Same mesh out.
         @test r_fd == r_ho == collect(r)
@@ -1698,13 +1694,16 @@ end
     # The original exported name is the oscillator method of the unified solve.
     masses = ConstituentMasses(mq["c"], mq["c"])
     V = Matrix(GIModel.contact_hyperfine_operator(params, masses, "S", 1, r))
-    @test ho_full_distorted_states(ho, masses, 0, V; nlevels = 2)[1] ==
-          resummed_channel_solution(ho, masses, 0, V; nlevels = 2)[1]
+    ho = OscillatorSolver()
+    @test ho_full_distorted_states(params, masses, 0, V; solver = ho, nlevels = 2)[1] ==
+          resummed_channel_solution(params, masses, 0, V; solver = ho, nlevels = 2)[1]
 
-    # V must live on the solver's mesh, in either basis.
+    # V must live on the solver's mesh, whichever solver that is.
     bad = zeros(10, 10)
-    @test_throws Exception resummed_channel_solution(params, masses, 0, bad; nlevels = 1)
-    @test_throws Exception resummed_channel_solution(ho, masses, 0, bad; nlevels = 1)
+    @test_throws Exception resummed_channel_solution(
+        params, masses, 0, bad; solver = FiniteDifferenceSolver(), nlevels = 1)
+    @test_throws Exception resummed_channel_solution(
+        params, masses, 0, bad; solver = ho, nlevels = 1)
 end
 
 @testset "An unimplemented solve fails instead of degrading" begin
@@ -1727,14 +1726,17 @@ end
     # failure, U2 unified the solve, and B1 made this wrapper basis-generic — so
     # the oscillator path now resums in its own space and lands on the same
     # answer. That agreement is what the throw was standing in for.
-    ho = with_basis(params, HarmonicOscillatorBasis)
-    lvl_ho, vec_ho, _ = contact_hyperfine_nonperturbative_states(ho, masses, "S", 1, r, 2)
+    ho = OscillatorSolver()
+    lvl_ho, vec_ho, _ =
+        contact_hyperfine_nonperturbative_states(params, masses, "S", 1, r, 2; solver = ho)
     @test length(lvl_ho) == 2 && size(vec_ho, 2) == 2
-    @test abs(lvl_ho[1] - levels[1]) < 1e-3          # sub-MeV across the two bases
+    @test abs(lvl_ho[1] - levels[1]) < 1e-3          # sub-MeV across the two methods
     @test lvl_ho[1] < 0.15                           # resummed, not first-order (~0.28)
-    @test GIModel.contact_hyperfine_nonperturbative_levels(ho, masses, "S", 1, r, 2) ≈ lvl_ho
+    @test GIModel.contact_hyperfine_nonperturbative_levels(
+        params, masses, "S", 1, r, 2; solver = ho) ≈ lvl_ho
     ho_pi = spectrum_state(
-        compute_spectrum(ho, Meson(mq, :q, :q); levels = spectrum_levels(1)), "1^1S_0")
+        compute_spectrum(params, Meson(mq, :q, :q); solver = ho, levels = spectrum_levels(1)),
+        "1^1S_0")
     @test ho_pi.mass_GeV < 0.15
 
     # The FD front door is untouched and still resums.
@@ -1782,7 +1784,7 @@ end
     ev, _, _ = channel_solution(params, meson.constituent_masses, 0;
         solver = RadialSolver(nlevels_per_channel = 3))
     @test length(ev) == 3
-    tuned = RadialSolver(RadialSolver(ngrid = 900); rmax = 32.0)
+    tuned = FiniteDifferenceSolver(FiniteDifferenceSolver(ngrid = 900); rmax = 32.0)
     @test tuned.ngrid == 900 && tuned.rmax == 32.0 && tuned.kinetic === :relativistic
 
     # The deprecated loose keywords still work, still win, and now say so.
@@ -1811,6 +1813,68 @@ end
     @test_throws ArgumentError RadialSolver(nlevels_per_channel = 0)
 end
 
+@testset "The solver, not the parameters, chooses the radial method" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    meson = Meson(mq, :c, :c)
+    levels = spectrum_levels(2)
+    masses(spec) = [s.mass_GeV for s in spec.states]
+
+    # `GIParameters` is the model and nothing else: no basis marker, and one
+    # object serves both methods. It used to carry a phantom type parameter that
+    # no field used, so switching numerical method meant rebuilding the physics.
+    @test isconcretetype(GIParameters)
+    @test !any(f -> occursin("asis", String(f)), fieldnames(GIParameters))
+
+    # `RadialSolver` is the interface; calling it builds the default
+    # implementation, which is what every pre-split call site meant.
+    @test RadialSolver isa Type && !isconcretetype(RadialSolver)
+    @test RadialSolver(ngrid = 900) === FiniteDifferenceSolver(ngrid = 900)
+    @test FiniteDifferenceSolver() isa RadialSolver
+    @test OscillatorSolver() isa RadialSolver
+
+    # Same parameters, two methods, through the front door. Both must answer,
+    # and agree to a few MeV -- the residual is each one's own truncation error.
+    fd = compute_spectrum(params, meson; levels = levels, solver = FiniteDifferenceSolver())
+    ho = compute_spectrum(params, meson; levels = levels, solver = OscillatorSolver())
+    @test maximum(abs.(masses(fd) .- masses(ho))) < 0.005
+
+    # The oscillator path is variational in a finite basis, so it can only sit
+    # ABOVE the converged answer. Against a fine finite-difference mesh, every
+    # charmonium level must therefore come out no lower.
+    fine = compute_spectrum(params, meson; levels = levels,
+        solver = FiniteDifferenceSolver(ngrid = 1800, rmax = 24.0))
+    @test all(masses(ho) .>= masses(fine) .- 1e-9)
+
+    # Raising nbasis can only lower an oscillator eigenvalue, for the same reason.
+    e24, _, _ = channel_solution(params, meson.constituent_masses, 0;
+        solver = OscillatorSolver(nbasis = 24), nlevels = 3)
+    e40, _, _ = channel_solution(params, meson.constituent_masses, 0;
+        solver = OscillatorSolver(nbasis = 40), nlevels = 3)
+    @test all(e40 .<= e24 .+ 1e-9)
+
+    # The stage-1 solver is recorded and stages 2-3 reuse it, so one spectrum is
+    # one calculation. The non-perturbative contact solve in stage 2 resolves its
+    # own eigenproblem and would otherwise silently revert to finite differences.
+    @test compute_spectrum(params, meson; levels = levels,
+        solver = OscillatorSolver()).computation.solver isa OscillatorSolver
+
+    # Settings the oscillator path does not have are absent, not ignored.
+    @test !hasfield(OscillatorSolver, :kinetic)
+    @test !hasfield(OscillatorSolver, :eigensolver)
+    @test_throws ArgumentError compute_spectrum(params, meson; levels = levels,
+        solver = OscillatorSolver(), kinetic = :nonrelativistic)
+    @test_throws ArgumentError OscillatorSolver(nbasis = 0)
+    @test_throws ArgumentError OscillatorSolver(beta_grid = Float64[])
+    @test_throws ArgumentError OscillatorSolver(beta_grid = [0.5, -0.5])
+    @test_throws ArgumentError OscillatorSolver(beta_grid = [1.5, 0.5])
+
+    # beta_grid is a solver field, not a module constant to go edit in source.
+    narrow = OscillatorSolver(beta_grid = 0.9:0.1:1.2)
+    @test narrow.beta_grid == [0.9, 1.0, 1.1, 1.2]
+    @test (@test_logs (:warn,) match_mode = :any channel_solution(
+        params, meson.constituent_masses, 0; solver = narrow, nlevels = 2)) isa Tuple
+end
+
 @testset "Resolution walls are detected, not silent" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
 
@@ -1837,22 +1901,22 @@ end
     # splitting collapses.
     @test points_across(30.0) < GIModel.MIN_POINTS_ACROSS_STATE
 
-    # Same story in the oscillator basis: the fixed HO_BETA_GRID rails, i.e. the
+    # Same story on the oscillator path: the default beta_grid rails, i.e. the
     # variational optimum lands on the last candidate, only well above bottomonium.
+    default_grid = OscillatorSolver().beta_grid
     function best_beta(m)
-        ph = with_basis(params, HarmonicOscillatorBasis)
         mm = ConstituentMasses(m, m)
         r, h = GIModel.radial_grid(450, 24.0)
         best = nothing
-        for b in GIModel.HO_BETA_GRID
-            H, _ = GIModel.oscillator_hamiltonian_for_beta(ph, mm, 0, r, h, b; nbasis = 24)
+        for b in default_grid
+            H, _ = GIModel.oscillator_hamiltonian_for_beta(params, mm, 0, r, h, b; nbasis = 24)
             v, _ = GIModel.lowest_eigenpairs(Matrix(H), 2; eigensolver = :full)
             (isnothing(best) || v[end] < best[2]) && (best = (b, v[end]))
         end
         return best[1]
     end
-    @test best_beta(mq["b"]) < last(GIModel.HO_BETA_GRID)     # bottomonium is fine
-    @test best_beta(30.0) == last(GIModel.HO_BETA_GRID)       # railed
+    @test best_beta(mq["b"]) < last(default_grid)     # bottomonium is fine
+    @test best_beta(30.0) == last(default_grid)       # railed
 
     # And the detector is wired to warn (maxlog=1, so this is the first trigger).
     @test_logs (:warn,) match_mode = :any channel_solution(
@@ -2118,7 +2182,7 @@ end
     # "this basis has no implementation", which is what used to make callers
     # substitute first-order PT and report 0.2842 GeV for the light 1S0.
     lvl_ho, _, _ = contact_hyperfine_nonperturbative_states(
-        with_basis(params, HarmonicOscillatorBasis), masses, "S", 1, r, 2)
+        params, masses, "S", 1, r, 2; solver = OscillatorSolver())
     @test abs(lvl_ho[1] - lvl1[1]) < 1e-3
 end
 
@@ -2367,7 +2431,7 @@ end
 
 @testset "W6 paper-order spin-distorted waves (HO first order)" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    params_ho = with_basis(params, HarmonicOscillatorBasis)
+    solver_ho = OscillatorSolver(ngrid = 900, rmax = 24.0)
     mc = mq["c"]
     masses = ConstituentMasses(mc, mc)
     outer!(u) = (pk = maximum(abs, u); i = findlast(x -> abs(x) > 0.2pk, u);
@@ -2381,7 +2445,7 @@ end
     # 1. basis-fidelity control: HO central S_L matches FD to <2% for charm —
     #    the 15-20% gluonic row residuals were never a basis artifact
     _, fdv, fdr = channel_solution(params, masses, 0; nlevels = 2, ngrid = ngrid, rmax = rmax)
-    _, hov, hor = channel_solution(params_ho, masses, 0; nlevels = 2, ngrid = ngrid, rmax = rmax)
+    _, hov, hor = channel_solution(params, masses, 0; solver = solver_ho, nlevels = 2)
     @test 0.98 < sm(hov[:, 1], hor, 0) / sm(fdv[:, 1], fdr, 0) < 1.02
 
     # 2. paper-order treatment: first-order PT in the HO central eigenbasis with
@@ -2394,8 +2458,8 @@ end
     ratios = Dict{Symbol,Float64}()
     for (key, L, V, ch, paper) in ((:eta_c, 0, V1, :S0_2g, 4.700), (:psi, 0, V3, :S1_3g, 0.420),
                                    (:chi_0c, 1, VP0, :P0_2g, 2.500), (:chi_2c, 1, VP2, :P2_2g, 0.880))
-        vals, waves, rr = ho_first_order_distorted_states(params_ho, masses, L, V;
-            nlevels = 4, ngrid = ngrid, rmax = rmax)
+        vals, waves, rr = ho_first_order_distorted_states(params, masses, L, V; solver = solver_ho,
+            nlevels = 4)
         ratios[key] = amp(ch, sm(waves[:, 1], rr, L), vals[1]) / paper
         @test 0.85 < ratios[key] < 1.15
     end
@@ -2412,7 +2476,7 @@ end
 
 @testset "W6 paper-order full diagonalization (light-mass discriminator)" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    params_ho = with_basis(params, HarmonicOscillatorBasis)
+    solver_ho = OscillatorSolver(ngrid = 900, rmax = 24.0)
     ngrid, rmax = 900, 24.0
     r, h = GIModel.radial_grid(ngrid, rmax)
     outer!(u) = (pk = maximum(abs, u); i = findlast(x -> abs(x) > 0.2pk, u);
@@ -2424,8 +2488,8 @@ end
     #    PT over-raises it (≈0.28 GeV).
     nn = ConstituentMasses(mq["q"], mq["q"])
     Vpi = GIModel.contact_hyperfine_operator(params, nn, "S", 1, r)
-    m_full = ho_full_distorted_states(params_ho, nn, 0, Vpi; nlevels = 4, ngrid = ngrid, rmax = rmax)[1][1]
-    m_pt = ho_first_order_distorted_states(params_ho, nn, 0, Vpi; nlevels = 4, ngrid = ngrid, rmax = rmax)[1][1]
+    m_full = ho_full_distorted_states(params, nn, 0, Vpi; solver = solver_ho, nlevels = 4)[1][1]
+    m_pt = ho_first_order_distorted_states(params, nn, 0, Vpi; solver = solver_ho, nlevels = 4)[1][1]
     m_fd = GIModel.lowest_eigenpairs(
         Symmetric(Matrix(GIModel.relativistic_hamiltonian(params, nn, 0; ngrid = ngrid, rmax = rmax)[1]) + Matrix(Vpi)), 1)[1][1]
     @test m_full < 0.15               # resummed, light pion
@@ -2437,7 +2501,7 @@ end
     #    are served by ONE treatment.
     mc = mq["c"]; cc = ConstituentMasses(mc, mc)
     V1 = GIModel.contact_hyperfine_operator(params, cc, "S", 1, r)
-    v, w, rr = ho_full_distorted_states(params_ho, cc, 0, V1; nlevels = 4, ngrid = ngrid, rmax = rmax)
+    v, w, rr = ho_full_distorted_states(params, cc, 0, V1; solver = solver_ho, nlevels = 4)
     S = wavefunction_origin_smearing(RadialWaveOnUniformMesh(outer!(copy(w[:, 1])), rr), mc; L = 0)
     eta_c = abs(gluonic_annihilation_amplitude(:S0_2g, S, GIModel.alpha_s_q(v[1]), mc)) * sqrt(1000) / 4.700
     @test 0.95 < eta_c < 1.20

@@ -64,9 +64,10 @@ degrades the low-level HO representation while FD is unaffected."""
 function basis_waves(params, masses, L_label, level; nlevels = 6)
     Lval = GIModel.L_SYMBOLS[L_label]
     nl = max(nlevels, level)
-    ho = GIModel.with_basis(params, HarmonicOscillatorBasis)
-    ev_fd, vec_fd, r = channel_solution(params, masses, Lval; nlevels = nl)
-    ev_ho, vec_ho, _ = channel_solution(ho, masses, Lval; nlevels = nl)
+    ev_fd, vec_fd, r = channel_solution(
+        params, masses, Lval; solver = FiniteDifferenceSolver(), nlevels = nl)
+    ev_ho, vec_ho, _ = channel_solution(
+        params, masses, Lval; solver = OscillatorSolver(), nlevels = nl)
     h = r[2] - r[1]
     r_fm = r .* HBARC
     u_fd = normalize_wave(vec_fd[:, level], h)

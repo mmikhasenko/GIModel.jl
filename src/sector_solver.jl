@@ -69,25 +69,30 @@ function RadialWaveOnUniformMesh(sol::ChannelRadialSolution, radial_level::Integ
 end
 
 """
-    SectorComputation(params, channel_cache)
+    SectorComputation(params, solver, channel_cache[, ho_wave_cache])
 
-Container filled by [`central_spectrum`](@ref) (`spectrum.jl`): precomputed radial FD solves per distinct channel.
+Container filled by [`central_spectrum`](@ref) (`spectrum.jl`): precomputed radial
+solves per distinct channel, plus how they were produced.
 
-  - `params`: [`GIParameters`](@ref) used to build each central Hamiltonian
-    (concrete via the type parameter).
+  - `params`: [`GIParameters`](@ref) used to build each central Hamiltonian.
+  - `solver`: the [`RadialSolver`](@ref) that produced them. Later stages resolve
+    their own solves (the non-perturbative contact term) and must use the same
+    method — otherwise stage 1 and stage 2 of one spectrum would disagree about
+    which calculation this is.
   - `channel_cache`: map `RadialChannelKey` → `ChannelRadialSolution`.
 
 [`Spectrum`](@ref) keeps this alive so later stages and two-meson flavor mixing
 can reuse the cached solves.
 """
-struct SectorComputation{P<:GIParameters}
-    params::P
+struct SectorComputation
+    params::GIParameters
+    solver::RadialSolver
     channel_cache::Dict{RadialChannelKey,ChannelRadialSolution}
     ho_wave_cache::Dict{RadialChannelKey,ChannelRadialSolution}
 end
 
-SectorComputation(params, cache) =
-    SectorComputation(params, cache, Dict{RadialChannelKey,ChannelRadialSolution}())
+SectorComputation(params, solver, cache) =
+    SectorComputation(params, solver, cache, Dict{RadialChannelKey,ChannelRadialSolution}())
 
 """
     solve_sector(params, equal_mass_GeV; …)
@@ -99,7 +104,7 @@ function solve_sector(
     params::GIParameters,
     equal_mass_GeV::Real;
     maxn::Integer = 6,
-    solver::RadialSolver = RadialSolver(),
+    solver::RadialSolver = FiniteDifferenceSolver(),
     ngrid = nothing,
     rmax = nothing,
     kinetic = nothing,
