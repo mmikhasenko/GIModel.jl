@@ -29,6 +29,35 @@ function ho_reduced_radial(nr::Integer, L::Integer, β::Real, r::Real)
 end
 
 """
+    ho_r2_matrix(L, β, nbasis) -> SymTridiagonal
+
+Exact matrix elements of `r²` in the 3D harmonic-oscillator basis — the
+position-space companion of [`ho_p2_matrix`](@ref):
+
+    ⟨n|r²|n⟩   =  (2n + L + 3/2) / β²
+    ⟨n|r²|n+1⟩ = -√((n+1)(n + L + 3/2)) / β²
+
+The two together are self-validating without any mesh, reference data or model
+input: since `H = p²/2μ + ½μω²r²` is diagonal with eigenvalue `(2n+L+3/2)ω` and
+`β² = μω`, the combination
+
+    p²/2μ + (β⁴/2μ) r²
+
+must come out **exactly diagonal**. Any error in either operator's magnitude,
+sign or power of β breaks that cancellation, so the reconstruction tests both
+and their relative normalization at once. See the `ho_r2_matrix / ho_p2_matrix`
+testset.
+"""
+function ho_r2_matrix(L::Integer, β::Real, nbasis::Integer)
+    nbasis >= 1 || throw(ArgumentError("ho_r2_matrix: nbasis must be ≥ 1"))
+    β > 0 || throw(ArgumentError("ho_r2_matrix: β must be positive"))
+    ib2 = 1 / float(β)^2
+    diagonal = [ib2 * (2n + L + 1.5) for n = 0:(nbasis-1)]
+    offdiag = [-ib2 * sqrt((n + 1) * (n + L + 1.5)) for n = 0:(nbasis-2)]
+    return SymTridiagonal(diagonal, offdiag)
+end
+
+"""
     ho_p2_matrix(L, β, nbasis) -> SymTridiagonal
 
 Exact matrix elements of `p²` in the 3D harmonic-oscillator basis — the first

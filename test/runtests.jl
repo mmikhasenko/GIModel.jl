@@ -1376,6 +1376,60 @@ end
     @test rel(0.25, 24) > 1.0           # too diffuse for rmax: the beta railing
 end
 
+@testset "Oscillator matrix elements validate themselves" begin
+    # These are a self-contained mathematics problem: matrix elements of
+    # operators in the 3D oscillator basis. They can be — and here are —
+    # validated with no mesh, no reference data and no reference to the GI
+    # model at all. Doing that BEFORE any table comparison means a later
+    # disagreement with the paper is about the physics, not about whether the
+    # algebra is right.
+
+    # 1. The strongest check available: p^2 and r^2 must RECONSTRUCT the
+    #    oscillator Hamiltonian. H = p^2/2mu + (1/2) mu w^2 r^2 is diagonal with
+    #    eigenvalue (2n+L+3/2)w, and beta^2 = mu*w, so
+    #        p^2/2mu + (beta^4/2mu) r^2
+    #    must be EXACTLY diagonal with exactly those eigenvalues. An error in
+    #    either operator's magnitude, sign, or power of beta destroys the
+    #    cancellation, so this tests both operators and their relative
+    #    normalization simultaneously.
+    for L in (0, 1, 2), β in (0.35, 0.65, 1.35, 2.35)
+        nb, μ = 24, 0.7                      # any mu; beta^2 = mu*w fixes w
+        ω = β^2 / μ
+        H = Matrix(ho_p2_matrix(L, β, nb)) ./ (2μ) .+
+            (β^4 / (2μ)) .* Matrix(ho_r2_matrix(L, β, nb))
+        @test maximum(abs, H - Diagonal(diag(H))) < 1e-12          # exactly diagonal
+        @test maximum(abs, diag(H) .- [(2n + L + 1.5) * ω for n = 0:(nb-1)]) < 1e-12
+    end
+
+    # 2. Virial theorem for the oscillator: <T> = <V> in every eigenstate.
+    for L in (0, 2), β in (0.45, 1.85)
+        nb, μ = 16, 1.3
+        T = Matrix(ho_p2_matrix(L, β, nb)) ./ (2μ)
+        V = (β^4 / (2μ)) .* Matrix(ho_r2_matrix(L, β, nb))
+        for n in 1:nb
+            @test isapprox(T[n, n], V[n, n]; rtol = 1e-12)
+        end
+    end
+
+    # 3. Dimensional scaling: p^2 ~ beta^2, r^2 ~ 1/beta^2, so their product is
+    #    beta-independent — a check no single operator can provide alone.
+    for L in (0, 1)
+        A = Matrix(ho_p2_matrix(L, 0.5, 10)) * Matrix(ho_r2_matrix(L, 0.5, 10))
+        B = Matrix(ho_p2_matrix(L, 1.9, 10)) * Matrix(ho_r2_matrix(L, 1.9, 10))
+        @test isapprox(A, B; rtol = 1e-10)
+    end
+
+    # 4. Structure: symmetric, tridiagonal, and r^2 positive definite.
+    for op in (ho_p2_matrix(1, 0.8, 9), ho_r2_matrix(1, 0.8, 9))
+        M = Matrix(op)
+        @test M ≈ transpose(M)
+        @test all(iszero, [M[i, j] for i in 1:9, j in 1:9 if abs(i - j) > 1])
+        @test all(>(0), eigvals(Symmetric(M)))
+    end
+    @test_throws ArgumentError ho_r2_matrix(0, -1.0, 4)
+    @test_throws ArgumentError ho_r2_matrix(0, 0.5, 0)
+end
+
 @testset "Exact oscillator p^2 (A17 momentum side)" begin
     # p^2 = 2*mu*H_osc - beta^4 r^2 is tridiagonal in the oscillator basis:
     #   <n|p^2|n>   = beta^2 (2n + L + 3/2)
