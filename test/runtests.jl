@@ -1488,6 +1488,18 @@ end
     for L in (0, 1, 2), β in (0.25, 0.65, 2.35)
         @test Matrix(β^2 * ho_r2_matrix(L, β, 40)) ≈ Matrix(ho_r2_matrix(L, 1, 40))
     end
+    # The memo is capped by BYTES, not entry count: entries span 24x64 to
+    # 24x8192, so 256 small ones cost less than one large one. Flushing can only
+    # cost time -- a rebuilt entry is bit-identical, which is what makes the
+    # whole memo safe to discard at any moment.
+    let c = GIModel._GAUSS_LAGUERRE_DVR
+        a = GIModel.gauss_laguerre_dvr(0, 24, 1024)
+        empty!(c)
+        b = GIModel.gauss_laguerre_dvr(0, 24, 1024)
+        @test a[1] == b[1] && a[2] == b[2]
+        @test GIModel._dvr_cache_bytes() == sizeof(b[1]) + sizeof(b[2])
+    end
+
     sqrt_x, Z = GIModel.gauss_laguerre_dvr(1, 12, 64)
     @test Z * transpose(Z) ≈ I            # orthogonality of the leading rows
     @test issorted(sqrt_x)                # nodes come out ordered
@@ -2141,29 +2153,48 @@ end
     @test sum(block.masses) ≈ diag_sum + sum(diag(block.annihilation_matrix_GeV)) atol = 1e-10
 end
 
-@testset "compute_spectrum builds phase-fixed HO wave caches" begin
+@testset "Annihilation phase convention, on the spectrum's own waves" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    spec = compute_spectrum(
-        params, Meson(mq, :q, :q);
-        levels = [BasisState(1, "S", 1, 0)],
-        solver = FiniteDifferenceSolver(ngrid = 80, rmax = 8.0),
-    )
+    lv = [BasisState(1, "S", 1, 0), BasisState(2, "S", 1, 0)]
+    solver = FiniteDifferenceSolver(ngrid = 80, rmax = 8.0)
+    spec = compute_spectrum(params, Meson(mq, :q, :q); levels = lv, solver = solver)
+
+    # A spectrum holds exactly one wave per level, from its own solver. The
+    # second, oscillator-basis cache that used to sit beside it existed to work
+    # around a normalization bug (FD Euclidean vs HO physical, a factor
+    # 1/sqrt(h)); with that fixed the two solvers agree and the cache is gone.
+    @test fieldnames(GIModel.SectorComputation) == (:params, :solver, :channel_cache)
+
+    # The phase convention is NOT part of that fossil and must survive: the
+    # eigensolver returns arbitrary column signs, and Table III amplitude signs
+    # depend on Phi(0) proportional to the integral of r*u(r) being positive.
+    for n in 1:2
+        input = GIModel.annihilation_basis_input(spec, BasisState(n, "S", 1, 0))
+        w = input.radial
+        @test sum(w.r .* w.u) * w.h > 0
+    end
+
+    # Applied to a COPY. The cached eigenvectors keep whatever sign the solver
+    # gave them, so nothing else downstream changes underfoot -- this solve
+    # happens to come out negative, so the flip is real and observable here.
     key = RadialChannelKey(spec.meson.constituent_masses, "S")
-    @test haskey(spec.computation.ho_wave_cache, key)
-    ho_sol = spec.computation.ho_wave_cache[key]
-    # GI annihilation phase convention: Φ(0) ∝ ∫ r u(r) dr > 0 for every level
-    phase(sol, n) = sum(sol.r .* view(sol.eigenvectors, :, n))
-    @test ho_sol.eigenvectors[1, 1] > 0
-    @test phase(ho_sol, 1) > 0
-    @test phase(ho_sol, 2) > 0
-    # opt out of the HO basis entirely
-    fd_only = compute_spectrum(
-        params, Meson(mq, :q, :q);
-        levels = [BasisState(1, "S", 1, 0)],
-        annihilation_wave_basis = :fd,
-        solver = FiniteDifferenceSolver(ngrid = 80, rmax = 8.0),
-    )
-    @test isempty(fd_only.computation.ho_wave_cache)
+    before = copy(spec.computation.channel_cache[key].eigenvectors)
+    raw = radial_wave(spec, "1^1S_0")
+    fixed = GIModel.annihilation_basis_input(spec, BasisState(1, "S", 1, 0)).radial
+    @test abs.(raw.u) ≈ abs.(fixed.u)
+    @test sum(raw.r .* raw.u) < 0 && sum(fixed.r .* fixed.u) > 0   # the flip fired
+    @test spec.computation.channel_cache[key].eigenvectors == before
+
+    # Both solvers give the same smeared origin factor -- the quantity the second
+    # cache was introduced to correct. Agreement here is what makes it removable.
+    m = mq["q"]
+    sfd = wavefunction_origin_smearing(
+        radial_wave(compute_spectrum(params, Meson(mq, :q, :q); levels = lv,
+            solver = FiniteDifferenceSolver()), "1^1S_0"), m; L = 0)
+    sho = wavefunction_origin_smearing(
+        radial_wave(compute_spectrum(params, Meson(mq, :q, :q); levels = lv,
+            solver = OscillatorSolver()), "1^1S_0"), m; L = 0)
+    @test isapprox(abs(sfd), abs(sho); rtol = 0.01)
 end
 
 @testset "staged spectrum: central -> corrected -> mixed" begin

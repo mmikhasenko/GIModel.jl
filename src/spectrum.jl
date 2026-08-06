@@ -190,17 +190,18 @@ Stage 1: solve the spin-independent radial problem once per distinct orbital in
 with the filled [`SectorComputation`](@ref).
 
 `nlevels_per_channel` bounds the radial levels kept per channel; a level with
-`n` beyond it throws `ArgumentError`. The HO wave cache (`annihilation_wave_basis
-= :ho`, orbitals in `ho_wave_L`) stores phase-fixed harmonic-oscillator waves for
-annihilation matrix elements, exactly as the paper path requires.
+`n` beyond it throws `ArgumentError`.
+
+Every wave in the returned spectrum comes from `solver`. There used to be a
+second, oscillator-basis wave cache here for the Table III annihilation matrix
+elements; see the note above `fix_annihilation_phase!` in the mixing code for
+why it is gone.
 """
 function central_spectrum(
     params::GIParameters,
     meson::Meson;
     levels::AbstractVector{BasisState} = spectrum_levels(2),
     solver::RadialSolver = FiniteDifferenceSolver(),
-    annihilation_wave_basis::Symbol = :ho,
-    ho_wave_L::Tuple{Vararg{String}} = ("S",),
 )
     nlevels_per_channel = solver.nlevels_per_channel
     isempty(levels) && throw(ArgumentError("central_spectrum: empty `levels`"))
@@ -213,8 +214,8 @@ function central_spectrum(
         ))
     end
 
-    # One solve per distinct orbital with the requested solver; HO waves for the
-    # annihilation phase convention (see fix_annihilation_phase!) where requested.
+    # One solve per distinct orbital, with the requested solver. That is all of
+    # them: nothing downstream gets a wave from anywhere else.
     observed_L = sort(unique(level.L_label for level in levels))
     channel_cache = Dict{RadialChannelKey,ChannelRadialSolution}()
     for L_label in observed_L
@@ -228,34 +229,7 @@ function central_spectrum(
         )
         channel_cache[key] = ChannelRadialSolution(ev, vecs, r)
     end
-    ho_wave_cache = Dict{RadialChannelKey,ChannelRadialSolution}()
-    if annihilation_wave_basis == :ho
-        # Deliberately the oscillator path regardless of `solver`: the Table III
-        # annihilation amplitudes are defined on the paper's own basis. It borrows
-        # only the reporting mesh, so these waves land on the same `r` as the
-        # central ones and can be compared with them.
-        ho_solver = solver isa OscillatorSolver ? solver :
-                    OscillatorSolver(ngrid = solver.ngrid, rmax = solver.rmax)
-        for L_label in observed_L
-            L_label in ho_wave_L || continue
-            key = RadialChannelKey(masses, L_label)
-            ev, vecs, r = channel_solution(
-                params,
-                masses,
-                L_SYMBOLS[L_label];
-                nlevels = 2,
-                solver = ho_solver,
-            )
-            # The eigensolver returns arbitrary-sign columns; without a fixed
-            # phase the S_L smearing factor can flip sign between quark masses
-            # and radial levels, randomizing off-diagonal annihilation matrix
-            # elements. The GI Table III convention is Φ(0) > 0 in momentum
-            # space (see fix_annihilation_phase!).
-            fix_annihilation_phase!(vecs, r)
-            ho_wave_cache[key] = ChannelRadialSolution(ev, vecs, r)
-        end
-    end
-    computation = SectorComputation(params, solver, channel_cache, ho_wave_cache)
+    computation = SectorComputation(params, solver, channel_cache)
 
     states = map(collect(levels)) do level
         sol = channel_cache[RadialChannelKey(masses, level.L_label)]
@@ -406,17 +380,8 @@ function compute_spectrum(
     levels::AbstractVector{BasisState} = spectrum_levels(2),
     solver::RadialSolver = FiniteDifferenceSolver(),
     terms::SpinTerms = SpinTerms(),
-    annihilation_wave_basis::Symbol = :ho,
-    ho_wave_L::Tuple{Vararg{String}} = ("S",),
 )
-    central = central_spectrum(
-        params,
-        meson;
-        levels = levels,
-        solver = solver,
-        annihilation_wave_basis = annihilation_wave_basis,
-        ho_wave_L = ho_wave_L,
-    )
+    central = central_spectrum(params, meson; levels = levels, solver = solver)
     corrected = add_spin_corrections(central; terms = terms)
     return add_intra_meson_mixing(corrected; terms = terms)
 end
@@ -621,8 +586,8 @@ function spectrum_state(spec::Spectrum, label::AbstractString)
 end
 
 """
-    radial_wave(spec, label; wave_basis=:fd) -> RadialWaveOnUniformMesh
-    radial_wave(spec, L_label, n; wave_basis=:fd) -> RadialWaveOnUniformMesh
+    radial_wave(spec, label) -> RadialWaveOnUniformMesh
+    radial_wave(spec, L_label, n) -> RadialWaveOnUniformMesh
 
 The radial wavefunction behind a level of `spec` — `radial_wave(spec, "1^3S_1")`
 is the wave whose eigenvalue is `spectrum_state(spec, "1^3S_1").central_GeV`.
@@ -632,40 +597,30 @@ annihilation and leptonic widths, two-photon amplitudes, charge radii and the
 radiative transition moments all take a `RadialWaveOnUniformMesh`. The solve is
 already cached on the spectrum, so this is a lookup, not a recomputation.
 
-`wave_basis` selects which cached solve to read: `:fd` is the model's own
-finite-difference wave (the default — this is the wavefunction the eigenvalues
-came from), while `:ho` reads the phase-fixed harmonic-oscillator wave that the
-paper's annihilation prescription requires, falling back to `:fd` when no HO
-wave was cached for that channel (see `central_spectrum`'s `ho_wave_L`).
+There is one wave per level, produced by the spectrum's own solver — the same
+wavefunction the eigenvalues came from. A `wave_basis` keyword used to select a
+separately-cached oscillator wave here; that is gone, and the reason it existed
+is recorded at `annihilation_basis_input`.
 
 Throws `ArgumentError` when the orbital was not in `levels` or when `n` exceeds
 the levels kept per channel.
 """
-function radial_wave(
-    spec::Spectrum,
-    L_label::AbstractString,
-    n::Integer;
-    wave_basis::Symbol = :fd,
-)
-    wave_basis in (:fd, :ho) || throw(ArgumentError(
-        "radial_wave: `wave_basis` must be :fd or :ho, got `$wave_basis`",
-    ))
+function radial_wave(spec::Spectrum, L_label::AbstractString, n::Integer)
     key = RadialChannelKey(spec.meson.constituent_masses, String(L_label))
-    fd = spec.computation.channel_cache
-    haskey(fd, key) || throw(ArgumentError(
+    cache = spec.computation.channel_cache
+    haskey(cache, key) || throw(ArgumentError(
         "spectrum for $(flavor_label(spec.meson)) has no `$L_label` channel; include it in `levels`",
     ))
-    sol = wave_basis === :ho ?
-          get(spec.computation.ho_wave_cache, key, fd[key]) : fd[key]
+    sol = cache[key]
     n <= size(sol.eigenvectors, 2) || throw(ArgumentError(
         "cached `$L_label` waves for $(flavor_label(spec.meson)) hold $(size(sol.eigenvectors, 2)) levels; requested n=$n",
     ))
     return RadialWaveOnUniformMesh(sol, n)
 end
 
-function radial_wave(spec::Spectrum, label::AbstractString; wave_basis::Symbol = :fd)
+function radial_wave(spec::Spectrum, label::AbstractString)
     state = spectrum_state(spec, label)
-    return radial_wave(spec, state.L, state.n; wave_basis = wave_basis)
+    return radial_wave(spec, state.L, state.n)
 end
 
 # --- Display -----------------------------------------------------------------

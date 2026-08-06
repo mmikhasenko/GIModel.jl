@@ -252,10 +252,10 @@ page = 4
 statement = "Wavefunction factor S_L(Psi): the momentum-space (p/E)^L m/E overlap of the annihilating pair."
 status = "implemented"
 code = ["src/pseudoscalar_annihilation.jl:_sL_smearing_factor"]
-tests = ["compute_spectrum builds phase-fixed HO wave caches"]
+tests = ["Annihilation phase convention, on the spectrum's own waves"]
 anchor = "paper/vision_ocr/page_images/page-004.png"
 parent = "sec-III"
-notes = "_sL_smearing_factor evaluates the j_L momentum transform for general L on phase-fixed HO waves supplied via the wave cache."
+notes = "_sL_smearing_factor evaluates the j_L momentum transform for general L on the spectrum's own radial wave, phase-fixed at the point of use to the GI convention Phi(0) > 0. It used to be fed from a separate oscillator-basis cache; that existed to compensate a normalization bug (1/sqrt(h)) that is fixed, and the two solvers now agree on this factor to 0.1%."
 
 [[unit]]
 id = "eq-18a"

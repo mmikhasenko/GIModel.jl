@@ -52,11 +52,11 @@ All isoscalar paper values are IMAGE-VERIFIED against page 24.
 | Upsilon' -> eta_b' gamma | -0.121 | -0.12 |
 | Upsilon'' -> eta_b'' gamma | -0.120 | -0.12 |
 | psi' -> eta_c gamma (hindered, with recoil) | -0.067 | -0.056 |
-| phi -> eta gamma   [mixed P1/S1] | +0.352 | +0.71 |
+| phi -> eta gamma   [mixed P1/S1] | +0.353 | +0.71 |
 | phi -> eta' gamma  [mixed P1/S1] | -0.561 | -0.66 |
 | omega -> eta gamma [mixed P1/S1] | +0.379 | +0.50 |
 | eta' -> omega gamma [mixed P1/S1] | +0.216 | +0.63 |
-| rho -> eta gamma   [mixed P1] | +1.167 | +1.53 |
+| rho -> eta gamma   [mixed P1] | +1.166 | +1.53 |
 | eta' -> rho gamma  [mixed P1] | +0.599 | +1.85 |
 | Upsilon' -> eta_b gamma (hindered, recoil) | +0.009 | +0.007 |
 | Upsilon'' -> eta_b gamma (hindered, recoil) | -0.004 | +0.007 |
@@ -191,7 +191,7 @@ residual sign of this doubly-cancelled `3S -> 1S` amplitude sits below the
 model's resolving power, independent of the S-wave treatment. The allowed
 rows and the first hindered row (`Upsilon'`) are reproduced.
 
-**(b) `eta <-> eta'` M1 ordering.** The ordering is `a_eta^nn / a_eta'^nn = 0.846 / 0.434 = 1.95`,
+**(b) `eta <-> eta'` M1 ordering.** The ordering is `a_eta^nn / a_eta'^nn = 0.846 / 0.435 = 1.95`,
 an eigenvector property of the P1 pseudoscalar-annihilation mixing block
 (`pseudoscalar_annihilation_block`) that is **independent of the radial
 wave** — the M1 `I` overlap is the common `nn` `1S -> 1S` kernel for both

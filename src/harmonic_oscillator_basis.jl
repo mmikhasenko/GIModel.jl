@@ -122,9 +122,27 @@ end
 # That matters because `oscillator_channel_solution` scans 22 β candidates and
 # assembles two operators (G̃ and S̃) at each, i.e. 44 requests for the same few
 # decompositions per L. Memoizing on `(L, nbasis, nq)` turns the eigensolves from
-# the dominant cost into a one-off; the stored slice is `nbasis × nq`, not
-# `nq × nq`, so the whole cache is a few MB.
+# the dominant cost into a one-off: 12 channel solves take 0.33 s sharing one
+# memo against 21.2 s with a memo scoped per solve, a factor of 64. Threading a
+# rule store through five signatures instead would buy explicitness at the price
+# of putting a numerics-internal object in the public API.
+#
+# Capped by BYTES rather than entry count, because entries span `24 × 64` to
+# `24 × 8192` — 256 of the small ones cost less than one of the large. The gate's
+# own sweep needs 9.3 MiB; a user scanning `nbasis` (the convergence study
+# `OscillatorSolver(nbasis = ...)` exists to invite) reached 67 MiB unbounded.
+#
+# The cap is a safety valve, not a policy: one β scan's working set is ~9 MiB
+# against a 256 MiB cap, so it never fires in normal use, and when it does a
+# flush costs time and nothing else. An LRU would be the better policy if the
+# working set ever approached the cap — measured against a plain `Dict` here it
+# was a wash (5.06 s vs 5.25 s on the 8-meson sweep, inside the noise), which is
+# not worth a dependency.
+const _GAUSS_LAGUERRE_DVR_MAX_BYTES = 256 * 2^20
 const _GAUSS_LAGUERRE_DVR = Dict{NTuple{3,Int},Tuple{Vector{Float64},Matrix{Float64}}}()
+
+_dvr_cache_bytes() =
+    sum(sizeof(v[1]) + sizeof(v[2]) for v in values(_GAUSS_LAGUERRE_DVR); init = 0)
 
 """
     gauss_laguerre_dvr(L, nbasis, nq) -> (sqrt_x, Z)
@@ -136,10 +154,12 @@ the leading rows of the Jacobi eigenvectors, whose entries **are** the products
 asked for — see [`ho_operator_matrix`](@ref) for why that matters, and for what
 does and does not go wrong when it is.
 
-Depends on `β` not at all — see the note above the cache. Memoized, and the
-memo is exact: same key, same `eigen` call, same bits.
+Depends on `β` not at all — see the note above the cache. Memoized under a byte
+cap, and the memo is exact: same key, same `eigen` call, same bits. Flushing can
+only cost time, never accuracy.
 """
 function gauss_laguerre_dvr(L::Integer, nbasis::Integer, nq::Integer)
+    _dvr_cache_bytes() > _GAUSS_LAGUERRE_DVR_MAX_BYTES && empty!(_GAUSS_LAGUERRE_DVR)
     return get!(_GAUSS_LAGUERRE_DVR, (Int(L), Int(nbasis), Int(nq))) do
         # Keep the Jacobi matrix TRIDIAGONAL. Densifying it costs O(nq³) where
         # the tridiagonal solver is O(nq²), and the diffuse end of HO_BETA_GRID

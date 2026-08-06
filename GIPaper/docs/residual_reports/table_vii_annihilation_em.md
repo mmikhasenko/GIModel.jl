@@ -146,10 +146,10 @@ Median |model|/|paper| = 0.84; signs agree on 4/4.
 
 | decay | M_P (GeV) | 1nn | 1ss | 2nn | 2ss | model keV^½ | paper keV^½ | ratio | sign |
 |---|---:|---:|---:|---:|---:|---:|---:|:-:|:-:|
-| `eta -> gamma gamma` | 0.548 | +0.85 | -0.50 | +0.16 | +0.06 | +0.647 | +0.500 | 1.29 | ✓ |
-| `eta' -> gamma gamma` | 0.958 | +0.43 | +0.84 | +0.31 | +0.09 | +1.088 | +1.300 | 0.84 | ✓ |
+| `eta -> gamma gamma` | 0.548 | +0.85 | -0.51 | +0.16 | +0.06 | +0.647 | +0.500 | 1.29 | ✓ |
+| `eta' -> gamma gamma` | 0.958 | +0.43 | +0.84 | +0.31 | +0.09 | +1.089 | +1.300 | 0.84 | ✓ |
 | `eta_r -> gamma gamma` | 1.295 | -0.19 | -0.13 | +0.79 | -0.57 | -1.854 | -2.700 | 0.69 | ✓ |
-| `eta'_r -> gamma gamma` | 1.440 | -0.24 | -0.15 | +0.50 | +0.81 | -2.545 | -2.200 | 1.16 | ✓ |
+| `eta'_r -> gamma gamma` | 1.440 | -0.24 | -0.15 | +0.50 | +0.81 | -2.547 | -2.200 | 1.16 | ✓ |
 
 The `η<η'` γγ ordering — backwards under ideal mixing — is reproduced, and
 all four signs agree; the ~30–50% magnitude spread reflects the model's

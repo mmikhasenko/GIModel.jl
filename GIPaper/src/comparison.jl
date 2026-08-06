@@ -406,8 +406,6 @@ function compare_reference(
     rmax = nothing,
     kinetic = nothing,
     eigensolver = nothing,
-    annihilation_wave_basis::Symbol = :ho,
-    ho_wave_L::Tuple{Vararg{String}} = ("S",),
 )
     solver = _comparison_solver(solver; ngrid = ngrid, rmax = rmax,
         kinetic = kinetic, eigensolver = eigensolver)
@@ -416,11 +414,6 @@ function compare_reference(
         throw(ArgumentError("unsupported isoscalar annihilation scheme `$scheme`"))
     mixed_assignment in (:reference_order, :model_order) ||
         throw(ArgumentError("unsupported mixed_assignment `$mixed_assignment`"))
-    # The Table III `^3P_2` block needs HO-basis P waves.
-    if scheme == :table_iii && !("P" in ho_wave_L)
-        ho_wave_L = (ho_wave_L..., "P")
-    end
-
     kept = ReferenceState[]
     for row in reference
         if row.n > 6
@@ -459,8 +452,6 @@ function compare_reference(
             params, mesons[g];
             levels = levels,
             solver = solver,
-            annihilation_wave_basis = annihilation_wave_basis,
-            ho_wave_L = ho_wave_L,
             terms = SpinTerms(
                 contact_hyperfine = contact_hyperfine,
                 fine_structure = use_fine_structure,
@@ -504,8 +495,6 @@ function compare_reference(
                 params, strange_meson;
                 levels = ss_levels,
                 solver = solver,
-                annihilation_wave_basis = annihilation_wave_basis,
-                ho_wave_L = ho_wave_L,
                 terms = SpinTerms(
                     contact_hyperfine = contact_hyperfine,
                     fine_structure = use_fine_structure,

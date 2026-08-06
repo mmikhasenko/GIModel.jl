@@ -59,7 +59,16 @@ These were each found the hard way. Every one is pinned by tests.
    `compare_reference` keeps a mesh-keyword convenience form but **throws** if
    given both it and a `solver`, since one of the two would have to be discarded.
 
-9. **A report names the numerics that produced it.** Every report writer emits a
+9. **One spectrum holds one wave per level, from its own solver.** There is no
+   second basis on the side. `compute_spectrum` used to keep an oscillator-basis
+   wave cache for the Table III annihilation amplitudes; that existed to
+   compensate a normalization bug (finite differences returning Euclidean
+   eigenvectors against the oscillator path's physical ones, a ratio of
+   `1/√h` = 3.17 on the Table III audit's 220-point mesh) and outlived it by
+   months. The phase convention `Φ(0) > 0` is *not* part of that fossil — it is
+   real, and now applied to a copy at the point of use.
+
+10. **A report names the numerics that produced it.** Every report writer emits a
    `Numerics:` line via `numerics_provenance`. A residual is a measurement, and
    `mean_abs = 6.0 MeV` is unfalsifiable without knowing whether it came off a
    450-point mesh or a 24-state oscillator basis.
@@ -128,6 +137,14 @@ Recorded because they cost real time:
   the weight×polynomial entry below: 1e-95 and 1e19 are arresting numbers and
   they were not the mechanism. Confirm the proposed mechanism reproduces the
   observed failure before acting on it.
+- **Trusting a benchmark taken on a busy machine.** Two numbers in this stream
+  were wrong for that reason alone: a spectrum sweep read 434 s against a true
+  8 s while a test suite was finishing, and a "30% of `compute_spectrum`"
+  saving for deleting the oscillator wave cache turned out to be 4% (0.19 s of
+  5.30 s) under a controlled alternating A/B. The mechanism check is what
+  settles it — one warm oscillator S-wave solve costs 0.022 s, so eight of them
+  cannot cost 3 s. Price the change from its unit cost before believing a wall
+  clock.
 - **Comparing the QR output `U` against the raw basis `B`** to test a phase
   convention. Both come from the same routine, so a flip *inside* the basis is
   invisible — it reports a uniform `-1` that cancels in a matrix

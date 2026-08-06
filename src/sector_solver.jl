@@ -69,7 +69,7 @@ function RadialWaveOnUniformMesh(sol::ChannelRadialSolution, radial_level::Integ
 end
 
 """
-    SectorComputation(params, solver, channel_cache[, ho_wave_cache])
+    SectorComputation(params, solver, channel_cache)
 
 Container filled by [`central_spectrum`](@ref) (`spectrum.jl`): precomputed radial
 solves per distinct channel, plus how they were produced.
@@ -88,11 +88,7 @@ struct SectorComputation
     params::GIParameters
     solver::RadialSolver
     channel_cache::Dict{RadialChannelKey,ChannelRadialSolution}
-    ho_wave_cache::Dict{RadialChannelKey,ChannelRadialSolution}
 end
-
-SectorComputation(params, solver, cache) =
-    SectorComputation(params, solver, cache, Dict{RadialChannelKey,ChannelRadialSolution}())
 
 """
     solve_sector(params, equal_mass_GeV; …)
