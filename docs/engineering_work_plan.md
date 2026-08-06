@@ -43,12 +43,33 @@ These were each found the hard way. Every one is pinned by tests.
    and pushed Table VII gluonic ratios out of band. Both sides move together or
    neither does.
 
+7. **The solver carries the method; the parameters carry the model.**
+   `GIParameters` has no basis marker, and `RadialSolver`
+   (`FiniteDifferenceSolver` / `OscillatorSolver`) decides how the radial problem
+   is solved. A stage-1 solver is recorded in `SectorComputation` so stages 2-3
+   resolve their own eigenproblems the same way — otherwise one spectrum would be
+   two calculations. Settings a method does not have (`kinetic`, `eigensolver` on
+   the oscillator path) are absent and throw, never silently ignored.
+
 ## Verification standard
 
 Every stage: `bash scripts/verify_project.sh` exit 0 **and** all residual
 reports byte-identical apart from the timestamp lines. Check `VERIFY_EXIT` before
 trusting a report diff — `set -e` aborts early and leaves stale reports that
 compare clean against themselves.
+
+Two ways that gate has been quietly wrong, both now fixed:
+
+  - **Ordering.** `data_checks.py score-annihilation` does not compute its
+    numbers, it *parses* them out of `table_iii_mixing_audit.md` and
+    `isoscalar_residuals.md`. It used to run first, so the scorecard published
+    the previous run's values and every change surfaced as drift one gate late,
+    blamed on whatever was in flight then. Anything that reads a report must run
+    after the script that writes it.
+  - **Coverage.** A script the gate does not run will rot and nobody will know.
+    `audit_nonmixing_contact.jl` was broken outright by the GIModel/GIPaper split
+    and sat dead for a month with its reports frozen at that commit. Both FD/HO
+    audits are in the gate now. If you add a report, add its script.
 
 Prefer **invariants over recorded numbers**: closed forms the code must
 reproduce (`⟨r⟩ = 3/2` for `u = re^{-r}`), Parseval, level orthogonality,
@@ -62,40 +83,7 @@ Table VII ratio drift.
 
 ## Next stages
 
-### 1. `ho_operator_matrix` performance (do first)
-
-`oscillator_hamiltonian_for_beta` calls it twice per `(L, β)` — once for `G̃`,
-once for `S̃` — and each runs its **own** adaptive doubling loop over the same
-quadrature nodes. Across a 22-β scan that duplicates every eigendecomposition.
-
-*Fix:* compute the decomposition once per `(L, β, nq)` and evaluate both
-operators from it; consider reusing smaller-`nq` results rather than restarting
-the doubling. Roughly 2×, no numerical change.
-
-*Why first:* the full gate went from ~6 to ~20+ minutes with A17, which makes
-every later stage uncomfortable to iterate on. Correctness is unaffected.
-
-*Gate:* zero report drift.
-
-### 2. B3 — solver types
-
-Split `RadialSolver` into `FiniteDifferenceSolver` and `OscillatorSolver`. Now
-justified rather than cosmetic: since A17 landed, the oscillator path has **no
-operator mesh**, so `OscillatorSolver` genuinely has no `ngrid`/`rmax` for
-operators (only a reconstruction mesh for reporting) and does have `nbasis` and
-`beta_grid` — which are currently module constants that the β-railing warning
-tells users to go edit in source.
-
-Also drop the phantom `Basis` type parameter from `GIParameters` so the physics
-struct stops carrying a marker about how it will be discretized. ~19 `with_basis`
-call sites plus 7 dispatch sites.
-
-*Watch:* `contact_hyperfine_nonperturbative_states` is now basis-generic, so the
-dispatch it used to rely on is gone — check nothing else depends on it.
-
-*Gate:* zero report drift.
-
-### 3. C2 — report provenance
+### 1. C2 — report provenance
 
 No residual report records the grid or solver that produced it. A report saying
 `mean_abs = 6.0 MeV` cannot tell you whether that was 450 or 900 points, which
@@ -104,13 +92,15 @@ is a real gap for a reproduction project.
 *Cost:* a one-time header change to **all 24 reports** — the only sanctioned
 non-zero-drift stage outside A17. Review the baseline diff once, accept, done.
 
-### 4. C3 — retire the deprecated keywords
+### 2. C3 — retire the deprecated keywords
 
 `ngrid`/`rmax`/`kinetic`/`eigensolver`/`nlevels_per_channel` and the four spin
 switches still work and still override the `solver`/`terms` objects, warning
-once each. ~180 call sites, but only **two files in `GIPaper/src`**
-(`comparison.jl`, `residual_report.jl`) — start there, it silences the warning
-for the main comparison path.
+once each. ~180 call sites remain. `GIPaper/src/comparison.jl` is already done —
+`compare_reference` takes a `solver` and **throws** if given both it and the
+loose mesh keywords, since one of the two would have to be discarded. That is the
+pattern to copy; `residual_report.jl` still prints a hardcoded
+`"finite-difference"` in its header, which C2 should fix at the same time.
 
 Mechanical, no deadline, driven by the warnings themselves.
 
@@ -133,6 +123,10 @@ Mechanical, no deadline, driven by the warnings themselves.
 
 Recorded because they cost real time:
 
+- **Diagnosing a numerical failure by its most dramatic-looking quantity.** See
+  the weight×polynomial entry below: 1e-95 and 1e19 are arresting numbers and
+  they were not the mechanism. Confirm the proposed mechanism reproduces the
+  observed failure before acting on it.
 - **Comparing the QR output `U` against the raw basis `B`** to test a phase
   convention. Both come from the same routine, so a flip *inside* the basis is
   invisible — it reports a uniform `-1` that cancels in a matrix
@@ -141,7 +135,14 @@ Recorded because they cost real time:
 - **Watching a scored ratio drift out of band** as the primary signal that
   something is wrong. It says only "something, somewhere, downstream of
   everything". Validate the isolated mathematics first.
-- **Forming oscillator matrix elements as (weight) × (polynomial).** At large
-  quadrature order the two factors are ~1e-95 and ~1e19; the digits are gone
-  before summation starts, so compensated summation cannot recover them. Use
-  the Golub–Welsch/DVR form, where the eigenvector entries *are* the product.
+- **Forming oscillator matrix elements as (weight) × (polynomial).** Correct
+  conclusion, wrong reason on the first pass, and the wrong reason is the
+  instructive part. It is *not* that ~1e-95 times ~1e19 loses digits —
+  floating-point multiplication preserves relative accuracy, the summands are all
+  comparable in size, and there is no cancellation to lose them to. The real
+  failure is narrower: Golub–Welsch hands back the weight as the square of an
+  eigenvector's first component, and once that component drops below the
+  eigensolver's noise floor LAPACK returns it as **exactly zero**, deleting a
+  whole node from the rule (4 of 60 nodes, 88 of 200). Use the DVR form, where
+  the eigenvector entries *are* the product and that number is never requested.
+  Any future rule that takes `√wᵢ` from an eigensolver inherits the trap.
