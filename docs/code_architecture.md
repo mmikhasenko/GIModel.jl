@@ -37,9 +37,14 @@ can load before reference structs are defined; CSV reading and string→mass hel
 - **`load_parameters(path)`** → **`GIParameters{FiniteDifferenceBasis}`** by default
   (potential, smearing switches,
   relativistic factors, fine-structure flags). It does **not** carry quark masses.
-  The basis is a type parameter; `HarmonicOscillatorBasis` is already
-  implemented and tested as an alternate paper-style oscillator expansion path,
-  while `FiniteDifferenceBasis` remains the default production basis.
+  The basis is a type parameter. `FiniteDifferenceBasis` is the default;
+  `HarmonicOscillatorBasis` is **the paper's own method** — Eq. (A17) assembled
+  from exact oscillator matrix elements, with no spatial mesh in the operators
+  on the Appendix-A central path. The two are independent algorithms for the
+  same problem and agree at +0.18 MeV (charm) / +0.55 MeV (bottom), with the
+  oscillator answer above, as a variational calculation in a finite basis must
+  be. Both go through the same `channel_solution` / `resummed_channel_solution`
+  entry points, so nothing downstream knows which produced a wave.
 - **`load_quark_masses(path)`** → **`QuarkMassTable`** (`Dict{String,Float64}` with keys
   `"u"`, `"d"`, `"q"`, `"s"`, `"c"`, `"b"` in GeV).
 - **`load_parameters_and_quark_masses(path)`** → `(GIParameters, QuarkMassTable)`. This is

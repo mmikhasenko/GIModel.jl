@@ -14,7 +14,7 @@ None — every reference resolves.
 
 | section | units | reproduced | partial | implemented | folded | context | todo/missing | derived |
 |---|---:|---:|---:|---:|---:|---:|---:|:-:|
-| Appendix A — Relativistic smearing & operator ordering | 17 | 1 | 1 | 9 | 0 | 6 | 0 | partial |
+| Appendix A — Relativistic smearing & operator ordering | 17 | 2 | 1 | 8 | 0 | 6 | 0 | partial |
 | Appendix B — Flavor/spin operators & SHO wavefunctions | 8 | 0 | 0 | 3 | 4 | 1 | 0 | implemented |
 | Appendix C — Helicity to partial-wave decay amplitudes | 3 | 0 | 0 | 1 | 1 | 1 | 0 | implemented |
 | Appendix D — Mock-meson electromagnetic matrix elements | 8 | 3 | 0 | 3 | 2 | 0 | 0 | implemented |

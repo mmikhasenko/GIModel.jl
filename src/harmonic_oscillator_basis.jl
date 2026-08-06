@@ -1,9 +1,18 @@
-# Paper-style harmonic-oscillator radial expansion for basis-comparison audits.
+# Paper-style harmonic-oscillator radial expansion — the method Godfrey & Isgur
+# actually used (Appendix A, Eq. A17).
 #
-# This path intentionally reuses the same uniform mesh for operator quadrature
-# and for reconstructed wavefunctions. The basis is finite and diagnostic, but
-# the nonlocal `f(p) V(r) f(p)` operators are assembled in the oscillator
-# subspace rather than on the full FD coordinate basis.
+# On the Appendix-A central path there is NO spatial mesh in the operators:
+#
+#   momentum side   `ho_p2_matrix`        exact closed-form matrix elements
+#   position side   `ho_operator_matrix`  generalized Gauss-Laguerre (Golub-Welsch)
+#   A(p) factor     spectral function of the exact p²
+#
+# The uniform mesh survives only to reconstruct wavefunctions for reporting, and
+# for the comparator central methods (pointwise, 1D/3D-smeared, derivative-G),
+# several of which smear numerically ON the mesh and so are not closed-form
+# functions of r. Those keep both sides on the mesh rather than becoming a
+# hybrid: an exact kinetic operator with a mesh-projected potential is not the
+# Hamiltonian of any single problem, and is not variational.
 
 const HO_DEFAULT_NBASIS = 24
 const HO_BETA_GRID = collect(0.25:0.10:2.35)

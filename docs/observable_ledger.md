@@ -167,6 +167,40 @@ of `decay_amplitude`), while `:table_iv` keeps the printed polynomial.
    from the audit script into `src/` with regression tests once the
    conventions above settle.
 
+## Numerical method (Appendix A, Eq. A17)
+
+Two independent algorithms solve the same radial problem, behind one interface:
+
+| | `FiniteDifferenceBasis` | `HarmonicOscillatorBasis` |
+|---|---|---|
+| representation | `u(r)` on a uniform mesh | expansion in 24 oscillator states |
+| `⟨i\|f(p)\|n⟩` | spectral function of the FD `p²` | `ho_p2_matrix`, closed form |
+| `⟨n\|g(r)\|j⟩` | mesh quadrature | `ho_operator_matrix`, Gauss–Laguerre |
+| spatial mesh | yes, intrinsically | **none** (reporting only) |
+
+The oscillator path is the paper's own: Eq. (A17) inserts a complete set between
+`f(p)` and `g(r)` so each factor is evaluated in the space where it is simple,
+which is cheap precisely because oscillator functions are the same
+polynomial×Gaussian in both. It is now built that way rather than imitated on a
+grid.
+
+**Cross-checks that need no reference data.** `p²` and `r²` reconstruct the
+oscillator Hamiltonian exactly diagonal (1e-14); the virial theorem holds per
+state; `g = 1` returns the identity (4e-15); `g = r²` returns `ho_r2_matrix`
+(1e-12); and the smeared Appendix-A potential matches independent adaptive
+quadrature to 2.8e-16…1.2e-13. Basis size 24 is converged to <0.1 MeV.
+
+**Agreement between the two.** Charm +0.18 MeV, bottom +0.55 MeV, oscillator
+above finite-difference — the correct side for a variational calculation in a
+finite basis. Light sectors sit ~1.5 MeV the other way, which reads as the FD
+mesh being high where short-distance structure is hardest to resolve, not as a
+disagreement about the physics.
+
+Comparator central methods (pointwise, 1D/3D-smeared, derivative-G) keep the
+mesh on both sides deliberately: several smear numerically on it, so they are
+not closed-form functions of `r`, and a hybrid Hamiltonian — exact kinetic,
+mesh-projected potential — is not variational.
+
 ## Acceptance
 
 A Table V section counts as reproduced when every row with an unambiguous
