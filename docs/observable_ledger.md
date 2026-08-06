@@ -196,6 +196,24 @@ finite basis. Light sectors sit ~1.5 MeV the other way, which reads as the FD
 mesh being high where short-distance structure is hardest to resolve, not as a
 disagreement about the physics.
 
+**Against the paper.** With the oscillator path running the paper's own method,
+the mean absolute residual against GI Tables I/II improves in every sector:
+
+| sector | FD | HO | Δ |
+|---|---:|---:|---:|
+| isovector | 14.54 | 14.13 | −0.41 |
+| isoscalar | 138.65 | 138.18 | −0.47 |
+| strange | 10.85 | 10.70 | −0.15 |
+| charmonium | 6.03 | 5.92 | −0.11 |
+
+(MeV; the isoscalar absolute value is dominated by the annihilation-mixing gap
+tracked separately, so read its Δ rather than its level.) The improvement is
+small and systematic — four of four sectors, none worse — which is the expected
+signature if part of the paper's own residual is its numerics rather than its
+physics. It is not a large enough effect to change any conclusion about the
+model; it is evidence that we are now running GI's method and not merely
+matching its numbers by another route.
+
 Comparator central methods (pointwise, 1D/3D-smeared, derivative-G) keep the
 mesh on both sides deliberately: several smear numerically on it, so they are
 not closed-form functions of `r`, and a hybrid Hamiltonian — exact kinetic,
