@@ -51,7 +51,11 @@ function load_basis(params, mq; ngrid = 220, rmax = 22.0)
     channels = Dict{String,Any}()
     for (label, mass_key) in [("ns", "q"), ("ss", "s"), ("cc", "c"), ("bb", "b")]
         masses = ConstituentMasses(mq[mass_key], mq[mass_key])
-        ev, vecs, r = channel_solution(params, masses, 0; nlevels = 2, ngrid = ngrid, rmax = rmax)
+        ev, vecs, r = channel_solution(
+            params, masses, 0;
+            nlevels = 2,
+            solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax),
+        )
         sol = GIModel.ChannelRadialSolution(ev, vecs, r)
         levels = GIModel.contact_hyperfine_nonperturbative_levels(params, masses, "S", 1, r, 2)
         channels[label] = (mass = mq[mass_key], solution = sol, levels = levels)

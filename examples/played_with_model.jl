@@ -64,7 +64,7 @@ spectrum = compute_spectrum(
 	params,
 	bbbar;
 	levels = spectrum_levels(2; L_labels = ("S", "P", "D")),
-	solver = RadialSolver(; kinetic = :relativistic),
+	solver = FiniteDifferenceSolver(; kinetic = :relativistic),
 )
 
 # ╔═╡ 35378712-12cf-4322-9683-f58b5048416a

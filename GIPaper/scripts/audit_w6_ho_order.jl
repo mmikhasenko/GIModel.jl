@@ -75,8 +75,11 @@ function sector_waves(fl::Symbol, L::Int, mult::Int, J::Int; nlevels = 4)
     r, h = GIModel.radial_grid(NGRID, RMAX)
     V = spin_operator(masses, L, mult, J, r, h)
     # central (spin-independent) FD wave — the pre-harmonization gluonic choice
-    cvals, cvecs, cr = channel_solution(params, masses, L;
-        nlevels = max(nlevels, 4), ngrid = NGRID, rmax = RMAX)
+    cvals, cvecs, cr = channel_solution(
+        params, masses, L;
+        nlevels = max(nlevels, 4),
+        solver = FiniteDifferenceSolver(ngrid = NGRID, rmax = RMAX),
+    )
     # first-order PT in the HO central eigenbasis (heavy-quark proxy)
     pvals, pwaves, pr = ho_first_order_distorted_states(params, masses, L, V;
         solver = solver_ho, nlevels = max(nlevels, 4))
@@ -123,8 +126,11 @@ function run_audit()
     for (fl, L, nmax) in ((:c, 0, 2), (:c, 1, 1), (:b, 0, 4), (:b, 1, 2))
         mQ = mq[String(fl)]
         masses = ConstituentMasses(mQ, mQ)
-        _, fdv, fdr = channel_solution(params, masses, L;
-            nlevels = max(nmax, 4), ngrid = NGRID, rmax = RMAX)
+        _, fdv, fdr = channel_solution(
+            params, masses, L;
+            nlevels = max(nmax, 4),
+            solver = FiniteDifferenceSolver(ngrid = NGRID, rmax = RMAX),
+        )
         _, hov, hor = channel_solution(params, masses, L;
             solver = solver_ho, nlevels = max(nmax, 4))
         for n = 1:nmax

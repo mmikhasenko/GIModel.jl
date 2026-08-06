@@ -27,13 +27,9 @@ function light_s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
     for (label, mass_key) in [("ns", "q"), ("ss", "s")]
         masses = ConstituentMasses(mq[mass_key], mq[mass_key])
         ev, vecs, r = channel_solution(
-            params,
-            masses,
-            0;
+            params, masses, 0;
             nlevels = 2,
-            ngrid = ngrid,
-            rmax = rmax,
-            kinetic = :relativistic,
+            solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax, kinetic = :relativistic),
         )
         sol = GIModel.ChannelRadialSolution(ev, vecs, r)
         levels = GIModel.contact_hyperfine_nonperturbative_levels(

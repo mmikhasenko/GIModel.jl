@@ -56,15 +56,10 @@ function channel_solution(
     L::Integer;
     solver::RadialSolver = FiniteDifferenceSolver(),
     nlevels::Integer = solver.nlevels_per_channel,
-    ngrid = nothing,
-    rmax = nothing,
-    kinetic = nothing,
-    eigensolver = nothing,
 )
-    solver = _solver_with_legacy(solver, "channel_solution"; ngrid = ngrid,
-        rmax = rmax, kinetic = kinetic, eigensolver = eigensolver)
-    # `nlevels` is a per-call quantity, not a solver setting (the HO wave cache
-    # legitimately asks for fewer), so it is not deprecated.
+    # `nlevels` is a per-call quantity rather than a solver setting -- the
+    # annihilation wave cache legitimately asks for fewer levels than the solver
+    # would otherwise keep -- so it stays a keyword here.
     return _channel_solution(solver, params, masses, L, nlevels)
 end
 

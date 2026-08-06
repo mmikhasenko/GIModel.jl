@@ -5,6 +5,7 @@
 # Public API (exported from GIPaper.jl): mixing_prone_state,
 #   nonmixing_deviation_summary, write_residual_report
 
+
 function _row_sector(row)
     return String(getproperty(row, :sector))
 end
@@ -121,7 +122,7 @@ function write_residual_report(
     path::AbstractString,
     title::AbstractString,
     rows;
-    kinetic::Symbol = :relativistic,
+    solver::RadialSolver = FiniteDifferenceSolver(),
     contact_hyperfine::Bool = true,
     central::CentralPotentialMethod = PointwiseCentral(),
     contact_momentum_sandwich::Bool = false,
@@ -157,12 +158,14 @@ function write_residual_report(
         central_note = _central_note(central)
         println(
             io,
-            "Model: finite-difference + `$kinetic` kinetic, $hyperfine_note,$fs_note",
+            "Model: $hyperfine_note,$fs_note",
             "GI Table II `b`, `c`, masses, `ε` factors, and Fig. 2 `α_s(r)`;",
             " ",
             central_note,
             "see the **GIModel** package (`src/` at the repository root) for the computation and **GIPaper** (`GIPaper/src/`) for the comparison layer.",
         )
+        println(io)
+        println(io, numerics_provenance(solver))
         println(io)
         println(io, "| state | reference GeV | baseline GeV | residual MeV | confidence |")
         println(io, "|---|---:|---:|---:|---|")

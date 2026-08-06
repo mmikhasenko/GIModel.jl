@@ -456,16 +456,17 @@ function compare_reference(
             i in group_rows[g]
         ]
         specs[g] = compute_spectrum(
-            params,
-            mesons[g];
+            params, mesons[g];
             levels = levels,
             solver = solver,
-            contact_hyperfine = contact_hyperfine,
-            use_fine_structure = use_fine_structure,
-            same_j_spin_orbit_mixing = antisymmetric_spin_orbit_mixing,
-            tensor_mixing = tensor_mixing,
             annihilation_wave_basis = annihilation_wave_basis,
             ho_wave_L = ho_wave_L,
+            terms = SpinTerms(
+                contact_hyperfine = contact_hyperfine,
+                fine_structure = use_fine_structure,
+                same_j_spin_orbit = antisymmetric_spin_orbit_mixing,
+                tensor = tensor_mixing,
+            ),
         )
         for (k, i) in enumerate(group_rows[g])
             states[i] = specs[g].states[k]
@@ -500,16 +501,17 @@ function compare_reference(
             # The strange partner diagonals mirror the old comparison: unmixed
             # fixed-sector predictions (no intra-meson mixing blocks).
             ss_spec = compute_spectrum(
-                params,
-                strange_meson;
+                params, strange_meson;
                 levels = ss_levels,
                 solver = solver,
-                contact_hyperfine = contact_hyperfine,
-                use_fine_structure = use_fine_structure,
-                same_j_spin_orbit_mixing = false,
-                tensor_mixing = false,
                 annihilation_wave_basis = annihilation_wave_basis,
                 ho_wave_L = ho_wave_L,
+                terms = SpinTerms(
+                    contact_hyperfine = contact_hyperfine,
+                    fine_structure = use_fine_structure,
+                    same_j_spin_orbit = false,
+                    tensor = false,
+                ),
             )
             if scheme == :general_s1
                 _assign_general_s1_rows!(rows, params, nn_spec, ss_spec)

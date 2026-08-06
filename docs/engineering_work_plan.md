@@ -51,6 +51,19 @@ These were each found the hard way. Every one is pinned by tests.
    two calculations. Settings a method does not have (`kinetic`, `eigensolver` on
    the oscillator path) are absent and throw, never silently ignored.
 
+8. **One way to say a thing.** A setting has exactly one spelling. The loose
+   `ngrid`/`rmax`/`kinetic`/`eigensolver`/`nlevels_per_channel` keywords and the
+   four spin switches are gone from every entry point; `solver` and `terms` are
+   the only way in, and an old name is now a `MethodError` at the call rather
+   than a value that silently overrode the object beside it.
+   `compare_reference` keeps a mesh-keyword convenience form but **throws** if
+   given both it and a `solver`, since one of the two would have to be discarded.
+
+9. **A report names the numerics that produced it.** Every report writer emits a
+   `Numerics:` line via `numerics_provenance`. A residual is a measurement, and
+   `mean_abs = 6.0 MeV` is unfalsifiable without knowing whether it came off a
+   450-point mesh or a 24-state oscillator basis.
+
 ## Verification standard
 
 Every stage: `bash scripts/verify_project.sh` exit 0 **and** all residual
@@ -68,8 +81,10 @@ Two ways that gate has been quietly wrong, both now fixed:
     after the script that writes it.
   - **Coverage.** A script the gate does not run will rot and nobody will know.
     `audit_nonmixing_contact.jl` was broken outright by the GIModel/GIPaper split
-    and sat dead for a month with its reports frozen at that commit. Both FD/HO
-    audits are in the gate now. If you add a report, add its script.
+    and sat dead for a month with its reports frozen at that commit; six more
+    report writers were simply never listed. **Every script that writes a file
+    under `GIPaper/docs/residual_reports/` is in the gate now** — if you add a
+    report, add its script, or the report is decoration.
 
 Prefer **invariants over recorded numbers**: closed forms the code must
 reproduce (`⟨r⟩ = 3/2` for `u = re^{-r}`), Parseval, level orthogonality,
@@ -83,26 +98,12 @@ Table VII ratio drift.
 
 ## Next stages
 
-### 1. C2 — report provenance
 
-No residual report records the grid or solver that produced it. A report saying
-`mean_abs = 6.0 MeV` cannot tell you whether that was 450 or 900 points, which
-is a real gap for a reproduction project.
-
-*Cost:* a one-time header change to **all 24 reports** — the only sanctioned
-non-zero-drift stage outside A17. Review the baseline diff once, accept, done.
-
-### 2. C3 — retire the deprecated keywords
-
-`ngrid`/`rmax`/`kinetic`/`eigensolver`/`nlevels_per_channel` and the four spin
-switches still work and still override the `solver`/`terms` objects, warning
-once each. ~180 call sites remain. `GIPaper/src/comparison.jl` is already done —
-`compare_reference` takes a `solver` and **throws** if given both it and the
-loose mesh keywords, since one of the two would have to be discarded. That is the
-pattern to copy; `residual_report.jl` still prints a hardcoded
-`"finite-difference"` in its header, which C2 should fix at the same time.
-
-Mechanical, no deadline, driven by the warnings themselves.
+*Nothing is queued.* The four stages this file was written to carry —
+`ho_operator_matrix` performance, B3 solver types, C2 report provenance, C3
+keyword retirement — are all done. What follows is the standing list of things
+known to be unfinished, which is a different kind of list: none of them is
+blocking, and each records why it was left.
 
 ## Known open items, deliberately not fixed
 

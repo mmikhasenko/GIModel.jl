@@ -12,7 +12,8 @@
 # of being restated at every call site.
 #
 # Public API (exported from GIModel.jl):
-#   RadialSolver, FiniteDifferenceSolver, OscillatorSolver, SpinTerms
+#   RadialSolver, FiniteDifferenceSolver, OscillatorSolver, SpinTerms,
+#   numerics_provenance
 
 """
     RadialSolver
@@ -281,6 +282,34 @@ SpinTerms(
     tensor = tensor,
 )
 
+"""
+    numerics_provenance(solvers...) -> String
+
+One Markdown line naming the radial solver(s) a report's numbers came from, for
+the report header.
+
+A residual report is a measurement, and a measurement without its instrument
+settings cannot be checked or reproduced. `mean_abs = 6.0 MeV` says nothing about
+whether that was a 450- or 900-point mesh, or the oscillator expansion at
+`nbasis = 24` — and those are exactly the knobs a reader would want to rule out
+before believing a residual is physics.
+
+Pass every solver that produced numbers in the report; comparison reports pass
+both.
+"""
+function numerics_provenance(solvers::RadialSolver...)
+    isempty(solvers) && throw(ArgumentError(
+        "numerics_provenance: name the solver(s) that produced the report",
+    ))
+    return "Numerics: " * join((_solver_phrase(s) for s in solvers), " / ") * "."
+end
+
+function _solver_phrase(solver::RadialSolver)
+    text = sprint(show, MIME"text/plain"(), solver)
+    name, rest = split(text, ": "; limit = 2)
+    return "`" * name * "` — " * rest
+end
+
 function Base.show(io::IO, ::MIME"text/plain", t::SpinTerms)
     on = [
         name for (name, flag) in (
@@ -292,121 +321,4 @@ function Base.show(io::IO, ::MIME"text/plain", t::SpinTerms)
     ]
     print(io, "SpinTerms: ", isempty(on) ? "none (central eigenvalues only)" : join(on, ", "))
     return nothing
-end
-
-# --- Deprecation shims for the loose keywords --------------------------------
-# `ngrid`, `rmax`, `kinetic`, `eigensolver`, `nlevels_per_channel` and the four
-# spin switches predate RadialSolver/SpinTerms. They still work and still win
-# over the struct, but each warns once, so the remaining call sites migrate
-# under their own steam instead of in one flag day. The silent-override edge
-# (passing both `solver = RadialSolver(ngrid = 900)` and `ngrid = 450`) is
-# exactly what the warning makes audible.
-
-function _legacy_named(pairs)
-    return [name for (name, value) in pairs if !isnothing(value)]
-end
-
-function _solver_with_legacy(
-    solver::RadialSolver,
-    caller::AbstractString;
-    ngrid = nothing,
-    rmax = nothing,
-    kinetic = nothing,
-    eigensolver = nothing,
-    nlevels_per_channel = nothing,
-)
-    given = _legacy_named((
-        ("ngrid", ngrid), ("rmax", rmax), ("kinetic", kinetic),
-        ("eigensolver", eigensolver), ("nlevels_per_channel", nlevels_per_channel),
-    ))
-    isempty(given) && return solver
-    @warn """
-    $caller: the loose numerical keywords are deprecated; pass a `RadialSolver`.
-
-        given here: $(join(given, ", "))
-        instead of: solver = RadialSolver($(join(["$g = ..." for g in given], ", ")))
-
-    They still take effect, and they OVERRIDE the `solver` argument silently —
-    which is the reason to retire them. A solver object also groups them as what
-    they are: settings that must never change a physical answer.
-    """ maxlog = 1
-    return _override_solver(
-        solver; ngrid = ngrid, rmax = rmax, kinetic = kinetic,
-        eigensolver = eigensolver, nlevels_per_channel = nlevels_per_channel,
-    )
-end
-
-_override_solver(
-    s::FiniteDifferenceSolver;
-    ngrid, rmax, kinetic, eigensolver, nlevels_per_channel,
-) = FiniteDifferenceSolver(
-    s;
-    ngrid = isnothing(ngrid) ? s.ngrid : ngrid,
-    rmax = isnothing(rmax) ? s.rmax : rmax,
-    kinetic = isnothing(kinetic) ? s.kinetic : kinetic,
-    eigensolver = isnothing(eigensolver) ? s.eigensolver : eigensolver,
-    nlevels_per_channel = isnothing(nlevels_per_channel) ?
-                          s.nlevels_per_channel : nlevels_per_channel,
-)
-
-# `kinetic` and `eigensolver` are not settings the oscillator path has. Silently
-# dropping them would let a caller believe it had switched something off.
-function _override_solver(
-    s::OscillatorSolver;
-    ngrid, rmax, kinetic, eigensolver, nlevels_per_channel,
-)
-    isnothing(kinetic) || throw(ArgumentError(
-        "OscillatorSolver has no `kinetic` setting: the oscillator path is the model's " *
-        "relativistic Hamiltonian only. Pass a FiniteDifferenceSolver for the " *
-        ":nonrelativistic comparator.",
-    ))
-    isnothing(eigensolver) || throw(ArgumentError(
-        "OscillatorSolver has no `eigensolver` setting: the basis Hamiltonian is a " *
-        "dense nbasis x nbasis matrix, always diagonalized in full.",
-    ))
-    return OscillatorSolver(
-        s;
-        ngrid = isnothing(ngrid) ? s.ngrid : ngrid,
-        rmax = isnothing(rmax) ? s.rmax : rmax,
-        nlevels_per_channel = isnothing(nlevels_per_channel) ?
-                              s.nlevels_per_channel : nlevels_per_channel,
-    )
-end
-
-function _terms_with_legacy(
-    terms::SpinTerms,
-    caller::AbstractString;
-    contact_hyperfine = nothing,
-    use_fine_structure = nothing,
-    same_j_spin_orbit_mixing = nothing,
-    tensor_mixing = nothing,
-)
-    given = _legacy_named((
-        ("contact_hyperfine", contact_hyperfine),
-        ("use_fine_structure", use_fine_structure),
-        ("same_j_spin_orbit_mixing", same_j_spin_orbit_mixing),
-        ("tensor_mixing", tensor_mixing),
-    ))
-    isempty(given) && return terms
-    @warn """
-    $caller: the loose spin-term switches are deprecated; pass a `SpinTerms`.
-
-        given here: $(join(given, ", "))
-        instead of: terms = SpinTerms(contact_hyperfine = ..., fine_structure = ...,
-                                      same_j_spin_orbit = ..., tensor = ...)
-
-    They still take effect, and they OVERRIDE the `terms` argument silently.
-    `SpinTerms` names them for the paper equations they switch: each one is a
-    term in the Hamiltonian, so turning it off is meant to change the answer.
-    """ maxlog = 1
-    return SpinTerms(
-        terms;
-        contact_hyperfine = isnothing(contact_hyperfine) ?
-                            terms.contact_hyperfine : contact_hyperfine,
-        fine_structure = isnothing(use_fine_structure) ?
-                         terms.fine_structure : use_fine_structure,
-        same_j_spin_orbit = isnothing(same_j_spin_orbit_mixing) ?
-                            terms.same_j_spin_orbit : same_j_spin_orbit_mixing,
-        tensor = isnothing(tensor_mixing) ? terms.tensor : tensor_mixing,
-    )
 end

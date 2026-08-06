@@ -40,7 +40,8 @@ include("parameters.jl")
 export QuarkMassTable, load_quark_masses, load_parameters_and_quark_masses
 include("quark_mass_table.jl")
 
-export RadialSolver, FiniteDifferenceSolver, OscillatorSolver, SpinTerms
+export RadialSolver, FiniteDifferenceSolver, OscillatorSolver, SpinTerms,
+    numerics_provenance
 include("solver_options.jl")
 
 export AbstractQuark, LightQuark, StrangeQuark, HeavyQuark

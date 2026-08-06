@@ -26,8 +26,16 @@ end
 
 @testset "baseline solver shape" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    cc = solve_sector(params, mq["c"]; maxn = 4, ngrid = 250, rmax = 20.0)
-    bb = solve_sector(params, mq["b"]; maxn = 4, ngrid = 250, rmax = 16.0)
+    cc = solve_sector(
+        params, mq["c"];
+        maxn = 4,
+        solver = FiniteDifferenceSolver(ngrid = 250, rmax = 20.0),
+    )
+    bb = solve_sector(
+        params, mq["b"];
+        maxn = 4,
+        solver = FiniteDifferenceSolver(ngrid = 250, rmax = 16.0),
+    )
 
     @test cc[(1, "S")] < cc[(2, "S")] < cc[(3, "S")]
     @test bb[(1, "S")] < bb[(2, "S")] < bb[(3, "S")]
@@ -40,24 +48,14 @@ end
     m = mq["c"]
     for kinetic in (:relativistic, :nonrelativistic)
         full, _vec_full, _r_full = channel_solution(
-            params,
-            ConstituentMasses(m, m),
-            0;
+            params, ConstituentMasses(m, m), 0;
             nlevels = 3,
-            ngrid = 120,
-            rmax = 16.0,
-            kinetic = kinetic,
-            eigensolver = :full,
+            solver = FiniteDifferenceSolver(ngrid = 120, rmax = 16.0, kinetic = kinetic, eigensolver = :full),
         )
         krylov, _vec_krylov, _r_krylov = channel_solution(
-            params,
-            ConstituentMasses(m, m),
-            0;
+            params, ConstituentMasses(m, m), 0;
             nlevels = 3,
-            ngrid = 120,
-            rmax = 16.0,
-            kinetic = kinetic,
-            eigensolver = :krylov,
+            solver = FiniteDifferenceSolver(ngrid = 120, rmax = 16.0, kinetic = kinetic, eigensolver = :krylov),
         )
         @test krylov ≈ full rtol = 1e-10 atol = 1e-10
     end
@@ -181,13 +179,9 @@ end
         @test params.central isa MethodType
         mc = mq["c"]
         vals, _v, _r = GIModel.channel_solution(
-            params,
-            ConstituentMasses(mc, mc),
-            0;
+            params, ConstituentMasses(mc, mc), 0;
             nlevels = 2,
-            ngrid = ngrid,
-            rmax = rmax,
-            kinetic = :relativistic,
+            solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax, kinetic = :relativistic),
         )
         @test isfinite(vals[1]) && isfinite(vals[2])
         @test vals[1] < vals[2]
@@ -377,7 +371,11 @@ end
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     m = mq["c"]
     _, umat, r =
-        GIModel.channel_solution(params, ConstituentMasses(m, m), 0; nlevels = 2, ngrid = 200, rmax = 20.0)
+        GIModel.channel_solution(
+            params, ConstituentMasses(m, m), 0;
+            nlevels = 2,
+            solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
+        )
     h = r[2] - r[1]
     u_s = collect(umat[:, 1])
     @test GIModel.fine_structure_split(
@@ -407,7 +405,11 @@ end
         k_tensor = 1.0,
     ) == 0.0
     v_p, umat_p, r_p =
-        GIModel.channel_solution(params, ConstituentMasses(m, m), 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+        GIModel.channel_solution(
+            params, ConstituentMasses(m, m), 1;
+            nlevels = 2,
+            solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
+        )
     h_p = r_p[2] - r_p[1]
     u1p = collect(umat_p[:, 1])
     δ0 = GIModel.fine_structure_split(
@@ -470,7 +472,11 @@ end
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     m = mq["c"]
     _v_p, umat_p, r_p =
-        GIModel.channel_solution(params, ConstituentMasses(m, m), 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+        GIModel.channel_solution(
+            params, ConstituentMasses(m, m), 1;
+            nlevels = 2,
+            solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
+        )
     h_p = r_p[2] - r_p[1]
     u1p = collect(umat_p[:, 1])
     for J in (0, 1, 2)
@@ -532,12 +538,9 @@ end
     )
 
     _vals_cc, umat_cc, r_cc = GIModel.channel_solution(
-        params,
-        ConstituentMasses(mc, mc),
-        1;
+        params, ConstituentMasses(mc, mc), 1;
         nlevels = 1,
-        ngrid = 200,
-        rmax = 20.0,
+        solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
     )
     radial_cc = RadialWaveOnUniformMesh(umat_cc[:, 1], r_cc)
     off_cc = GIModel.spin_orbit_mixing_components(
@@ -555,12 +558,9 @@ end
     @test mix_cc.block.mechanism == "antisymmetric_spin_orbit"
 
     vals_bc, umat_bc, r_bc = GIModel.channel_solution(
-        params,
-        ConstituentMasses(mb, mc),
-        1;
+        params, ConstituentMasses(mb, mc), 1;
         nlevels = 1,
-        ngrid = 200,
-        rmax = 24.0,
+        solver = FiniteDifferenceSolver(ngrid = 200, rmax = 24.0),
     )
     radial_bc = RadialWaveOnUniformMesh(umat_bc[:, 1], r_bc)
     off_bc = GIModel.spin_orbit_mixing_components(
@@ -611,12 +611,9 @@ end
         params0, mq0 = load_parameters_and_quark_masses(p0)
         mc = mq0["c"]
         _v_p, umat_p, r_p = GIModel.channel_solution(
-            params0,
-            ConstituentMasses(mc, mc),
-            1;
+            params0, ConstituentMasses(mc, mc), 1;
             nlevels = 2,
-            ngrid = 200,
-            rmax = 20.0,
+            solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
         )
         h_p = r_p[2] - r_p[1]
         u1p = collect(umat_p[:, 1])
@@ -705,12 +702,9 @@ end
         params0, mq0 = load_parameters_and_quark_masses(p0)
         mc = mq0["c"]
         _v_p, umat_p, r_p = GIModel.channel_solution(
-            params0,
-            ConstituentMasses(mc, mc),
-            1;
+            params0, ConstituentMasses(mc, mc), 1;
             nlevels = 2,
-            ngrid = 200,
-            rmax = 20.0,
+            solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
         )
         h_p = r_p[2] - r_p[1]
         u1p = collect(umat_p[:, 1])
@@ -751,7 +745,11 @@ end
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     m = mq["c"]
     _vals, umat, r =
-        GIModel.channel_solution(params, ConstituentMasses(m, m), 0; nlevels = 2, ngrid = 200, rmax = 20.0)
+        GIModel.channel_solution(
+            params, ConstituentMasses(m, m), 0;
+            nlevels = 2,
+            solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
+        )
     u1s = collect(umat[:, 1])
 
     δ_triplet = GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u1s, r)
@@ -771,7 +769,11 @@ end
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     m = mq["c"]
     _v_p, umat_p, r_p =
-        GIModel.channel_solution(params, ConstituentMasses(m, m), 1; nlevels = 2, ngrid = 200, rmax = 20.0)
+        GIModel.channel_solution(
+            params, ConstituentMasses(m, m), 1;
+            nlevels = 2,
+            solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
+        )
     h_p = r_p[2] - r_p[1]
     u1p = collect(umat_p[:, 1])
     for J in (0, 1, 2)
@@ -1115,7 +1117,11 @@ end
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     m = mq["c"]
     ev, vecs, r =
-        GIModel.channel_solution(params, ConstituentMasses(m, m), 1; nlevels = 2, ngrid = 120, rmax = 16.0)
+        GIModel.channel_solution(
+            params, ConstituentMasses(m, m), 1;
+            nlevels = 2,
+            solver = FiniteDifferenceSolver(ngrid = 120, rmax = 16.0),
+        )
     sol = GIModel.ChannelRadialSolution(ev, vecs, r)
     wave = GIModel.RadialWaveOnUniformMesh(sol, 1)
     h = r[2] - r[1]
@@ -1755,16 +1761,17 @@ end
     # The struct defaults ARE the old inline defaults: passing them explicitly
     # must reproduce the default call bit for bit.
     @test masses(compute_spectrum(params, meson; levels = levels,
-        ngrid = 450, rmax = 24.0, kinetic = :relativistic, eigensolver = :full,
-        nlevels_per_channel = 6, contact_hyperfine = true, use_fine_structure = true,
-        same_j_spin_orbit_mixing = true, tensor_mixing = true)) == masses(base)
+        solver = FiniteDifferenceSolver(ngrid = 450, rmax = 24.0, kinetic = :relativistic,
+            eigensolver = :full, nlevels_per_channel = 6),
+        terms = SpinTerms(contact_hyperfine = true, fine_structure = true,
+            same_j_spin_orbit = true, tensor = true))) == masses(base)
     @test masses(compute_spectrum(params, meson; levels = levels,
-        solver = RadialSolver(), terms = SpinTerms())) == masses(base)
+        solver = FiniteDifferenceSolver(), terms = SpinTerms())) == masses(base)
 
     # RadialSolver is "how well": refining the mesh must not move a mass more
     # than the discretization error it removes (sub-MeV here).
     fine = compute_spectrum(params, meson; levels = levels,
-        solver = RadialSolver(ngrid = 900, rmax = 32.0))
+        solver = FiniteDifferenceSolver(ngrid = 900, rmax = 32.0))
     @test maximum(abs.(masses(fine) .- masses(base))) < 0.003   # < 3 MeV
 
     # SpinTerms is "what physics": every switch must move a mass, and turning
@@ -1782,28 +1789,46 @@ end
     # The solver threads down to the low tier, and its copy constructor keeps
     # the untouched fields.
     ev, _, _ = channel_solution(params, meson.constituent_masses, 0;
-        solver = RadialSolver(nlevels_per_channel = 3))
+        solver = FiniteDifferenceSolver(nlevels_per_channel = 3))
     @test length(ev) == 3
     tuned = FiniteDifferenceSolver(FiniteDifferenceSolver(ngrid = 900); rmax = 32.0)
     @test tuned.ngrid == 900 && tuned.rmax == 32.0 && tuned.kinetic === :relativistic
 
-    # The deprecated loose keywords still work, still win, and now say so.
-    # Clean paths must stay silent — the shims fold legacy keywords in once at
-    # the public entry point, so internal forwarding cannot self-trigger.
+    # Every path is silent. There is nothing left to deprecate: the loose
+    # keywords are gone, so the shim that used to fold them in -- and warn that
+    # they silently overrode the objects -- is gone with them. A settings name
+    # that no longer exists is now a MethodError at the call, not a mass that
+    # quietly came from the wrong grid.
     @test_logs compute_spectrum(params, meson; levels = levels)
     @test_logs compute_spectrum(params, meson; levels = levels,
-        solver = RadialSolver(), terms = SpinTerms())
+        solver = FiniteDifferenceSolver(), terms = SpinTerms())
     @test_logs central_spectrum(params, meson; levels = levels)
     @test_logs channel_solution(params, meson.constituent_masses, 0;
-        solver = RadialSolver())
-    @test (@test_logs (:warn,) match_mode = :any masses(
-        compute_spectrum(params, meson; levels = levels, ngrid = 450))) == masses(base)
-    @test (@test_logs (:warn,) match_mode = :any masses(
-        compute_spectrum(params, meson; levels = levels, tensor_mixing = true))) == masses(base)
-    # The silent-override edge the warning exists to expose: the loose keyword
-    # beats the object, so this is the 450 answer, not the 900 one.
-    @test (@test_logs (:warn,) match_mode = :any masses(compute_spectrum(params, meson;
-        levels = levels, solver = RadialSolver(ngrid = 900), ngrid = 450))) == masses(base)
+        solver = FiniteDifferenceSolver())
+    # Every retired keyword, by its old name, on the entry point that used to
+    # accept it. NOTE: these calls are deliberately written the old way -- that
+    # they no longer parse into a method IS the assertion -- so do not rewrite
+    # them into the solver/terms form.
+    central = central_spectrum(params, meson; levels = levels)
+    corrected = add_spin_corrections(central)
+    @test_throws MethodError compute_spectrum(params, meson; levels = levels, ngrid = 450)
+    @test_throws MethodError compute_spectrum(params, meson; levels = levels, rmax = 24.0)
+    @test_throws MethodError compute_spectrum(params, meson; levels = levels,
+        eigensolver = :krylov)
+    @test_throws MethodError compute_spectrum(params, meson; levels = levels,
+        nlevels_per_channel = 3)
+    @test_throws MethodError compute_spectrum(params, meson; levels = levels,
+        tensor_mixing = true)
+    @test_throws MethodError compute_spectrum(params, meson; levels = levels,
+        contact_hyperfine = true)
+    @test_throws MethodError compute_spectrum(params, meson; levels = levels,
+        same_j_spin_orbit_mixing = true)
+    @test_throws MethodError central_spectrum(params, meson; levels = levels, rmax = 24.0)
+    @test_throws MethodError channel_solution(params, meson.constituent_masses, 0;
+        kinetic = :relativistic)
+    @test_throws MethodError solve_sector(params, 1.628; ngrid = 100)
+    @test_throws MethodError add_spin_corrections(central; use_fine_structure = false)
+    @test_throws MethodError add_intra_meson_mixing(corrected; tensor_mixing = false)
 
     # Invalid settings are construction errors, not silent fallbacks.
     @test_throws ArgumentError RadialSolver(kinetic = :newtonian)
@@ -1858,11 +1883,14 @@ end
     @test compute_spectrum(params, meson; levels = levels,
         solver = OscillatorSolver()).computation.solver isa OscillatorSolver
 
-    # Settings the oscillator path does not have are absent, not ignored.
+    # Settings the oscillator path does not have are absent, not ignored. The
+    # `:nonrelativistic` comparator is a finite-difference thing, and asking an
+    # OscillatorSolver for it fails at construction rather than silently doing
+    # the relativistic calculation you did not ask for.
     @test !hasfield(OscillatorSolver, :kinetic)
     @test !hasfield(OscillatorSolver, :eigensolver)
-    @test_throws ArgumentError compute_spectrum(params, meson; levels = levels,
-        solver = OscillatorSolver(), kinetic = :nonrelativistic)
+    @test_throws MethodError OscillatorSolver(kinetic = :nonrelativistic)
+    @test_throws MethodError OscillatorSolver(eigensolver = :krylov)
     @test_throws ArgumentError OscillatorSolver(nbasis = 0)
     @test_throws ArgumentError OscillatorSolver(beta_grid = Float64[])
     @test_throws ArgumentError OscillatorSolver(beta_grid = [0.5, -0.5])
@@ -1882,8 +1910,11 @@ end
     # so a compact enough state falls between points and comes back silently
     # under-resolved (at 30 GeV the hyperfine splitting collapses to 0.0025).
     function points_across(m; ngrid = 450, rmax = 24.0)
-        vals, vecs, r = channel_solution(params, ConstituentMasses(m, m), 0;
-            nlevels = 2, ngrid = ngrid, rmax = rmax)
+        vals, vecs, r = channel_solution(
+            params, ConstituentMasses(m, m), 0;
+            nlevels = 2,
+            solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax),
+        )
         h = r[2] - r[1]
         u = vecs[:, 1]
         rms = sqrt(sum(abs2.(u) .* r .^ 2) * h / (sum(abs2, u) * h))
@@ -1997,7 +2028,11 @@ end
         BasisState(1, "D", 3, 1),
         BasisState(1, "P", 3, 2),
     ]
-    spec = compute_spectrum(params, meson; levels = levels, ngrid = 120, rmax = 12.0)
+    spec = compute_spectrum(
+        params, meson;
+        levels = levels,
+        solver = FiniteDifferenceSolver(ngrid = 120, rmax = 12.0),
+    )
     @test length(spec.states) == 4
     for s in spec.states
         if isempty(s.mixings)
@@ -2019,14 +2054,19 @@ end
     # level beyond the per-channel budget fails loudly
     @test_throws ArgumentError compute_spectrum(
         params, meson;
-        levels = [BasisState(7, "S", 1, 0)], ngrid = 80, rmax = 8.0,
+        levels = [BasisState(7, "S", 1, 0)],
+        solver = FiniteDifferenceSolver(ngrid = 80, rmax = 8.0),
     )
 end
 
 @testset "compute_spectrum same-J mixing gated by flavor content" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     pair = [BasisState(1, "P", 1, 1), BasisState(1, "P", 3, 1)]
-    us = compute_spectrum(params, Meson(mq, :u, :s); levels = pair, ngrid = 120, rmax = 12.0)
+    us = compute_spectrum(
+        params, Meson(mq, :u, :s);
+        levels = pair,
+        solver = FiniteDifferenceSolver(ngrid = 120, rmax = 12.0),
+    )
     so_mixed = [s for s in us.states if any(m.mechanism == "antisymmetric_spin_orbit" for m in s.mixings)]
     @test length(so_mixed) == 2
     @test all(s.fine_structure_mass_convention == "unequal_mass_same_j_mixed" for s in so_mixed)
@@ -2034,17 +2074,29 @@ end
           sum(s.mixings[end].unmixed_GeV for s in so_mixed) atol = 1e-10
     @test any(abs(s.mixings[end].offdiag_GeV) > 0 for s in so_mixed)
     # equal flavor: the antisymmetric matrix element vanishes, no block forms
-    cc = compute_spectrum(params, Meson(mq, :c, :c); levels = pair, ngrid = 120, rmax = 12.0)
+    cc = compute_spectrum(
+        params, Meson(mq, :c, :c);
+        levels = pair,
+        solver = FiniteDifferenceSolver(ngrid = 120, rmax = 12.0),
+    )
     @test all(isempty(s.mixings) for s in cc.states)
 end
 
 @testset "annihilation blocks built from two spectra (no reference data)" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     ps_levels = [BasisState(1, "S", 1, 0), BasisState(2, "S", 1, 0)]
-    nn = compute_spectrum(params, Meson(mq, :q, :q);
-        levels = ps_levels, ngrid = 120, rmax = 12.0, use_fine_structure = false)
-    ss = compute_spectrum(params, Meson(mq, :s, :s);
-        levels = ps_levels, ngrid = 120, rmax = 12.0, use_fine_structure = false)
+    nn = compute_spectrum(
+        params, Meson(mq, :q, :q);
+        levels = ps_levels,
+        solver = FiniteDifferenceSolver(ngrid = 120, rmax = 12.0),
+        terms = SpinTerms(fine_structure = false),
+    )
+    ss = compute_spectrum(
+        params, Meson(mq, :s, :s);
+        levels = ps_levels,
+        solver = FiniteDifferenceSolver(ngrid = 120, rmax = 12.0),
+        terms = SpinTerms(fine_structure = false),
+    )
 
     # the calibrated rank-one block reproduces its targets by construction
     targets = (0.520, 0.960, 1.440, 1.630)
@@ -2068,10 +2120,18 @@ end
 
     # general Eq. (16) block for one channel across the two flavors
     s1 = BasisState(1, "S", 3, 1)
-    nn3 = compute_spectrum(params, Meson(mq, :q, :q);
-        levels = [s1], ngrid = 120, rmax = 12.0, use_fine_structure = false)
-    ss3 = compute_spectrum(params, Meson(mq, :s, :s);
-        levels = [s1], ngrid = 120, rmax = 12.0, use_fine_structure = false)
+    nn3 = compute_spectrum(
+        params, Meson(mq, :q, :q);
+        levels = [s1],
+        solver = FiniteDifferenceSolver(ngrid = 120, rmax = 12.0),
+        terms = SpinTerms(fine_structure = false),
+    )
+    ss3 = compute_spectrum(
+        params, Meson(mq, :s, :s);
+        levels = [s1],
+        solver = FiniteDifferenceSolver(ngrid = 120, rmax = 12.0),
+        terms = SpinTerms(fine_structure = false),
+    )
     block = isoscalar_annihilation_block(params, nn3, ss3, s1;
         amplitude_A = params.annihilation.s1_A)
     @test length(block.masses) == 2
@@ -2083,8 +2143,11 @@ end
 
 @testset "compute_spectrum builds phase-fixed HO wave caches" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    spec = compute_spectrum(params, Meson(mq, :q, :q);
-        levels = [BasisState(1, "S", 1, 0)], ngrid = 80, rmax = 8.0)
+    spec = compute_spectrum(
+        params, Meson(mq, :q, :q);
+        levels = [BasisState(1, "S", 1, 0)],
+        solver = FiniteDifferenceSolver(ngrid = 80, rmax = 8.0),
+    )
     key = RadialChannelKey(spec.meson.constituent_masses, "S")
     @test haskey(spec.computation.ho_wave_cache, key)
     ho_sol = spec.computation.ho_wave_cache[key]
@@ -2094,9 +2157,12 @@ end
     @test phase(ho_sol, 1) > 0
     @test phase(ho_sol, 2) > 0
     # opt out of the HO basis entirely
-    fd_only = compute_spectrum(params, Meson(mq, :q, :q);
-        levels = [BasisState(1, "S", 1, 0)], ngrid = 80, rmax = 8.0,
-        annihilation_wave_basis = :fd)
+    fd_only = compute_spectrum(
+        params, Meson(mq, :q, :q);
+        levels = [BasisState(1, "S", 1, 0)],
+        annihilation_wave_basis = :fd,
+        solver = FiniteDifferenceSolver(ngrid = 80, rmax = 8.0),
+    )
     @test isempty(fd_only.computation.ho_wave_cache)
 end
 
@@ -2104,7 +2170,7 @@ end
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     us = Meson(mq, :u, :s)
     levels = spectrum_levels(2; L_labels = ("S", "P"))
-    kwargs = (ngrid = 250, rmax = 16.0)
+    kwargs = (solver = FiniteDifferenceSolver(ngrid = 250, rmax = 16.0),)
 
     central = central_spectrum(params, us; levels = levels, kwargs...)
     @test central isa CentralSpectrum
@@ -2145,7 +2211,10 @@ end
 
     # stage skipping: no corrections means no fine structure and no mixing blocks
     bare = add_intra_meson_mixing(
-        add_spin_corrections(central; contact_hyperfine = false, use_fine_structure = false),
+        add_spin_corrections(
+            central;
+            terms = SpinTerms(contact_hyperfine = false, fine_structure = false),
+        ),
     )
     @test all(s.mass_GeV == s.central_GeV for s in bare.states)
     @test all(isempty(s.mixings) for s in bare.states)
@@ -2193,7 +2262,11 @@ end
     tomev(a) = abs(a) * sqrt(1000)   # GeV^1/2 -> MeV^1/2
 
     # bottomonium (most paper-faithful) S-wave: eta_b / Upsilon central wave
-    vals, vecs, r = channel_solution(params, masses, 0; nlevels = 2, ngrid = 900, rmax = 24.0)
+    vals, vecs, r = channel_solution(
+        params, masses, 0;
+        nlevels = 2,
+        solver = FiniteDifferenceSolver(ngrid = 900, rmax = 24.0),
+    )
     S0 = wavefunction_origin_smearing(RadialWaveOnUniformMesh(vecs[:, 1], r), mb; L = 0)
     a0 = GIModel.alpha_s_q(vals[1])
     # zero-parameter amplitudes vs paper (eta_b -> 2g = 2.5, Upsilon -> 3g = 0.21)
@@ -2207,7 +2280,11 @@ end
     end
 
     # P-wave chi_2b via S1 (paper chi_2b -> 2g = 0.35)
-    valsP, vecsP, rP = channel_solution(params, masses, 1; nlevels = 1, ngrid = 900, rmax = 24.0)
+    valsP, vecsP, rP = channel_solution(
+        params, masses, 1;
+        nlevels = 1,
+        solver = FiniteDifferenceSolver(ngrid = 900, rmax = 24.0),
+    )
     S1 = wavefunction_origin_smearing(RadialWaveOnUniformMesh(vecsP[:, 1], rP), mb; L = 1)
     @test 0.8 < tomev(gluonic_annihilation_amplitude(:P2_2g, S1, GIModel.alpha_s_q(valsP[1]), mb)) / 0.35 < 1.2
 
@@ -2226,7 +2303,11 @@ end
     # triplet ³S₁ wave for a QQ̄; return (M, unit-phase wave)
     function triplet_swave(m, n)
         masses = ConstituentMasses(m, m)
-        _, _, r = channel_solution(params, masses, 0; nlevels = 2, ngrid = 1000, rmax = 24.0)
+        _, _, r = channel_solution(
+            params, masses, 0;
+            nlevels = 2,
+            solver = FiniteDifferenceSolver(ngrid = 1000, rmax = 24.0),
+        )
         lv, vec, r2 = contact_hyperfine_nonperturbative_states(params, masses, "S", 3, r, 2)
         return lv[n], RadialWaveOnUniformMesh(outer!(copy(vec[:, n])), r2)
     end
@@ -2353,7 +2434,11 @@ end
 
     # eta_c -> gamma gamma: ¹S₀ cc̄, q_eff = 4/9, paper 2.6 keV^½
     mc = mq["c"]
-    _, _, r = channel_solution(params, ConstituentMasses(mc, mc), 0; nlevels = 2, ngrid = 1000, rmax = 24.0)
+    _, _, r = channel_solution(
+        params, ConstituentMasses(mc, mc), 0;
+        nlevels = 2,
+        solver = FiniteDifferenceSolver(ngrid = 1000, rmax = 24.0),
+    )
     lv, vec, r2 = contact_hyperfine_nonperturbative_states(params, ConstituentMasses(mc, mc), "S", 1, r, 2)
     wηc = RadialWaveOnUniformMesh(outer!(copy(vec[:, 1])), r2)
     Aηc = tokeV(two_photon_amplitude(:P, wηc, mc, lv[1], 4 / 9))
@@ -2361,7 +2446,11 @@ end
 
     # A2 -> gamma gamma: ³P₂ light isovector, q_eff = (e_u²−e_d²)/√2, paper −1.2 keV^½
     mqk = mq["q"]
-    valsP, vecsP, rP = channel_solution(params, ConstituentMasses(mqk, mqk), 1; nlevels = 1, ngrid = 1000, rmax = 24.0)
+    valsP, vecsP, rP = channel_solution(
+        params, ConstituentMasses(mqk, mqk), 1;
+        nlevels = 1,
+        solver = FiniteDifferenceSolver(ngrid = 1000, rmax = 24.0),
+    )
     wA2 = RadialWaveOnUniformMesh(outer!(copy(vecsP[:, 1])), rP)
     AA2 = tokeV(two_photon_amplitude(:P2, wA2, mqk, valsP[1], (4 / 9 - 1 / 9) / sqrt(2)))
     @test AA2 < 0                       # −√(4/5) prefactor => negative amplitude
@@ -2375,7 +2464,11 @@ end
     mu, ms = mq["q"], mq["s"]
 
     function ps_wave(m1, m2)
-        _, _, r = channel_solution(params, ConstituentMasses(m1, m2), 0; nlevels = 2, ngrid = 1200, rmax = 26.0)
+        _, _, r = channel_solution(
+            params, ConstituentMasses(m1, m2), 0;
+            nlevels = 2,
+            solver = FiniteDifferenceSolver(ngrid = 1200, rmax = 26.0),
+        )
         lv, vec, r2 = contact_hyperfine_nonperturbative_states(params, ConstituentMasses(m1, m2), "S", 1, r, 2)
         return RadialWaveOnUniformMesh(vec[:, 1], r2)
     end
@@ -2404,7 +2497,11 @@ end
     Qnn = (4 / 9 + 1 / 9) / sqrt(2); Qss = 1 / 9
 
     function psfam(m1, m2)
-        _, _, r = channel_solution(params, ConstituentMasses(m1, m2), 0; nlevels = 3, ngrid = 1000, rmax = 24.0)
+        _, _, r = channel_solution(
+            params, ConstituentMasses(m1, m2), 0;
+            nlevels = 3,
+            solver = FiniteDifferenceSolver(ngrid = 1000, rmax = 24.0),
+        )
         lv, vec, r2 = contact_hyperfine_nonperturbative_states(params, ConstituentMasses(m1, m2), "S", 1, r, 3)
         return [RadialWaveOnUniformMesh(outer!(copy(vec[:, n])), r2) for n in 1:2]
     end
@@ -2444,7 +2541,11 @@ end
 
     # 1. basis-fidelity control: HO central S_L matches FD to <2% for charm —
     #    the 15-20% gluonic row residuals were never a basis artifact
-    _, fdv, fdr = channel_solution(params, masses, 0; nlevels = 2, ngrid = ngrid, rmax = rmax)
+    _, fdv, fdr = channel_solution(
+        params, masses, 0;
+        nlevels = 2,
+        solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax),
+    )
     _, hov, hor = channel_solution(params, masses, 0; solver = solver_ho, nlevels = 2)
     @test 0.98 < sm(hov[:, 1], hor, 0) / sm(fdv[:, 1], fdr, 0) < 1.02
 
@@ -2467,7 +2568,11 @@ end
     # 3. the splitting patterns the central wave misses collapse at paper order:
     #    central waves give ratio-of-ratios eta_c/psi ≈ 0.78, chi_0c/chi_2c ≈ 0.68
     Sc0 = sm(fdv[:, 1], fdr, 0)
-    Mc0 = channel_solution(params, masses, 0; nlevels = 1, ngrid = ngrid, rmax = rmax)[1][1]
+    Mc0 = channel_solution(
+        params, masses, 0;
+        nlevels = 1,
+        solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax),
+    )[1][1]
     central_eta_psi = (amp(:S0_2g, Sc0, Mc0) / 4.700) / (amp(:S1_3g, Sc0, Mc0) / 0.420)
     @test central_eta_psi < 0.85
     @test 0.90 < ratios[:eta_c] / ratios[:psi] < 1.10

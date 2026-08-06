@@ -158,11 +158,9 @@ function mixed_rows(rows, params)
             masses = ConstituentMasses(singlet.m1_GeV, singlet.m2_GeV)
             sol = get!(solve_cache, (masses, String(singlet.L))) do
                 ev, vecs, r = channel_solution(
-                    params,
-                    masses,
-                    L_ORDER[String(singlet.L)];
+                    params, masses, L_ORDER[String(singlet.L)];
                     nlevels = 6,
-                    kinetic = :relativistic,
+                    solver = FiniteDifferenceSolver(kinetic = :relativistic),
                 )
                 (eigenvalues_GeV = ev, vectors = vecs, r = r)
             end

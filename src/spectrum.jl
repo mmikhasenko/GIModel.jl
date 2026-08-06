@@ -199,17 +199,9 @@ function central_spectrum(
     meson::Meson;
     levels::AbstractVector{BasisState} = spectrum_levels(2),
     solver::RadialSolver = FiniteDifferenceSolver(),
-    ngrid = nothing,
-    rmax = nothing,
-    kinetic = nothing,
-    eigensolver = nothing,
-    nlevels_per_channel = nothing,
     annihilation_wave_basis::Symbol = :ho,
     ho_wave_L::Tuple{Vararg{String}} = ("S",),
 )
-    solver = _solver_with_legacy(solver, "central_spectrum"; ngrid = ngrid, rmax = rmax,
-        kinetic = kinetic, eigensolver = eigensolver,
-        nlevels_per_channel = nlevels_per_channel)
     nlevels_per_channel = solver.nlevels_per_channel
     isempty(levels) && throw(ArgumentError("central_spectrum: empty `levels`"))
     masses = meson.constituent_masses
@@ -283,9 +275,7 @@ function central_spectrum(
 end
 
 """
-    add_spin_corrections(spec::CentralSpectrum; contact_hyperfine=true,
-                         use_fine_structure=parameters(spec).fine_structure.enabled)
-        -> CorrectedSpectrum
+    add_spin_corrections(spec::CentralSpectrum; terms=SpinTerms()) -> CorrectedSpectrum
 
 Stage 2: attach the contact-hyperfine and fine-structure shifts per state on
 the cached radial waves and set each state's corrected mass. With a switch
@@ -295,11 +285,7 @@ off, the corresponding shifts are zero (and the fine-structure convention is
 function add_spin_corrections(
     spec::CentralSpectrum;
     terms::SpinTerms = SpinTerms(),
-    contact_hyperfine = nothing,
-    use_fine_structure = nothing,
 )
-    terms = _terms_with_legacy(terms, "add_spin_corrections";
-        contact_hyperfine = contact_hyperfine, use_fine_structure = use_fine_structure)
     contact_hyperfine, use_fine_structure = terms.contact_hyperfine, terms.fine_structure
     params = parameters(spec)
     masses = spec.meson.constituent_masses
@@ -371,9 +357,7 @@ function add_spin_corrections(
 end
 
 """
-    add_intra_meson_mixing(spec::CorrectedSpectrum;
-                           same_j_spin_orbit_mixing=true, tensor_mixing=true)
-        -> MixedSpectrum
+    add_intra_meson_mixing(spec::CorrectedSpectrum; terms=SpinTerms()) -> MixedSpectrum
 
 Stage 3: apply intra-meson same-`J` antisymmetric spin-orbit mixing (unequal
 flavor only) and triplet tensor `L = J∓1` mixing on the corrected masses.
@@ -388,11 +372,7 @@ block so other orderings can be reconstructed downstream.
 function add_intra_meson_mixing(
     spec::CorrectedSpectrum;
     terms::SpinTerms = SpinTerms(),
-    same_j_spin_orbit_mixing = nothing,
-    tensor_mixing = nothing,
 )
-    terms = _terms_with_legacy(terms, "add_intra_meson_mixing";
-        same_j_spin_orbit_mixing = same_j_spin_orbit_mixing, tensor_mixing = tensor_mixing)
     same_j_spin_orbit_mixing, tensor_mixing = terms.same_j_spin_orbit, terms.tensor
     params = parameters(spec)
     masses = spec.meson.constituent_masses
@@ -426,27 +406,9 @@ function compute_spectrum(
     levels::AbstractVector{BasisState} = spectrum_levels(2),
     solver::RadialSolver = FiniteDifferenceSolver(),
     terms::SpinTerms = SpinTerms(),
-    ngrid = nothing,
-    rmax = nothing,
-    kinetic = nothing,
-    eigensolver = nothing,
-    nlevels_per_channel = nothing,
-    contact_hyperfine = nothing,
-    use_fine_structure = nothing,
-    same_j_spin_orbit_mixing = nothing,
-    tensor_mixing = nothing,
     annihilation_wave_basis::Symbol = :ho,
     ho_wave_L::Tuple{Vararg{String}} = ("S",),
 )
-    # Fold any deprecated keywords in once, here, then hand the stages the
-    # objects — so a plain `compute_spectrum(params, meson)` never trips the
-    # deprecation path on its way down.
-    solver = _solver_with_legacy(solver, "compute_spectrum"; ngrid = ngrid, rmax = rmax,
-        kinetic = kinetic, eigensolver = eigensolver,
-        nlevels_per_channel = nlevels_per_channel)
-    terms = _terms_with_legacy(terms, "compute_spectrum";
-        contact_hyperfine = contact_hyperfine, use_fine_structure = use_fine_structure,
-        same_j_spin_orbit_mixing = same_j_spin_orbit_mixing, tensor_mixing = tensor_mixing)
     central = central_spectrum(
         params,
         meson;
