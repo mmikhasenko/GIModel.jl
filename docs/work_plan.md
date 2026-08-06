@@ -3,7 +3,8 @@
 > **Live status moved.** Per-unit status is the manifest/dashboard
 > (`docs/paper_manifest/*.toml`; `cd docs && make dashboard`); workstream-level
 > remaining-work costing is [`reproduction_audit.md`](reproduction_audit.md) §2;
-> the task tracker is the live board. What stays here is the **process record**:
+> the task tracker is the live board; the *code*-stream plan is
+> [`engineering_work_plan.md`](engineering_work_plan.md). What stays here is the **process record**:
 > the objective, how work was decomposed and delegated, the coordination rules,
 > the empirical worker-sizing lesson, and the historical commit trail of what
 > landed. Treat the "Open units" as illustrative history, not live truth.
