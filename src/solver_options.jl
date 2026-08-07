@@ -27,7 +27,9 @@ parameters are the model, the solver is how you solve it.
   - [`OscillatorSolver`](@ref) — the paper's own oscillator expansion, Eq. (A17).
 
 Accepted by [`channel_solution`](@ref), [`central_spectrum`](@ref) and
-[`compute_spectrum`](@ref), so one object describes a whole calculation:
+[`compute_spectrum`](@ref), so one object describes a whole calculation. The
+complete fixed-sector production path requires the relativistic FD kinetic
+term; `kinetic=:nonrelativistic` is intentionally limited to central diagnostics:
 
     compute_spectrum(params, meson; solver = FiniteDifferenceSolver(ngrid = 900))
     compute_spectrum(params, meson; solver = OscillatorSolver(nbasis = 32))
@@ -57,7 +59,8 @@ Fields:
   - `kinetic` — `:relativistic` (the model's `√(p²+m²)` kinetic term) or
     `:nonrelativistic` (`p²/2μ`, a comparator).
   - `eigensolver` — `:full` (dense `eigen`) or `:krylov`.
-  - `nlevels_per_channel` — radial levels kept per orbital channel.
+  - `nlevels_per_channel` — maximum radial levels kept per requested channel
+    (central `L` diagnostic or physical fixed `(L,S,J)` sector).
 
 `kinetic` and `eigensolver` are deliberately absent from
 [`OscillatorSolver`](@ref), which has neither choice to make.

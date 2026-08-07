@@ -136,7 +136,11 @@ function build_mass_resolver(params, mq)
     levels = spectrum_levels(2; L_labels = ("S", "P", "D", "F"))
     function sector(f1, f2)
         get!(cache, (f1, f2)) do
-            add_spin_corrections(central_spectrum(params, Meson(quark_for(mq, f1), quark_for(mq, f2)); levels = levels))
+            fixed_spectrum(
+                params,
+                Meson(quark_for(mq, f1), quark_for(mq, f2));
+                levels = levels,
+            )
         end
     end
     (f1, f2, n, L, mult, J) -> spectrum_state(sector(f1, f2), n, L, mult, J).mass_GeV

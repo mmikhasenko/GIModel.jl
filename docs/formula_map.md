@@ -178,7 +178,7 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
   - Paper: Sec. II flavor content; Table II masses.
 - `src/sector_solver.jl`: `RadialChannelKey`, `ChannelRadialSolution`,
   `SectorComputation`, and `solve_sector` own the native radial-solution cache.
-- `src/spectrum.jl`: `central_spectrum`, `add_spin_corrections`,
+- `src/spectrum.jl`: `central_spectrum`, `fixed_spectrum`,
   `add_intra_meson_mixing`, and `compute_spectrum` implement the typed spectrum
   pipeline.
 - `GIPaper/src/comparison.jl` and `residual_report.jl`: `compare_reference`

@@ -1,13 +1,12 @@
-# Pure model spectrum for one meson, staged: (1) spin-independent central
-# solve, (2) complete fixed-sector spin Hamiltonians, (3) intra-meson
-# (same-J spin-orbit, tensor) mixing on the model's own eigenvalues — no
-# reference data involved. Each stage is a first-class value; the stage is
-# carried by the element type of `Spectrum.states`, not by a tag.
+# Pure model spectrum for one meson. The production path solves each complete
+# fixed-(L,S,J) Hamiltonian once, then applies cross-sector spectroscopic
+# mixing. A central-only spectrum remains an independent diagnostic and is not
+# a prerequisite for the physical calculation.
 #
 # Public API (exported from GIModel.jl):
 #   spectrum_levels, StateMixing, CentralState, CorrectedState, MixedState,
 #   Spectrum, CentralSpectrum, CorrectedSpectrum, MixedSpectrum,
-#   central_spectrum, add_spin_corrections, add_intra_meson_mixing,
+#   central_spectrum, fixed_spectrum, add_intra_meson_mixing,
 #   compute_spectrum, spectrum_state, parameters
 
 """
@@ -81,25 +80,34 @@ the quantum labels and the central eigenvalue `central_GeV`. Element type of
 [`CentralSpectrum`](@ref); no spin-dependent data exists at this stage.
 """
 struct CentralState
-    n::Int
-    L::String
-    multiplicity::Int
-    J::Int
-    label::String
+    basis::BasisState
     central_GeV::Float64
 end
+
+function Base.getproperty(s::CentralState, name::Symbol)
+    name === :n && return getfield(s, :basis).n
+    name === :L && return getfield(s, :basis).L_label
+    name === :multiplicity && return getfield(s, :basis).multiplicity
+    name === :J && return getfield(s, :basis).J
+    name === :label && return getfield(s, :basis).label
+    return getfield(s, name)
+end
+Base.propertynames(::CentralState) =
+    (:basis, :n, :L, :multiplicity, :J, :label, :central_GeV)
 
 """
     CorrectedState
 
-A [`CentralState`](@ref) plus a reporting decomposition of the eigenvalue from
-the complete fixed-sector Hamiltonian (contact, vector/Thomas spin-orbit, and
-tensor) and its `mass_GeV`. These fields are not perturbative inputs. Element type of
-[`CorrectedSpectrum`](@ref). Properties of the wrapped `central` state
-(`n`, `L`, `central_GeV`, …) forward transparently.
+One eigenstate of the complete fixed-sector Hamiltonian. `central_GeV` is the
+central-Hamiltonian contribution in this spin-distorted eigenstate, not the
+eigenvalue of a separate central-only solve. Together with the contact,
+vector/Thomas spin-orbit, and tensor contributions it sums to `mass_GeV`.
+The spectroscopic identity reuses [`BasisState`](@ref); no central-state holder
+is embedded in the production state.
 """
 struct CorrectedState
-    central::CentralState
+    basis::BasisState
+    central_GeV::Float64
     contact_shift_GeV::Float64
     spin_orbit_vector_shift_GeV::Float64
     spin_orbit_thomas_shift_GeV::Float64
@@ -110,11 +118,17 @@ struct CorrectedState
     mass_GeV::Float64
 end
 
-Base.getproperty(s::CorrectedState, name::Symbol) =
-    hasfield(CorrectedState, name) ? getfield(s, name) :
-    getproperty(getfield(s, :central), name)
-Base.propertynames(::CorrectedState) =
-    Tuple(union(fieldnames(CorrectedState), fieldnames(CentralState)))
+function Base.getproperty(s::CorrectedState, name::Symbol)
+    name === :n && return getfield(s, :basis).n
+    name === :L && return getfield(s, :basis).L_label
+    name === :multiplicity && return getfield(s, :basis).multiplicity
+    name === :J && return getfield(s, :basis).J
+    name === :label && return getfield(s, :basis).label
+    return getfield(s, name)
+end
+Base.propertynames(::CorrectedState) = (
+    fieldnames(CorrectedState)..., :n, :L, :multiplicity, :J, :label,
+)
 
 """
     MixedState
@@ -136,9 +150,13 @@ end
 Base.getproperty(s::MixedState, name::Symbol) =
     hasfield(MixedState, name) ? getfield(s, name) :
     getproperty(getfield(s, :corrected), name)
-Base.propertynames(::MixedState) = Tuple(
-    union(fieldnames(MixedState), fieldnames(CorrectedState), fieldnames(CentralState)),
-)
+Base.propertynames(::MixedState) = Tuple(union(
+    fieldnames(MixedState),
+    (
+        fieldnames(CorrectedState)...,
+        :n, :L, :multiplicity, :J, :label,
+    ),
+))
 
 # Immutable update helper: append one mixing and set the mixed mass (and
 # optionally the mixing-stage fine-structure convention note). The wrapped
@@ -166,12 +184,12 @@ stages and two-meson flavor mixing reuse the cached radial solves; see
 `flavor_mixing.jl`). The stage is the element type `S` of `states`:
 
   - [`CentralSpectrum`](@ref)` = Spectrum{CentralState}` — [`central_spectrum`](@ref)
-  - [`CorrectedSpectrum`](@ref)` = Spectrum{CorrectedState}` — [`add_spin_corrections`](@ref)
+  - [`CorrectedSpectrum`](@ref)` = Spectrum{CorrectedState}` — [`fixed_spectrum`](@ref)
   - [`MixedSpectrum`](@ref)` = Spectrum{MixedState}` — [`add_intra_meson_mixing`](@ref)
 
-[`compute_spectrum`](@ref) composes the three stages. The [`GIParameters`](@ref)
-that produced the spectrum live in `computation.params`; use [`parameters`](@ref)
-to retrieve them.
+[`compute_spectrum`](@ref) composes the fixed-sector solve and spectroscopic
+mixing. The [`GIParameters`](@ref) that produced the spectrum live in
+`computation.params`; use [`parameters`](@ref) to retrieve them.
 """
 struct Spectrum{S,M<:Meson,C<:SectorComputation}
     meson::M
@@ -254,62 +272,69 @@ function central_spectrum(
         level.n <= length(sol.eigenvalues_GeV) || throw(ArgumentError(
             "central_spectrum: channel `$(level.L_label)` returned only $(length(sol.eigenvalues_GeV)) levels; requested n=$(level.n)",
         ))
-        CentralState(
-            level.n,
-            level.L_label,
-            level.multiplicity,
-            level.J,
-            level.label,
-            sol.eigenvalues_GeV[level.n],
-        )
+        CentralState(level, sol.eigenvalues_GeV[level.n])
     end
     return Spectrum(meson, states, computation)
 end
 
 """
-    add_spin_corrections(spec::CentralSpectrum; terms=SpinTerms()) -> CorrectedSpectrum
+    fixed_spectrum(params, meson; levels=spectrum_levels(2), solver, terms)
 
-Stage 2: assemble and diagonalize the complete fixed `(L,S,J)` Hamiltonian for
-every requested sector, cache its native waves, and report the displacement
-from the central eigenvalue by operator family. With a switch off, that family
-is absent from the Hamiltonian.
+Assemble and diagonalize the complete fixed `(L,S,J)` Hamiltonian for every
+requested sector and cache its native waves. This is the production entry point
+before cross-sector mixing. It does not call [`central_spectrum`](@ref).
+
+The reported central/contact/spin-orbit/tensor values are contributions in the
+same solved eigenstate and therefore sum to its fixed-sector eigenvalue. With a
+switch off, that operator family is absent from both the Hamiltonian and the
+decomposition.
 """
-function add_spin_corrections(
-    spec::CentralSpectrum;
+function fixed_spectrum(
+    params::GIParameters,
+    meson::Meson;
+    levels::AbstractVector{BasisState} = spectrum_levels(2),
+    solver::RadialSolver = FiniteDifferenceSolver(),
     terms::SpinTerms = SpinTerms(),
 )
-    params = parameters(spec)
-    masses = spec.meson.constituent_masses
-    # A spin-resolved solve is physics-dependent. Never write it into the
-    # central spectrum's cache: the same central value may legitimately feed a
-    # second correction stage with different SpinTerms.
-    channel_cache = copy(spec.computation.channel_cache)
-    required_levels = Dict{Tuple{String,Int,Int},Int}()
-    for state in spec.states
-        sector = (state.L, state.multiplicity, state.J)
-        required_levels[sector] = max(get(required_levels, sector, 0), state.n)
+    isempty(levels) && throw(ArgumentError("fixed_spectrum: empty `levels`"))
+    masses = meson.constituent_masses
+    for level in levels
+        haskey(L_SYMBOLS, level.L_label) || throw(ArgumentError(
+            "fixed_spectrum: unknown orbital label `$(level.L_label)`",
+        ))
+        1 <= level.n <= solver.nlevels_per_channel || throw(ArgumentError(
+            "fixed_spectrum: level $(level.label) has n=$(level.n) outside 1:$(solver.nlevels_per_channel) (raise nlevels_per_channel)",
+        ))
     end
-    states = map(spec.states) do state
-        multiplet = FineStructureMultiplet(state.L, state.multiplicity, state.J)
+    channel_cache = Dict{RadialChannelKey,ChannelRadialSolution}()
+    required_levels = Dict{Tuple{String,Int,Int},Int}()
+    for level in levels
+        sector = (level.L_label, level.multiplicity, level.J)
+        required_levels[sector] = max(get(required_levels, sector, 0), level.n)
+    end
+    states = map(collect(levels)) do level
+        multiplet = FineStructureMultiplet(
+            level.L_label, level.multiplicity, level.J,
+        )
         key = RadialChannelKey(
-            masses, state.L, state.multiplicity, state.J,
+            masses, level.L_label, level.multiplicity, level.J,
         )
         sol = get!(channel_cache, key) do
             fixed_channel_solution(
                 params,
                 masses,
                 multiplet;
-                solver = spec.computation.solver,
+                solver = solver,
                 terms = terms,
-                nlevels = required_levels[(state.L, state.multiplicity, state.J)],
+                nlevels = required_levels[(
+                    level.L_label, level.multiplicity, level.J,
+                )],
             )
         end
-        wave = radial_wave(sol, state.n)
-        mass = sol.eigenvalues_GeV[state.n]
-        total_shift = mass - state.central_GeV
-        is_contact_sector = terms.contact_hyperfine && state.L == "S" &&
-                            state.multiplicity in (1, 3)
-        contact_shift = is_contact_sector ? total_shift : 0.0
+        wave = radial_wave(sol, level.n)
+        mass = sol.eigenvalues_GeV[level.n]
+        contact_shift = terms.contact_hyperfine ?
+            contact_hyperfine_shift_active(params, masses, multiplet, wave) : 0.0
         so_vector = 0.0
         so_thomas = 0.0
         so_total = 0.0
@@ -317,9 +342,9 @@ function add_spin_corrections(
         fs_total = 0.0
         fs_convention = "disabled"
         fine_structure_requested = terms.fine_structure && params.fine_structure.enabled &&
-                                   state.L != "S"
+                                   level.L_label != "S"
         fine_structure_active = fine_structure_requested &&
-                                state.L != "S" && state.multiplicity == 3
+                                level.L_label != "S" && level.multiplicity == 3
         if fine_structure_active
             comp = fine_structure_components(
                 params,
@@ -330,16 +355,11 @@ function add_spin_corrections(
                 k_spin_orbit = params.fine_structure.k_spin_orbit,
                 k_tensor = params.fine_structure.k_tensor,
             )
-            # Full diagonalization changes the radial state, so the exact mass
-            # displacement is not merely the first-order expectation. Preserve
-            # the operator decomposition by distributing the exact displacement
-            # according to the component expectations on the solved wave.
-            scale = iszero(comp.total) ? 0.0 : total_shift / comp.total
-            so_vector = scale * comp.spin_orbit_vector
-            so_thomas = scale * comp.spin_orbit_thomas
+            so_vector = comp.spin_orbit_vector
+            so_thomas = comp.spin_orbit_thomas
             so_total = so_vector + so_thomas
-            tensor = scale * comp.tensor
-            fs_total = total_shift
+            tensor = comp.tensor
+            fs_total = comp.total
             fs_convention =
                 isapprox(masses.m1_GeV, masses.m2_GeV; rtol = 0.0, atol = 0.0) ?
                 "equal_mass" : "unequal_mass_equal_share_LdotS"
@@ -348,8 +368,10 @@ function add_spin_corrections(
                 isapprox(masses.m1_GeV, masses.m2_GeV; rtol = 0.0, atol = 0.0) ?
                 "equal_mass" : "unequal_mass_equal_share_LdotS"
         end
+        central_contribution = mass - contact_shift - fs_total
         CorrectedState(
-            state,
+            level,
+            central_contribution,
             contact_shift,
             so_vector,
             so_thomas,
@@ -360,8 +382,8 @@ function add_spin_corrections(
             mass,
         )
     end
-    computation = SectorComputation(params, spec.computation.solver, channel_cache)
-    return Spectrum(spec.meson, states, computation)
+    computation = SectorComputation(params, solver, channel_cache)
+    return Spectrum(meson, states, computation)
 end
 
 """
@@ -403,10 +425,9 @@ end
 """
     compute_spectrum(params, meson; levels=spectrum_levels(2), ...) -> MixedSpectrum
 
-Run all three stages: [`central_spectrum`](@ref) →
-[`add_spin_corrections`](@ref) → [`add_intra_meson_mixing`](@ref). Keyword
-arguments are forwarded to the stage they belong to; call the stages directly
-to inspect the intermediate [`CentralSpectrum`](@ref) / [`CorrectedSpectrum`](@ref).
+Run the physical production stages: [`fixed_spectrum`](@ref) →
+[`add_intra_meson_mixing`](@ref). The independent [`central_spectrum`](@ref)
+diagnostic is not evaluated.
 """
 function compute_spectrum(
     params::GIParameters,
@@ -415,8 +436,9 @@ function compute_spectrum(
     solver::RadialSolver = FiniteDifferenceSolver(),
     terms::SpinTerms = SpinTerms(),
 )
-    central = central_spectrum(params, meson; levels = levels, solver = solver)
-    corrected = add_spin_corrections(central; terms = terms)
+    corrected = fixed_spectrum(
+        params, meson; levels = levels, solver = solver, terms = terms,
+    )
     return add_intra_meson_mixing(corrected; terms = terms)
 end
 

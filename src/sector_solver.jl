@@ -104,8 +104,10 @@ end
 """
     SectorComputation(params, solver, channel_cache)
 
-Container filled by the spectrum stages: precomputed central and fixed-sector
-radial solves, plus how they were produced.
+Container filled by one spectrum calculation: its native radial solves plus how
+they were produced. A production `fixed_spectrum` stores fixed `(L,S,J)` keys;
+an independent `central_spectrum` stores central `L` keys. The two calculations
+are not combined implicitly.
 
   - `params`: [`GIParameters`](@ref) used to build each central Hamiltonian.
   - `solver`: the [`RadialSolver`](@ref) that produced them and is reused for
@@ -113,7 +115,7 @@ radial solves, plus how they were produced.
   - `channel_cache`: map `RadialChannelKey` → `ChannelRadialSolution`.
 
 [`Spectrum`](@ref) keeps this alive so later stages and two-meson flavor mixing
-can reuse the cached solves.
+can reuse the relevant solved states.
 """
 struct SectorComputation{P<:GIParameters,S<:RadialSolver}
     params::P

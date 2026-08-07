@@ -229,8 +229,12 @@ end
     )
     @test length(with_hf) == 1 && length(no_hf) == 1
     @test no_hf[1].contact_shift_GeV ≈ 0.0 atol = 1e-15
-    @test with_hf[1].central_GeV ≈ no_hf[1].central_GeV rtol = 1e-12
-    @test with_hf[1].predicted_GeV - no_hf[1].predicted_GeV ≈ with_hf[1].contact_shift_GeV atol = 1e-12
+    # Full diagonalization lets the radial wave relax when contact is enabled,
+    # so the central expectation changes too. The contributions in one solved
+    # state, rather than a difference of two eigenproblems, sum to its mass.
+    @test with_hf[1].central_GeV != no_hf[1].central_GeV
+    @test with_hf[1].predicted_GeV ≈
+          with_hf[1].central_GeV + with_hf[1].contact_shift_GeV atol = 1e-12
 end
 
 @testset "isoscalar pseudoscalar annihilation block is opt-in" begin

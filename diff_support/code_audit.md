@@ -168,9 +168,10 @@ Eigenvalues and phase-invariant expectations are unaffected. Therefore:
 
 ### C. Caches and orchestration mutation: exclude from AD
 
-`central_spectrum` fills `Dict{RadialChannelKey,ChannelRadialSolution}` caches,
-and `add_spin_corrections` uses a `get!` cache for contact-resummed levels. These
-are useful at the orchestration layer but unsuitable as active derivative state.
+`central_spectrum` and `fixed_spectrum` independently fill
+`Dict{RadialChannelKey,ChannelRadialSolution}` caches; the production path does
+not combine them. These are useful at the orchestration layer but unsuitable as
+active derivative state.
 
 The derivative kernel should instead receive an immutable/prepared workspace
 containing constant arrays. A cache may store workspaces keyed by discrete

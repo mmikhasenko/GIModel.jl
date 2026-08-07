@@ -86,7 +86,7 @@ fixed-`j,l,s` plus mixed physical state.
 | Multi-level eigensolution | `ChannelRadialSolution` | Keep its native `Vector{<:RadialWave}`. Add convergence metadata here only when PA-12 defines it; do not add a parallel `FixedSectorSolution`. |
 | Calculation cache/provenance | `SectorComputation` | Keep and evolve its cache key/value types. It already owns parameters, solver, and solutions. |
 | Spectroscopic identity | `BasisState` and `FineStructureMultiplet` | Keep both roles explicit: `BasisState` identifies one radial level (`n,L,S,J,label`); `FineStructureMultiplet` identifies a fixed radial sector (`L,S,J`) before an `n` exists. This is containment, not two names for one entity. |
-| Spectrum stages and physical mass | `CentralState`, `CorrectedState`, `MixedState`, `Spectrum` | Extend these to retain or resolve their stage-correct radial components. Do not add `SolvedMesonState`. |
+| Spectrum stages and physical mass | `CentralState`, `CorrectedState`, `MixedState`, `Spectrum` | `central_spectrum` is an independent diagnostic. Production starts at `fixed_spectrum`; `CorrectedState` reuses `BasisState` and does not embed a central precursor. Do not add `SolvedMesonState`. |
 | Mixing algebra | `MixingBlock`, `MixingResult`, `diagonalize_mixing_block` | Keep. Annihilation and `same_j_mixing` should return or wrap `MixingResult` instead of returning named tuples that repeat `block`, `masses`, and `vectors`. |
 | Per-state mixing projection | `StateMixing` | Completed: it references one shared `MixingResult` plus the selected eigenstate column; no eigensystem copies are stored. |
 | Annihilation input metadata | `PseudoscalarAnnihilationBasisInput` | Keep the physics-specific mass/flavor metadata with a signed projection of the physical state's native radial components. Do not replace it with a generic duplicate state wrapper. |
@@ -240,6 +240,7 @@ former HO-hybrid path has been deleted and no silent fallback is allowed.
 | PA-11 | done | PA-08, PA-09, PA-10 | Add the full stage-1 builder to `ChannelRadialSolution` | `fixed_channel_solution` diagonalizes one complete fixed-`L,S,J` Hamiltonian and returns native waves. |
 | PA-12 | partial | PA-11 | Add beta refinement and basis convergence | The complete sector and requested radial range now control beta selection; automatic refinement, convergence metadata, and tolerance enforcement remain. |
 | PA-13 | done | PA-11 | Route paper-order stage 1 through `compute_spectrum` | Every requested state is resolved from the fixed-sector solve; the HO route has no mesh field or mesh fallback. Fitted fine-structure scale removal remains a separate physics calibration decision. |
+| PA-13R | done | PA-13 | Remove the central-only solve from production and unify the backend algorithm | `compute_spectrum` starts from `fixed_spectrum`; production caches contain only `(L,S,J)` solves. One generic candidate/diagonalization/result algorithm serves HO and FD, while dispatch owns native matrices and waves. FD exposes the same spin-component matrix fields as HO. |
 | PA-14 | done | PA-10, PA-13 | Assemble complete stage-2 spectroscopic blocks | Tensor and antisymmetric spin-orbit blocks use spin-resolved waves and every compatible requested radial state. |
 | PA-15 | done | PA-14 | Complete `MixedState`/`Spectrum` physical components | `StateMixing` shares its `MixingResult`; `physical_components` resolves coefficient/wave pairs and mixed `radial_wave` calls fail loudly. |
 | PA-16 | partial | PA-04, PA-15 | Integrate stage-3 annihilation | Literal annihilation kernels coherently consume the stage-2 spectroscopic projection; their flavor eigensystem still needs to become the final model-level `Spectrum` composition. Calibrated comparison modes remain visibly separate in GIPaper. |
@@ -255,10 +256,11 @@ The reuse-first slice completed the following checklist:
 2. Added the smallest missing nonlocal primitive as explicitly named
    momentum-sandwich dispatch. No abstract operator holder was needed for the
    current consumers.
-3. Specified how `ChannelRadialSolution`, `CentralState`/`CorrectedState`,
-   `MixedState`, `StateMixing`, and `MixingResult` share rather than copy native
-   waves and transformations. Mass and mixing coefficients do not belong to a
-   bare radial wave.
+3. Specified how `ChannelRadialSolution`, `CorrectedState`, `MixedState`,
+   `StateMixing`, and `MixingResult` share rather than copy native waves and
+   transformations. The later PA-13R cleanup made `CentralState` diagnostic-only
+   and reused `BasisState` directly in production. Mass and mixing coefficients
+   do not belong to a bare radial wave.
 4. Corrected the `RadialWave` docstring and implemented its promised HO form.
 5. Added reusable contract tests covering normalization, phase,
    diagonal expectation, transition overlap, and coordinate/momentum duality.

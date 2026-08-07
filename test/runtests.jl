@@ -1735,7 +1735,7 @@ end
     @test all(iszero, GIModel.physically_normalized_waves(zeros(5, 1), 0.25))
 end
 
-@testset "Native HO spin matrices equal wave-interface expectations" begin
+@testset "Native spin matrices equal wave-interface expectations" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     masses = ConstituentMasses(mq["c"], mq["c"])
     beta, nbasis = 0.75, 12
@@ -1774,6 +1774,21 @@ end
           components.tensor rtol = 1e-5 atol = 1e-9
     @test Matrix(matrices.total) ≈
           Matrix(matrices.spin_orbit) + Matrix(matrices.tensor) atol = 1e-13
+
+    r, h = GIModel.radial_grid(120, 12.0)
+    wfd = MeshWave(r .^ 2 .* exp.(-r), r)
+    fdmat = GIModel.fine_structure_grid_matrices(params, masses, 2, r, h; L = 1)
+    fdcomp = fine_structure_components(
+        params, masses, FineStructureMultiplet("P", 3, 2), wfd,
+        k_spin_orbit = params.fine_structure.k_spin_orbit,
+        k_tensor = params.fine_structure.k_tensor,
+    )
+    expect(M) = h * dot(wfd.u, M * wfd.u) / wave_norm(wfd)
+    @test expect(fdmat.spin_orbit_vector) ≈ fdcomp.spin_orbit_vector atol = 1e-10
+    @test expect(fdmat.spin_orbit_thomas) ≈ fdcomp.spin_orbit_thomas atol = 1e-10
+    @test expect(fdmat.tensor) ≈ fdcomp.tensor atol = 1e-10
+    @test Matrix(fdmat.total) ≈
+          Matrix(fdmat.spin_orbit) + Matrix(fdmat.tensor) atol = 1e-13
 end
 
 @testset "Both solvers solve the same native fixed-(L,S,J) Hamiltonian" begin
@@ -1839,7 +1854,7 @@ end
     @test GIModel.contact_hyperfine_nonperturbative_levels(params, masses, "S", 2, r, 2) == Float64[]
 
     # The oscillator basis used to answer "empty" here, which
-    # `add_spin_corrections` read as "fall back to first-order PT": the light
+    # the old spectrum correction stage read as "fall back to first-order PT": the light
     # 1S0 came out 0.2842 GeV against the resummed 0.0950. U1 made that a loud
     # failure, U2 unified the solve, and B1 made this wrapper basis-generic — so
     # the oscillator path now resums in its own space and lands on the same
@@ -1923,8 +1938,7 @@ end
     # accept it. NOTE: these calls are deliberately written the old way -- that
     # they no longer parse into a method IS the assertion -- so do not rewrite
     # them into the solver/terms form.
-    central = central_spectrum(params, meson; levels = levels)
-    corrected = add_spin_corrections(central)
+    corrected = fixed_spectrum(params, meson; levels = levels)
     @test_throws MethodError compute_spectrum(params, meson; levels = levels, ngrid = 450)
     @test_throws MethodError compute_spectrum(params, meson; levels = levels, rmax = 24.0)
     @test_throws MethodError compute_spectrum(params, meson; levels = levels,
@@ -1941,7 +1955,9 @@ end
     @test_throws MethodError channel_solution(params, meson.constituent_masses, 0;
         kinetic = :relativistic)
     @test_throws MethodError solve_sector(params, 1.628; ngrid = 100)
-    @test_throws MethodError add_spin_corrections(central; use_fine_structure = false)
+    @test_throws MethodError fixed_spectrum(
+        params, meson; levels = levels, use_fine_structure = false,
+    )
     @test_throws MethodError add_intra_meson_mixing(corrected; tensor_mixing = false)
 
     # Invalid settings are construction errors, not silent fallbacks.
@@ -2012,6 +2028,14 @@ end
     @test_throws ArgumentError OscillatorSolver(beta_grid = Float64[])
     @test_throws ArgumentError OscillatorSolver(beta_grid = [0.5, -0.5])
     @test_throws ArgumentError OscillatorSolver(beta_grid = [1.5, 0.5])
+
+    # The paper's complete fixed-sector Hamiltonian is relativistic. The
+    # nonrelativistic FD option remains a central-only comparator and must not
+    # be silently upgraded to a relativistic production calculation.
+    @test_throws ArgumentError compute_spectrum(
+        params, meson; levels = levels,
+        solver = FiniteDifferenceSolver(kinetic = :nonrelativistic),
+    )
 
     # beta_grid is a solver field, not a module constant to go edit in source.
     narrow = OscillatorSolver(beta_grid = 0.9:0.1:1.2)
@@ -2307,7 +2331,7 @@ end
     # Applied without mutating the cached wave. Channel solutions already have
     # a deterministic outer-lobe phase; the annihilation convention may choose
     # the same or opposite sign for a particular radial excitation.
-    key = RadialChannelKey(spec.meson.constituent_masses, "S")
+    key = RadialChannelKey(spec.meson.constituent_masses, "S", 1, 0)
     cached = spec.computation.channel_cache[key]
     before = [copy(w.u) for w in cached.waves]
     raw = radial_wave(spec, "1^1S_0")
@@ -2330,7 +2354,7 @@ end
     @test isapprox(abs(sfd), abs(sho); rtol = 0.01)
 end
 
-@testset "staged spectrum: central -> corrected -> mixed" begin
+@testset "central diagnostic is independent of fixed -> mixed production" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     us = Meson(mq, :u, :s)
     levels = spectrum_levels(2; L_labels = ("S", "P"))
@@ -2342,13 +2366,14 @@ end
     @test parameters(central) === central.computation.params
     @test all(isfinite(s.central_GeV) for s in central.states)
 
-    corrected = add_spin_corrections(central)
+    corrected = fixed_spectrum(params, us; levels = levels, kwargs...)
     @test corrected isa CorrectedSpectrum
     @test corrected.computation !== central.computation
     @test all(k.multiplicity == 0 for k in keys(central.computation.channel_cache))
+    @test all(k.multiplicity != 0 for k in keys(corrected.computation.channel_cache))
     for s in corrected.states
-        # property forwarding into the wrapped central state
-        @test s.central_GeV == s.central.central_GeV
+        @test s.basis isa BasisState
+        @test !hasfield(CorrectedState, :central)
         @test s.mass_GeV ≈ s.central_GeV + s.contact_shift_GeV + s.fine_structure_shift_GeV
     end
 
@@ -2356,7 +2381,7 @@ end
     @test mixed isa MixedSpectrum
     @test mixed.computation === corrected.computation
 
-    # composition is compute_spectrum
+    # compute_spectrum composes only the production stages
     direct = compute_spectrum(params, us; levels = levels, kwargs...)
     @test [s.mass_GeV for s in direct.states] == [s.mass_GeV for s in mixed.states]
     @test [s.fine_structure_mass_convention for s in direct.states] ==
@@ -2376,8 +2401,11 @@ end
 
     # stage skipping: no corrections means no fine structure and no mixing blocks
     bare = add_intra_meson_mixing(
-        add_spin_corrections(
-            central;
+        fixed_spectrum(
+            params,
+            us;
+            levels = levels,
+            kwargs...,
             terms = SpinTerms(contact_hyperfine = false, fine_structure = false),
         ),
     )
@@ -2386,7 +2414,7 @@ end
     @test all(s.fine_structure_mass_convention == "disabled" for s in bare.states)
 
     # stage order is enforced by dispatch
-    @test !hasmethod(add_spin_corrections, Tuple{MixedSpectrum})
+    @test !isdefined(GIModel, :add_spin_corrections)
     @test !hasmethod(add_intra_meson_mixing, Tuple{CentralSpectrum})
 end
 

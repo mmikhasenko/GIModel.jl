@@ -52,22 +52,21 @@ flowchart LR
 
 ## Spectrum stages
 
-The full meson spectrum is a typed pipeline rather than one mutable result:
+The production spectrum is a typed pipeline rather than one mutable result.
+The central-only solve is a separate diagnostic and is not evaluated by
+`compute_spectrum`:
 
 ```mermaid
 flowchart TD
-  I["parameters + Meson + requested BasisState levels"] --> C["central_spectrum"]
-  C --> CC["SectorComputation channel cache"]
-  CC --> CR["central ChannelRadialSolution per masses + L"]
-  C --> CS["CentralSpectrum / CentralState"]
-  CS --> A["add_spin_corrections"]
-  A --> H["assemble H(L,S,J) = Hcentral + Hcontact + HSO + Htensor"]
+  I["parameters + Meson + requested BasisState levels"] --> F["fixed_spectrum"]
+  I -. "optional diagnostic" .-> C["central_spectrum / CentralSpectrum"]
+  F --> H["assemble H(L,S,J) = Hcentral + Hcontact + HSO + Htensor"]
   H --> HD{"solver dispatch"}
   HD -->|"HO"| HM["native coefficient-space matrices"]
   HD -->|"FD"| FM["native grid-space matrices"]
   HM --> RS["diagonalize fixed sector"]
   FM --> RS
-  RS --> RC["spin-resolved ChannelRadialSolution per masses + L,S,J"]
+  RS --> RC["SectorComputation: fixed-(L,S,J) solutions only"]
   RS --> COR["CorrectedSpectrum / CorrectedState"]
   COR --> B["add_intra_meson_mixing"]
   B --> MB["complete requested same-J spin-orbit or tensor MixingBlock"]
@@ -77,11 +76,12 @@ flowchart TD
   PC --> OUT["masses, expectations, decay observables, GIPaper reports"]
 ```
 
-`compute_spectrum` is exactly the composition of those three stages. Stage 2 is
-named `add_spin_corrections` for API continuity, but it performs a full
-fixed-sector diagonalization; its shifts are a reporting decomposition of the
-resulting eigenvalue, not perturbative inputs. `SectorComputation` stores only
-`params`, the selected `solver`, and central plus spin-resolved channel solves.
+`compute_spectrum` is exactly `fixed_spectrum` followed by
+`add_intra_meson_mixing`. Each fixed-sector Hamiltonian is solved once. The
+reported central/contact/spin-orbit/tensor values are expectations in that same
+spin-distorted eigenstate and sum to its eigenvalue; they are not differences
+from a second central-only calculation. `SectorComputation` stores only
+`params`, the selected `solver`, and the production fixed-sector solutions.
 
 `StateMixing` records how a reported state changed; generic diagonalization is
 owned by `MixingBlock`, `MixingResult`, and `diagonalize_mixing_block`. Mechanism
@@ -101,7 +101,8 @@ for the latter; no representative or silently unmixed wave is fabricated.
   builders and cross-sector elements.
 - `fixed_channel_solver.jl`: solver-dispatched complete fixed-`(L,S,J)` solve.
 - `state_mixing.jl`: shared mixing matrix/result abstraction.
-- `spectrum.jl`: the three spectrum stages and state-level accessors.
+- `spectrum.jl`: the independent central diagnostic, production spectrum
+  stages, and state-level accessors.
 - `flavor_mixing.jl`, `pseudoscalar_annihilation.jl`: annihilation block builders.
 - `strong_decays.jl`, `annihilation_widths.jl`, `mock_meson_overlaps.jl`:
   downstream observables consuming `RadialWave`/`MomentumWave`.

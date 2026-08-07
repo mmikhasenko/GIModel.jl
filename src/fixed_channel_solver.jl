@@ -12,9 +12,10 @@ function _fixed_channel_matrices(
     masses::ConstituentMasses,
     multiplet::FineStructureMultiplet,
     beta::Real,
-    nbasis::Integer,
     terms::SpinTerms,
+    nlevels::Integer,
 )
+    nbasis = max(solver.nbasis, nlevels + 4)
     L = L_SYMBOLS[multiplet.L_label]
     central = oscillator_central_matrix(params, masses, L, beta, nbasis)
     contact = terms.contact_hyperfine ? ho_contact_hyperfine_matrix(
@@ -48,11 +49,13 @@ function _fixed_channel_matrices(
 end
 
 function _fixed_channel_matrices(
-    solver::FiniteDifferenceSolver,
+    solver::FiniteDifferenceSolver{:relativistic},
     params::GIParameters,
     masses::ConstituentMasses,
     multiplet::FineStructureMultiplet,
+    ::Nothing,
     terms::SpinTerms,
+    nlevels::Integer,
 )
     L = L_SYMBOLS[multiplet.L_label]
     central, r = relativistic_hamiltonian(params, masses, L; solver = solver)
@@ -76,26 +79,85 @@ function _fixed_channel_matrices(
     else
         _zero_operator(n)
     end
-    fine_total = if terms.fine_structure && params.fine_structure.enabled &&
-                    L > 0 && multiplet.multiplicity == 3
-        fine_structure_grid_operator(params, masses, multiplet.J, r, h; L = L)
+    fine = if terms.fine_structure && params.fine_structure.enabled &&
+              L > 0 && multiplet.multiplicity == 3
+        fine_structure_grid_matrices(params, masses, multiplet.J, r, h; L = L)
     else
-        _zero_operator(n)
+        zero_matrix = _zero_operator(n)
+        (
+            spin_orbit_vector = zero_matrix,
+            spin_orbit_thomas = zero_matrix,
+            spin_orbit = zero_matrix,
+            tensor = zero_matrix,
+            total = zero_matrix,
+        )
     end
-    # The FD operator builder currently exposes the summed fine-structure
-    # matrix. Component reporting remains available through wave expectations.
     return (
         central = central,
         contact = contact,
-        spin_orbit_vector = _zero_operator(n),
-        spin_orbit_thomas = _zero_operator(n),
-        spin_orbit = _zero_operator(n),
-        tensor = _zero_operator(n),
-        fine_structure = fine_total,
-        total = Symmetric(Matrix(central) + Matrix(contact) + Matrix(fine_total)),
+        spin_orbit_vector = fine.spin_orbit_vector,
+        spin_orbit_thomas = fine.spin_orbit_thomas,
+        spin_orbit = fine.spin_orbit,
+        tensor = fine.tensor,
+        fine_structure = fine.total,
+        total = Symmetric(Matrix(central) + Matrix(contact) + Matrix(fine.total)),
         r = r,
     )
 end
+
+function _fixed_channel_matrices(
+    solver::FiniteDifferenceSolver{:nonrelativistic},
+    params::GIParameters,
+    masses::ConstituentMasses,
+    multiplet::FineStructureMultiplet,
+    ::Nothing,
+    terms::SpinTerms,
+    nlevels::Integer,
+)
+    throw(ArgumentError(
+        "the complete GI fixed-sector Hamiltonian is relativistic; " *
+        "use channel_solution with this nonrelativistic solver as a central-only comparator",
+    ))
+end
+
+_fixed_channel_candidates(solver::OscillatorSolver) = solver.beta_grid
+_fixed_channel_candidates(::FiniteDifferenceSolver) = (nothing,)
+
+_fixed_channel_waves(
+    ::OscillatorSolver,
+    multiplet::FineStructureMultiplet,
+    beta::Real,
+    vectors::AbstractMatrix,
+    matrices,
+) = [
+    OscillatorWave(L_SYMBOLS[multiplet.L_label], beta, view(vectors, :, n)) for
+    n in axes(vectors, 2)
+]
+
+function _fixed_channel_waves(
+    ::FiniteDifferenceSolver,
+    multiplet::FineStructureMultiplet,
+    ::Nothing,
+    vectors::AbstractMatrix,
+    matrices,
+)
+    normalized = physically_normalized_waves(
+        Matrix(vectors), matrices.r[2] - matrices.r[1],
+    )
+    return [MeshWave(view(normalized, :, n), matrices.r) for n in axes(normalized, 2)]
+end
+
+function _finish_fixed_channel_search!(
+    solver::OscillatorSolver,
+    best,
+    masses::ConstituentMasses,
+    multiplet::FineStructureMultiplet,
+)
+    _warn_if_beta_railed(best.candidate, solver, masses, L_SYMBOLS[multiplet.L_label])
+    return nothing
+end
+
+_finish_fixed_channel_search!(::FiniteDifferenceSolver, best, masses, multiplet) = nothing
 
 """
     fixed_channel_solution(params, masses, multiplet; solver, terms, nlevels)
@@ -104,47 +166,6 @@ Diagonalize the complete radial Hamiltonian for one fixed `(L,S,J)` sector:
 central + contact hyperfine + symmetric spin-orbit + diagonal tensor. HO and FD
 return the same [`ChannelRadialSolution`](@ref) contract with native waves.
 """
-function _fixed_channel_solution(
-    solver::OscillatorSolver,
-    params::GIParameters,
-    masses::ConstituentMasses,
-    multiplet::FineStructureMultiplet;
-    terms::SpinTerms = SpinTerms(),
-    nlevels::Integer = solver.nlevels_per_channel,
-)
-    nbasis = max(solver.nbasis, nlevels + 4)
-    L = L_SYMBOLS[multiplet.L_label]
-    best = nothing
-    for beta in solver.beta_grid
-        matrices = _fixed_channel_matrices(
-            solver, params, masses, multiplet, beta, nbasis, terms,
-        )
-        values, vectors = lowest_eigenpairs(Matrix(matrices.total), nlevels, solver)
-        if isnothing(best) || values[end] < best.values[end]
-            best = (beta = beta, values = values, vectors = vectors)
-        end
-    end
-    _warn_if_beta_railed(best.beta, solver, masses, L)
-    waves = [
-        OscillatorWave(L, best.beta, view(best.vectors, :, n)) for n in 1:nlevels
-    ]
-    return ChannelRadialSolution(best.values, waves)
-end
-
-function _fixed_channel_solution(
-    solver::FiniteDifferenceSolver,
-    params::GIParameters,
-    masses::ConstituentMasses,
-    multiplet::FineStructureMultiplet;
-    terms::SpinTerms = SpinTerms(),
-    nlevels::Integer = solver.nlevels_per_channel,
-)
-    matrices = _fixed_channel_matrices(solver, params, masses, multiplet, terms)
-    values, vectors = lowest_eigenpairs(Matrix(matrices.total), nlevels, solver)
-    waves = physically_normalized_waves(Matrix(vectors), matrices.r[2] - matrices.r[1])
-    return ChannelRadialSolution(values, waves, matrices.r)
-end
-
 function fixed_channel_solution(
     params::GIParameters,
     masses::ConstituentMasses,
@@ -153,7 +174,24 @@ function fixed_channel_solution(
     terms::SpinTerms = SpinTerms(),
     nlevels::Integer = solver.nlevels_per_channel,
 )
-    return _fixed_channel_solution(
-        solver, params, masses, multiplet; terms = terms, nlevels = nlevels,
+    best = nothing
+    for candidate in _fixed_channel_candidates(solver)
+        matrices = _fixed_channel_matrices(
+            solver, params, masses, multiplet, candidate, terms, nlevels,
+        )
+        values, vectors = lowest_eigenpairs(Matrix(matrices.total), nlevels, solver)
+        if isnothing(best) || values[end] < best.values[end]
+            best = (
+                candidate = candidate,
+                matrices = matrices,
+                values = values,
+                vectors = vectors,
+            )
+        end
+    end
+    _finish_fixed_channel_search!(solver, best, masses, multiplet)
+    waves = _fixed_channel_waves(
+        solver, multiplet, best.candidate, best.vectors, best.matrices,
     )
+    return ChannelRadialSolution(best.values, waves)
 end

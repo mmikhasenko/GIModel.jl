@@ -78,10 +78,10 @@ Points worth copying:
   (`ngrid = 360, rmax = 20.0` against `450 / 24.0`) purely for speed, having
   checked the masses agree to well under an MeV across the whole mass range.
   Changing a `SpinTerms` switch is *meant* to move a mass.
-* **The spectrum is staged.** `compute_spectrum` composes the central solve,
-  the spin-dependent shifts and the intra-meson mixing; call
-  `central_spectrum` / `add_spin_corrections` / `add_intra_meson_mixing`
-  directly to look at an intermediate stage, and read the per-state breakdown
+* **The spectrum is staged.** `compute_spectrum` composes the complete
+  fixed-sector solve and intra-meson mixing; call `fixed_spectrum` or
+  `add_intra_meson_mixing` directly to inspect a production stage.
+  `central_spectrum` is an independent central-only diagnostic. Read the per-state breakdown
   (`central_GeV`, `contact_shift_GeV`, `fine_structure_shift_GeV`, `mixings`)
   from the states themselves.
 * **A `Spectrum` prints its own physics.** Displaying one gives a table of

@@ -100,33 +100,31 @@ flowchart TD
 
 ## What the current public pipeline actually does
 
-`compute_spectrum` composes three software stages:
+`compute_spectrum` composes two production stages:
 
-1. `central_spectrum` solves one spin-independent channel per orbital `L`.
-2. `add_spin_corrections` assembles and diagonalizes the complete fixed
-   `(L,S,J)` Hamiltonian for every requested sector. The historical name is
-   retained, but the computation is nonperturbative.
-3. `add_intra_meson_mixing` builds one complete requested radial block for each
+1. `fixed_spectrum` assembles and diagonalizes the complete fixed `(L,S,J)`
+   Hamiltonian for every requested sector.
+2. `add_intra_meson_mixing` builds one complete requested radial block for each
    allowed antisymmetric-spin-orbit or tensor sector from those spin-resolved
    waves, then stores a shared `MixingResult`.
 
-Both solvers follow this semantic path in their native representations.
+`central_spectrum` remains a separately callable spin-independent diagnostic;
+the production calculation neither calls it nor retains its cache. Both
+solvers follow the production path in their native representations.
 `radial_wave` returns the fixed-sector wave for an unmixed state;
 `physical_components` returns coefficient/wave pairs for a mixed state.
 Isoscalar annihilation is still invoked later through `flavor_mixing.jl`.
 
 ```mermaid
 flowchart TD
-    C["compute_spectrum"] --> CS["central_spectrum: cache by masses and L"]
-    CS --> CH["channel_solution"]
-    CH -->|"FD"| FD["Mesh Hcentral -> eigenpairs -> mesh waves"]
-    CH -->|"HO"| HO["Exact HO Hcentral -> beta scan -> HO coefficients"]
-    FD --> CC["central ChannelRadialSolution{MeshWave}"]
-    HO --> HC["central ChannelRadialSolution{OscillatorWave}"]
-    CC --> AC["add_spin_corrections"]
-    HC --> AC
-    AC --> FH["assemble H(L,S,J): central + contact + symmetric SO + diagonal tensor"]
-    FH --> COR["spin-resolved ChannelRadialSolution + CorrectedState"]
+    C["compute_spectrum"] --> FS["fixed_spectrum"]
+    C -. "not called; optional diagnostic" .-> CS["central_spectrum"]
+    FS --> FH["assemble H(L,S,J): central + contact + symmetric SO + diagonal tensor"]
+    FH -->|"FD dispatch"| FD["native grid-space matrices"]
+    FH -->|"HO dispatch"| HO["native coefficient-space matrices + beta candidates"]
+    FD --> D["one generic candidate / diagonalization / wave-construction algorithm"]
+    HO --> D
+    D --> COR["spin-resolved ChannelRadialSolution + CorrectedState"]
     COR --> IM["add_intra_meson_mixing"]
     IM --> MX["complete requested radial blocks from spin-resolved waves"]
     MX --> MS["MixedState + shared MixingResult"]
@@ -171,8 +169,8 @@ Status vocabulary:
 
 | Claim | Evidence |
 | --- | --- |
-| The public entry point is central -> fixed-sector solutions -> intra-meson mixing | [`src/spectrum.jl`](../src/spectrum.jl) |
-| The central cache is one solve per distinct `L`; fixed solutions are keyed by `(L,S,J)` | [`src/sector_solver.jl`](../src/sector_solver.jl), [`src/spectrum.jl`](../src/spectrum.jl) |
+| The public entry point is fixed-sector solutions -> intra-meson mixing; the central-only solve is independent | [`src/spectrum.jl`](../src/spectrum.jl) |
+| A production cache contains only fixed solutions keyed by `(L,S,J)` | [`src/sector_solver.jl`](../src/sector_solver.jl), [`src/spectrum.jl`](../src/spectrum.jl) |
 | The HO central operator uses exact `p2` and DVR position matrices | [`src/harmonic_oscillator_basis.jl`](../src/harmonic_oscillator_basis.jl) |
 | HO channel solutions retain `OscillatorWave`; mesh sampling is an explicit diagnostic/plot operation | [`src/harmonic_oscillator_basis.jl`](../src/harmonic_oscillator_basis.jl), [`src/sector_solver.jl`](../src/sector_solver.jl) |
 | Contact, symmetric spin-orbit, and diagonal tensor enter the same sector Hamiltonian | [`src/fixed_channel_solver.jl`](../src/fixed_channel_solver.jl), [`src/contact_hyperfine.jl`](../src/contact_hyperfine.jl), [`src/spin_fine_structure.jl`](../src/spin_fine_structure.jl) |
@@ -183,16 +181,47 @@ Status vocabulary:
 
 ## Architectural conclusion after implementation
 
-The fixed-sector problem is now the production boundary. FD and HO share the
-same semantic operation, `fixed_channel_solution`, while their matrix assembly
-dispatches to their native representations. No `GIBasis`, second wave type,
-fixed-sector result wrapper, or sampled HO state was added.
+The fixed-sector problem is now the production boundary. FD and HO share one
+candidate-selection, diagonalization, and result-construction algorithm in
+`fixed_channel_solution`; only native matrix assembly and native-wave
+construction dispatch on the solver. FD now exposes the same vector/Thomas
+spin-orbit and tensor matrix decomposition as HO. No `GIBasis`, second wave
+type, fixed-sector result wrapper, or sampled HO state was added.
 
-`ChannelRadialSolution` retains native waves; `SectorComputation` owns both
-central and `(L,S,J)` cache entries; and `StateMixing` points to one shared
-`MixingResult`. Pairwise scalar angles were deliberately removed from the core
+`ChannelRadialSolution` retains native waves; a production `SectorComputation`
+owns only `(L,S,J)` cache entries; and `StateMixing` points to one shared
+`MixingResult`. `CorrectedState` reuses `BasisState` directly rather than
+embedding a central precursor. Pairwise scalar angles were deliberately removed from the core
 state because a complete multi-radial block has no unique angle. Reports derive
 an explicitly stated two-row projection from the shared eigenvector instead.
+
+## What "external annihilation orchestration" means
+
+The core can build and diagonalize Eq. (16)-Eq. (18) annihilation blocks from
+two already solved nonstrange/strange spectra. It returns the flavor-mixed
+masses and eigenvectors. What is still external is the ownership of the result:
+`GIPaper.compare_reference` chooses a channel-specific annihilation scheme,
+calls those kernels, assigns the returned eigenvalues to report rows using
+reference ordering, and copies selected flavor coefficients into named tuples.
+The resulting eigenvectors are not stored in `Spectrum`, so a later observable
+cannot ask the model spectrum for the final flavor composition. PA-16 is the
+work of making that eigensystem a model-level final state without importing
+reference-row assignment conventions into GIModel.
+
+## Nonrelativistic and alternative central paths
+
+They are repository comparators, not alternative production algorithms from
+the 1985 paper. The paper writes down the nonrelativistic limit of its
+Hamiltonian to motivate Eqs. (2)-(7), discusses conventional Coulomb-plus-linear
+models, and says several alternatives were tried and rejected. Its reported
+spectrum is nevertheless obtained by direct diagonalization of the relativized
+Eq. (14) in large HO sectors. The code's nonrelativistic FD solve and pointwise,
+1D-smearing, derivative-expansion, and diagonal-only central constructions are
+useful research controls added by this repository; they must not be presented
+as paper execution modes. Consequently the nonrelativistic FD solver is
+accepted by the standalone `channel_solution`/`central_spectrum` diagnostic but
+rejected by `fixed_spectrum` instead of being silently converted to the
+relativistic Hamiltonian.
 
 ## Remaining implementation sequence
 
@@ -231,9 +260,10 @@ provenance, cross-wave elements, and enlarged radial blocks are covered now.
 ## Bottom line
 
 The repository has now crossed both the native-matrix and spectroscopic
-integration thresholds: the public spectrum uses complete fixed-sector
-Hamiltonians, complete requested cross-sector radial blocks, and resolvable
-physical component waves. It does not reconstruct HO states on an FD mesh.
+integration thresholds: the public spectrum solves each complete fixed-sector
+Hamiltonian once, uses complete requested cross-sector radial blocks, and
+exposes resolvable physical component waves. It does not reconstruct HO states
+on an FD mesh or run a central-only precursor in production.
 
 The remaining gap to a single end-to-end 1985 calculation is smaller and
 explicit: automatic basis/beta convergence, removal or formal isolation of the

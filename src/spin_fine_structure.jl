@@ -1,15 +1,12 @@
 # First-order color-magnetic + Thomas-precession spin–orbit, plus OGE-tensor
 # in the structure of the paper, Eqs. (3)–(7) (text), using Table II ε in the
 # post-A14 Appendix-A momentum-factor prescription.
-# Radial integrals: we treat the FD eigenvector as the reduced Schrödinger radial
-# wavefunction u(r) sampled on a uniform mesh. The physical normalization is
-#   ∫ |u(r)|² dr = 1
-# (no extra 4π factor; the spherical-harmonic angular integral is already unity for
-# normalized Y_{LM}). On a uniform mesh with spacing h, the discrete proxy is
-#   ∑ |uᵢ|² h = 1.
+# Physics-level radial integrals consume the native `RadialWave` interface.
+# FD assembly uses reduced-wave samples with ∫|u(r)|²dr=1; HO assembly uses
+# coefficients with the same physical normalization.
 #
-# A global scale k_spin_orbit / k_tensor bridges the present FD + semirelativistic path to
-# the large HO-basis results in the original paper; defaults are in parameters.toml.
+# The historical global scales k_spin_orbit / k_tensor remain active in both
+# backends pending the formula/calibration study tracked in the paper audit.
 #
 # Public API (exported from GIModel.jl):
 #   fine_structure_components, fine_structure_split, spin_orbit_mixing_components,
@@ -506,21 +503,20 @@ function fine_structure_components(
 end
 
 """
-    fine_structure_grid_operator(params, masses, J, r, h; L = 1) -> Symmetric
+    fine_structure_grid_matrices(params, masses, J, r, h; L = 1)
 
-Triplet `³L_J` spin-orbit + tensor potential as a dense operator on the uniform
-radial mesh `r`, term-by-term identical to the expectation values taken by
+Triplet `³L_J` spin-orbit and tensor potentials as dense operators on the
+uniform radial mesh `r`, term-by-term identical to the expectation values taken by
 [`fine_structure_components`](@ref) on the active research path (smeared
 kernels, two-sided `(m₁m₂/E₁E₂)^(1/2+ε)` momentum sandwich, calibrated
-`k_spin_orbit`/`k_tensor` scales). Adding it to the central Hamiltonian — or
-treating it in first-order perturbation theory in the HO eigenbasis — yields
-spin-distorted radial waves; the first-order HO treatment is the paper-order
-prescription validated against the Table VII gluonic subtable (W6).
+`k_spin_orbit`/`k_tensor` scales). The returned fields match
+[`ho_fine_structure_matrices`](@ref): `spin_orbit_vector`,
+`spin_orbit_thomas`, `spin_orbit`, `tensor`, and `total`.
 
 Requires `fine_structure_momentum_sandwich` and `fine_structure_smeared_kernels`
 (the calibration of the `k` scales assumes them); throws otherwise.
 """
-function fine_structure_grid_operator(
+function fine_structure_grid_matrices(
     params::GIParameters,
     masses::ConstituentMasses,
     J::Integer,
@@ -534,7 +530,16 @@ function fine_structure_grid_operator(
     m1 = masses.m1_GeV
     m2 = masses.m2_GeV
     n = length(r)
-    (params.fine_structure.enabled && L >= 1) || return Symmetric(zeros(Float64, n, n))
+    if !(params.fine_structure.enabled && L >= 1)
+        zero_matrix = Symmetric(zeros(Float64, n, n))
+        return (
+            spin_orbit_vector = zero_matrix,
+            spin_orbit_thomas = zero_matrix,
+            spin_orbit = zero_matrix,
+            tensor = zero_matrix,
+            total = zero_matrix,
+        )
+    end
     p2_fact = eigen(p2_operator(params, m1, L, r, h))
     side(eps) = momentum_relativization_matrix(
         m1,
@@ -561,13 +566,25 @@ function fine_structure_grid_operator(
     ls = LdotS(Int(L), 1, Int(J))
     k_so = params.fine_structure.k_spin_orbit
     k_t = params.fine_structure.k_tensor
-    V =
-        k_so * inv2_cm * ls * (B_v * K_cm * B_v) .-
-        k_so * inv2_tp * ls * (B_s * K_tp * B_s) .+
+    vector = Symmetric(k_so * inv2_cm * ls * (B_v * K_cm * B_v))
+    thomas = Symmetric(-k_so * inv2_tp * ls * (B_s * K_tp * B_s))
+    spin_orbit = Symmetric(Matrix(vector) + Matrix(thomas))
+    tensor = Symmetric(
         k_t * (1.0 / (3.0 * m1 * m2)) * tensor_triplet_LJ(Int(L), Int(J), 1) *
-        (B_t * K_tk * B_t)
-    return Symmetric(Matrix(V))
+        (B_t * K_tk * B_t),
+    )
+    return (
+        spin_orbit_vector = vector,
+        spin_orbit_thomas = thomas,
+        spin_orbit = spin_orbit,
+        tensor = tensor,
+        total = Symmetric(Matrix(spin_orbit) + Matrix(tensor)),
+    )
 end
+
+"""Summed FD spin-orbit plus tensor operator; see [`fine_structure_grid_matrices`](@ref)."""
+fine_structure_grid_operator(args...; kwargs...) =
+    fine_structure_grid_matrices(args...; kwargs...).total
 
 """
     ho_fine_structure_matrices(params, masses, L, multiplicity, J, beta, nbasis)

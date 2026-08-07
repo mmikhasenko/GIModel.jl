@@ -190,12 +190,12 @@ function write_residual_report(
             println(io)
             println(
                 io,
-                "All shifts below are relative to the central FD eigenvalue (the spin-independent Hamiltonian on the current mesh).",
+                "The central, contact, spin-orbit, and tensor columns are operator contributions in the same fully diagonalized fixed-sector eigenstate. They are not differences from a separate central-only solve.",
             )
             println(io)
             println(
                 io,
-                "| state | central GeV | contact MeV | L·S(vec) MeV | L·S(Thomas) MeV | L·S total MeV | tensor MeV | annihilation MeV | total shift MeV | predicted GeV |",
+                "| state | central contribution GeV | contact MeV | L·S(vec) MeV | L·S(Thomas) MeV | L·S total MeV | tensor MeV | annihilation MeV | spin + annihilation MeV | predicted GeV |",
             )
             println(io, "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
             for row in rows

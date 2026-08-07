@@ -65,10 +65,10 @@ page = 2
 statement = "Potential decomposition V = H^conf + H^hyp + H^so (+ annihilation) into confinement, hyperfine, and spin-orbit pieces."
 status = "implemented"
 code = ["src/spectrum.jl:compute_spectrum"]
-tests = ["staged spectrum: central -> corrected -> mixed"]
+tests = ["central diagnostic is independent of fixed -> mixed production"]
 anchor = "paper/vision_ocr/page_images/page-002.png"
 parent = "sec-II"
-notes = "Not a standalone formula: the staged spectrum pipeline (central -> spin corrections -> mixing + annihilation blocks) mirrors exactly this split."
+notes = "Not a standalone formula: fixed_spectrum assembles the central, hyperfine, and spin-orbit pieces in one fixed-sector Hamiltonian before cross-sector mixing and later annihilation blocks."
 
 [[unit]]
 id = "eq-3"
@@ -210,13 +210,13 @@ id = "eq-14"
 kind = "equation"
 label = "Eq. (14)"
 page = 4
-statement = "Staged diagonalization: solve the spin-independent H then add spin corrections and perturbative mixing matrices."
+statement = "Staged diagonalization: directly diagonalize the complete relativized Hamiltonian in fixed (j,l,s) sectors, then diagonalize tensor and antisymmetric-spin-orbit mass matrices in those eigenvectors."
 status = "implemented"
 code = ["src/spectrum.jl:compute_spectrum"]
-tests = ["staged spectrum: central -> corrected -> mixed"]
+tests = ["central diagnostic is independent of fixed -> mixed production"]
 anchor = "paper/vision_ocr/page_images/page-004.png"
 parent = "sec-II"
-notes = "This is exactly the central_spectrum -> add_spin_corrections -> add_intra_meson_mixing pipeline. FD is the headline basis; HO-order validation of the spin/mixing blocks (W6) is the residual item."
+notes = "The production pipeline is fixed_spectrum -> add_intra_meson_mixing. central_spectrum is an independent diagnostic. HO is the paper-native path and FD is an independent comparator."
 
 [[unit]]
 id = "eq-15"
