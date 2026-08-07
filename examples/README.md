@@ -134,10 +134,15 @@ the script reproduces the bare 3.75 exactly.
 ### The API this exercises
 
 ```julia
-V   = fine_structure_grid_operator(params, ConstituentMasses(mc, mc), J, r, h; L = 1)
-vals, vecs, r = ho_full_distorted_states(params_ho, ConstituentMasses(mc, mc), 1, V;
-    nlevels = 4, ngrid = NGRID, rmax = RMAX, nbasis = NB)
-
+solution = fixed_channel_solution(
+    params,
+    ConstituentMasses(mc, mc),
+    FineStructureMultiplet("P", 3, J);
+    solver = OscillatorSolver(nbasis = NB),
+    nlevels = 4,
+)
+wave = radial_wave(solution, 1)
+M = solution.eigenvalues_GeV[1]
 S1  = wavefunction_origin_smearing(wave, mc; L = 1)          # Eq. (17) smeared ψ(0)
 amp = gluonic_annihilation_amplitude(:P0_2g, S1, alpha_s_q(M), mc)   # amp² = Γ
 A   = two_photon_amplitude(:P2, wave, mc, M, 4/9)            # Table VII(b)

@@ -59,17 +59,33 @@ function _base_row(row::ReferenceState, meson::Meson, s::MixedState)
     )
 end
 
-# Reconstruct the 2x2 eigenvector matrix of a mixing block from its two member
-# states: the member with the lower final mass carries the lower-eigenvalue
-# column (compute_spectrum assigns ascending mixed mass to ascending unmixed
-# diagonal, and each StateMixing stores its own column).
-function _block_columns(s1::MixedState, s2::MixedState, mechanism::AbstractString)
+# Project the two requested spectroscopic members out of their shared physical
+# mixing block. The block may contain other radial levels; returning only these
+# two rows preserves their physical-state coefficients without pretending the
+# complete eigensystem was 2x2.
+function _pair_projection(s1::MixedState, s2::MixedState, mechanism::AbstractString)
     m1 = _mixing_of(s1, mechanism)
     m2 = _mixing_of(s2, mechanism)
     (isnothing(m1) || isnothing(m2)) && return nothing
-    by_model = s1.mass_GeV <= s2.mass_GeV ? (m1, m2) : (m2, m1)
-    vectors = hcat(by_model[1].components, by_model[2].components)
-    return (masses = m1.partner_masses_GeV, vectors = vectors, mixing = m1)
+    m1.result === m2.result || throw(ArgumentError(
+        "requested states do not share one `$mechanism` mixing result",
+    ))
+    basis = m1.result.block.basis
+    i1 = findfirst(b -> b.label == s1.label, basis)
+    i2 = findfirst(b -> b.label == s2.label, basis)
+    (isnothing(i1) || isnothing(i2)) && throw(ArgumentError(
+        "requested states are absent from their `$mechanism` mixing basis",
+    ))
+    by_model = sort([(s1, m1), (s2, m2)]; by = pair -> pair[1].mass_GeV)
+    vectors = hcat(
+        ([mix.components[i1], mix.components[i2]] for (_, mix) in by_model)...,
+    )
+    return (
+        masses = [state.mass_GeV for (state, _) in by_model],
+        vectors = vectors,
+        mixing = m1,
+        offdiag_GeV = m1.result.block.matrix[i1, i2],
+    )
 end
 
 # Two rows sharing a 2x2 mixing block: assign ascending mixed masses either by
@@ -102,8 +118,11 @@ function _assign_same_j_rows!(
         (isnothing(isinglet) || isnothing(itriplet)) && continue
         i1 = indices[isinglet]
         i2 = indices[itriplet]
-        block = _block_columns(states[i1], states[i2], "antisymmetric_spin_orbit")
+        block = _pair_projection(states[i1], states[i2], "antisymmetric_spin_orbit")
         isnothing(block) && continue
+        low_projection = block.vectors[:, 1]
+        phase = low_projection[1] < 0 ? -1.0 : 1.0
+        theta = atand(phase * low_projection[2], phase * low_projection[1])
         ordered = _pair_order(rows, i1, i2, mixed_assignment)
         for (level, irow) in enumerate(ordered)
             row = rows[irow]
@@ -114,8 +133,8 @@ function _assign_same_j_rows!(
                 (
                     same_j_mixing_scheme = "antisymmetric_spin_orbit",
                     same_j_unmixed_GeV = row.predicted_GeV,
-                    same_j_offdiag_GeV = block.mixing.offdiag_GeV,
-                    same_j_mixing_angle_deg = block.mixing.mixing_angle_deg,
+                    same_j_offdiag_GeV = block.offdiag_GeV,
+                    same_j_mixing_angle_deg = theta,
                     same_j_component_singlet = vec[1],
                     same_j_component_triplet = vec[2],
                     predicted_GeV = predicted,
@@ -148,7 +167,7 @@ function _assign_tensor_rows!(
         (isnothing(ilow) || isnothing(ihigh)) && continue
         i1 = indices[ilow]
         i2 = indices[ihigh]
-        block = _block_columns(states[i1], states[i2], "tensor_mixing")
+        block = _pair_projection(states[i1], states[i2], "tensor_mixing")
         isnothing(block) && continue
         ordered = _pair_order(rows, i1, i2, mixed_assignment)
         for (level, irow) in enumerate(ordered)
@@ -160,7 +179,7 @@ function _assign_tensor_rows!(
                 (
                     tensor_mixing_scheme = "tensor_mixing",
                     tensor_unmixed_GeV = row.predicted_GeV,
-                    tensor_offdiag_GeV = block.mixing.offdiag_GeV,
+                    tensor_offdiag_GeV = block.offdiag_GeV,
                     tensor_component_lowL = vec[1],
                     tensor_component_highL = vec[2],
                     predicted_GeV = predicted,

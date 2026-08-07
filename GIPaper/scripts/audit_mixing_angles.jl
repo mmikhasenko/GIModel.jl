@@ -8,12 +8,12 @@
 #   [ Q_low  ]   [  cos(theta_nL)  sin(theta_nL) ] [ n ^1L_L ]
 #   [ Q_high ] = [ -sin(theta_nL)  cos(theta_nL) ] [ n ^3L_L ]
 #
-# so Q_low = cos(theta) |n ^1L_L> + sin(theta) |n ^3L_L>.  Our
-# `same_j_mixing` (src/spin_fine_structure.jl) uses the *same* definition:
-# lower-eigenvalue eigenvector of the (singlet, triplet)-ordered 2x2 block,
-# singlet component normalized >= 0, theta = atan2(v_triplet, v_singlet).
-# Hence theta_paper = theta_model identically (see the report's convention
-# section for the two sign conventions that enter the off-diagonal element).
+# so Q_low = cos(theta) |n ^1L_L> + sin(theta) |n ^3L_L>. The production
+# spectrum diagonalizes all requested radial levels in one shared block. For a
+# quoted nL pair this audit projects the lower of its two assigned physical
+# states onto the matching singlet/triplet basis rows and evaluates
+# theta = atan2(v_triplet, v_singlet). It also reports the norm outside that
+# two-row projection instead of pretending the full block was 2x2.
 #
 # Angles are read from the public spectrum API only: compute_spectrum ->
 # spectrum_state(...).mixings (mechanism "antisymmetric_spin_orbit").
@@ -80,7 +80,16 @@ for sec in sectors
         s3 = spectrum_state(spec, n, L, 3, L_OF[L])   # n ^3L_L
         m1 = same_j_mix(s1)
         m3 = same_j_mix(s3)
-        theta = m1.mixing_angle_deg
+        m1.result === m3.result || error("$n$L pair does not share one mixing result")
+        basis = m1.result.block.basis
+        is = findfirst(b -> b.label == s1.label, basis)
+        it = findfirst(b -> b.label == s3.label, basis)
+        (isnothing(is) || isnothing(it)) && error("$n$L pair absent from mixing basis")
+        physical = s1.mass_GeV <= s3.mass_GeV ? m1 : m3
+        cs, ct = physical.components[is], physical.components[it]
+        phase = cs < 0 ? -1.0 : 1.0
+        theta = atand(phase * ct, phase * cs)
+        projection_norm2 = cs^2 + ct^2
         push!(results, (
             sector = sec.label,
             nL = string(n, L),
@@ -92,9 +101,10 @@ for sec in sectors
             diag_s = m1.unmixed_GeV,           # ^1L_L corrected (pre-mixing) mass
             diag_t = m3.unmixed_GeV,           # ^3L_L corrected (pre-mixing) mass
             split_MeV = 1000 * (m1.unmixed_GeV - m3.unmixed_GeV),
-            offdiag_MeV = 1000 * m1.offdiag_GeV,
-            low = m1.partner_masses_GeV[1],
-            high = m1.partner_masses_GeV[2],
+            offdiag_MeV = 1000 * m1.result.block.matrix[is, it],
+            low = min(s1.mass_GeV, s3.mass_GeV),
+            high = max(s1.mass_GeV, s3.mass_GeV),
+            outside_percent = 100 * (1 - projection_norm2),
             src = sec.src,
         ))
     end
@@ -132,14 +142,15 @@ open(outpath, "w") do io
     println(io, "`Q_low = cos(theta) |n ^1L_L> + sin(theta) |n ^3L_L>` with `cos(theta) >= 0`")
     println(io, "implied by the quoted range.")
     println(io)
-    println(io, "Our `same_j_mixing` (`src/spin_fine_structure.jl`) diagonalizes the 2x2")
-    println(io, "block `[E(^1L_L) c; c E(^3L_L)]` in the same `(singlet, triplet)` basis")
-    println(io, "order, takes the eigenvector of the *lower* eigenvalue, normalizes its")
-    println(io, "singlet component `>= 0`, and reports `theta = atan2(v_triplet, v_singlet)`,")
-    println(io, "i.e. `low = cos(theta) ^1L_L + sin(theta) ^3L_L`, `theta` in `(-90, 90]`.")
-    println(io, "That is definition-identical to the paper's, so")
+    println(io, "The production spectrum diagonalizes one complete block containing every")
+    println(io, "requested radial singlet and triplet with this `L,J`. For each quoted `nL`,")
+    println(io, "we take the lower of the two physical states assigned to its singlet/triplet")
+    println(io, "precursors, project its shared eigenvector onto those two exact basis rows,")
+    println(io, "fix the singlet component positive, and report")
+    println(io, "`theta = atan2(v_triplet,nL, v_singlet,nL)`. Thus the angular convention is")
+    println(io, "identical to the paper while radial-state mixing remains present, so")
     println(io)
-    println(io, "> **theta_paper = theta_model (identity mapping; no transformation applied to any row).**")
+    println(io, "> **theta_paper = theta_model (identity angular mapping; the model value is a projection of the complete radial block).**")
     println(io)
     println(io, "Two residual sign conventions enter only through the off-diagonal element")
     println(io, "`c` and are pinned once, globally:")
@@ -169,58 +180,38 @@ open(outpath, "w") do io
             r.sector, r.nL, r.theta, r.paper, r.delta)
     end
     println(io)
-    println(io, "## Notes on deviations")
+    println(io, "## Reading the deviations")
     println(io)
-    println(io, "- **`b ubar`/`b sbar`/`b cbar` 1P (apparent ~90-deg disagreements).** In these")
-    println(io, "  blocks the singlet/triplet diagonals are nearly degenerate")
-    for r in results
-        startswith(r.sector, "b ") || continue
-        @printf(io, "  (`%s`: split %+.1f MeV vs offdiag %+.1f MeV)",
-            r.sector, r.split_MeV, r.offdiag_MeV)
-        println(io, r.sector == "b cbar" ? "," : ";")
+    worst = sort(results; by = r -> abs(r.delta), rev = true)[1:min(5, length(results))]
+    println(io, "The five largest direct-angle differences are:")
+    for r in worst
+        @printf(io, "- `%s %s`: model %+.1f deg, paper %+.0f deg (Delta %+.1f deg); ",
+            r.sector, r.nL, r.theta, r.paper, r.delta)
+        @printf(io, "same-n projection leaves %.2f%% norm in other radial rows.\n",
+            r.outside_percent)
     end
-    println(io, "  and our lower eigenvalue carries the combination the paper labels as")
-    println(io, "  `Q_high`. Quoting the complementary angle — the exact same eigenvectors")
-    println(io, "  with the low/high labels exchanged, `theta -> theta - 90` — gives")
-    bnotes = String[]
-    for r in results
-        startswith(r.sector, "b ") || continue
-        push!(bnotes, @sprintf("`%s` %+.1f vs paper %+.0f (Delta %+.1f)",
-            r.sector, r.comp, r.paper, r.comp_delta))
-    end
-    println(io, "  ", join(bnotes, ", "), ".")
-    println(io, "  So the mixing *content* agrees to 1-5 deg; what differs is which of the")
-    println(io, "  two nearly degenerate eigenstates is lower. This matches the earlier")
-    println(io, "  `b cbar` diagnostic in `heavy_quarkonium_diagnostics.md` (+42.1 deg,")
-    println(io, "  complement -47.9 deg, vs paper -53 deg).")
-    println(io, "- **`c sbar` 1P (-14.2 vs -44, largest miss) and `c ubar` 1P (-24.8 vs -41).**")
-    println(io, "  The 1P off-diagonals are only 1-2 MeV here, so")
-    println(io, "  `theta = atan(2c / (E_s - E_t)) / 2`-type sensitivity makes the angle")
-    println(io, "  hostage to the few-MeV singlet-triplet splitting; our splittings are")
-    println(io, "  larger relative to `c` than the paper's effective ones.")
-    println(io, "- **`u sbar` 1P (+19.5 vs +34, the K1 block) and 2P (+28.4 vs +15).** Same")
-    println(io, "  small-off-diagonal sensitivity (|c| ~ 4-6 MeV). Note the trend inversion:")
-    println(io, "  the paper's angles *decrease* with radial excitation (34 -> 15 for P,")
-    println(io, "  33 -> 25 for D) while ours *increase* (19.5 -> 28.4, 32.7 -> 34.1).")
-    println(io, "- **`u sbar` 2D (+34.1 vs +25) and 1G (+38.8 vs +33).** Milder (5-9 deg)")
-    println(io, "  versions of the same pattern.")
-    println(io, "- Blocks with large off-diagonals agree well: both 1D charm rows within")
-    println(io, "  2.5 deg, strange 1D within 0.3 deg, strange 1F within 4.7 deg.")
+    println(io)
+    println(io, "Near-degenerate singlet/triplet diagonals remain sensitive to small matrix")
+    println(io, "changes; when the physical low/high labeling is reversed, the complementary")
+    println(io, "angle in the diagnostics is the relevant comparison. The explicit outside-")
+    println(io, "projection percentage distinguishes that convention issue from genuine")
+    println(io, "cross-radial composition in the complete block.")
     println(io)
     println(io, "## Diagnostics (raw block data)")
     println(io)
     println(io, "Corrected (pre-mixing) diagonal masses `E_s = E(^1L_L)`, `E_t = E(^3L_L)`,")
-    println(io, "off-diagonal `c`, mixed eigenvalues, our raw angle, and the complementary")
-    println(io, "angle (low/high labels exchanged). All angles already in the paper")
+    println(io, "same-n off-diagonal `c`, the two assigned physical masses, projected angle,")
+    println(io, "complementary angle (low/high labels exchanged), and norm carried by other")
+    println(io, "radial rows. All angles already use the paper")
     println(io, "convention (identity mapping).")
     println(io)
-    println(io, "| Sector | nL | E_s (GeV) | E_t (GeV) | E_s - E_t (MeV) | offdiag c (MeV) | low (GeV) | high (GeV) | theta (deg) | complement (deg) |")
-    println(io, "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|")
+    println(io, "| Sector | nL | E_s (GeV) | E_t (GeV) | E_s - E_t (MeV) | offdiag c (MeV) | low (GeV) | high (GeV) | theta (deg) | complement (deg) | other radial norm (%) |")
+    println(io, "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
     for r in results
         @printf(io,
-            "| %s | %s | %.4f | %.4f | %+.2f | %+.2f | %.4f | %.4f | %+.2f | %+.2f |\n",
+            "| %s | %s | %.4f | %.4f | %+.2f | %+.2f | %.4f | %.4f | %+.2f | %+.2f | %.2f |\n",
             r.sector, r.nL, r.diag_s, r.diag_t, r.split_MeV, r.offdiag_MeV,
-            r.low, r.high, r.theta, r.comp)
+            r.low, r.high, r.theta, r.comp, r.outside_percent)
     end
     println(io)
     println(io, "## Paper sources")

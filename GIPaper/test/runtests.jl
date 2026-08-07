@@ -116,6 +116,30 @@ end
     @test_throws ArgumentError compare_reference(
         params, mq, sub; mixed_assignment = :bogus, ngrid = 120, rmax = 12.0,
     )
+
+    # With more than one radial excitation the production eigensystem is one
+    # shared 4x4 block. Comparison rows must project their exact basis rows,
+    # never reinterpret the first two rows/columns as an independent 2x2 block.
+    multi_sub = [
+        row for row in reference if
+        row.n in (1, 2) && row.L == "P" && row.J == 1 && row.multiplicity in (1, 3)
+    ]
+    @test length(multi_sub) == 4
+    multi_plain = compare_reference(
+        params, mq, multi_sub;
+        contact_hyperfine = true, use_fine_structure = true,
+        antisymmetric_spin_orbit_mixing = false, ngrid = 120, rmax = 12.0,
+    )
+    multi_mixed = compare_reference(
+        params, mq, multi_sub;
+        contact_hyperfine = true, use_fine_structure = true,
+        antisymmetric_spin_orbit_mixing = true, ngrid = 120, rmax = 12.0,
+    )
+    @test all(isfinite(row.same_j_mixing_angle_deg) for row in multi_mixed)
+    @test all(isfinite(row.same_j_component_singlet) for row in multi_mixed)
+    @test all(isfinite(row.same_j_component_triplet) for row in multi_mixed)
+    @test sum(row.predicted_GeV for row in multi_mixed) ≈
+          sum(row.predicted_GeV for row in multi_plain) rtol = 1e-12
 end
 
 @testset "compare_reference applies tensor same-J triplet L/L' mixing" begin

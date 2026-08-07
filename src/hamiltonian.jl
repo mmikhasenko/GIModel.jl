@@ -4,7 +4,7 @@ function nonrelativistic_hamiltonian(
     params::GIParameters,
     masses::ConstituentMasses,
     L::Integer;
-    solver::RadialSolver = FiniteDifferenceSolver(),
+    solver::FiniteDifferenceSolver = FiniteDifferenceSolver(),
     ngrid::Integer = solver.ngrid,
     rmax::Real = solver.rmax,
 )
@@ -91,7 +91,7 @@ function relativistic_hamiltonian(
     params::GIParameters,
     masses::ConstituentMasses,
     L::Integer;
-    solver::RadialSolver = FiniteDifferenceSolver(),
+    solver::FiniteDifferenceSolver = FiniteDifferenceSolver(),
     ngrid::Integer = solver.ngrid,
     rmax::Real = solver.rmax,
 )

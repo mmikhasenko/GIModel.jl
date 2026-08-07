@@ -15,37 +15,37 @@ Numerics: `FiniteDifferenceSolver` — ngrid = 450, rmax = 24.0 GeV^-1 (h = 0.05
 
 | sector | S rows | mean abs active contact MeV | max abs active contact MeV | mean active/diagonal magnitude | mean abs residual MeV |
 |---|---:|---:|---:|---:|---:|
-| `bottom_charm` | 3 | 33.8 | 56.7 | 0.863 | 5.7 |
-| `bottom_light` | 3 | 30.2 | 49.8 | 0.408 | 1.6 |
-| `bottom_strange` | 3 | 29.0 | 47.4 | 0.560 | 1.9 |
-| `bottomonium` | 7 | 18.6 | 54.4 | 0.906 | 6.1 |
-| `charmed` | 4 | 63.0 | 141.5 | 0.344 | 8.4 |
-| `charmed_strange` | 4 | 58.3 | 129.3 | 0.472 | 8.1 |
-| `charmonium` | 7 | 35.2 | 105.9 | 0.631 | 3.7 |
-| `isoscalar` | 2 | 87.4 | 105.6 | 0.138 | 5.0 |
-| `isovector` | 6 | 165.0 | 559.5 | 0.126 | 19.6 |
-| `strange` | 6 | 120.0 | 387.1 | 0.179 | 12.1 |
+| `bottom_charm` | 3 | 33.8 | 56.7 | 0.725 | 5.7 |
+| `bottom_light` | 3 | 30.2 | 49.8 | 0.360 | 1.6 |
+| `bottom_strange` | 3 | 29.0 | 47.4 | 0.500 | 1.9 |
+| `bottomonium` | 7 | 18.6 | 54.4 | 0.825 | 6.1 |
+| `charmed` | 4 | 63.0 | 141.5 | 0.304 | 8.5 |
+| `charmed_strange` | 4 | 58.3 | 129.3 | 0.408 | 8.1 |
+| `charmonium` | 7 | 35.2 | 105.9 | 0.562 | 3.7 |
+| `isoscalar` | 2 | 87.4 | 105.6 | 0.501 | 8.3 |
+| `isovector` | 6 | 165.0 | 559.5 | 0.198 | 19.7 |
+| `strange` | 6 | 120.0 | 387.1 | 0.204 | 12.2 |
 
 ## Largest Non-Mixed S-Wave Residuals
 
 | sector | state | residual MeV | active contact MeV | diagonal contact MeV |
 |---|---|---:|---:|---:|
-| `isovector` | `1^1S_0` |   -55.0 |  -559.5 | -1893.3 |
-| `strange` | `1^1S_0` |   -43.0 |  -387.1 | -1028.4 |
-| `isovector` | `2^1S_0` |   -21.3 |  -132.6 | -1765.5 |
-| `isovector` | `3^1S_0` |   -21.0 |  -103.5 | -1632.9 |
-| `charmed` | `1^1S_0` |   -20.2 |  -141.5 |  -286.4 |
-| `charmed_strange` | `1^1S_0` |   -18.0 |  -129.3 |  -196.2 |
-| `strange` | `3^1S_0` |   -17.2 |   -77.4 |  -796.9 |
-| `charmonium` | `1^1S_0` |   -11.5 |  -105.9 |  -111.9 |
-| `bottomonium` | `3^1S_0` |   -11.2 |   -19.0 |   -20.6 |
-| `bottomonium` | `1^1S_0` |   -10.4 |   -54.4 |   -47.2 |
-| `isovector` | `1^3S_1` |    -9.9 |  +105.6 |  +631.1 |
-| `bottomonium` | `2^1S_0` |    -9.2 |   -25.9 |   -26.0 |
-| `charmonium` | `1^3S_1` |    -9.1 |   +26.5 |   +37.3 |
-| `bottom_charm` | `1^1S_0` |    -9.0 |   -56.7 |   -56.6 |
-| `strange` | `2^1S_0` |    -8.6 |  -103.8 |  -882.3 |
-| `charmed` | `2^3S_1` |    +7.4 |   +18.8 |   +75.5 |
+| `isovector` | `1^1S_0` |   -55.0 |  -559.5 | -29386.2 |
+| `strange` | `1^1S_0` |   -43.0 |  -387.1 | -10116.2 |
+| `isovector` | `2^1S_0` |   -21.3 |  -132.6 | -18423.8 |
+| `isovector` | `3^1S_0` |   -21.0 |  -103.5 | -10557.3 |
+| `charmed` | `1^1S_0` |   -20.2 |  -141.5 |  -709.4 |
+| `charmed_strange` | `1^1S_0` |   -18.0 |  -129.3 |  -414.8 |
+| `strange` | `3^1S_0` |   -17.2 |   -77.4 | -1037.0 |
+| `isoscalar` | `1^3S_1` |   -12.7 |  +105.6 |  +174.3 |
+| `charmonium` | `1^1S_0` |   -11.5 |  -105.9 |  -209.8 |
+| `bottomonium` | `3^1S_0` |   -11.2 |   -19.0 |   -27.7 |
+| `bottomonium` | `1^1S_0` |   -10.4 |   -54.4 |   -69.5 |
+| `isovector` | `1^3S_1` |    -9.9 |  +105.6 |  +174.3 |
+| `bottomonium` | `2^1S_0` |    -9.2 |   -25.9 |   -36.0 |
+| `charmonium` | `1^3S_1` |    -9.1 |   +26.5 |   +31.8 |
+| `bottom_charm` | `1^1S_0` |    -9.0 |   -56.7 |   -81.5 |
+| `strange` | `2^1S_0` |    -8.6 |  -103.8 | -3155.5 |
 
 ## Audit Read
 

@@ -60,22 +60,12 @@ function delta_sigma_3d(r::Real, σ::Real)
     return σ^3 / (π^(3 / 2)) * exp(-(σ * ri)^2)
 end
 
-function momentum_relativization_matrix(m1::Real, m2::Real, exponent::Real, p2_fact)
-    λ = max.(p2_fact.values, 0)
-    e1 = sqrt.(λ .+ m1^2)
-    e2 = sqrt.(λ .+ m2^2)
-    diag = (m1 * m2 ./ (e1 .* e2)) .^ exponent
-    p2_fact.vectors * Diagonal(diag) * p2_fact.vectors'
-end
-
 """
 Appendix A's post-A14 prescription places
 `(m1*m2/(E1*E2))^(1/2 + epsilon_i)` on each side of a spin-dependent potential.
 With `epsilon_i = 0`, the two-sided product turns the
 nonrelativistic `1/(m1*m2)` strength into `1/(E1*E2)`.
 """
-gi_spin_dependent_side_exponent(epsilon::Real) = 0.5 + float(epsilon)
-
 function euclidean_expectation(vector::AbstractVector, operator::AbstractMatrix)
     v = collect(float.(vector))
     norm2 = sum(abs2, v)
@@ -104,6 +94,40 @@ function contact_hyperfine_operator(
     kernel = Diagonal([alpha_s_r(ri) * delta_sigma_3d(ri, sigma) for ri in r])
     strength = (32 * π / (9 * m1 * m2)) * spin_dot(multiplicity)
     return Symmetric(strength * (B * kernel * B))
+end
+
+"""
+    ho_contact_hyperfine_matrix(params, masses, L, multiplicity, beta, nbasis)
+
+Native oscillator-basis contact-hyperfine matrix from Appendix A. The Gaussian
+contact kernel, running coupling, and both relativistic momentum factors are
+assembled directly in the HO basis.
+"""
+function ho_contact_hyperfine_matrix(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L::Integer,
+    multiplicity::Integer,
+    beta::Real,
+    nbasis::Integer,
+)
+    (L == 0 && multiplicity in (1, 3)) ||
+        return Symmetric(zeros(Float64, nbasis, nbasis))
+    params.factors.contact_momentum_sandwich || throw(ArgumentError(
+        "native HO contact requires the Appendix-A momentum-sandwich prescription",
+    ))
+    sigma = contact_smearing_sigma(params, masses)
+    radial = ho_momentum_sandwich_matrix(
+        L,
+        beta,
+        nbasis,
+        masses,
+        params.factors.epsilon_c,
+        r -> alpha_s_r(r) * delta_sigma_3d(r, sigma),
+    )
+    strength = (32pi / (9 * masses.m1_GeV * masses.m2_GeV)) *
+               spin_dot(multiplicity)
+    return Symmetric(strength * radial)
 end
 
 function _contact_hyperfine_shift_diagonal(
@@ -154,29 +178,11 @@ end
     resummed_channel_solution(params, masses, L, V; solver, nlevels)
         -> ChannelRadialSolution
 
-Diagonalize the central Hamiltonian **plus** a spin-dependent operator `V`,
-resumming `V` rather than treating it at first order. This is one of the two
-places in the model where numerics actually happen (the other is the central
-solve, [`channel_solution`](@ref)); everything downstream consumes the returned
-`u(r)`.
+Finite-difference diagnostic that diagonalizes the central Hamiltonian plus a
+dense operator `V` on the solver's uniform mesh. Native HO callers use
+[`fixed_channel_solution`](@ref); a bare mesh matrix is not an HO operator.
 
-Two methods, one per solver, both returning the same physical quantity:
-
-  - [`FiniteDifferenceSolver`](@ref) — build `H` on the uniform mesh, add `V`,
-    diagonalize (this method).
-  - [`OscillatorSolver`](@ref) — project `V` into the finite oscillator space and
-    diagonalize there (the paper's own method; see `harmonic_oscillator_basis.jl`).
-
-`V` lives on the mesh either way, so the solver's `ngrid`/`rmax` must match it.
-
-`V` is a dense operator on the same uniform mesh, e.g.
-[`contact_hyperfine_operator`](@ref GIModel.contact_hyperfine_operator).
-
-**Normalization is physical for both methods: `∫u² dr = 1`.** The finite-
-difference path used to return Euclidean eigenvectors (`Σu² = 1`) instead,
-differing from the oscillator path by exactly `√h`; consumers had to know which
-convention they held, and anything quadratic in `u` given the wrong one was off
-by `h`. Both now agree.
+The returned wave has physical normalization `∫u² dr = 1`.
 """
 function resummed_channel_solution(
     params::GIParameters,
@@ -185,11 +191,13 @@ function resummed_channel_solution(
     V::AbstractMatrix;
     solver::RadialSolver = FiniteDifferenceSolver(),
     nlevels::Integer = solver.nlevels_per_channel,
-    ngrid::Integer = solver.ngrid,
-    rmax::Real = solver.rmax,
 )
+    solver isa FiniteDifferenceSolver || throw(ArgumentError(
+        "resummed_channel_solution accepts an FD mesh operator only; " *
+        "use fixed_channel_solution for native HO assembly",
+    ))
     return _resummed_channel_solution(
-        with_mesh(solver, ngrid, rmax), params, masses, L, V, nlevels)
+        solver, params, masses, L, V, nlevels)
 end
 
 function _resummed_channel_solution(
@@ -218,6 +226,9 @@ function contact_hyperfine_nonperturbative_levels(
     nlevels::Integer;
     solver::RadialSolver = FiniteDifferenceSolver(),
 )
+    solver isa FiniteDifferenceSolver || throw(ArgumentError(
+        "the overload carrying r is FD-only; omit r for native solver dispatch",
+    ))
     if !params.factors.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
         return Float64[]
     end
@@ -225,9 +236,7 @@ function contact_hyperfine_nonperturbative_levels(
     return solution.eigenvalues_GeV
 end
 
-# Representation-free entry used by the spectrum pipeline. The discretization
-# needed to assemble a resummed operator belongs to the selected solver, not to
-# the solved wave or to its consumers.
+# Representation-free entry used by observables and audits.
 function contact_hyperfine_nonperturbative_levels(
     params::GIParameters,
     masses::ConstituentMasses,
@@ -236,10 +245,10 @@ function contact_hyperfine_nonperturbative_levels(
     nlevels::Integer;
     solver::RadialSolver = FiniteDifferenceSolver(),
 )
-    r, _ = radial_grid(solver.ngrid, solver.rmax)
-    return contact_hyperfine_nonperturbative_levels(
-        params, masses, L, multiplicity, r, nlevels; solver = solver,
+    solution = contact_hyperfine_nonperturbative_states(
+        params, masses, L, multiplicity, nlevels; solver = solver,
     )
+    return isnothing(solution) ? Float64[] : solution.eigenvalues_GeV
 end
 
 """
@@ -262,6 +271,9 @@ function contact_hyperfine_nonperturbative_states(
     nlevels::Integer;
     solver::RadialSolver = FiniteDifferenceSolver(),
 )
+    solver isa FiniteDifferenceSolver || throw(ArgumentError(
+        "the overload carrying r is FD-only; omit r for native solver dispatch",
+    ))
     if !params.factors.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
         return nothing
     end
@@ -276,17 +288,30 @@ function contact_hyperfine_nonperturbative_states(
     nlevels::Integer;
     solver::RadialSolver = FiniteDifferenceSolver(),
 )
-    r, _ = radial_grid(solver.ngrid, solver.rmax)
-    return contact_hyperfine_nonperturbative_states(
-        params, masses, L, multiplicity, r, nlevels; solver,
+    if !params.factors.contact_momentum_sandwich || L != "S" ||
+       !(multiplicity in (1, 3))
+        return nothing
+    end
+    J = multiplicity == 1 ? 0 : 1
+    return fixed_channel_solution(
+        params,
+        masses,
+        FineStructureMultiplet(String(L), multiplicity, J);
+        solver = solver,
+        terms = SpinTerms(
+            contact_hyperfine = true,
+            fine_structure = false,
+            same_j_spin_orbit = false,
+            tensor = false,
+        ),
+        nlevels = nlevels,
     )
 end
 
-# Shared body: build the contact operator for this (L, multiplicity) and hand it
-# to the solver-dispatched resummed solve. Callers hold `r` rather than a mesh
-# specification, so the solver is re-pointed at exactly that mesh -- the operator
-# `V` is built on it and `resummed_channel_solution` rejects a mismatch.
-function _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels, solver)
+# FD-only body for callers that already own an explicit operator grid.
+function _resummed_contact_solve(
+    params, masses, L, multiplicity, r, nlevels, solver::FiniteDifferenceSolver,
+)
     h = r[2] - r[1]
     rmax = h * (length(r) + 1)
     rebuilt_r, _ = radial_grid(length(r), rmax)
@@ -297,17 +322,6 @@ function _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels, so
         solver = with_mesh(solver, length(r), rmax), nlevels = nlevels,
     )
 end
-
-# Both entry points above are solver-generic. The guard (S-wave, multiplicity 1
-# or 3, momentum sandwich on) is physics; building the contact operator is
-# method-free (`p2_operator` returns the same mesh operator either way); and the
-# solve itself is `resummed_channel_solution`, which dispatches on the solver.
-#
-# Until U2 unified that solve, this function inlined the finite-difference one,
-# so it had to be FD-only -- and its catch-all returned empty for any other
-# method, which callers read as "unavailable" and replaced with first-order PT
-# (the light 1S0 came out 0.2842 GeV instead of 0.0950). U1 turned that into a
-# loud failure; with the paths unified there is nothing left to fail about.
 
 """
 First-order smeared contact hyperfine shift for S-waves.

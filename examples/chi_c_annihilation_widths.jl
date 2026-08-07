@@ -7,7 +7,7 @@
 # when the lowest-order spin algebra alone says 15/4 = 3.75?
 #
 # Wave treatment matches `GIPaper/scripts/audit_table_vii.jl`: the paper-order
-# finite-HO-basis full diagonalization of H_central + the calibrated spin-orbit
+# native finite-HO full diagonalization of H_central + spin-orbit
 # + tensor operator, so each ^3P_J gets its own J-distorted radial wave.
 #
 # Three blocks:
@@ -37,39 +37,26 @@ using GIModel
 const PARAMS_PATH = joinpath(dirname(@__DIR__), "data", "parameters.provisional.toml")
 const NGRID, RMAX, NPTS, NB = 1200, 24.0, 900, 24
 
-# The one internal reach in this file: `fine_structure_grid_operator` is exported
-# and takes a mesh, but the mesh constructor itself is not. Reimplementing the
-# convention here would risk drifting from the mesh `ho_full_distorted_states`
-# builds from the same (ngrid, rmax) — the operator and the solve must agree.
-
-# Phase convention of the Table VII audit: outermost antinode positive, so the
-# wavefunction-at-origin flips sign once per radial node.
-function fix_outer_antinode_positive!(u)
-    peak = maximum(abs, u)
-    i = findlast(x -> abs(x) > 0.2 * peak, u)
-    (i !== nothing && u[i] < 0) && (u .*= -1)
-    return u
-end
-
 params, mq = load_parameters_and_quark_masses(PARAMS_PATH)
 const MC = mq["c"]
-const R, H = GIModel.radial_grid(NGRID, RMAX)
-
-"""Ground-state cc̄ P-wave under the spin operator `V` (`V = 0` → central wave)."""
-function pwave_level(V)
-    solution = ho_full_distorted_states(params, ConstituentMasses(MC, MC), 1, V;
-        nlevels = 4, solver = OscillatorSolver(nbasis = NB, ngrid = NGRID, rmax = RMAX))
-    raw = radial_wave(solution, 1)
-    wave = MeshWave(fix_outer_antinode_positive!(copy(raw.u)), raw.r)
+"""Ground-state ccbar P-wave (`J = nothing` selects the central channel)."""
+function pwave_level(J::Union{Nothing,Int})
+    solver = OscillatorSolver(nbasis = NB)
+    masses = ConstituentMasses(MC, MC)
+    solution = isnothing(J) ?
+        channel_solution(params, masses, 1; nlevels = 1, solver = solver) :
+        fixed_channel_solution(
+            params, masses, FineStructureMultiplet("P", 3, J);
+            nlevels = 1, solver = solver,
+        )
+    wave = radial_wave(solution, 1)
     rrms = sqrt(radial_expect(wave, r -> r^2))
     S1 = wavefunction_origin_smearing(wave, MC; L = 1, npoints = NPTS)
     return (M = solution.eigenvalues_GeV[1], wave = wave, S1 = S1, rrms = rrms)
 end
 
-spin_operator(J) = fine_structure_grid_operator(params, ConstituentMasses(MC, MC), J, R, H; L = 1)
-
-chi = Dict(J => pwave_level(spin_operator(J)) for J in (0, 1, 2))
-central = pwave_level(zeros(NGRID, NGRID))
+chi = Dict(J => pwave_level(J) for J in (0, 1, 2))
+central = pwave_level(nothing)
 
 # --- (1) two gluons ----------------------------------------------------------
 # Gamma(^3P_0 -> 2g) = 8pi as^2/(3 mQ^2) |S_1|^2

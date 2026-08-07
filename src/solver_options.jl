@@ -103,20 +103,17 @@ const HO_DEFAULT_NBASIS = 24
 const HO_BETA_GRID = collect(0.25:0.10:2.35)
 
 """
-    OscillatorSolver(; nbasis=24, beta_grid=0.25:0.10:2.35, nlevels_per_channel=6,
-                       ngrid=450, rmax=24.0)
+    OscillatorSolver(; nbasis=24, beta_grid=0.25:0.10:2.35, nlevels_per_channel=6)
 
 Solve by expansion in harmonic-oscillator radial functions — Godfrey & Isgur's
 own method, Eq. (A17). The Hamiltonian is a finite `nbasis × nbasis` matrix, and
 the oscillator scale `β` is a variational parameter scanned over `beta_grid`.
 
-**There is no operator mesh on this path.** `p²` has closed-form oscillator
+**There is no mesh on this path.** `p²` has closed-form oscillator
 matrix elements ([`ho_p2_matrix`](@ref)) and the smeared potential is integrated
 by Gauss–Laguerre quadrature ([`ho_operator_matrix`](@ref)), so accuracy is set
-by `nbasis` and `beta_grid` alone. `ngrid`/`rmax` describe only the **reporting
-mesh** the converged wavefunctions are drawn onto, shared with
-[`FiniteDifferenceSolver`](@ref) so the two paths return comparable `u(r)` — and
-used by the mixing blocks, which still consume mesh waves.
+by `nbasis` and `beta_grid` alone. Plotting or export code may explicitly sample
+the returned [`OscillatorWave`](@ref); sampling settings are not solver state.
 
 Fields:
 
@@ -128,20 +125,15 @@ Fields:
     If the optimum lands on an endpoint the basis cannot represent the state and
     `_warn_if_beta_railed` says so.
   - `nlevels_per_channel` — radial levels kept per orbital channel.
-  - `ngrid`, `rmax` — reporting mesh only; see above.
 """
 struct OscillatorSolver <: RadialSolver
     nbasis::Int
     beta_grid::Vector{Float64}
     nlevels_per_channel::Int
-    ngrid::Int
-    rmax::Float64
     function OscillatorSolver(;
         nbasis::Integer = HO_DEFAULT_NBASIS,
         beta_grid::AbstractVector{<:Real} = HO_BETA_GRID,
         nlevels_per_channel::Integer = 6,
-        ngrid::Integer = 450,
-        rmax::Real = 24.0,
     )
         nbasis >= 1 ||
             throw(ArgumentError("OscillatorSolver: nbasis must be ≥ 1, got $nbasis"))
@@ -156,13 +148,7 @@ struct OscillatorSolver <: RadialSolver
         nlevels_per_channel >= 1 || throw(ArgumentError(
             "OscillatorSolver: nlevels_per_channel must be ≥ 1, got $nlevels_per_channel",
         ))
-        ngrid >= 2 || throw(ArgumentError("OscillatorSolver: ngrid must be ≥ 2, got $ngrid"))
-        rmax > 0 ||
-            throw(ArgumentError("OscillatorSolver: rmax must be positive, got $rmax"))
-        return new(
-            Int(nbasis), collect(Float64, beta_grid), Int(nlevels_per_channel),
-            Int(ngrid), Float64(rmax),
-        )
+        return new(Int(nbasis), collect(Float64, beta_grid), Int(nlevels_per_channel))
     end
 end
 
@@ -197,28 +183,20 @@ OscillatorSolver(
     nbasis::Integer = base.nbasis,
     beta_grid::AbstractVector{<:Real} = base.beta_grid,
     nlevels_per_channel::Integer = base.nlevels_per_channel,
-    ngrid::Integer = base.ngrid,
-    rmax::Real = base.rmax,
 ) = OscillatorSolver(;
     nbasis = nbasis,
     beta_grid = beta_grid,
     nlevels_per_channel = nlevels_per_channel,
-    ngrid = ngrid,
-    rmax = rmax,
 )
 
 """
-    with_mesh(solver, ngrid, rmax) -> same kind of solver
+    with_mesh(solver, ngrid, rmax) -> FiniteDifferenceSolver
 
-The same solver on a different mesh. For [`FiniteDifferenceSolver`](@ref) that
-changes the answer's accuracy; for [`OscillatorSolver`](@ref) it changes only
-where the answer is drawn. Used where a caller already holds a mesh (an operator
-`V`, a cached `r`) and must solve on exactly that one.
+Copy a finite-difference solver onto the mesh already owned by an FD operator.
+There is deliberately no oscillator method: an HO solve never consumes a mesh.
 """
 with_mesh(s::FiniteDifferenceSolver, ngrid::Integer, rmax::Real) =
     FiniteDifferenceSolver(s; ngrid = ngrid, rmax = rmax)
-with_mesh(s::OscillatorSolver, ngrid::Integer, rmax::Real) =
-    OscillatorSolver(s; ngrid = ngrid, rmax = rmax)
 
 function Base.show(io::IO, ::MIME"text/plain", s::FiniteDifferenceSolver)
     print(
@@ -234,7 +212,7 @@ function Base.show(io::IO, ::MIME"text/plain", s::OscillatorSolver)
         io, "OscillatorSolver: nbasis = ", s.nbasis, ", beta in [",
         first(s.beta_grid), ", ", last(s.beta_grid), "] GeV (",
         length(s.beta_grid), " candidates), ", s.nlevels_per_channel,
-        " levels/channel; reporting mesh ", s.ngrid, " x ", s.rmax, " GeV^-1",
+        " levels/channel",
     )
     return nothing
 end

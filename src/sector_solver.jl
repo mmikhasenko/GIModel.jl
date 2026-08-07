@@ -8,11 +8,11 @@
 # solve per distinct orbital channel.
 
 """
-    RadialChannelKey(masses, L_label)
-    RadialChannelKey(m1_GeV, m2_GeV, L_label)
+    RadialChannelKey(masses, L_label[, multiplicity, J])
 
-Dict key for one **spin-independent radial channel**: [`ConstituentMasses`](@ref) and orbital
-label (`S`, `P`, …), same convention as `SpectrumState.L`. The key normalizes
+Dict key for a radial channel: [`ConstituentMasses`](@ref), orbital label, and
+optionally spin multiplicity/J. `(multiplicity,J) == (0,0)` identifies a central
+spin-independent channel; physical fixed sectors use their actual values. The key normalizes
 masses to 12 significant digits so numerically identical channels collapse to
 one cache entry without rounding the physics values in [`ConstituentMasses`](@ref).
 
@@ -22,11 +22,20 @@ struct RadialChannelKey
     m1_GeV::Float64
     m2_GeV::Float64
     L_label::String
-    function RadialChannelKey(masses::ConstituentMasses, L_label::AbstractString)
+    multiplicity::Int
+    J::Int
+    function RadialChannelKey(
+        masses::ConstituentMasses,
+        L_label::AbstractString,
+        multiplicity::Integer = 0,
+        J::Integer = 0,
+    )
         new(
             round(masses.m1_GeV; sigdigits = 12),
             round(masses.m2_GeV; sigdigits = 12),
             String(L_label),
+            Int(multiplicity),
+            Int(J),
         )
     end
 end
@@ -34,9 +43,17 @@ end
 RadialChannelKey(m1::Real, m2::Real, L_label::AbstractString) =
     RadialChannelKey(ConstituentMasses(m1, m2), L_label)
 
+RadialChannelKey(
+    m1::Real,
+    m2::Real,
+    L_label::AbstractString,
+    multiplicity::Integer,
+    J::Integer,
+) = RadialChannelKey(ConstituentMasses(m1, m2), L_label, multiplicity, J)
+
 """
     ChannelRadialSolution(eigenvalues_GeV, waves)
-    ChannelRadialSolution(eigenvalues_GeV, eigenvectors, r)
+    ChannelRadialSolution(eigenvalues_GeV, mesh_eigenvectors, r)
 
 Output of one `channel_solution` call, stored in `SectorComputation.channel_cache`:
 
@@ -59,7 +76,8 @@ struct ChannelRadialSolution{W<:RadialWave}
         length(eigenvalues_GeV) == length(waves) || throw(ArgumentError(
             "ChannelRadialSolution: eigenvalue/wave counts differ",
         ))
-        return new{W}(collect(Float64, eigenvalues_GeV), collect(W, waves))
+        phased = [fix_outer_phase(wave) for wave in waves]
+        return new{W}(collect(Float64, eigenvalues_GeV), collect(W, phased))
     end
 end
 
@@ -86,14 +104,12 @@ end
 """
     SectorComputation(params, solver, channel_cache)
 
-Container filled by [`central_spectrum`](@ref) (`spectrum.jl`): precomputed radial
-solves per distinct channel, plus how they were produced.
+Container filled by the spectrum stages: precomputed central and fixed-sector
+radial solves, plus how they were produced.
 
   - `params`: [`GIParameters`](@ref) used to build each central Hamiltonian.
-  - `solver`: the [`RadialSolver`](@ref) that produced them. Later stages resolve
-    their own solves (the non-perturbative contact term) and must use the same
-    method — otherwise stage 1 and stage 2 of one spectrum would disagree about
-    which calculation this is.
+  - `solver`: the [`RadialSolver`](@ref) that produced them and is reused for
+    every fixed-sector solve.
   - `channel_cache`: map `RadialChannelKey` → `ChannelRadialSolution`.
 
 [`Spectrum`](@ref) keeps this alive so later stages and two-meson flavor mixing

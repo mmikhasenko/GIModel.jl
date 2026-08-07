@@ -8,9 +8,9 @@
 #   annihilation_basis_input, isoscalar_annihilation_block,
 #   pseudoscalar_annihilation_block
 
-# The sqrt(2) flavor-coherence factor for the isoscalar n nbar = (u ubar + d dbar)/sqrt(2)
-# combination is keyed off the basis label (see _flavor_coherence_factor); these
-# labels reproduce the "1 ns" / "1 ss" convention of the Table III audits.
+# The sqrt(2) flavor-coherence factor for the isoscalar
+# n nbar = (u ubar + d dbar)/sqrt(2) combination is explicit input metadata;
+# labels only reproduce the "1 ns" / "1 ss" convention used by reports.
 function _annihilation_flavor_tag(m::Meson)
     is_equal_flavor(m) || throw(ArgumentError(
         "annihilation basis inputs need self-conjugate flavor content, got $(flavor_label(m))",
@@ -23,8 +23,11 @@ end
     annihilation_basis_input(spec::Spectrum, level::BasisState)
 
 One flavor-channel entry for an annihilation mixing block: the state's
-pre-annihilation model mass as the diagonal, and its radial wave, phase-fixed to
-the GI convention `Φ(0) > 0` (see [`fix_annihilation_phase!`](@ref)). The
+pre-annihilation model mass as the diagonal, and the signed projection of its
+physical radial components into the requested `(L,S,J)` annihilation channel.
+Each wave is phase-fixed to the GI convention `Φ(0) > 0` (see
+[`fix_annihilation_phase!`](@ref)), with the compensating sign retained in its
+coefficient. The
 eigensolver hands back arbitrary column signs, and without the convention the
 `S_L` factor flips between quark masses and radial levels, randomizing the
 off-diagonal block elements.
@@ -57,15 +60,45 @@ function fix_annihilation_phase(w::OscillatorWave)
     return OscillatorWave(w.L, w.beta, -w.coefficients)
 end
 
+function _annihilation_phase_sign(w::MeshWave)
+    return sum(w.r .* w.u) < 0 ? -1.0 : 1.0
+end
+
+function _annihilation_phase_sign(w::OscillatorWave)
+    phase, _ = quadgk(r -> r * _oscillator_radial_value(w, r), 0.0, Inf; rtol = 1e-10)
+    return phase < 0 ? -1.0 : 1.0
+end
+
 function annihilation_basis_input(spec::SpinResolvedSpectrum, level::BasisState)
     state = spectrum_state(spec, level)
-    wave = fix_annihilation_phase(radial_wave(spec, level.L_label, level.n))
+    components = [
+        component for component in physical_components(spec, state) if
+        component.basis.L_label == level.L_label &&
+        component.basis.multiplicity == level.multiplicity &&
+        component.basis.J == level.J
+    ]
+    isempty(components) && throw(ArgumentError(
+        "$(state.label) has no $(level.L_label), multiplicity=$(level.multiplicity), J=$(level.J) component for annihilation",
+    ))
+    # Express every component in the annihilation phase convention without
+    # changing relative physical phases, then fix the remaining global state
+    # phase by making the first component coefficient positive.
+    radial_components = [
+        begin
+            sign = _annihilation_phase_sign(component.wave)
+            (component.coefficient * sign, fix_annihilation_phase(component.wave))
+        end for component in components
+    ]
+    global_sign = first(radial_components)[1] < 0 ? -1.0 : 1.0
+    radial_components = [
+        (global_sign * coefficient, wave) for (coefficient, wave) in radial_components
+    ]
     label = "$(level.n) $(_annihilation_flavor_tag(spec.meson))"
     return pseudoscalar_annihilation_basis_input(
         label,
         spec.meson.constituent_masses.m1_GeV,
         state.mass_GeV,
-        wave;
+        radial_components;
         # Coherent exactly for the nonstrange (u ubar + d dbar)/sqrt(2) channel —
         # the same predicate `_annihilation_flavor_tag` uses to emit "ns", so this
         # reproduces the old label-substring behavior identically.

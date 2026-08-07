@@ -7,12 +7,9 @@
 #   position side   `ho_operator_matrix`  generalized Gauss-Laguerre (Golub-Welsch)
 #   A(p) factor     spectral function of the exact p²
 #
-# The uniform mesh survives only to reconstruct wavefunctions for reporting, and
-# for the comparator central methods (pointwise, 1D/3D-smeared, derivative-G),
-# several of which smear numerically ON the mesh and so are not closed-form
-# functions of r. Those keep both sides on the mesh rather than becoming a
-# hybrid: an exact kinetic operator with a mesh-projected potential is not the
-# Hamiltonian of any single problem, and is not variational.
+# A uniform mesh belongs only to the finite-difference comparator. Plotting code
+# may explicitly sample an `OscillatorWave`, but no mesh is retained by the HO
+# solver or accepted as an HO operator input.
 
 function generalized_laguerre(n::Integer, α::Real, x::Real)
     n == 0 && return 1.0
@@ -290,6 +287,23 @@ end
 
 wave_norm(w::OscillatorWave) = sum(abs2, w.coefficients)
 
+function fix_outer_phase(w::OscillatorWave)
+    # A tiny coefficient of the highest retained polynomial controls the strict
+    # r -> infinity sign but not any physically occupied lobe. Locate the last
+    # significant antinode of the analytic expansion on a dimensionless HO
+    # interval instead. This fixes a phase; it does not discretize an operator
+    # or turn the native wave into a mesh representation.
+    rho_max = sqrt(4 * (length(w.coefficients) - 1) + 2w.L + 3) + 6
+    values = [
+        _oscillator_radial_value(w, rho / w.beta) for
+        rho in range(0.0, rho_max; length = 2049)
+    ]
+    peak = maximum(abs, values)
+    index = findlast(x -> abs(x) > 0.2peak, values)
+    (isnothing(index) || values[index] >= 0) && return w
+    return OscillatorWave(w.L, w.beta, -w.coefficients)
+end
+
 function _oscillator_radial_value(w::OscillatorWave, r::Real)
     return sum(
         w.coefficients[n + 1] * ho_reduced_radial(n, w.L, w.beta, r) for
@@ -388,6 +402,67 @@ function oscillator_momentum_factor_matrix(
     return Symmetric(fact.vectors * Diagonal(diag) * fact.vectors')
 end
 
+function momentum_relativization_matrix(m1::Real, m2::Real, exponent::Real, p2_fact)
+    lambda = max.(p2_fact.values, 0)
+    e1 = sqrt.(lambda .+ m1^2)
+    e2 = sqrt.(lambda .+ m2^2)
+    diagonal = (m1 * m2 ./ (e1 .* e2)) .^ exponent
+    return p2_fact.vectors * Diagonal(diagonal) * p2_fact.vectors'
+end
+
+gi_spin_dependent_side_exponent(epsilon::Real) = 0.5 + float(epsilon)
+
+"""
+    ho_momentum_sandwich_matrix(L, beta, nbasis, masses, epsilon, kernel)
+
+Native harmonic-oscillator matrix for `B(p^2) kernel(r) B(p^2)`, where
+`B=(m1*m2/(E1*E2))^(1/2+epsilon)`. No coordinate mesh is constructed.
+"""
+function ho_momentum_sandwich_matrix(
+    L::Integer,
+    beta::Real,
+    nbasis::Integer,
+    masses::ConstituentMasses,
+    epsilon::Real,
+    kernel,
+)
+    p2 = Symmetric(Matrix(ho_p2_matrix(L, beta, nbasis)))
+    B = momentum_relativization_matrix(
+        masses.m1_GeV,
+        masses.m2_GeV,
+        gi_spin_dependent_side_exponent(epsilon),
+        eigen(p2),
+    )
+    K = ho_operator_matrix(L, beta, nbasis, kernel)
+    return Symmetric(B * K * B)
+end
+
+"""Native Eq. (A17) spin-independent oscillator Hamiltonian."""
+function oscillator_central_matrix(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L::Integer,
+    beta::Real,
+    nbasis::Integer,
+)
+    params.central isa AppendixAMomentumSandwich || throw(ArgumentError(
+        "OscillatorSolver implements only the native Appendix-A momentum-sandwich " *
+        "central Hamiltonian; use FiniteDifferenceSolver for " *
+        "`$(central_potential_method(params.central))`",
+    ))
+    m1, m2 = masses.m1_GeV, masses.m2_GeV
+    p2 = Symmetric(Matrix(ho_p2_matrix(L, beta, nbasis)))
+    kinetic = oscillator_kinetic_matrix(p2, m1) + oscillator_kinetic_matrix(p2, m2)
+    A = oscillator_momentum_factor_matrix(p2, m1, m2; power = 0.5)
+    G = ho_operator_matrix(
+        L, beta, nbasis, r -> smeared_coulomb_G_closed(params, m1, m2, r),
+    )
+    S = ho_operator_matrix(
+        L, beta, nbasis, r -> smeared_confinement_S_closed(params, m1, m2, r),
+    )
+    return Symmetric(kinetic + Symmetric(A * G * A + S))
+end
+
 function oscillator_hamiltonian_for_beta(
     params::GIParameters,
     masses::ConstituentMasses,
@@ -397,36 +472,10 @@ function oscillator_hamiltonian_for_beta(
     β::Real;
     nbasis::Integer = HO_DEFAULT_NBASIS,
 )
-    m1 = masses.m1_GeV
-    m2 = masses.m2_GeV
-    # `U` is built only to reconstruct waves back onto the reporting mesh; no
-    # operator is assembled through it on the Appendix-A path below.
+    # Some convergence diagnostics still draw the analytic basis on a reporting
+    # grid. The Hamiltonian itself is assembled entirely in coefficient space.
     U = orthonormalize_physical_basis(ho_basis_matrix(L, β, r, nbasis), h)
-    if params.central isa AppendixAMomentumSandwich
-        # Eq. (A17) with the paper's own ingredients, both sides exact and no
-        # spatial mesh: p² has closed-form oscillator matrix elements, and the
-        # smeared G̃/S̃ are integrated by generalized Gauss-Laguerre in
-        # Golub-Welsch form. The momentum factor A(p) is a spectral function of
-        # p², which is what makes the f(p) g(r) ordering of A17 assemble as a
-        # matrix product.
-        p2_basis = Symmetric(Matrix(ho_p2_matrix(L, β, nbasis)))
-        kinetic = oscillator_kinetic_matrix(p2_basis, m1) +
-                  oscillator_kinetic_matrix(p2_basis, m2)
-        A = oscillator_momentum_factor_matrix(p2_basis, m1, m2; power = 0.5)
-        g = ho_operator_matrix(L, β, nbasis, ri -> smeared_coulomb_G_closed(params, m1, m2, ri))
-        s = ho_operator_matrix(L, β, nbasis, ri -> smeared_confinement_S_closed(params, m1, m2, ri))
-        return Symmetric(kinetic + Symmetric(A * g * A + s)), U
-    end
-    # Comparator central methods (pointwise, 1D-smeared, 3D-smeared, derivative-G)
-    # are not closed-form functions of r — several smear numerically ON the mesh —
-    # so they keep the mesh projection. Mixing an exact kinetic operator with a
-    # mesh-projected potential is not the Hamiltonian of any single problem, so
-    # both sides stay on the mesh here.
-    p2_grid = p2_operator(m1, L, r, h)
-    p2_basis = projected_matrix(U, h, p2_grid)
-    kinetic = oscillator_kinetic_matrix(p2_basis, m1) + oscillator_kinetic_matrix(p2_basis, m2)
-    potential = projected_diagonal(U, h, potential_diagonal(params, m1, m2, r))
-    return Symmetric(kinetic + potential), U
+    return oscillator_central_matrix(params, masses, L, β, nbasis), U
 end
 
 # The beta grid does not adapt to the masses. If the variational optimum lands on
@@ -456,39 +505,27 @@ function oscillator_channel_solution(
     L::Integer;
     solver::OscillatorSolver = OscillatorSolver(),
     nlevels::Integer = solver.nlevels_per_channel,
-    ngrid::Integer = solver.ngrid,
-    rmax::Real = solver.rmax,
     nbasis::Integer = max(solver.nbasis, nlevels + 4),
 )
-    r, h = radial_grid(ngrid, rmax)
     best = nothing
     for β in solver.beta_grid
-        H, U = oscillator_hamiltonian_for_beta(params, masses, L, r, h, β; nbasis = nbasis)
+        H = oscillator_central_matrix(params, masses, L, β, nbasis)
         vals, vecs = lowest_eigenpairs(Matrix(H), nlevels, solver)
         # For an orthogonal set in a fixed sector, use one beta for all reported
         # levels. Following the paper's practical convention, choose the beta
         # that minimizes the last requested state rather than overfitting the
         # ground state.
         if isnothing(best) || vals[end] < best.values[end]
-            best = (beta = β, values = vals, coeffs = vecs, basis = U)
+            best = (beta = β, values = vals, coeffs = vecs)
         end
     end
     _warn_if_beta_railed(best.beta, solver, masses, L)
-    if params.central isa AppendixAMomentumSandwich
-        waves = [OscillatorWave(L, best.beta, view(best.coeffs, :, n)) for n in 1:nlevels]
-        return ChannelRadialSolution(best.values, waves)
-    end
-    # Comparator central methods were assembled in the sampled QR basis, so
-    # their coefficients are not coefficients of the analytic HO functions.
-    # Preserve them honestly as mesh waves rather than mislabelling a hybrid
-    # result as an OscillatorWave.
-    waves = physically_normalized_waves(best.basis * best.coeffs, h)
-    return ChannelRadialSolution(best.values, waves, r)
+    waves = [OscillatorWave(L, best.beta, view(best.coeffs, :, n)) for n in 1:nlevels]
+    return ChannelRadialSolution(best.values, waves)
 end
 
-# The oscillator half of `resummed_channel_solution` (contact_hyperfine.jl holds
-# the entry point and the finite-difference half). See
-# [`ho_full_distorted_states`](@ref) for what this method means physically.
+# A matrix without representation metadata is a finite-difference mesh
+# operator. HO deliberately has no adapter for it.
 function _resummed_channel_solution(
     solver::OscillatorSolver,
     params::GIParameters,
@@ -497,118 +534,8 @@ function _resummed_channel_solution(
     V::AbstractMatrix,
     nlevels::Integer,
 )
-    nbasis = max(solver.nbasis, nlevels + 4)
-    r, h = radial_grid(solver.ngrid, solver.rmax)
-    size(V, 1) == length(r) || error("V must live on the (ngrid, rmax) mesh")
-    best = nothing
-    for β in solver.beta_grid
-        H, U = oscillator_hamiltonian_for_beta(params, masses, L, r, h, β; nbasis = nbasis)
-        Vproj = projected_matrix(U, h, Matrix(V))
-        F = eigen(Symmetric(Matrix(H) + Matrix(Vproj)))
-        if isnothing(best) || F.values[nlevels] < best.values[nlevels]
-            best = (beta = β, values = F.values, coeffs = F.vectors, basis = U)
-        end
-    end
-    _warn_if_beta_railed(best.beta, solver, masses, L)
-    waves = physically_normalized_waves(best.basis * best.coeffs, h)
-    return ChannelRadialSolution(best.values[1:nlevels], waves[:, 1:nlevels], r)
+    throw(ArgumentError(
+        "OscillatorSolver cannot consume a mesh operator; use " *
+        "fixed_channel_solution to assemble the native fixed-(L,S,J) Hamiltonian",
+    ))
 end
-
-"""
-    ho_first_order_distorted_states(params, masses, L, V; nlevels, ngrid, rmax, nbasis)
-        -> ChannelRadialSolution
-
-Paper-order spin-distorted radial waves: diagonalize the central Hamiltonian in
-the harmonic-oscillator subspace (paper β convention — one β per sector,
-minimizing the `nlevels`-th state), then treat the spin-dependent grid operator
-`V` in first-order perturbation theory within that eigenbasis:
-
-    |n⟩₁ = |n⟩ + Σ_{k≠n} |k⟩ ⟨k|V|n⟩ / (Eₙ - Eₖ),   Mₙ = Eₙ + ⟨n|V|n⟩.
-
-`V` is a dense operator on the same uniform mesh (e.g.
-[`contact_hyperfine_operator`](@ref GIModel.contact_hyperfine_operator) for
-S-waves or [`fine_structure_grid_operator`](@ref) for `³P_J`). Returned waves
-are physically normalized (`∫u² dr = 1`). This is the W6-validated paper-order
-treatment: resumming `V` nonperturbatively (FD or HO) overshoots the paper's
-Table VII wavefunction-at-origin distortions, while this first-order form
-reproduces them.
-"""
-function ho_first_order_distorted_states(
-    params::GIParameters,
-    masses::ConstituentMasses,
-    L::Integer,
-    V::AbstractMatrix;
-    solver::OscillatorSolver = OscillatorSolver(),
-    nlevels::Integer = solver.nlevels_per_channel,
-    ngrid::Integer = solver.ngrid,
-    rmax::Real = solver.rmax,
-    nbasis::Integer = max(solver.nbasis, nlevels + 4),
-)
-    r, h = radial_grid(ngrid, rmax)
-    size(V, 1) == length(r) || error("V must live on the (ngrid, rmax) mesh")
-    best = nothing
-    for β in solver.beta_grid
-        H, U = oscillator_hamiltonian_for_beta(params, masses, L, r, h, β; nbasis = nbasis)
-        F = eigen(Symmetric(Matrix(H)))
-        if isnothing(best) || F.values[nlevels] < best.values[nlevels]
-            best = (beta = β, values = F.values, coeffs = F.vectors, basis = U)
-        end
-    end
-    _warn_if_beta_railed(best.beta, solver, masses, L)
-    waves = physically_normalized_waves(best.basis * best.coeffs, h)
-    # V in the central eigenbasis: ⟨k|V|n⟩ = h · wₖ' V wₙ (physical normalization)
-    Vkn = h .* (waves' * (Matrix(V) * waves))
-    values = Float64[]
-    distorted = Matrix{Float64}(undef, length(r), nlevels)
-    for n = 1:nlevels
-        ψ = copy(waves[:, n])
-        for k in axes(waves, 2)
-            k == n && continue
-            denom = best.values[n] - best.values[k]
-            abs(denom) < 1.0e-9 && continue
-            ψ .+= (Vkn[k, n] / denom) .* waves[:, k]
-        end
-        ψ ./= sqrt(sum(abs2, ψ) * h)
-        distorted[:, n] = ψ
-        push!(values, best.values[n] + Vkn[n, n])
-    end
-    return ChannelRadialSolution(values, distorted, r)
-end
-
-
-"""
-    ho_full_distorted_states(params, masses, L, V; solver, nlevels)
-        -> ChannelRadialSolution
-
-Paper-order spin-distorted radial waves by **full diagonalization** of the
-central-plus-spin Hamiltonian in the finite harmonic-oscillator subspace — the
-paper's literal method, and the [`OscillatorSolver`](@ref) case of
-[`resummed_channel_solution`](@ref) under its original name. Kept because the
-Table VI and W6 audits call it directly.
-
-For each β candidate the spin-dependent grid operator `V` is projected into the
-oscillator basis and added to the central `H`, and the full `H + V` is
-diagonalized; the paper β convention (one β per sector, minimizing the
-`nlevels`-th state) is applied to `H + V`. Returned waves are physically
-normalized (`∫u² dr = 1`).
-
-This differs from [`ho_first_order_distorted_states`](@ref) in resumming `V`
-within the finite basis rather than truncating at first order. The two coincide
-for heavy-quark spin splittings (where `V` is a small perturbation) but diverge
-where `V` is large: for the light `¹S₀` nonstrange sector the huge attractive
-contact term collapses the mass (`≈0.10 GeV`, matching the fine-grid FD
-resummation), whereas first-order PT badly overestimates it (`≈0.28 GeV`). The
-finite basis — not a perturbation order — is the mechanism: it resums less than
-the fine FD grid (so the Table VII heavy gluonic ratios land below the
-nonperturbative-FD overshoot) yet fully for the light pion. This is the single
-treatment that harmonizes the whole Table VII audit (gluonic distortion +
-light-pseudoscalar leptonic rows) on the paper's own basis.
-"""
-ho_full_distorted_states(
-    params::GIParameters,
-    masses::ConstituentMasses,
-    L::Integer,
-    V::AbstractMatrix;
-    solver::OscillatorSolver = OscillatorSolver(),
-    kwargs...,
-) = resummed_channel_solution(params, masses, L, V; solver = solver, kwargs...)

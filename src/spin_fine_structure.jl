@@ -569,6 +569,80 @@ function fine_structure_grid_operator(
     return Symmetric(Matrix(V))
 end
 
+"""
+    ho_fine_structure_matrices(params, masses, L, multiplicity, J, beta, nbasis)
+
+Native HO matrices for the vector spin-orbit, scalar/Thomas spin-orbit, and
+tensor terms of one fixed `(L,S,J)` sector. Each radial kernel is enclosed by
+its own exact spectral momentum factor; no sampled grid operator is used.
+"""
+function ho_fine_structure_matrices(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L::Integer,
+    multiplicity::Integer,
+    J::Integer,
+    beta::Real,
+    nbasis::Integer,
+)
+    zero_matrix = Symmetric(zeros(Float64, nbasis, nbasis))
+    S = (multiplicity - 1) ÷ 2
+    if !params.fine_structure.enabled || L == 0 || S != 1
+        return (
+            spin_orbit_vector = zero_matrix,
+            spin_orbit_thomas = zero_matrix,
+            spin_orbit = zero_matrix,
+            tensor = zero_matrix,
+            total = zero_matrix,
+        )
+    end
+    params.factors.fine_structure_momentum_sandwich &&
+        params.factors.fine_structure_smeared_kernels || throw(ArgumentError(
+        "native HO fine structure requires smeared Appendix-A momentum sandwiches",
+    ))
+
+    m1, m2 = masses.m1_GeV, masses.m2_GeV
+    inv2_tp = 0.5 * (1 / m1^2 + 1 / m2^2)
+    inv2_cm = 0.5 * (1 / m1^2 + 1 / m2^2 + 2 / (m1 * m2))
+    ls = LdotS(Int(L), 1, Int(J))
+    vector_radial = ho_momentum_sandwich_matrix(
+        L, beta, nbasis, masses, params.factors.epsilon_so_vector,
+        r -> smeared_coulomb_G_prime_closed(params, masses, max(r, 1e-8)) /
+             max(r, 1e-8),
+    )
+    thomas_radial = ho_momentum_sandwich_matrix(
+        L, beta, nbasis, masses, params.factors.epsilon_so_scalar,
+        r -> begin
+            r0 = max(r, 1e-8)
+            (smeared_confinement_S_prime_closed(params, masses, r0) +
+             smeared_coulomb_G_prime_closed(params, masses, r0)) / (2r0)
+        end,
+    )
+    tensor_radial = ho_momentum_sandwich_matrix(
+        L, beta, nbasis, masses, params.factors.epsilon_t,
+        r -> tensor_kernel_smeared_coulomb(params, masses, r),
+    )
+
+    vector = Symmetric(
+        params.fine_structure.k_spin_orbit * inv2_cm * ls * vector_radial,
+    )
+    thomas = Symmetric(
+        -params.fine_structure.k_spin_orbit * inv2_tp * ls * thomas_radial,
+    )
+    spin_orbit = Symmetric(Matrix(vector) + Matrix(thomas))
+    tensor = Symmetric(
+        params.fine_structure.k_tensor / (3m1 * m2) *
+        tensor_triplet_LJ(Int(L), Int(J), 1) * tensor_radial,
+    )
+    return (
+        spin_orbit_vector = vector,
+        spin_orbit_thomas = thomas,
+        spin_orbit = spin_orbit,
+        tensor = tensor,
+        total = Symmetric(Matrix(spin_orbit) + Matrix(tensor)),
+    )
+end
+
 function spin_orbit_radial_integrals(
     params::GIParameters,
     masses::ConstituentMasses,
@@ -613,6 +687,44 @@ function spin_orbit_radial_integrals(
     return (I_cm = Icm, I_tp = Itp, vec_term = vec_term, thomas_term = thomas_term)
 end
 
+function spin_orbit_radial_integrals(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L::Integer,
+    left::RadialWave,
+    right::RadialWave,
+)
+    cross_kernel(epsilon, f) =
+        params.factors.fine_structure_momentum_sandwich ?
+        radial_cross_expect_momentum_sandwich(
+            params, masses, L, left, L, right, epsilon, f,
+        ) : radial_overlap(left, right, r -> f(r, 0))
+    Icm = cross_kernel(
+        params.factors.epsilon_so_vector,
+        (r, i) -> begin
+            r0 = max(r, 1e-8)
+            params.factors.fine_structure_smeared_kernels ?
+            smeared_coulomb_G_prime_closed(params, masses, r0) / r0 :
+            (4 / 3) * alpha_s_r(r0) / r0^3
+        end,
+    )
+    Itp = cross_kernel(
+        params.factors.epsilon_so_scalar,
+        (r, i) -> begin
+            r0 = max(r, 1e-8)
+            params.factors.fine_structure_smeared_kernels ?
+            (smeared_confinement_S_prime_closed(params, masses, r0) +
+             smeared_coulomb_G_prime_closed(params, masses, r0)) / (2r0) :
+            (params.potential.b + dV_coul_central_dr(r0, params)) / (2r0)
+        end,
+    )
+    vector = params.factors.fine_structure_momentum_sandwich ?
+             Icm : (1 + params.factors.epsilon_so_vector) * Icm
+    thomas = params.factors.fine_structure_momentum_sandwich ?
+             Itp : (1 + params.factors.epsilon_so_scalar) * Itp
+    return (I_cm = Icm, I_tp = Itp, vec_term = vector, thomas_term = thomas)
+end
+
 """
     spin_orbit_mixing_components(params, masses, L_label, radial; ...)
 
@@ -626,6 +738,19 @@ function spin_orbit_mixing_components(
     masses::ConstituentMasses,
     L_label::AbstractString,
     radial::RadialWave;
+    kwargs...,
+)
+    return spin_orbit_mixing_components(
+        params, masses, L_label, radial, radial; kwargs...,
+    )
+end
+
+function spin_orbit_mixing_components(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L_label::AbstractString,
+    radial_left::RadialWave,
+    radial_right::RadialWave;
     enabled::Bool = true,
     k_spin_orbit::Real = 1.0,
 )
@@ -642,7 +767,9 @@ function spin_orbit_mixing_components(
     end
     m1 = float(masses.m1_GeV)
     m2 = float(masses.m2_GeV)
-    radial_terms = spin_orbit_radial_integrals(params, masses, L, radial)
+    radial_terms = spin_orbit_radial_integrals(
+        params, masses, L, radial_left, radial_right,
+    )
     angular = sqrt(L * (L + 1.0))
     inv2_asym = 0.5 * (1.0 / m1^2 - 1.0 / m2^2)
     vector = k_spin_orbit * inv2_asym * angular * radial_terms.vec_term

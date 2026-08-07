@@ -9,9 +9,6 @@ abstract type PseudoscalarAnnihilationModel end
 
 abstract type PseudoscalarSmearingScheme end
 
-"""Legacy FD proxy: coordinate-space origin times one averaged relativistic factor."""
-struct FDOriginP2Smearing <: PseudoscalarSmearingScheme end
-
 """Numerical evaluation of the Eq. (17) momentum integral."""
 struct FDMomentumIntegralSmearing <: PseudoscalarSmearingScheme
     npoints::Int
@@ -37,43 +34,45 @@ struct PseudoscalarAnnihilationBasisInput
     label::String
     constituent_mass_GeV::Float64
     diagonal_GeV::Float64
-    radial::RadialWave
+    radial_components::Vector{Tuple{Float64,RadialWave}}
     # Whether this channel is the coherent (u ubar + d dbar)/sqrt(2) combination,
     # which carries a sqrt(2) amplitude factor relative to a single flavor. This
     # is a property of the flavor state, so it is stated, not guessed.
     isoscalar_coherent::Bool
 end
 
-# DEPRECATED historical rule: the sqrt(2) used to be selected by substring-matching
-# the DISPLAY label. It is fragile -- any label containing "ns" fires it, so a
-# quark named `:sn` would silently gain a 41% factor. Kept only so that callers
-# which have not yet been migrated (archived forensics scripts) reproduce their
-# original numbers, with a warning.
-_label_implies_coherent(label::AbstractString) =
-    (l = lowercase(label); occursin("ns", l) || occursin("n nbar", l))
-
 function pseudoscalar_annihilation_basis_input(
     label::AbstractString,
     constituent_mass_GeV::Real,
     diagonal_GeV::Real,
     radial::RadialWave;
-    isoscalar_coherent::Union{Nothing,Bool} = nothing,
+    isoscalar_coherent::Bool,
 )
-    coherent = if isoscalar_coherent === nothing
-        @warn """
-        pseudoscalar_annihilation_basis_input: inferring `isoscalar_coherent` from \
-        the label string is deprecated and fragile (any label containing "ns" \
-        triggers a sqrt(2) amplitude factor). Pass it explicitly.""" maxlog = 1
-        _label_implies_coherent(label)
-    else
-        isoscalar_coherent
-    end
     return PseudoscalarAnnihilationBasisInput(
         String(label),
         float(constituent_mass_GeV),
         float(diagonal_GeV),
-        radial,
-        coherent,
+        Tuple{Float64,RadialWave}[(1.0, radial)],
+        isoscalar_coherent,
+    )
+end
+
+function pseudoscalar_annihilation_basis_input(
+    label::AbstractString,
+    constituent_mass_GeV::Real,
+    diagonal_GeV::Real,
+    radial_components::AbstractVector{<:Tuple};
+    isoscalar_coherent::Bool,
+)
+    isempty(radial_components) && throw(ArgumentError(
+        "pseudoscalar annihilation input needs at least one radial component",
+    ))
+    components = Tuple{Float64,RadialWave}[
+        (float(coefficient), wave) for (coefficient, wave) in radial_components
+    ]
+    return PseudoscalarAnnihilationBasisInput(
+        String(label), float(constituent_mass_GeV), float(diagonal_GeV),
+        components, isoscalar_coherent,
     )
 end
 
@@ -102,33 +101,9 @@ function _phase_fix_columns!(vectors::AbstractMatrix{<:Real}; anchor::Integer = 
     return vectors
 end
 
-function _phase_fix_by_largest_component!(vectors::AbstractMatrix{<:Real})
-    for col in axes(vectors, 2)
-        anchor = argmax(abs.(vectors[:, col]))
-        if vectors[anchor, col] < 0
-            vectors[:, col] .*= -1
-        end
-    end
-    return vectors
-end
-
 function _alpha_s_mass_scale(mass_GeV::Real)
     q = max(float(mass_GeV), 1.0e-9)
     return alpha_s_q(q)
-end
-
-_reduced_p2_expectation(radial::RadialWave) =
-    momentum_expect(momentum_wave(radial, 0), p -> p^2)
-
-function _s0_smearing_factor(::FDOriginP2Smearing, input::PseudoscalarAnnihilationBasisInput)
-    wave = input.radial
-    wave isa MeshWave || throw(ArgumentError(
-        "FDOriginP2Smearing is a legacy mesh-only approximation; use FDMomentumIntegralSmearing for $(typeof(wave))",
-    ))
-    origin_R = abs(wave.u[1] / wave.r[1])
-    p2 = _reduced_p2_expectation(wave)
-    rel = input.constituent_mass_GeV / sqrt(input.constituent_mass_GeV^2 + p2)
-    return origin_R * rel / sqrt(4π)
 end
 
 """
@@ -148,11 +123,14 @@ function _sL_smearing_factor(
         E = sqrt(mass^2 + p^2)
         (p / E)^L * mass / E
     end
-    mw = input.radial isa MeshWave ?
-         momentum_wave(input.radial, L; pmax = π / input.radial.h,
-                       npoints = max(scheme.npoints, 32)) :
-         momentum_wave(input.radial, L)
-    return sqrt(2 / π) / sqrt(4π) * momentum_functional(mw, kernel)
+    factor = sum(input.radial_components) do (coefficient, radial)
+        mw = radial isa MeshWave ?
+             momentum_wave(radial, L; pmax = π / radial.h,
+                           npoints = max(scheme.npoints, 32)) :
+             momentum_wave(radial, L)
+        coefficient * momentum_functional(mw, kernel)
+    end
+    return sqrt(2 / π) / sqrt(4π) * factor
 end
 
 _s0_smearing_factor(scheme::FDMomentumIntegralSmearing, input::PseudoscalarAnnihilationBasisInput) =
@@ -371,7 +349,7 @@ function isoscalar_general_annihilation_solution(
                          factors[j] * factors[i] / (mj * mi)
     end
     fact = eigen(Symmetric(matrix))
-    vectors = _phase_fix_by_largest_component!(Matrix(fact.vectors))
+    vectors = _phase_fix_columns!(Matrix(fact.vectors))
     basis_states = [BasisState(1, "S", multiplicity, J; label = state.label) for state in basis]
     channel = @sprintf("^%d%s_%d", multiplicity, L_LABELS[L], J)
     block = MixingBlock(
@@ -432,7 +410,7 @@ function isoscalar_pseudoscalar_annihilation_solution(
 )
     matrix = _paper_annihilation_matrix(model, params, basis)
     fact = eigen(Symmetric(matrix))
-    vectors = _phase_fix_by_largest_component!(Matrix(fact.vectors))
+    vectors = _phase_fix_columns!(Matrix(fact.vectors))
     block = MixingBlock(
         "isoscalar ^1S_0 annihilation",
         _basis_states_from_inputs(basis),
@@ -477,7 +455,7 @@ function isoscalar_pseudoscalar_annihilation_solution(
         vectors[:, level] .= fact.vectors[:, level]
         matrices[level] = matrix
     end
-    _phase_fix_by_largest_component!(vectors)
+    _phase_fix_columns!(vectors)
     block = MixingBlock(
         "isoscalar ^1S_0 annihilation",
         _basis_states_from_inputs(basis),

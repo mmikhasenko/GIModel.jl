@@ -46,11 +46,16 @@ The first implementation slice now meets the radial representation boundary:
 - `radial_wave(spectrum, ...)` returns the solver-native wave without exposing a
   mesh to the caller.
 
-What remains is the larger paper-order problem: native HO *full fixed-sector*
-Hamiltonians, complete mixing blocks, and final physical-state components. The
-current spectrum still applies spin corrections in stages to a central wave,
-and `radial_wave` on a mixed spectrum still resolves that central component
-rather than the physical linear combination.
+The fixed-sector transformation is now complete: contact, symmetric spin-orbit,
+and diagonal tensor matrices are assembled with the central Hamiltonian in both
+native backends, then diagonalized once per requested `(L,S,J)` sector. Complete
+requested radial subspaces enter the later antisymmetric-spin-orbit and tensor
+blocks. `physical_components` exposes the resulting signed composition, while
+`radial_wave` rejects mixed states instead of returning a precursor.
+
+The remaining physics work is sharply smaller: automatic HO basis/beta
+convergence metadata and integration of flavor-annihilation blocks into the
+same model-level physical-state pipeline.
 
 ## Forensic trace of the unfinished abstraction
 
@@ -80,20 +85,17 @@ fixed-`j,l,s` plus mixed physical state.
 | Momentum representation | `MomentumWave`, `MeshMomentumWave`, `OscillatorMomentumWave` | Keep without synonyms or another generic momentum abstraction. |
 | Multi-level eigensolution | `ChannelRadialSolution` | Keep its native `Vector{<:RadialWave}`. Add convergence metadata here only when PA-12 defines it; do not add a parallel `FixedSectorSolution`. |
 | Calculation cache/provenance | `SectorComputation` | Keep and evolve its cache key/value types. It already owns parameters, solver, and solutions. |
-| Spectroscopic identity | `BasisState` | Keep as the canonical `n,L,S,J,label` identity. `FineStructureMultiplet` overlaps its `L,S,J` subset; retain compatibility constructors initially, then route physics methods through `BasisState` rather than inventing another identity type. |
+| Spectroscopic identity | `BasisState` and `FineStructureMultiplet` | Keep both roles explicit: `BasisState` identifies one radial level (`n,L,S,J,label`); `FineStructureMultiplet` identifies a fixed radial sector (`L,S,J`) before an `n` exists. This is containment, not two names for one entity. |
 | Spectrum stages and physical mass | `CentralState`, `CorrectedState`, `MixedState`, `Spectrum` | Extend these to retain or resolve their stage-correct radial components. Do not add `SolvedMesonState`. |
 | Mixing algebra | `MixingBlock`, `MixingResult`, `diagonalize_mixing_block` | Keep. Annihilation and `same_j_mixing` should return or wrap `MixingResult` instead of returning named tuples that repeat `block`, `masses`, and `vectors`. |
-| Per-state mixing projection | `StateMixing` | Keep the public role, but stop copying a block's masses and eigenvectors into every member. It should reference one `MixingResult` plus the selected eigenstate/column, with compatibility properties during migration. |
-| Annihilation input metadata | `PseudoscalarAnnihilationBasisInput` | Keep the physics-specific mass/flavor metadata with `radial::RadialWave`. Do not replace it with a generic duplicate state wrapper. |
+| Per-state mixing projection | `StateMixing` | Completed: it references one shared `MixingResult` plus the selected eigenstate column; no eigensystem copies are stored. |
+| Annihilation input metadata | `PseudoscalarAnnihilationBasisInput` | Keep the physics-specific mass/flavor metadata with a signed projection of the physical state's native radial components. Do not replace it with a generic duplicate state wrapper. |
 | Matrix-element name | exported `matrix_element` generic | Extend it with radial/operator methods if a general operator protocol is adopted. Do not create a second synonymous public function. |
 | HO operator construction | `ho_p2_matrix`, `ho_operator_matrix`, `oscillator_momentum_factor_matrix`, ordinary matrices | Reuse as implementation primitives. Add small operator descriptors only where dispatch must preserve an unevaluated A17 sandwich; do not wrap every existing matrix in a second object graph. |
 
-There are also two existing result duplications to remove during the migration:
+One result duplication remains outside the spectroscopic pipeline:
 
-1. `StateMixing` repeats `partner_masses_GeV` and one eigenvector column for
-   each mixed spectrum member even though `MixingResult` already owns the full
-   eigensystem.
-2. Four annihilation paths construct a `MixingBlock` and then return named
+1. Four annihilation paths construct a `MixingBlock` and then return named
    tuples repeating the block, masses, and vectors instead of returning a
    `MixingResult` plus only their genuinely additional diagnostics.
 
@@ -216,8 +218,8 @@ States used below:
 
 Each unit should be one reviewable change with one primary responsibility. A
 unit is complete only when its acceptance tests and documentation land in the
-same change. During migration, FD, the current HO-hybrid path, and paper-order
-HO remain explicitly named; no silent fallback is allowed.
+same change. FD and native paper-order HO remain independently named; the
+former HO-hybrid path has been deleted and no silent fallback is allowed.
 
 ## Dependency board
 
@@ -232,17 +234,17 @@ HO remain explicitly named; no silent fallback is allowed.
 | PA-05 | done | PA-01 | Make `MeshWave` satisfy the same finalized contract | FD remains native mesh internally and shares the public normalization/expectation/overlap operations. |
 | PA-06 | done | PA-03, PA-04, PA-05 | Complete the needed nonlocal radial primitive | Explicit two-sided momentum-sandwich methods dispatch for both backends; no general operator object graph was added because current consumers need only this primitive. |
 | PA-07 | done | PA-06 | Migrate leaf observables from mesh fields | Spectrum spin shifts/mixing, annihilation, mock-meson overlaps, leptonic/two-photon observables, and charge radii accept `RadialWave`. |
-| PA-08 | pending | PA-06 | Implement native HO contact matrix | Fixed-beta matrix elements reproduce the intended A15 kernel and independent refined quadrature, including the origin limit. |
-| PA-09 | pending | PA-06 | Implement native HO vector and scalar spin-orbit matrices | A15/A16 momentum sandwiches use exact HO `p2` spectral factors and position matrices; no mesh operator is constructed. |
-| PA-10 | pending | PA-06 | Implement native HO tensor matrices | Diagonal and cross-sector matrix elements pass refined-quadrature and symmetry tests. |
-| PA-11 | pending | PA-08, PA-09, PA-10 | Add the full stage-1 builder to the generalized `ChannelRadialSolution` | Native-wave storage is done; the remaining acceptance is full fixed-`L,S,J` diagonalization so states sharing `L` may have different waves. |
-| PA-12 | pending | PA-11 | Add beta refinement and basis convergence | Each sector records beta, basis size, tolerance, and convergence; requested radial range controls the variational objective rather than cache depth. |
-| PA-13 | pending | PA-11, PA-12 | Route paper-order stage 1 through `compute_spectrum` | Contact, diagonal tensor, and symmetric spin-orbit terms are in the same diagonalization; paper mode has no fitted bridge factors or hidden mesh dependency. |
-| PA-14 | pending | PA-10, PA-13 | Assemble complete stage-2 spectroscopic blocks | Tensor and antisymmetric spin-orbit blocks use stage-1 eigenvectors and all compatible requested radial states; pairwise results are recovered when other couplings vanish. |
-| PA-15 | pending | PA-14 | Complete `MixedState`/`Spectrum` physical components | Existing state objects retain or resolve the full transformation; mass and observables use the same component waves rather than the central precursor. |
-| PA-16 | pending | PA-04, PA-15 | Integrate stage-3 annihilation | Literal paper annihilation acts on stage-2 states in GIModel; calibrated comparison modes remain visibly separate in GIPaper. |
-| PA-17 | pending | PA-07, PA-16 | Finish physical-state consumer migration | Consumers use the PA-15 mixed-state components rather than a central precursor; mesh-specific code remains only in the FD implementation and explicit diagnostics. |
-| PA-18 | pending | PA-17 | Switch and certify the headline path | Full verification and convergence reports pass; HO paper mode, HO legacy-hybrid, and FD comparator are named; default changes only by an explicit reviewed decision. |
+| PA-08 | done | PA-06 | Implement native HO contact matrix | `ho_contact_hyperfine_matrix` uses the exact HO momentum sandwich and enters the fixed-sector Hamiltonian. |
+| PA-09 | done | PA-06 | Implement native HO vector and scalar spin-orbit matrices | `ho_fine_structure_matrices` builds both terms from exact HO spectral factors and position matrices. |
+| PA-10 | done | PA-06 | Implement native HO tensor matrices | Diagonal HO tensor matrices and cross-sector native wave elements are symmetric and covered by solver-agreement tests. |
+| PA-11 | done | PA-08, PA-09, PA-10 | Add the full stage-1 builder to `ChannelRadialSolution` | `fixed_channel_solution` diagonalizes one complete fixed-`L,S,J` Hamiltonian and returns native waves. |
+| PA-12 | partial | PA-11 | Add beta refinement and basis convergence | The complete sector and requested radial range now control beta selection; automatic refinement, convergence metadata, and tolerance enforcement remain. |
+| PA-13 | done | PA-11 | Route paper-order stage 1 through `compute_spectrum` | Every requested state is resolved from the fixed-sector solve; the HO route has no mesh field or mesh fallback. Fitted fine-structure scale removal remains a separate physics calibration decision. |
+| PA-14 | done | PA-10, PA-13 | Assemble complete stage-2 spectroscopic blocks | Tensor and antisymmetric spin-orbit blocks use spin-resolved waves and every compatible requested radial state. |
+| PA-15 | done | PA-14 | Complete `MixedState`/`Spectrum` physical components | `StateMixing` shares its `MixingResult`; `physical_components` resolves coefficient/wave pairs and mixed `radial_wave` calls fail loudly. |
+| PA-16 | partial | PA-04, PA-15 | Integrate stage-3 annihilation | Literal annihilation kernels coherently consume the stage-2 spectroscopic projection; their flavor eigensystem still needs to become the final model-level `Spectrum` composition. Calibrated comparison modes remain visibly separate in GIPaper. |
+| PA-17 | partial | PA-07, PA-16 | Finish physical-state consumer migration | Spectroscopic expectations use `physical_components` and cannot silently use a precursor; flavor-mixed observables await PA-16. |
+| PA-18 | pending | PA-12, PA-16, PA-17 | Certify the headline path | Full verification and convergence reports pass for native HO and independent FD; there is no legacy-hybrid mode to preserve. |
 
 ## Completed first follow-up: PA-01 through PA-07
 
@@ -260,14 +262,15 @@ The reuse-first slice completed the following checklist:
 4. Corrected the `RadialWave` docstring and implemented its promised HO form.
 5. Added reusable contract tests covering normalization, phase,
    diagonal expectation, transition overlap, and coordinate/momentum duality.
-6. Reduced direct mesh access to mesh implementations, explicit plot/export
-   sampling, and the explicitly legacy `FDOriginP2Smearing` diagnostic.
+6. Reduced direct mesh access to mesh implementations and explicit plot/export
+   sampling. Removed the obsolete `FDOriginP2Smearing` approximation and label-
+   inferred flavor-coherence compatibility path.
 7. Added migration regression tests before changing the `StateMixing` and
    `ChannelRadialSolution` storage layouts.
 
-The next implementation target is PA-08 through PA-11: construct the native HO
-contact, spin-orbit, and tensor matrices and diagonalize their sum with the
-central Hamiltonian in one fixed-sector solve.
+The next independent units are PA-12 (automatic convergence) and completion of
+PA-16 (putting the flavor-annihilation eigensystem into the final spectrum).
+Neither requires another wave, solution, or mixing holder type.
 
 ## Migration boundary
 

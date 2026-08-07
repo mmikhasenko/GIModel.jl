@@ -25,14 +25,15 @@ so the *lower-mass* eigenstate is
 `Q_low = cos(theta) |n ^1L_L> + sin(theta) |n ^3L_L>` with `cos(theta) >= 0`
 implied by the quoted range.
 
-Our `same_j_mixing` (`src/spin_fine_structure.jl`) diagonalizes the 2x2
-block `[E(^1L_L) c; c E(^3L_L)]` in the same `(singlet, triplet)` basis
-order, takes the eigenvector of the *lower* eigenvalue, normalizes its
-singlet component `>= 0`, and reports `theta = atan2(v_triplet, v_singlet)`,
-i.e. `low = cos(theta) ^1L_L + sin(theta) ^3L_L`, `theta` in `(-90, 90]`.
-That is definition-identical to the paper's, so
+The production spectrum diagonalizes one complete block containing every
+requested radial singlet and triplet with this `L,J`. For each quoted `nL`,
+we take the lower of the two physical states assigned to its singlet/triplet
+precursors, project its shared eigenvector onto those two exact basis rows,
+fix the singlet component positive, and report
+`theta = atan2(v_triplet,nL, v_singlet,nL)`. Thus the angular convention is
+identical to the paper while radial-state mixing remains present, so
 
-> **theta_paper = theta_model (identity mapping; no transformation applied to any row).**
+> **theta_paper = theta_model (identity angular mapping; the model value is a projection of the complete radial block).**
 
 Two residual sign conventions enter only through the off-diagonal element
 `c` and are pinned once, globally:
@@ -57,71 +58,58 @@ Both columns use the paper convention above. `Delta = computed - paper`.
 
 | Sector | nL | Computed theta (deg) | Paper theta (deg) | Delta (deg) |
 |---|---|---:|---:|---:|
-| u sbar | 1P | +19.5 | +34 | -14.5 |
-| u sbar | 1D | +32.7 | +33 | -0.3 |
+| u sbar | 1P | +18.5 | +34 | -15.5 |
+| u sbar | 1D | +32.6 | +33 | -0.4 |
 | u sbar | 2P | +28.4 | +15 | +13.4 |
 | u sbar | 1F | +36.7 | +32 | +4.7 |
 | u sbar | 2D | +34.1 | +25 | +9.1 |
 | u sbar | 1G | +38.8 | +33 | +5.8 |
-| c ubar | 1P | -24.8 | -41 | +16.2 |
+| c ubar | 1P | -10.5 | -41 | +30.5 |
 | c ubar | 1D | -38.2 | -39 | +0.8 |
-| c sbar | 1P | -14.1 | -44 | +29.9 |
-| c sbar | 1D | -36.5 | -39 | +2.5 |
-| b ubar | 1P | +52.3 | -43 | +95.3 |
-| b sbar | 1P | +46.0 | -45 | +91.0 |
-| b cbar | 1P | +42.1 | -53 | +95.1 |
+| c sbar | 1P | -10.4 | -44 | +33.6 |
+| c sbar | 1D | -36.4 | -39 | +2.6 |
+| b ubar | 1P | +53.5 | -43 | +96.5 |
+| b sbar | 1P | +48.6 | -45 | +93.6 |
+| b cbar | 1P | +42.3 | -53 | +95.3 |
 
-## Notes on deviations
+## Reading the deviations
 
-- **`b ubar`/`b sbar`/`b cbar` 1P (apparent ~90-deg disagreements).** In these
-  blocks the singlet/triplet diagonals are nearly degenerate
-  (`b ubar`: split +2.1 MeV vs offdiag -4.1 MeV);
-  (`b sbar`: split +0.1 MeV vs offdiag -2.1 MeV);
-  (`b cbar`: split -0.5 MeV vs offdiag -2.3 MeV),
-  and our lower eigenvalue carries the combination the paper labels as
-  `Q_high`. Quoting the complementary angle — the exact same eigenvectors
-  with the low/high labels exchanged, `theta -> theta - 90` — gives
-  `b ubar` -37.7 vs paper -43 (Delta +5.3), `b sbar` -44.0 vs paper -45 (Delta +1.0), `b cbar` -47.9 vs paper -53 (Delta +5.1).
-  So the mixing *content* agrees to 1-5 deg; what differs is which of the
-  two nearly degenerate eigenstates is lower. This matches the earlier
-  `b cbar` diagnostic in `heavy_quarkonium_diagnostics.md` (+42.1 deg,
-  complement -47.9 deg, vs paper -53 deg).
-- **`c sbar` 1P (-14.2 vs -44, largest miss) and `c ubar` 1P (-24.8 vs -41).**
-  The 1P off-diagonals are only 1-2 MeV here, so
-  `theta = atan(2c / (E_s - E_t)) / 2`-type sensitivity makes the angle
-  hostage to the few-MeV singlet-triplet splitting; our splittings are
-  larger relative to `c` than the paper's effective ones.
-- **`u sbar` 1P (+19.5 vs +34, the K1 block) and 2P (+28.4 vs +15).** Same
-  small-off-diagonal sensitivity (|c| ~ 4-6 MeV). Note the trend inversion:
-  the paper's angles *decrease* with radial excitation (34 -> 15 for P,
-  33 -> 25 for D) while ours *increase* (19.5 -> 28.4, 32.7 -> 34.1).
-- **`u sbar` 2D (+34.1 vs +25) and 1G (+38.8 vs +33).** Milder (5-9 deg)
-  versions of the same pattern.
-- Blocks with large off-diagonals agree well: both 1D charm rows within
-  2.5 deg, strange 1D within 0.3 deg, strange 1F within 4.7 deg.
+The five largest direct-angle differences are:
+- `b ubar 1P`: model +53.5 deg, paper -43 deg (Delta +96.5 deg); same-n projection leaves 0.00% norm in other radial rows.
+- `b cbar 1P`: model +42.3 deg, paper -53 deg (Delta +95.3 deg); same-n projection leaves 0.00% norm in other radial rows.
+- `b sbar 1P`: model +48.6 deg, paper -45 deg (Delta +93.6 deg); same-n projection leaves 0.00% norm in other radial rows.
+- `c sbar 1P`: model -10.4 deg, paper -44 deg (Delta +33.6 deg); same-n projection leaves 0.00% norm in other radial rows.
+- `c ubar 1P`: model -10.5 deg, paper -41 deg (Delta +30.5 deg); same-n projection leaves 0.00% norm in other radial rows.
+
+Near-degenerate singlet/triplet diagonals remain sensitive to small matrix
+changes; when the physical low/high labeling is reversed, the complementary
+angle in the diagnostics is the relevant comparison. The explicit outside-
+projection percentage distinguishes that convention issue from genuine
+cross-radial composition in the complete block.
 
 ## Diagnostics (raw block data)
 
 Corrected (pre-mixing) diagonal masses `E_s = E(^1L_L)`, `E_t = E(^3L_L)`,
-off-diagonal `c`, mixed eigenvalues, our raw angle, and the complementary
-angle (low/high labels exchanged). All angles already in the paper
+same-n off-diagonal `c`, the two assigned physical masses, projected angle,
+complementary angle (low/high labels exchanged), and norm carried by other
+radial rows. All angles already use the paper
 convention (identity mapping).
 
-| Sector | nL | E_s (GeV) | E_t (GeV) | E_s - E_t (MeV) | offdiag c (MeV) | low (GeV) | high (GeV) | theta (deg) | complement (deg) |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| u sbar | 1P | 1.3837 | 1.3942 | -10.50 | -4.25 | 1.3822 | 1.3957 | +19.51 | -70.49 |
-| u sbar | 1D | 1.7961 | 1.8089 | -12.82 | -13.97 | 1.7871 | 1.8179 | +32.67 | -57.33 |
-| u sbar | 2P | 1.9217 | 1.9301 | -8.46 | -6.46 | 1.9182 | 1.9336 | +28.39 | -61.61 |
-| u sbar | 1F | 2.1320 | 2.1424 | -10.42 | -17.56 | 2.1189 | 2.1555 | +36.74 | -53.26 |
-| u sbar | 2D | 2.2443 | 2.2539 | -9.55 | -11.98 | 2.2362 | 2.2620 | +34.13 | -55.87 |
-| u sbar | 1G | 2.4227 | 2.4310 | -8.27 | -18.80 | 2.4076 | 2.4461 | +38.80 | -51.20 |
-| c ubar | 1P | 2.4753 | 2.4793 | -3.98 | +2.34 | 2.4742 | 2.4803 | -24.82 | +65.18 |
-| c ubar | 1D | 2.8309 | 2.8438 | -12.98 | +26.80 | 2.8098 | 2.8649 | -38.19 | +51.81 |
-| c sbar | 1P | 2.5643 | 2.5689 | -4.55 | +1.22 | 2.5640 | 2.5692 | -14.15 | +75.85 |
-| c sbar | 1D | 2.9130 | 2.9214 | -8.38 | +13.64 | 2.9030 | 2.9315 | -36.46 | +53.54 |
-| b ubar | 1P | 5.7862 | 5.7840 | +2.15 | -4.10 | 5.7809 | 5.7893 | +52.34 | -37.66 |
-| b sbar | 1P | 5.8642 | 5.8641 | +0.15 | -2.12 | 5.8620 | 5.8663 | +46.00 | -44.00 |
-| b cbar | 1P | 6.7509 | 6.7514 | -0.47 | -2.28 | 6.7488 | 6.7534 | +42.07 | -47.93 |
+| Sector | nL | E_s (GeV) | E_t (GeV) | E_s - E_t (MeV) | offdiag c (MeV) | low (GeV) | high (GeV) | theta (deg) | complement (deg) | other radial norm (%) |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| u sbar | 1P | 1.3837 | 1.3933 | -9.56 | -3.61 | 1.3821 | 1.3941 | +18.52 | -71.48 | 0.07 |
+| u sbar | 1D | 1.7961 | 1.8087 | -12.66 | -13.75 | 1.7870 | 1.8173 | +32.63 | -57.37 | 0.06 |
+| u sbar | 2P | 1.9217 | 1.9301 | -8.49 | -6.50 | 1.9185 | 1.9340 | +28.39 | -61.61 | 0.07 |
+| u sbar | 1F | 2.1320 | 2.1423 | -10.36 | -17.45 | 2.1190 | 2.1554 | +36.73 | -53.27 | 0.00 |
+| u sbar | 2D | 2.2443 | 2.2538 | -9.52 | -11.93 | 2.2365 | 2.2622 | +34.12 | -55.88 | 0.06 |
+| u sbar | 1G | 2.4227 | 2.4310 | -8.25 | -18.74 | 2.4077 | 2.4460 | +38.79 | -51.21 | 0.00 |
+| c ubar | 1P | 2.4753 | 2.4778 | -2.51 | +0.48 | 2.4752 | 2.4779 | -10.46 | +79.54 | 0.00 |
+| c ubar | 1D | 2.8309 | 2.8436 | -12.73 | +26.20 | 2.8103 | 2.8642 | -38.17 | +51.83 | 0.00 |
+| c sbar | 1P | 2.5643 | 2.5685 | -4.19 | +0.80 | 2.5642 | 2.5687 | -10.45 | +79.55 | 0.00 |
+| c sbar | 1D | 2.9130 | 2.9214 | -8.34 | +13.54 | 2.9030 | 2.9314 | -36.44 | +53.56 | 0.00 |
+| b ubar | 1P | 5.7862 | 5.7818 | +4.36 | -7.11 | 5.7765 | 5.7914 | +53.52 | -36.48 | 0.00 |
+| b sbar | 1P | 5.8642 | 5.8635 | +0.72 | -2.91 | 5.8609 | 5.8668 | +48.56 | -41.44 | 0.00 |
+| b cbar | 1P | 6.7509 | 6.7514 | -0.44 | -2.33 | 6.7488 | 6.7535 | +42.29 | -47.71 | 0.00 |
 
 ## Paper sources
 

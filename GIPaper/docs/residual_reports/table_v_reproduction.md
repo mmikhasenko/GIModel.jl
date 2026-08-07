@@ -11,7 +11,7 @@ row-oriented `decay_amplitude` API. Each amplitude factorizes as
 - `beta = 0.40 GeV`; masses: physical daughters, physical established
   parents, model masses for GI-predicted parents (`msrc` column).
 
-## Headline: 160 / 178 scoreable rows matched (+ 6 near, 12 off), 22 convention-deferred
+## Headline: 161 / 178 scoreable rows matched (+ 5 near, 12 off), 22 convention-deferred
 
 match = within 10% (15% for mixing), or |abs|<=0.3 for |paper|<=1.
 
@@ -96,38 +96,38 @@ match = within 10% (15% for mixing), or |abs|<=0.3 for |paper|<=1.
 
 | decay | class | q MeV | src | computed | paper | ratio | status |
 |---|---|---:|:-:|---:|---:|---:|---|
-| `delta2 -> eta pi` | S | 407 | model | +14.32 | +14 | 1.02 | match |
-| `delta2 -> K Kbar` | S | 253 | model | -11.75 | -11 | 1.07 | match |
-| `delta2 -> eta' pi` | S | 67 | model | +6.19 | below_threshold |  | convention: below threshold (paper integrates lineshape) |
-| `eps -> pi pi` | S | 539 | model | -27.18 | -27 | 1.01 | match |
-| `eps -> K Kbar` | S | 253 | model | -11.75 | -11 | 1.07 | match |
-| `eps -> eta eta` | S | 93 | model | +3.64 | below_threshold |  | convention: below threshold (paper integrates lineshape) |
-| `eps' -> K Kbar` | S | 480 | model | -21.44 | -21 | 1.02 | match |
-| `eps' -> eta eta` | S | 418 | model | +10.23 | +10 | 1.02 | match |
-| `kappa -> K pi` | S | 522 | model | +19.04 | +19 | 1.00 | match |
-| `kappa -> K eta` | S | 352 | model | -2.80 | -2.8 | 1.00 | match |
+| `delta2 -> eta pi` | S | 397 | model | +14.19 | +14 | 1.01 | match |
+| `delta2 -> K Kbar` | S | 236 | model | -11.38 | -11 | 1.03 | match |
+| `delta2 -> eta' pi` | S | 25 | model | +3.78 | below_threshold |  | convention: below threshold (paper integrates lineshape) |
+| `eps -> pi pi` | S | 531 | model | -27.07 | -27 | 1.00 | match |
+| `eps -> K Kbar` | S | 236 | model | -11.38 | -11 | 1.03 | match |
+| `eps -> eta eta` | S | 16 | model | +1.51 | below_threshold |  | convention: below threshold (paper integrates lineshape) |
+| `eps' -> K Kbar` | S | 471 | model | -21.31 | -21 | 1.01 | match |
+| `eps' -> eta eta` | S | 408 | model | +10.14 | +10 | 1.01 | match |
+| `kappa -> K pi` | S | 513 | model | +18.95 | +19 | 1.00 | match |
+| `kappa -> K eta` | S | 339 | model | -2.76 | -2.8 | 0.99 | match |
 | `kappa -> K eta'` | S | 0 | model | +0.00 | below_threshold |  | convention: below threshold (paper integrates lineshape) |
 
 ## `1^3D_3`
 
 | decay | class | q MeV | src | computed | paper | ratio | status |
 |---|---|---:|:-:|---:|---:|---:|---|
-| `g -> pi pi` | A | 833 | model | -5.58 | -5.6 | 1.00 | match |
-| `g -> omega pi` | A | 654 | model | +3.07 | +3.1 | 0.99 | match |
-| `g -> K Kbar` | A | 683 | model | -2.16 | -2.2 | 0.98 | match |
-| `g -> K* Kbar` | A | 467 | model | -0.73 | -0.7 | 1.04 | match (abs 0.03) |
-| `omega -> rho pi` | A | 660 | model | -5.48 | -5.2 | 1.05 | match |
-| `omega -> omega eta` | A | 514 | model | +0.99 | +0.9 | 1.11 | match (abs 0.09) |
-| `omega -> [B pi]_D` | Adoubleprime | 376 | model | -6.83 | -6.1 | 1.12 | near (12.0%) [implies M=1.667] |
-| `omega -> [B pi]_G` | A | 376 | model | -0.19 | -0.2 | 0.94 | match (abs 0.01) |
-| `omega -> K Kbar` | A | 683 | model | -2.16 | -2.1 | 1.03 | match |
-| `omega -> K* Kbar` | A | 467 | model | -0.73 | -0.6 | 1.21 | match (abs 0.13) |
-| `phi -> K Kbar` | A | 809 | model | +5.12 | +5.2 | 0.98 | match |
-| `phi -> K* Kbar` | A | 633 | model | -2.76 | -2.8 | 0.99 | match |
-| `K* -> K pi` | A | 822 | model | -4.65 | -4.6 | 1.01 | match |
-| `K* -> K* pi` | A | 666 | model | +2.81 | +2.8 | 1.00 | match |
-| `K* -> rho K` | A | 628 | model | -2.34 | -2.3 | 1.02 | match |
-| `K* -> omega K` | A | 621 | model | +1.30 | +1.3 | 1.00 | match |
+| `g -> pi pi` | A | 832 | model | -5.56 | -5.6 | 0.99 | match |
+| `g -> omega pi` | A | 653 | model | +3.05 | +3.1 | 0.98 | match |
+| `g -> K Kbar` | A | 682 | model | -2.15 | -2.2 | 0.98 | match |
+| `g -> K* Kbar` | A | 466 | model | -0.72 | -0.7 | 1.03 | match (abs 0.02) |
+| `omega -> rho pi` | A | 659 | model | -5.45 | -5.2 | 1.05 | match |
+| `omega -> omega eta` | A | 513 | model | +0.99 | +0.9 | 1.10 | match (abs 0.09) |
+| `omega -> [B pi]_D` | Adoubleprime | 375 | model | -6.78 | -6.1 | 1.11 | near (11.0%) [implies M=1.667] |
+| `omega -> [B pi]_G` | A | 375 | model | -0.18 | -0.2 | 0.92 | match (abs 0.02) |
+| `omega -> K Kbar` | A | 682 | model | -2.15 | -2.1 | 1.02 | match |
+| `omega -> K* Kbar` | A | 466 | model | -0.72 | -0.6 | 1.20 | match (abs 0.12) |
+| `phi -> K Kbar` | A | 809 | model | +5.11 | +5.2 | 0.98 | match |
+| `phi -> K* Kbar` | A | 632 | model | -2.76 | -2.8 | 0.98 | match |
+| `K* -> K pi` | A | 821 | model | -4.63 | -4.6 | 1.01 | match |
+| `K* -> K* pi` | A | 665 | model | +2.80 | +2.8 | 1.00 | match |
+| `K* -> rho K` | A | 627 | model | -2.33 | -2.3 | 1.01 | match |
+| `K* -> omega K` | A | 620 | model | +1.29 | +1.3 | 0.99 | match |
 
 ## `1^3D_2 nonstrange`
 
@@ -135,15 +135,15 @@ match = within 10% (15% for mixing), or |abs|<=0.3 for |paper|<=1.
 |---|---|---:|:-:|---:|---:|---:|---|
 | `rho -> [omega pi]_P` | D | 660 | model | -7.82 | -7.8 | 1.00 | match |
 | `rho -> [omega pi]_F` | A | 660 | model | +2.65 | +2.7 | 0.98 | match |
-| `rho -> [rho eta]_P` | D | 532 | model | -4.24 | -4.2 | 1.01 | match |
-| `rho -> [rho eta]_F` | A | 532 | model | +0.93 | +0.9 | 1.03 | match (abs 0.03) |
-| `rho -> [K* Kbar]_P` | D | 476 | model | +3.68 | +3.7 | 0.99 | match |
+| `rho -> [rho eta]_P` | D | 531 | model | -4.24 | -4.2 | 1.01 | match |
+| `rho -> [rho eta]_F` | A | 531 | model | +0.93 | +0.9 | 1.03 | match (abs 0.03) |
+| `rho -> [K* Kbar]_P` | D | 476 | model | +3.67 | +3.7 | 0.99 | match |
 | `rho -> [K* Kbar]_F` | A | 476 | model | -0.65 | -0.7 | 0.92 | match (abs 0.05) |
-| `omega -> [rho pi]_P` | D | 667 | model | +13.70 | +14 | 0.98 | match |
-| `omega -> [rho pi]_F` | A | 667 | model | -4.72 | -4.7 | 1.01 | match |
-| `omega -> [omega eta]_P` | D | 523 | model | -4.15 | -4.1 | 1.01 | match |
-| `omega -> [omega eta]_F` | A | 523 | model | +0.88 | +0.9 | 0.98 | match (abs 0.02) |
-| `omega -> [K* Kbar]_P` | D | 476 | model | +3.68 | +3.7 | 0.99 | match |
+| `omega -> [rho pi]_P` | D | 667 | model | +13.69 | +14 | 0.98 | match |
+| `omega -> [rho pi]_F` | A | 667 | model | -4.72 | -4.7 | 1.00 | match |
+| `omega -> [omega eta]_P` | D | 522 | model | -4.15 | -4.1 | 1.01 | match |
+| `omega -> [omega eta]_F` | A | 522 | model | +0.88 | +0.9 | 0.98 | match (abs 0.02) |
+| `omega -> [K* Kbar]_P` | D | 476 | model | +3.67 | +3.7 | 0.99 | match |
 | `omega -> [K* Kbar]_F` | A | 476 | model | -0.65 | -0.7 | 0.92 | match (abs 0.05) |
 | `phi -> [K* Kbar]_P` | D | 641 | model | +7.55 | +7.5 | 1.01 | match |
 | `phi -> [K* Kbar]_F` | A | 641 | model | -2.40 | -2.4 | 1.00 | match |
@@ -165,27 +165,27 @@ match = within 10% (15% for mixing), or |abs|<=0.3 for |paper|<=1.
 
 | decay | class | q MeV | src | computed | paper | ratio | status |
 |---|---|---:|:-:|---:|---:|---:|---|
-| `rhoD -> pi pi` | D | 821 | model | -10.41 | -10 | 1.04 | match |
-| `rhoD -> omega pi` | D | 639 | model | -5.61 | -5.5 | 1.02 | match |
-| `rhoD -> K Kbar` | D | 669 | model | -5.91 | -5.9 | 1.00 | match |
-| `rhoD -> rho eta` | D | 504 | model | -2.95 | -2.9 | 1.02 | match |
-| `rhoD -> K* Kbar` | D | 446 | model | +2.51 | +2.5 | 1.00 | match |
-| `omegaD -> rho pi` | D | 646 | model | +9.84 | +9.7 | 1.01 | match |
-| `omegaD -> omega eta` | D | 495 | model | -2.88 | -2.8 | 1.03 | match |
+| `rhoD -> pi pi` | D | 819 | model | -10.38 | -10 | 1.04 | match |
+| `rhoD -> omega pi` | D | 637 | model | -5.58 | -5.5 | 1.02 | match |
+| `rhoD -> K Kbar` | D | 666 | model | -5.88 | -5.9 | 1.00 | match |
+| `rhoD -> rho eta` | D | 500 | model | -2.92 | -2.9 | 1.01 | match |
+| `rhoD -> K* Kbar` | D | 442 | model | +2.48 | +2.5 | 0.99 | match |
+| `omegaD -> rho pi` | D | 643 | model | +9.79 | +9.7 | 1.01 | match |
+| `omegaD -> omega eta` | D | 491 | model | -2.85 | -2.8 | 1.02 | match |
 | `omegaD -> omega eta'` | D | 0 | model | -0.00 | below_threshold |  | convention: below threshold (paper integrates lineshape) |
-| `omegaD -> K Kbar` | D | 669 | model | -5.91 | -5.9 | 1.00 | match |
-| `omegaD -> K* Kbar` | D | 446 | model | +2.51 | +2.5 | 1.00 | match |
-| `phiD -> phi eta` | D | 501 | model | +4.14 | +4.1 | 1.01 | match |
-| `phiD -> K Kbar` | D | 798 | model | +10.12 | +10 | 1.01 | match |
-| `phiD -> K* Kbar` | D | 619 | model | +5.40 | +5.4 | 1.00 | match |
-| `K*D -> K pi` | D | 815 | model | -8.96 | -8.9 | 1.01 | match |
-| `K*D -> K eta` | D | 721 | model | -7.77 | -7.7 | 1.01 | match |
-| `K*D -> K eta'` | D | 497 | model | +0.85 | +0.8 | 1.06 | match (abs 0.05) |
-| `K*D -> K* pi` | D | 658 | model | -5.03 | -5.0 | 1.01 | match |
-| `K*D -> K* eta` | D | 514 | model | +0.63 | +0.6 | 1.04 | match (abs 0.03) |
-| `K*D -> rho K` | D | 620 | model | +4.68 | +4.6 | 1.02 | match |
-| `K*D -> omega K` | D | 612 | model | -2.66 | -2.6 | 1.02 | match |
-| `K*D -> phi K` | D | 447 | model | -2.52 | -2.5 | 1.01 | match |
+| `omegaD -> K Kbar` | D | 666 | model | -5.88 | -5.9 | 1.00 | match |
+| `omegaD -> K* Kbar` | D | 442 | model | +2.48 | +2.5 | 0.99 | match |
+| `phiD -> phi eta` | D | 498 | model | +4.11 | +4.1 | 1.00 | match |
+| `phiD -> K Kbar` | D | 796 | model | +10.10 | +10 | 1.01 | match |
+| `phiD -> K* Kbar` | D | 617 | model | +5.38 | +5.4 | 1.00 | match |
+| `K*D -> K pi` | D | 813 | model | -8.93 | -8.9 | 1.00 | match |
+| `K*D -> K eta` | D | 718 | model | -7.74 | -7.7 | 1.00 | match |
+| `K*D -> K eta'` | D | 494 | model | +0.84 | +0.8 | 1.05 | match (abs 0.04) |
+| `K*D -> K* pi` | D | 655 | model | -5.00 | -5.0 | 1.00 | match |
+| `K*D -> K* eta` | D | 510 | model | +0.62 | +0.6 | 1.03 | match (abs 0.02) |
+| `K*D -> rho K` | D | 617 | model | +4.65 | +4.6 | 1.01 | match |
+| `K*D -> omega K` | D | 609 | model | -2.65 | -2.6 | 1.02 | match |
+| `K*D -> phi K` | D | 443 | model | -2.49 | -2.5 | 1.00 | match |
 
 ## `2^1S_0`
 
@@ -231,28 +231,28 @@ match = within 10% (15% for mixing), or |abs|<=0.3 for |paper|<=1.
 
 | decay | class | q MeV | src | computed | paper | ratio | status |
 |---|---|---:|:-:|---:|---:|---:|---|
-| `delta -> rho pi` | A | 860 | model | +2.83 | +2.7 | 1.05 | match |
+| `delta -> rho pi` | A | 859 | model | +2.83 | +2.7 | 1.05 | match |
 | `delta -> eta pi` | A | 932 | model | -1.73 | -1.7 | 1.02 | match |
-| `delta -> K Kbar` | A | 883 | model | +1.40 | +1.4 | 1.00 | match |
-| `delta -> eta' pi` | A | 778 | model | -0.85 | -0.8 | 1.07 | match (abs 0.05) |
-| `delta -> K* Kbar` | A | 723 | model | +0.71 | +0.7 | 1.01 | match (abs 0.01) |
-| `h -> pi pi` | A | 1003 | model | +3.95 | +3.9 | 1.01 | match |
-| `h -> K Kbar` | A | 883 | model | +1.40 | +1.4 | 1.00 | match |
-| `h -> eta eta` | A | 851 | model | -0.61 | -0.6 | 1.01 | match (abs 0.01) |
-| `h -> eta eta'` | A | 662 | model | -0.31 | -0.3 | 1.04 | match (abs 0.01) |
-| `h -> eta' eta'` | A | 328 | model | -0.01 | -0.0 |  | match (abs 0.01) |
-| `h -> K* Kbar` | A | 723 | model | +0.71 | +0.7 | 1.01 | match (abs 0.01) |
-| `h' -> K Kbar` | A | 990 | model | +3.08 | +3.1 | 0.99 | match |
-| `h' -> eta eta` | A | 962 | model | -1.38 | -1.4 | 0.99 | match |
-| `h' -> eta eta'` | A | 798 | model | +0.94 | +1.0 | 0.94 | match (abs 0.06) |
-| `h' -> eta' eta'` | A | 556 | model | -0.15 | -0.2 | 0.75 | match (abs 0.05) |
-| `h' -> K* Kbar` | A | 849 | model | -1.91 | -1.9 | 1.00 | match |
-| `K* -> K pi` | A | 996 | model | -2.72 | -2.7 | 1.01 | match |
-| `K* -> K* pi` | A | 865 | model | +1.77 | +1.7 | 1.04 | match |
+| `delta -> K Kbar` | A | 882 | model | +1.40 | +1.4 | 1.00 | match |
+| `delta -> eta' pi` | A | 778 | model | -0.85 | -0.8 | 1.06 | match (abs 0.05) |
+| `delta -> K* Kbar` | A | 722 | model | +0.70 | +0.7 | 1.00 | match (abs 0.0) |
+| `h -> pi pi` | A | 1002 | model | +3.94 | +3.9 | 1.01 | match |
+| `h -> K Kbar` | A | 882 | model | +1.40 | +1.4 | 1.00 | match |
+| `h -> eta eta` | A | 850 | model | -0.61 | -0.6 | 1.01 | match (abs 0.01) |
+| `h -> eta eta'` | A | 662 | model | -0.31 | -0.3 | 1.03 | match (abs 0.01) |
+| `h -> eta' eta'` | A | 327 | model | -0.01 | -0.0 |  | match (abs 0.01) |
+| `h -> K* Kbar` | A | 722 | model | +0.70 | +0.7 | 1.00 | match (abs 0.0) |
+| `h' -> K Kbar` | A | 990 | model | +3.07 | +3.1 | 0.99 | match |
+| `h' -> eta eta` | A | 961 | model | -1.38 | -1.4 | 0.98 | match |
+| `h' -> eta eta'` | A | 797 | model | +0.94 | +1.0 | 0.94 | match (abs 0.06) |
+| `h' -> eta' eta'` | A | 556 | model | -0.15 | -0.2 | 0.74 | match (abs 0.05) |
+| `h' -> K* Kbar` | A | 849 | model | -1.90 | -1.9 | 1.00 | match |
+| `K* -> K pi` | A | 995 | model | -2.72 | -2.7 | 1.01 | match |
+| `K* -> K* pi` | A | 864 | model | +1.77 | +1.7 | 1.04 | match |
 | `K* -> rho K` | A | 842 | model | +1.60 | +1.6 | 1.00 | match |
 | `K* -> omega K` | A | 836 | model | -0.90 | -0.9 | 1.00 | match (abs 0.0) |
-| `K* -> K eta` | A | 921 | model | +0.34 | +0.3 | 1.14 | match (abs 0.04) |
-| `K* -> K eta'` | A | 752 | model | -0.89 | -0.9 | 0.99 | match (abs 0.01) |
+| `K* -> K eta` | A | 920 | model | +0.34 | +0.3 | 1.14 | match (abs 0.04) |
+| `K* -> K eta'` | A | 751 | model | -0.89 | -0.9 | 0.99 | match (abs 0.01) |
 
 ## `1^3S_1 charmed`
 
@@ -266,14 +266,14 @@ match = within 10% (15% for mixing), or |abs|<=0.3 for |paper|<=1.
 
 | decay | class | q MeV | src | computed | paper | ratio | status |
 |---|---|---:|:-:|---:|---:|---:|---|
-| `K*c -> D pi` | Ac | 528 | model | -7.47 | -7.3 | 1.02 | match |
-| `K*c -> D* pi` | Ac | 413 | model | -5.65 | -5.1 | 1.11 | near (11.0%) [implies M=2.463] |
+| `K*c -> D pi` | Ac | 526 | model | -7.42 | -7.3 | 1.02 | match |
+| `K*c -> D* pi` | Ac | 411 | model | -5.60 | -5.1 | 1.10 | match |
 
 ## `1^3P_0 charmed`
 
 | decay | class | q MeV | src | computed | paper | ratio | status |
 |---|---|---:|:-:|---:|---:|---:|---|
-| `kappac -> D pi` | Sc | 467 | model | -15.38 | -15 | 1.03 | match |
+| `kappac -> D pi` | Sc | 456 | model | -15.39 | -15 | 1.03 | match |
 
 ## `1^3D_2 1^1D_2 strange`
 
@@ -288,13 +288,13 @@ match = within 10% (15% for mixing), or |abs|<=0.3 for |paper|<=1.
 | `Q1 -> [K* eta]_F` | mix(33) | 526 | mix | +1.01 | +0.9 | 1.13 | match (abs 0.11) |
 | `Q1 -> [omega K]_P` | mix(33) | 623 | mix | -4.49 | -4.4 | 1.02 | match |
 | `Q2 -> [omega K]_F` | mix(33) | 632 | mix | +1.73 | +1.7 | 1.02 | match |
-| `Q2 -> [K* pi]_P` | mix(33) | 676 | mix | -8.93 | -8.9 | 1.00 | match |
+| `Q2 -> [K* pi]_P` | mix(33) | 676 | mix | -8.92 | -8.9 | 1.00 | match |
 | `Q2 -> [rho K]_F` | mix(33) | 639 | mix | -3.11 | -3.1 | 1.00 | match |
 | `Q2 -> [K* pi]_F` | mix(33) | 676 | mix | +0.42 | +0.1 | 4.23 | match (abs 0.32) |
 | `Q2 -> [K* eta]_P` | mix(33) | 537 | mix | -1.56 | -1.6 | 0.97 | match |
 | `Q2 -> [rho K]_P` | mix(33) | 639 | mix | +2.57 | +2.6 | 0.99 | match |
 | `Q2 -> [K* eta]_F` | mix(33) | 537 | mix | -0.94 | -1.0 | 0.94 | match (abs 0.06) |
-| `Q2 -> [omega K]_P` | mix(33) | 632 | mix | -1.46 | -1.5 | 0.98 | match |
+| `Q2 -> [omega K]_P` | mix(33) | 632 | mix | -1.46 | -1.5 | 0.97 | match |
 
 ## `1P_1 strange`
 
@@ -323,6 +323,6 @@ match = within 10% (15% for mixing), or |abs|<=0.3 for |paper|<=1.
 |---|---|---:|:-:|---:|---:|---:|---|
 | `Q1c -> [D* pi]_S` | mix(-41) | 404 | mix | -1.53 | -1.5 | 1.02 | match |
 | `Q1c -> [D* pi]_D` | mix(-41) | 404 | mix | +6.93 | +5.3 | 1.31 | MISS (31.0%) |
-| `Q2c -> [D* pi]_S` | mix(-41) | 408 | mix | +15.23 | +15 | 1.02 | match |
-| `Q2c -> [D* pi]_D` | mix(-41) | 408 | mix | +0.71 | +0.7 | 1.01 | match (abs 0.01) |
+| `Q2c -> [D* pi]_S` | mix(-41) | 406 | mix | +15.22 | +15 | 1.01 | match |
+| `Q2c -> [D* pi]_D` | mix(-41) | 406 | mix | +0.70 | +0.7 | 1.01 | match (abs 0.0) |
 

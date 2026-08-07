@@ -78,6 +78,9 @@ Two implementations, in separate files, that never refer to each other:
 """
 abstract type RadialWave end
 
+"""Return the same normalized radial state with its outermost lobe positive."""
+function fix_outer_phase end
+
 """
     MeshWave(u, r, h)
     MeshWave(u, r)
@@ -171,6 +174,13 @@ The physical norm `integral u^2 dr`. Guaranteed to be 1 for any wave produced by
 a solve; exposed so the invariant can be asserted rather than assumed.
 """
 wave_norm(w::MeshWave) = sum(abs2, w.u) * w.h
+
+function fix_outer_phase(w::MeshWave)
+    peak = maximum(abs, w.u)
+    index = findlast(x -> abs(x) > 0.2peak, w.u)
+    (isnothing(index) || w.u[index] >= 0) && return w
+    return MeshWave(-w.u, w.r, w.h)
+end
 
 """
     radial_expect(w::RadialWave, f) -> Float64

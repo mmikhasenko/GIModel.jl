@@ -79,8 +79,6 @@ end
         nbasis = 8,
         beta_grid = [0.65],
         nlevels_per_channel = 2,
-        ngrid = 48,
-        rmax = 12.0,
     )
     ho_solution = @inferred GIModel._channel_solution(
         ho, params, masses, 0, 2,
@@ -238,7 +236,7 @@ end
         params,
         ConstituentMasses(mq["c"], mq["c"]),
         0;
-        solver = OscillatorSolver(beta_grid = [0.7], ngrid = 120, rmax = 14.0),
+        solver = OscillatorSolver(beta_grid = [0.7]),
         nlevels = 3,
     )
     @test sol isa ChannelRadialSolution{OscillatorWave}
@@ -255,16 +253,8 @@ end
         @test sum(abs2, vecs[:, col]) * h ≈ 1.0 rtol = 1e-10
     end
 
-    # Reporting mesh choices do not participate in the native HO calculation.
-    other = channel_solution(
-        params,
-        ConstituentMasses(mq["c"], mq["c"]),
-        0;
-        solver = OscillatorSolver(beta_grid = [0.7], ngrid = 75, rmax = 9.0),
-        nlevels = 3,
-    )
-    @test other.eigenvalues_GeV ≈ sol.eigenvalues_GeV rtol = 1e-12
-    @test all(other.waves[i].coefficients ≈ sol.waves[i].coefficients for i in 1:3)
+    @test_throws MethodError OscillatorSolver(ngrid = 75)
+    @test_throws MethodError OscillatorSolver(rmax = 9.0)
 end
 
 @testset "reduced_mass" begin
@@ -1745,17 +1735,61 @@ end
     @test all(iszero, GIModel.physically_normalized_waves(zeros(5, 1), 0.25))
 end
 
-@testset "Both solvers solve H+V to the same quantity, same normalization" begin
+@testset "Native HO spin matrices equal wave-interface expectations" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    masses = ConstituentMasses(mq["c"], mq["c"])
+    beta, nbasis = 0.75, 12
+
+    cS = collect(range(1.0, 0.1; length = nbasis))
+    wS = OscillatorWave(0, beta, cS)
+    contact = GIModel.ho_contact_hyperfine_matrix(
+        params, masses, 0, 1, beta, nbasis,
+    )
+    @test Matrix(contact) ≈ Matrix(contact)' atol = 1e-13
+    @test dot(wS.coefficients, contact * wS.coefficients) ≈
+          GIModel.contact_hyperfine_shift_momentum_sandwich(
+              params, masses, FineStructureMultiplet("S", 1, 0), wS,
+          ) rtol = 1e-5 atol = 1e-9
+
+    cP = [sin(i) + 0.2cos(2i) for i in 1:nbasis]
+    wP = OscillatorWave(1, beta, cP)
+    matrices = GIModel.ho_fine_structure_matrices(
+        params, masses, 1, 3, 2, beta, nbasis,
+    )
+    components = fine_structure_components(
+        params, masses, FineStructureMultiplet("P", 3, 2), wP,
+        k_spin_orbit = params.fine_structure.k_spin_orbit,
+        k_tensor = params.fine_structure.k_tensor,
+    )
+    @test all(
+        M -> isapprox(Matrix(M), Matrix(M)'; atol = 1e-13),
+        (matrices.spin_orbit_vector, matrices.spin_orbit_thomas,
+         matrices.spin_orbit, matrices.tensor, matrices.total),
+    )
+    @test dot(wP.coefficients, matrices.spin_orbit_vector * wP.coefficients) ≈
+          components.spin_orbit_vector rtol = 1e-5 atol = 1e-9
+    @test dot(wP.coefficients, matrices.spin_orbit_thomas * wP.coefficients) ≈
+          components.spin_orbit_thomas rtol = 1e-5 atol = 1e-9
+    @test dot(wP.coefficients, matrices.tensor * wP.coefficients) ≈
+          components.tensor rtol = 1e-5 atol = 1e-9
+    @test Matrix(matrices.total) ≈
+          Matrix(matrices.spin_orbit) + Matrix(matrices.tensor) atol = 1e-13
+end
+
+@testset "Both solvers solve the same native fixed-(L,S,J) Hamiltonian" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     r, h = GIModel.radial_grid(450, 24.0)
 
     for key in ("q", "c", "b")
         masses = ConstituentMasses(mq[key], mq[key])
-        V = Matrix(GIModel.contact_hyperfine_operator(params, masses, "S", 1, r))
-        sol_fd = resummed_channel_solution(
-            params, masses, 0, V; solver = FiniteDifferenceSolver(), nlevels = 2)
-        sol_ho = resummed_channel_solution(
-            params, masses, 0, V; solver = OscillatorSolver(), nlevels = 2)
+        multiplet = FineStructureMultiplet("S", 1, 0)
+        terms = SpinTerms(fine_structure = false)
+        sol_fd = fixed_channel_solution(
+            params, masses, multiplet;
+            solver = FiniteDifferenceSolver(), terms = terms, nlevels = 2)
+        sol_ho = fixed_channel_solution(
+            params, masses, multiplet;
+            solver = OscillatorSolver(), terms = terms, nlevels = 2)
 
         # Same normalization, independent of representation.
         # FD used to return Euclidean eigenvectors (sum u^2 = 1), differing from
@@ -1775,12 +1809,12 @@ end
         @test abs(sol_ho.eigenvalues_GeV[1] - sol_fd.eigenvalues_GeV[1]) < 3e-3
     end
 
-    # The original exported name is the oscillator method of the unified solve.
+    # A mesh operator is not an HO input. Unsupported routes fail explicitly.
     masses = ConstituentMasses(mq["c"], mq["c"])
     V = Matrix(GIModel.contact_hyperfine_operator(params, masses, "S", 1, r))
     ho = OscillatorSolver()
-    @test ho_full_distorted_states(params, masses, 0, V; solver = ho, nlevels = 2).eigenvalues_GeV ==
-          resummed_channel_solution(params, masses, 0, V; solver = ho, nlevels = 2).eigenvalues_GeV
+    @test_throws ArgumentError resummed_channel_solution(
+        params, masses, 0, V; solver = ho, nlevels = 2)
 
     # V must live on the solver's mesh, whichever solver that is.
     bad = zeros(10, 10)
@@ -1812,12 +1846,14 @@ end
     # answer. That agreement is what the throw was standing in for.
     ho = OscillatorSolver()
     solution_ho = contact_hyperfine_nonperturbative_states(
-        params, masses, "S", 1, r, 2; solver = ho)
+        params, masses, "S", 1, 2; solver = ho)
     @test length(solution_ho.eigenvalues_GeV) == 2 && length(solution_ho.waves) == 2
     @test abs(solution_ho.eigenvalues_GeV[1] - solution.eigenvalues_GeV[1]) < 1e-3
     @test solution_ho.eigenvalues_GeV[1] < 0.15
     @test GIModel.contact_hyperfine_nonperturbative_levels(
-        params, masses, "S", 1, r, 2; solver = ho) ≈ solution_ho.eigenvalues_GeV
+        params, masses, "S", 1, 2; solver = ho) ≈ solution_ho.eigenvalues_GeV
+    @test_throws ArgumentError contact_hyperfine_nonperturbative_states(
+        params, masses, "S", 1, r, 2; solver = ho)
     ho_pi = spectrum_state(
         compute_spectrum(params, Meson(mq, :q, :q); solver = ho, levels = spectrum_levels(1)),
         "1^1S_0")
@@ -2051,13 +2087,8 @@ end
     @test GIModel._flavor_coherence_factor(mk("1 snsn", false)) == 1.0
     @test GIModel._flavor_coherence_factor(mk("1 cc", true)) ≈ sqrt(2)
 
-    # The deprecated label inference still reproduces the historical rule for
-    # unmigrated callers (archived forensics), and warns.
-    @test GIModel._label_implies_coherent("1 ns")
-    @test GIModel._label_implies_coherent("2 n nbar")
-    @test !GIModel._label_implies_coherent("1 ss")
-    @test (@test_logs (:warn,) match_mode = :any pseudoscalar_annihilation_basis_input(
-        "1 ns", 0.22, 0.9, wave)).isoscalar_coherent
+    @test_throws UndefKeywordError pseudoscalar_annihilation_basis_input(
+        "1 ns", 0.22, 0.9, wave)
 end
 
 @testset "Meson construction and flavor resolution" begin
@@ -2120,14 +2151,43 @@ end
         end
         @test s.fine_structure_shift_GeV ≈ s.spin_orbit_shift_GeV + s.tensor_shift_GeV atol = 1e-12
     end
-    # 2^3S_1 and 1^3D_1 form a tensor block; trace is conserved
+    # Every requested radial state in the compatible ^3S_1/^3D_1 sectors enters
+    # one tensor block; trace and the shared eigensystem are conserved.
     mixed = [s for s in spec.states if !isempty(s.mixings)]
-    @test length(mixed) == 2
+    @test length(mixed) == 3
     @test all(m.mechanism == "tensor_mixing" for s in mixed for m in s.mixings)
     @test sum(s.mass_GeV for s in mixed) ≈
           sum(s.mixings[end].unmixed_GeV for s in mixed) atol = 1e-10
-    @test mixed[1].mixings[end].partner_masses_GeV == mixed[2].mixings[end].partner_masses_GeV
-    @test mixed[1].mixings[end].result === mixed[2].mixings[end].result
+    @test all(
+        s.mixings[end].partner_masses_GeV == mixed[1].mixings[end].partner_masses_GeV for
+        s in mixed
+    )
+    @test all(s.mixings[end].result === mixed[1].mixings[end].result for s in mixed)
+    @test fieldnames(StateMixing) == (:result, :eigenstate, :unmixed_GeV)
+    @test all(length(physical_components(spec, s)) == 3 for s in mixed)
+    components = physical_components(spec, mixed[1])
+    coherent_r2 = sum(
+        left.coefficient * right.coefficient *
+        radial_overlap(left.wave, right.wave, r -> r^2) for
+        left in components for right in components if
+        left.basis.L_label == right.basis.L_label &&
+        left.basis.multiplicity == right.basis.multiplicity &&
+        left.basis.J == right.basis.J
+    )
+    @test radial_expect(spec, mixed[1], r -> r^2) ≈ coherent_r2 atol = 1e-12
+    @test_throws ArgumentError radial_wave(spec, mixed[1])
+    # A consumer that is specific to one spectroscopic channel receives the
+    # coherent radial-n projection of the physical state, not one arbitrarily
+    # selected precursor wave.  The remaining D component does not contribute
+    # to an S-wave annihilation kernel.
+    annihilation_input = GIModel.annihilation_basis_input(
+        spec, BasisState(1, "S", 3, 1),
+    )
+    @test length(annihilation_input.radial_components) == 2
+    @test all(isfinite(first(component)) for component in annihilation_input.radial_components)
+    @test isfinite(GIModel._sL_smearing_factor(
+        FDMomentumIntegralSmearing(120), annihilation_input, 0,
+    ))
     # lookup by quantum numbers
     s = spectrum_state(spec, 1, "P", 3, 2)
     @test s.label == "1^3P_2"
@@ -2239,20 +2299,23 @@ end
     # depend on Phi(0) proportional to the integral of r*u(r) being positive.
     for n in 1:2
         input = GIModel.annihilation_basis_input(spec, BasisState(n, "S", 1, 0))
-        w = input.radial
+        coefficient, w = only(input.radial_components)
+        @test coefficient == 1.0
         @test sum(w.r .* w.u) * w.h > 0
     end
 
-    # Applied to a COPY. The cached eigenvectors keep whatever sign the solver
-    # gave them, so nothing else downstream changes underfoot -- this solve
-    # happens to come out negative, so the flip is real and observable here.
+    # Applied without mutating the cached wave. Channel solutions already have
+    # a deterministic outer-lobe phase; the annihilation convention may choose
+    # the same or opposite sign for a particular radial excitation.
     key = RadialChannelKey(spec.meson.constituent_masses, "S")
     cached = spec.computation.channel_cache[key]
     before = [copy(w.u) for w in cached.waves]
     raw = radial_wave(spec, "1^1S_0")
-    fixed = GIModel.annihilation_basis_input(spec, BasisState(1, "S", 1, 0)).radial
+    fixed = only(GIModel.annihilation_basis_input(
+        spec, BasisState(1, "S", 1, 0),
+    ).radial_components)[2]
     @test abs.(raw.u) ≈ abs.(fixed.u)
-    @test sum(raw.r .* raw.u) < 0 && sum(fixed.r .* fixed.u) > 0   # the flip fired
+    @test sum(fixed.r .* fixed.u) > 0
     @test [w.u for w in cached.waves] == before
 
     # Both solvers give the same smeared origin factor -- the quantity the second
@@ -2281,7 +2344,8 @@ end
 
     corrected = add_spin_corrections(central)
     @test corrected isa CorrectedSpectrum
-    @test corrected.computation === central.computation
+    @test corrected.computation !== central.computation
+    @test all(k.multiplicity == 0 for k in keys(central.computation.channel_cache))
     for s in corrected.states
         # property forwarding into the wrapped central state
         @test s.central_GeV == s.central.central_GeV
@@ -2290,7 +2354,7 @@ end
 
     mixed = add_intra_meson_mixing(corrected)
     @test mixed isa MixedSpectrum
-    @test mixed.computation === central.computation
+    @test mixed.computation === corrected.computation
 
     # composition is compute_spectrum
     direct = compute_spectrum(params, us; levels = levels, kwargs...)
@@ -2352,7 +2416,7 @@ end
     # "this basis has no implementation", which is what used to make callers
     # substitute first-order PT and report 0.2842 GeV for the light 1S0.
     sol_ho = contact_hyperfine_nonperturbative_states(
-        params, masses, "S", 1, r, 2; solver = OscillatorSolver())
+        params, masses, "S", 1, 2; solver = OscillatorSolver())
     @test abs(sol_ho.eigenvalues_GeV[1] - sol1.eigenvalues_GeV[1]) < 1e-3
 end
 
@@ -2626,18 +2690,14 @@ end
     @test 0.6 < abs(Aη′) / 1.3 < 1.4
 end
 
-@testset "W6 paper-order spin-distorted waves (HO first order)" begin
+@testset "Native HO fixed-channel spin-distorted waves" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    solver_ho = OscillatorSolver(ngrid = 900, rmax = 24.0)
+    solver_ho = OscillatorSolver()
     mc = mq["c"]
     masses = ConstituentMasses(mc, mc)
-    outer!(u) = (pk = maximum(abs, u); i = findlast(x -> abs(x) > 0.2pk, u);
-                 (i !== nothing && u[i] < 0) && (u .*= -1); u)
     ngrid, rmax = 900, 24.0
-    r, h = GIModel.radial_grid(ngrid, rmax)
     tomev(a) = abs(a) * sqrt(1000)
-    sm(w::MeshWave, L) = wavefunction_origin_smearing(
-        MeshWave(outer!(copy(w.u)), w.r), mc; L = L)
+    sm(w::RadialWave, L) = wavefunction_origin_smearing(w, mc; L = L)
 
     # 1. basis-fidelity control: HO central S_L matches FD to <2% for charm —
     #    the 15-20% gluonic row residuals were never a basis artifact
@@ -2652,16 +2712,18 @@ end
 
     # 2. paper-order treatment: first-order PT in the HO central eigenbasis with
     #    the calibrated spin blocks lands the charm gluonic rows on the paper
-    V1 = GIModel.contact_hyperfine_operator(params, masses, "S", 1, r)
-    V3 = GIModel.contact_hyperfine_operator(params, masses, "S", 3, r)
-    VP0 = fine_structure_grid_operator(params, masses, 0, r, h)
-    VP2 = fine_structure_grid_operator(params, masses, 2, r, h)
     amp(ch, S, M) = tomev(gluonic_annihilation_amplitude(ch, S, GIModel.alpha_s_q(M), mc))
     ratios = Dict{Symbol,Float64}()
-    for (key, L, V, ch, paper) in ((:eta_c, 0, V1, :S0_2g, 4.700), (:psi, 0, V3, :S1_3g, 0.420),
-                                   (:chi_0c, 1, VP0, :P0_2g, 2.500), (:chi_2c, 1, VP2, :P2_2g, 0.880))
-        sol = ho_first_order_distorted_states(params, masses, L, V; solver = solver_ho,
-            nlevels = 4)
+    cases = (
+        (:eta_c, FineStructureMultiplet("S", 1, 0), :S0_2g, 4.700),
+        (:psi, FineStructureMultiplet("S", 3, 1), :S1_3g, 0.420),
+        (:chi_0c, FineStructureMultiplet("P", 3, 0), :P0_2g, 2.500),
+        (:chi_2c, FineStructureMultiplet("P", 3, 2), :P2_2g, 0.880),
+    )
+    for (key, multiplet, ch, paper) in cases
+        sol = fixed_channel_solution(
+            params, masses, multiplet; solver = solver_ho, nlevels = 4)
+        L = GIModel.L_SYMBOLS[multiplet.L_label]
         ratios[key] = amp(ch, sm(radial_wave(sol, 1), L), sol.eigenvalues_GeV[1]) / paper
         @test 0.85 < ratios[key] < 1.15
     end
@@ -2680,36 +2742,35 @@ end
     @test ratios[:chi_0c] / ratios[:chi_2c] > 0.80   # central-wave value ≈ 0.68
 end
 
-@testset "W6 paper-order full diagonalization (light-mass discriminator)" begin
+@testset "Native HO full fixed-channel diagonalization" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    solver_ho = OscillatorSolver(ngrid = 900, rmax = 24.0)
+    solver_ho = OscillatorSolver()
     ngrid, rmax = 900, 24.0
-    r, h = GIModel.radial_grid(ngrid, rmax)
-    outer!(u) = (pk = maximum(abs, u); i = findlast(x -> abs(x) > 0.2pk, u);
-                 (i !== nothing && u[i] < 0) && (u .*= -1); u)
 
     # 1. The paper's treatment is FULL diagonalization in the finite HO basis,
     #    not first-order PT. The light ¹S₀ (pion) mass discriminates: full-diag
     #    keeps it resummed (≈0.10 GeV) like the fine-grid FD, while first-order
     #    PT over-raises it (≈0.28 GeV).
     nn = ConstituentMasses(mq["q"], mq["q"])
-    Vpi = GIModel.contact_hyperfine_operator(params, nn, "S", 1, r)
-    m_full = ho_full_distorted_states(params, nn, 0, Vpi; solver = solver_ho, nlevels = 4).eigenvalues_GeV[1]
-    m_pt = ho_first_order_distorted_states(params, nn, 0, Vpi; solver = solver_ho, nlevels = 4).eigenvalues_GeV[1]
-    m_fd = GIModel.lowest_eigenpairs(
-        Symmetric(Matrix(GIModel.relativistic_hamiltonian(params, nn, 0; ngrid = ngrid, rmax = rmax)[1]) + Matrix(Vpi)), 1)[1][1]
+    pion = FineStructureMultiplet("S", 1, 0)
+    m_full = fixed_channel_solution(
+        params, nn, pion; solver = solver_ho, nlevels = 4).eigenvalues_GeV[1]
+    m_fd = fixed_channel_solution(
+        params, nn, pion;
+        solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax),
+        nlevels = 4,
+    ).eigenvalues_GeV[1]
     @test m_full < 0.15               # resummed, light pion
     @test abs(m_full - m_fd) < 0.02   # matches the fine-grid FD resummation
-    @test m_pt > 0.20                 # first-order PT over-raises it
 
     # 2. full diagonalization still lands the charm gluonic singlet on the paper
     #    (the spin distortion the central wave misses), so both subtable regimes
     #    are served by ONE treatment.
     mc = mq["c"]; cc = ConstituentMasses(mc, mc)
-    V1 = GIModel.contact_hyperfine_operator(params, cc, "S", 1, r)
-    sol = ho_full_distorted_states(params, cc, 0, V1; solver = solver_ho, nlevels = 4)
+    sol = fixed_channel_solution(
+        params, cc, pion; solver = solver_ho, nlevels = 4)
     wave = radial_wave(sol, 1)
-    S = wavefunction_origin_smearing(MeshWave(outer!(copy(wave.u)), wave.r), mc; L = 0)
+    S = wavefunction_origin_smearing(wave, mc; L = 0)
     eta_c = abs(gluonic_annihilation_amplitude(
         :S0_2g, S, GIModel.alpha_s_q(sol.eigenvalues_GeV[1]), mc)) * sqrt(1000) / 4.700
     @test 0.95 < eta_c < 1.20

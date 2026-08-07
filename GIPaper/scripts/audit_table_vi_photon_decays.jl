@@ -98,11 +98,11 @@ end
 const SampledMomentumWave = MeshMomentumWave
 momentum_wave(wave::MeshWave, L::Integer) =
     mock_momentum_wave(wave, L; pmax = PMAX, npoints = NP)
-mean_energy(mw::SampledMomentumWave, m) = mock_mean_energy(mw, m)
-mock_mass(mw::SampledMomentumWave, m1, m2) = mock_wave_mass(mw, m1, m2)
-I_overlap(mwx::SampledMomentumWave, mwy::SampledMomentumWave, Mx, My, m_i) =
+mean_energy(mw::MomentumWave, m) = mock_mean_energy(mw, m)
+mock_mass(mw::MomentumWave, m1, m2) = mock_wave_mass(mw, m1, m2)
+I_overlap(mwx::MomentumWave, mwy::MomentumWave, Mx, My, m_i) =
     mock_meson_overlap(mwx, mwy, m_i; Mx = Mx, My = My)
-E_moment(wx::MeshWave, wy::MeshWave, Ex, Ey, m_i; n = 1) =
+E_moment(wx::RadialWave, wy::RadialWave, Ex, Ey, m_i; n = 1) =
     mock_meson_radial_moment(wx, wy, Ex, Ey, m_i; n = n)
 
 
@@ -487,35 +487,35 @@ reldev(val, paper) = abs(val - paper) / abs(paper)
 # hindered sign as candidates for re-scoring with the W6 paper-order distorted
 # waves. This block does exactly that and records an HONEST NEGATIVE result:
 # neither is a spin-wavefunction-distortion residual.
-#  (a) Upsilon'' -> eta_b hindered: recompute on ho_full_distorted_states (the
-#      finite-HO full diagonalization used by the harmonized Table VII audit).
+#  (a) Upsilon'' -> eta_b hindered: recompute with the native fixed-channel HO
+#      diagonalization used by the harmonized Table VII audit.
 #      For the heavy b bbar sector the paper-order wave equals the FD wave to a
 #      few percent, so the deep I - recoil cancellation does NOT flip sign.
 #  (b) eta<->eta' ordering is set by the P1 annihilation MIXING WEIGHTS
 #      (a_eta^nn / a_eta'^nn), which are eigenvector properties of the block and
 #      independent of the radial wave — distorted waves cannot move them.
-println("re-scoring the two open rows with W6 paper-order (ho_full) waves ...")
-solver_ho = OscillatorSolver(ngrid = NGRID, rmax = RMAX)
+println("re-scoring the two open rows with native fixed-channel HO waves ...")
+solver_ho = OscillatorSolver()
 function bb_swave_ho_full(multiplicity; nlevels = 3)
     masses = ConstituentMasses(m_b, m_b)
-    r, h = G.radial_grid(NGRID, RMAX)
-    V = G.contact_hyperfine_operator(params, masses, "S", multiplicity, r)
-    # ho_full_distorted_states already returns physically normalized waves
-    # (∫u² dr = 1); do NOT re-run physical_waves (which assumes Euclidean input).
-    solution = ho_full_distorted_states(params, masses, 0, V;
-        solver = solver_ho, nlevels = nlevels)
-    out = MeshWave[]
+    J = multiplicity == 1 ? 0 : 1
+    solution = fixed_channel_solution(
+        params,
+        masses,
+        FineStructureMultiplet("S", multiplicity, J);
+        solver = solver_ho,
+        nlevels = nlevels,
+    )
+    out = RadialWave[]
     for n in eachindex(solution.waves)
-        wave = radial_wave(solution, n)
-        u = copy(wave.u)
-        sum(wave.r .* u) < 0 && (u .*= -1)        # Phi(0) > 0 convention
-        push!(out, MeshWave(u, wave.r, wave.h))
+        push!(out, fix_annihilation_phase(radial_wave(solution, n)))
     end
     return out
 end
 open_row_rescore = let
     s1 = bb_swave_ho_full(1); t3 = bb_swave_ho_full(3)
-    s1p = [momentum_wave(w, 0) for w in s1]; t3p = [momentum_wave(w, 0) for w in t3]
+    s1p = [G.momentum_wave(w, 0) for w in s1]
+    t3p = [G.momentum_wave(w, 0) for w in t3]
     rows = NTuple{4,Any}[]
     for (name, nV, MV, target) in
         [("Upsilon' -> eta_b gamma (hindered)", 2, 10.023, 0.007),
@@ -690,7 +690,7 @@ open(outpath, "w") do io
     println(io, "## W6 paper-order re-score of the two open rows")
     println(io)
     println(io, "The two open Table VI items were re-scored with the W6 paper-order")
-    println(io, "distorted waves (finite-HO full diagonalization, `ho_full_distorted_states`,")
+    println(io, "distorted waves (native finite-HO fixed-channel diagonalization,")
     println(io, "the harmonized Table VII treatment). **Honest negative result: neither is a")
     println(io, "spin-wavefunction-distortion residual, so the paper-order waves do not")
     println(io, "resolve them.**")

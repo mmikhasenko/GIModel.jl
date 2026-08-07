@@ -94,7 +94,6 @@ include("state_mixing.jl")
 export CalibratedP1Annihilation,
     PaperP1Annihilation,
     PaperP2Annihilation,
-    FDOriginP2Smearing,
     FDMomentumIntegralSmearing,
     pseudoscalar_annihilation_basis_input,
     fix_annihilation_phase!,
@@ -106,8 +105,6 @@ include("pseudoscalar_annihilation.jl")
 export fine_structure_split,
     fine_structure_components,
     fine_structure_grid_operator,
-    ho_first_order_distorted_states,
-    ho_full_distorted_states,
     spin_orbit_mixing_components,
     tensor_mixing_components,
     same_j_mixing,
@@ -117,10 +114,14 @@ export fine_structure_split,
     radial_cross_expect_udr
 include("spin_fine_structure.jl")
 
+export fixed_channel_solution
+include("fixed_channel_solver.jl")
+
 export CentralPotentialPath, central_potential_path
 include("appendix_a_status.jl")
 
 export radial_wave,
+    physical_components,
     spectrum_levels,
     StateMixing,
     CentralState,

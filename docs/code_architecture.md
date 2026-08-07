@@ -23,7 +23,7 @@ implicit mesh reconstruction on `ChannelRadialSolution`.
 The current representations are:
 
 - `MeshWave`: reduced radial samples `u(r)` on a uniform grid; produced by the
-  finite-difference solver and by grid-defined distorted-state solves.
+  finite-difference solver.
 - `OscillatorWave`: harmonic-oscillator coefficients, `L`, and `beta`; produced
   natively by the Appendix-A oscillator central solve.
 - `MeshMomentumWave` and `OscillatorMomentumWave`: the corresponding momentum
@@ -46,8 +46,7 @@ flowchart LR
   FDS --> R["radial_wave(solution, n)"]
   HOS --> R
   R --> OPS["representation-dispatched radial/momentum operations"]
-  OPS --> SPIN["spin corrections"]
-  OPS --> MIX["mixing blocks"]
+  OPS --> MIX["cross-sector mixing blocks"]
   OPS --> DECAY["decay and annihilation observables"]
 ```
 
@@ -59,25 +58,37 @@ The full meson spectrum is a typed pipeline rather than one mutable result:
 flowchart TD
   I["parameters + Meson + requested BasisState levels"] --> C["central_spectrum"]
   C --> CC["SectorComputation channel cache"]
-  CC --> CR["one ChannelRadialSolution per masses + L"]
+  CC --> CR["central ChannelRadialSolution per masses + L"]
   C --> CS["CentralSpectrum / CentralState"]
   CS --> A["add_spin_corrections"]
-  A --> RS["resummed contact states + fine structure"]
+  A --> H["assemble H(L,S,J) = Hcentral + Hcontact + HSO + Htensor"]
+  H --> HD{"solver dispatch"}
+  HD -->|"HO"| HM["native coefficient-space matrices"]
+  HD -->|"FD"| FM["native grid-space matrices"]
+  HM --> RS["diagonalize fixed sector"]
+  FM --> RS
+  RS --> RC["spin-resolved ChannelRadialSolution per masses + L,S,J"]
   RS --> COR["CorrectedSpectrum / CorrectedState"]
   COR --> B["add_intra_meson_mixing"]
-  B --> MB["same-J spin-orbit, tensor, annihilation MixingBlock"]
+  B --> MB["complete requested same-J spin-orbit or tensor MixingBlock"]
   MB --> MR["shared MixingResult"]
   MR --> MS["MixedSpectrum / MixedState"]
-  MS --> OUT["masses, radial_wave, decay observables, GIPaper reports"]
+  MS --> PC["physical_components: coefficient + native component wave"]
+  PC --> OUT["masses, expectations, decay observables, GIPaper reports"]
 ```
 
-`compute_spectrum` is exactly the composition of those three stages.
-`SectorComputation` stores only `params`, the selected `solver`, and the channel
-cache. Later stages reuse that solver whenever they must solve a new eigenproblem.
+`compute_spectrum` is exactly the composition of those three stages. Stage 2 is
+named `add_spin_corrections` for API continuity, but it performs a full
+fixed-sector diagonalization; its shifts are a reporting decomposition of the
+resulting eigenvalue, not perturbative inputs. `SectorComputation` stores only
+`params`, the selected `solver`, and central plus spin-resolved channel solves.
 
 `StateMixing` records how a reported state changed; generic diagonalization is
 owned by `MixingBlock`, `MixingResult`, and `diagonalize_mixing_block`. Mechanism
 code constructs matrices but does not introduce another result container.
+`radial_wave(spec, state)` returns the native fixed-sector wave for an unmixed
+state and deliberately rejects a mixed physical state. Use `physical_components`
+for the latter; no representative or silently unmixed wave is fabricated.
 
 ## Source ownership
 
@@ -86,8 +97,9 @@ code constructs matrices but does not introduce another result container.
 - `sector_solver.jl`: radial channel key, solution, and spectrum computation cache.
 - `hamiltonian.jl`, `harmonic_oscillator_basis.jl`, `channel_solver.jl`: the FD
   and oscillator implementations behind `channel_solution`.
-- `contact_hyperfine.jl`, `spin_fine_structure.jl`: spin-dependent operators and
-  distorted-state solves.
+- `contact_hyperfine.jl`, `spin_fine_structure.jl`: native spin-dependent matrix
+  builders and cross-sector elements.
+- `fixed_channel_solver.jl`: solver-dispatched complete fixed-`(L,S,J)` solve.
 - `state_mixing.jl`: shared mixing matrix/result abstraction.
 - `spectrum.jl`: the three spectrum stages and state-level accessors.
 - `flavor_mixing.jl`, `pseudoscalar_annihilation.jl`: annihilation block builders.
@@ -115,3 +127,5 @@ two masses for a dynamical calculation. `FiniteDifferenceSolver` or
 5. An unavailable path throws or returns `nothing` when the physics term is
    genuinely inactive; it never returns an empty tuple that triggers a silent
    algorithm fallback.
+6. `OscillatorSolver` contains only `nbasis`, `beta_grid`, and requested level
+   capacity. Plot grids are owned by plotting code, never by the HO calculation.

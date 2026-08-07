@@ -25,7 +25,7 @@ function main()
         ngrid = 450, rmax = 24.0, nlevels_per_channel = 3,
     )
     ho_solver = OscillatorSolver(
-        ngrid = 450, rmax = 24.0, nlevels_per_channel = 3,
+        nlevels_per_channel = 3,
     )
 
     fd_matrix() = Matrix(first(GIModel.relativistic_hamiltonian(
@@ -35,7 +35,8 @@ function main()
 
     beta = 0.65
     nbasis = 24
-    r, h = GIModel.radial_grid(ho_solver.ngrid, ho_solver.rmax)
+    # Explicit diagnostic sampling grid; it is not part of the HO solver.
+    r, h = GIModel.radial_grid(450, 24.0)
     ho_matrix() = Matrix(first(GIModel.oscillator_hamiltonian_for_beta(
         params, masses, 0, r, h, beta; nbasis = nbasis,
     )))
