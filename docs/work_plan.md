@@ -4,7 +4,10 @@
 > (`docs/paper_manifest/*.toml`; `cd docs && make dashboard`); workstream-level
 > remaining-work costing is [`reproduction_audit.md`](reproduction_audit.md) §2;
 > the task tracker is the live board; the *code*-stream plan is
-> [`engineering_work_plan.md`](engineering_work_plan.md). What stays here is the **process record**:
+> [`engineering_work_plan.md`](engineering_work_plan.md), with the focused
+> paper-order architecture queue in
+> [`paper_algorithm_work_plan.md`](paper_algorithm_work_plan.md). What stays
+> here is the **process record**:
 > the objective, how work was decomposed and delegated, the coordination rules,
 > the empirical worker-sizing lesson, and the historical commit trail of what
 > landed. Treat the "Open units" as illustrative history, not live truth.
@@ -95,10 +98,11 @@ audit report.
 Radial-moment ratios on model wavefunctions; adds the parenthetical correction
 column to the Table V audit.
 
-### W6 — HO-order spin/mixing validation (background, unscheduled)
+### W6 — HO-order spin/mixing validation (retired into PA queue)
 
-Paper-order perturbative comparison in the HO basis (A15-A17 fidelity).
-Coordinator-owned until W1-W4 land.
+Paper-order perturbative comparison in the HO basis (A15-A17 fidelity). The
+audit is complete; implementation follow-up is decomposed as PA-01 through
+PA-18 in [`paper_algorithm_work_plan.md`](paper_algorithm_work_plan.md).
 
 ## Coordination rules
 
@@ -165,7 +169,8 @@ ownership and merge state only.
 
 ### Open units
 
-The live open-work list is the task tracker and
-[`reproduction_audit.md`](reproduction_audit.md) §2 (Table VII, W6 HO-order
-validation, the √3 recoil factor, Eq. 21 type-S ratio, and the src/-promotion
-hygiene) — kept there so it can't drift out of sync with the dashboard.
+The live physics open-work list is the task tracker and
+[`reproduction_audit.md`](reproduction_audit.md) §2 (Table VII, the √3 recoil
+factor, Eq. 21 type-S ratio, and the src/-promotion hygiene). W6's code work is
+now the source-controlled PA queue in
+[`paper_algorithm_work_plan.md`](paper_algorithm_work_plan.md).

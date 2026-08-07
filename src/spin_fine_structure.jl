@@ -245,6 +245,48 @@ function radial_expect_momentum_sandwich(
     return euclidean_expectation(u, Symmetric(B * kernel * B))
 end
 
+radial_expect_momentum_sandwich(
+    params::GIParameters, masses::ConstituentMasses, L::Integer,
+    wave::MeshWave, epsilon::Real, f,
+) = radial_expect_momentum_sandwich(
+    params, masses, L, wave.u, wave.r, wave.h, epsilon, f,
+)
+
+function _ho_expansion_value(L::Integer, beta::Real, coefficients, r::Real)
+    return sum(
+        coefficients[n + 1] * ho_reduced_radial(n, L, beta, r) for
+        n in 0:(length(coefficients)-1)
+    )
+end
+
+function radial_expect_momentum_sandwich(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L::Integer,
+    wave::OscillatorWave,
+    epsilon::Real,
+    f,
+)
+    L == wave.L || throw(ArgumentError(
+        "radial_expect_momentum_sandwich: L=$L does not match wave L=$(wave.L)",
+    ))
+    p2_fact = eigen(Symmetric(Matrix(ho_p2_matrix(L, wave.beta, length(wave.coefficients)))))
+    B = momentum_relativization_matrix(
+        masses.m1_GeV,
+        masses.m2_GeV,
+        gi_spin_dependent_side_exponent(epsilon),
+        p2_fact,
+    )
+    transformed = B * wave.coefficients
+    value, _ = quadgk(
+        r -> _ho_expansion_value(L, wave.beta, transformed, r)^2 * f(r, 0),
+        0.0,
+        Inf;
+        rtol = 1e-9,
+    )
+    return value / wave_norm(wave)
+end
+
 function radial_cross_expect_momentum_sandwich(
     params::GIParameters,
     masses::ConstituentMasses,
@@ -283,11 +325,63 @@ function radial_cross_expect_momentum_sandwich(
     return dot(u_left, B_left * kernel * B_right * u_right) / (nl * nr)
 end
 
+radial_cross_expect_momentum_sandwich(
+    params::GIParameters, masses::ConstituentMasses,
+    L_left::Integer, left::MeshWave, L_right::Integer, right::MeshWave,
+    epsilon::Real, f,
+) = begin
+    length(left.r) == length(right.r) &&
+        all(isapprox.(left.r, right.r; rtol = 1e-10, atol = 1e-12)) ||
+        throw(ArgumentError("radial cross expectation requires a shared mesh"))
+    radial_cross_expect_momentum_sandwich(
+        params, masses, L_left, left.u, L_right, right.u,
+        left.r, left.h, epsilon, f,
+    )
+end
+
+function radial_cross_expect_momentum_sandwich(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L_left::Integer,
+    left::OscillatorWave,
+    L_right::Integer,
+    right::OscillatorWave,
+    epsilon::Real,
+    f,
+)
+    L_left == left.L && L_right == right.L || throw(ArgumentError(
+        "radial_cross_expect_momentum_sandwich: orbital labels do not match waves",
+    ))
+    side_exponent = gi_spin_dependent_side_exponent(epsilon)
+    left_p2 = eigen(Symmetric(Matrix(ho_p2_matrix(
+        L_left, left.beta, length(left.coefficients),
+    ))))
+    right_p2 = eigen(Symmetric(Matrix(ho_p2_matrix(
+        L_right, right.beta, length(right.coefficients),
+    ))))
+    B_left = momentum_relativization_matrix(
+        masses.m1_GeV, masses.m2_GeV, side_exponent, left_p2,
+    )
+    B_right = momentum_relativization_matrix(
+        masses.m1_GeV, masses.m2_GeV, side_exponent, right_p2,
+    )
+    c_left = B_left * left.coefficients
+    c_right = B_right * right.coefficients
+    value, _ = quadgk(
+        r -> _ho_expansion_value(L_left, left.beta, c_left, r) *
+             _ho_expansion_value(L_right, right.beta, c_right, r) * f(r, 0),
+        0.0,
+        Inf;
+        rtol = 1e-9,
+    )
+    return value / sqrt(wave_norm(left) * wave_norm(right))
+end
+
 function fine_structure_components(
     params::GIParameters,
     masses::ConstituentMasses,
     multiplet::FineStructureMultiplet,
-    radial::RadialWaveOnUniformMesh;
+    radial::RadialWave;
     enabled::Bool = true,
     k_spin_orbit::Real = 1.0,
     k_tensor::Real = 1.0,
@@ -295,9 +389,6 @@ function fine_structure_components(
     Ls = multiplet.L_label
     multiplicity = multiplet.multiplicity
     J = multiplet.J
-    u = radial.u
-    r = radial.r
-    h = radial.h
     m1 = masses.m1_GeV
     m2 = masses.m2_GeV
     !enabled && return (
@@ -345,8 +436,8 @@ function fine_structure_components(
     inv2_cm = 0.5 * (1.0 / m1^2 + 1.0 / m2^2 + 2.0 / (m1 * m2))
     expect_kernel(epsilon, f) =
         params.factors.fine_structure_momentum_sandwich ?
-        radial_expect_momentum_sandwich(params, masses, Ln, u, r, h, epsilon, f) :
-        radial_expect_udr(u, r, h, f)
+        radial_expect_momentum_sandwich(params, masses, Ln, radial, epsilon, f) :
+        radial_expect(radial, ri -> f(ri, 0))
     Icm = expect_kernel(
         params.factors.epsilon_so_vector,
         (ri, i) -> begin
@@ -482,14 +573,12 @@ function spin_orbit_radial_integrals(
     params::GIParameters,
     masses::ConstituentMasses,
     L::Integer,
-    u::AbstractVector{<:Real},
-    r::AbstractVector{<:Real},
-    h::Real,
+    radial::RadialWave,
 )
     expect_kernel(epsilon, f) =
         params.factors.fine_structure_momentum_sandwich ?
-        radial_expect_momentum_sandwich(params, masses, L, u, r, h, epsilon, f) :
-        radial_expect_udr(u, r, h, f)
+        radial_expect_momentum_sandwich(params, masses, L, radial, epsilon, f) :
+        radial_expect(radial, ri -> f(ri, 0))
     Icm = expect_kernel(
         params.factors.epsilon_so_vector,
         (ri, i) -> begin
@@ -536,7 +625,7 @@ function spin_orbit_mixing_components(
     params::GIParameters,
     masses::ConstituentMasses,
     L_label::AbstractString,
-    radial::RadialWaveOnUniformMesh;
+    radial::RadialWave;
     enabled::Bool = true,
     k_spin_orbit::Real = 1.0,
 )
@@ -553,7 +642,7 @@ function spin_orbit_mixing_components(
     end
     m1 = float(masses.m1_GeV)
     m2 = float(masses.m2_GeV)
-    radial_terms = spin_orbit_radial_integrals(params, masses, L, radial.u, radial.r, radial.h)
+    radial_terms = spin_orbit_radial_integrals(params, masses, L, radial)
     angular = sqrt(L * (L + 1.0))
     inv2_asym = 0.5 * (1.0 / m1^2 - 1.0 / m2^2)
     vector = k_spin_orbit * inv2_asym * angular * radial_terms.vec_term
@@ -571,8 +660,8 @@ end
 function tensor_mixing_components(
     params::GIParameters,
     masses::ConstituentMasses,
-    radial_left::RadialWaveOnUniformMesh,
-    radial_right::RadialWaveOnUniformMesh,
+    radial_left::RadialWave,
+    radial_right::RadialWave,
     J::Integer;
     enabled::Bool = true,
     k_tensor::Real = 1.0,
@@ -583,12 +672,6 @@ function tensor_mixing_components(
     if !enabled || Jn <= 0
         return (I_tk = 0.0, angular = 0.0, total = 0.0)
     end
-    length(radial_left.r) == length(radial_right.r) ||
-        throw(ArgumentError("tensor_mixing_components: radial grids have different sizes"))
-    all(isapprox.(radial_left.r, radial_right.r; rtol = 1e-10, atol = 1e-12)) ||
-        throw(ArgumentError("tensor_mixing_components: radial grids differ"))
-    isapprox(radial_left.h, radial_right.h; rtol = 1e-10, atol = 1e-12) ||
-        throw(ArgumentError("tensor_mixing_components: radial spacings differ"))
     kernel =
         (ri, i) ->
             params.factors.fine_structure_smeared_kernels ?
@@ -600,21 +683,13 @@ function tensor_mixing_components(
             params,
             masses,
             L_left,
-            radial_left.u,
+            radial_left,
             L_right,
-            radial_right.u,
-            radial_left.r,
-            radial_left.h,
+            radial_right,
             params.factors.epsilon_t,
             kernel,
         ) :
-        radial_cross_expect_udr(
-            radial_left.u,
-            radial_right.u,
-            radial_left.r,
-            radial_left.h,
-            kernel,
-        )
+        radial_overlap(radial_left, radial_right, ri -> kernel(ri, 0))
     tensor_scale = params.factors.fine_structure_momentum_sandwich ? 1.0 : (1.0 + params.factors.epsilon_t)
     angular = tensor_triplet_offdiag_sameJ(Jn, 1)
     total = tensor_scale * k_tensor * (1.0 / (3.0 * masses.m1_GeV * masses.m2_GeV)) * Itk * angular
@@ -628,13 +703,19 @@ Diagonalize the `(^1L_L, ^3L_L)` same-`J` mass matrix. The returned angle
 uses the Fig. 9 convention
 `low = cos(theta) * singlet + sin(theta) * triplet`.
 """
-function same_j_mixing(singlet_mass::Real, triplet_mass::Real, offdiag::Real)
+function same_j_mixing(
+    singlet_mass::Real,
+    triplet_mass::Real,
+    offdiag::Real;
+    basis::AbstractVector{BasisState} = [
+        BasisState(1, "L", 1, 0; label = "^1L_L"),
+        BasisState(1, "L", 3, 0; label = "^3L_L"),
+    ],
+)
+    length(basis) == 2 || throw(ArgumentError("same_j_mixing requires two basis states"))
     block = MixingBlock(
         "same-J ^1L_L/^3L_L",
-        [
-            BasisState(1, "L", 1, 0; label = "^1L_L"),
-            BasisState(1, "L", 3, 0; label = "^3L_L"),
-        ],
+        basis,
         [float(singlet_mass) float(offdiag); float(offdiag) float(triplet_mass)];
         mechanism = "antisymmetric_spin_orbit",
     )
@@ -645,6 +726,7 @@ function same_j_mixing(singlet_mass::Real, triplet_mass::Real, offdiag::Real)
     end
     theta = atan(low_vec[2], low_vec[1])
     return (
+        result = result,
         block = block,
         matrix = block.matrix,
         masses = result.masses,
@@ -658,7 +740,7 @@ function fine_structure_split(
     params::GIParameters,
     masses::ConstituentMasses,
     multiplet::FineStructureMultiplet,
-    radial::RadialWaveOnUniformMesh;
+    radial::RadialWave;
     enabled::Bool = true,
     k_spin_orbit::Real = 1.0,
     k_tensor::Real = 1.0,
@@ -691,7 +773,7 @@ function fine_structure_components(
         params,
         masses,
         FineStructureMultiplet(Ls, multiplicity, J),
-        RadialWaveOnUniformMesh(u, r, h);
+        MeshWave(u, r, h);
         enabled = enabled,
         k_spin_orbit = k_spin_orbit,
         k_tensor = k_tensor,
@@ -729,7 +811,7 @@ function fine_structure_split(
         params,
         masses,
         FineStructureMultiplet(Ls, multiplicity, J),
-        RadialWaveOnUniformMesh(u, r, h);
+        MeshWave(u, r, h);
         kwargs...,
     )
 end

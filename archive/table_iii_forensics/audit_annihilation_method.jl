@@ -26,10 +26,10 @@ function hidden_s_basis(params, mq, spin; wave_basis = :fd, ngrid = 220, rmax = 
     for (label, mass_key) in [("1 ns", "q"), ("1 ss", "s")]
         m = mq[mass_key]
         masses = ConstituentMasses(m, m)
-        ev, vecs, r = channel_solution(
+        sol = channel_solution(
             params, masses, 0; solver = wave_solver, nlevels = 1)
-        fix_annihilation_phase!(vecs, r)
-        sol = GIModel.ChannelRadialSolution(ev, vecs, r)
+        wave = fix_annihilation_phase(radial_wave(sol, 1))
+        r = collect(range(rmax / (ngrid + 1); step = rmax / (ngrid + 1), length = ngrid))
         levels = GIModel.contact_hyperfine_nonperturbative_levels(
             params,
             masses,
@@ -42,7 +42,7 @@ function hidden_s_basis(params, mq, spin; wave_basis = :fd, ngrid = 220, rmax = 
             label,
             m,
             levels[1],
-            RadialWaveOnUniformMesh(sol, 1),
+            wave,
         )
         push!(
             out,
@@ -91,10 +91,10 @@ function pseudoscalar_basis(params, mq; wave_basis = :fd, ngrid = 220, rmax = 22
     for (flavor, mass_key) in [("ns", "q"), ("ss", "s")]
         m = mq[mass_key]
         masses = ConstituentMasses(m, m)
-        ev, vecs, r = channel_solution(
+        sol = channel_solution(
             params, masses, 0; solver = wave_solver, nlevels = 2)
-        fix_annihilation_phase!(vecs, r)
-        sol = GIModel.ChannelRadialSolution(ev, vecs, r)
+        waves = [fix_annihilation_phase(radial_wave(sol, n)) for n in 1:2]
+        r = collect(range(rmax / (ngrid + 1); step = rmax / (ngrid + 1), length = ngrid))
         levels = GIModel.contact_hyperfine_nonperturbative_levels(
             params,
             masses,
@@ -103,7 +103,7 @@ function pseudoscalar_basis(params, mq; wave_basis = :fd, ngrid = 220, rmax = 22
             r,
             2,
         )
-        channels[flavor] = (mass = m, solution = sol, levels = levels)
+        channels[flavor] = (mass = m, waves = waves, levels = levels)
     end
     out = GIModel.PseudoscalarAnnihilationBasisInput[]
     for label in PSEUDOSCALAR_BASIS
@@ -116,7 +116,7 @@ function pseudoscalar_basis(params, mq; wave_basis = :fd, ngrid = 220, rmax = 22
                 label,
                 channel.mass,
                 channel.levels[n],
-                RadialWaveOnUniformMesh(channel.solution, n),
+                channel.waves[n],
             ),
         )
     end

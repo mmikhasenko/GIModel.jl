@@ -39,16 +39,17 @@ function _warn_if_underresolved(values, vectors, r, h, masses, L)
 end
 
 """
-    channel_solution(params, masses, L; solver, nlevels) -> (values, waves, r)
+    channel_solution(params, masses, L; solver, nlevels) -> ChannelRadialSolution
 
 Solve the radial equation for one orbital channel. Together with
 [`resummed_channel_solution`](@ref) this is where all the numerics in the model
-live; everything downstream consumes the returned `u(r)`.
+live; everything downstream consumes the returned native [`RadialWave`](@ref)s.
 
 The `solver` picks the method — [`FiniteDifferenceSolver`](@ref) or
 [`OscillatorSolver`](@ref) — and both return the same physical quantity in the
-same convention: eigenvalues in GeV, and waves normalized `∫u² dr = 1` on the
-returned mesh `r`.
+same convention. The result retains native radial-wave objects; callers that
+need plotted or exported samples must request them explicitly with
+[`sample_wave`](@ref).
 """
 function channel_solution(
     params::GIParameters,
@@ -73,7 +74,7 @@ function _channel_solution(
     values, vectors = lowest_eigenpairs(hamiltonian, nlevels, solver)
     _warn_if_underresolved(values, vectors, r, length(r) > 1 ? r[2] - r[1] : 0.0, masses, L)
     waves = physically_normalized_waves(Matrix(vectors), length(r) > 1 ? r[2] - r[1] : 1.0)
-    return values, waves, r
+    return ChannelRadialSolution(values, waves, r)
 end
 
 function _channel_solution(
@@ -87,7 +88,7 @@ function _channel_solution(
     values, vectors = lowest_eigenpairs(hamiltonian, nlevels, solver)
     _warn_if_underresolved(values, vectors, r, length(r) > 1 ? r[2] - r[1] : 0.0, masses, L)
     waves = physically_normalized_waves(Matrix(vectors), length(r) > 1 ? r[2] - r[1] : 1.0)
-    return values .+ (masses.m1_GeV + masses.m2_GeV), waves, r
+    return ChannelRadialSolution(values .+ (masses.m1_GeV + masses.m2_GeV), waves, r)
 end
 
 _channel_solution(
@@ -99,6 +100,5 @@ _channel_solution(
 ) = oscillator_channel_solution(params, masses, L; nlevels = nlevels, solver = solver)
 
 function solve_channel(args...; kwargs...)
-    values, _vectors, _r = channel_solution(args...; kwargs...)
-    values
+    return channel_solution(args...; kwargs...).eigenvalues_GeV
 end

@@ -58,8 +58,12 @@ function fix_outer_antinode_positive!(u)
     return u
 end
 
-smeared_S(u, r, mQ, L) = wavefunction_origin_smearing(
-    RadialWaveOnUniformMesh(fix_outer_antinode_positive!(copy(u)), r), mQ; L = L, npoints = NPTS)
+function smeared_S(wave::RadialWave, mQ, L)
+    r, _ = GIModel.radial_grid(NGRID, RMAX)
+    sampled = wave isa MeshWave ? wave : sample_wave(wave, r)
+    fixed = MeshWave(fix_outer_antinode_positive!(copy(sampled.u)), sampled.r)
+    return wavefunction_origin_smearing(fixed, mQ; L = L, npoints = NPTS)
+end
 
 # --- spin-dependent grid operator for a sector ------------------------------
 # L=0: smeared contact (multiplicity 1 or 3); L=1: triplet 3P_J LS+tensor.
@@ -75,22 +79,22 @@ function sector_waves(fl::Symbol, L::Int, mult::Int, J::Int; nlevels = 4)
     r, h = GIModel.radial_grid(NGRID, RMAX)
     V = spin_operator(masses, L, mult, J, r, h)
     # central (spin-independent) FD wave — the pre-harmonization gluonic choice
-    cvals, cvecs, cr = channel_solution(
+    central = channel_solution(
         params, masses, L;
         nlevels = max(nlevels, 4),
         solver = FiniteDifferenceSolver(ngrid = NGRID, rmax = RMAX),
     )
     # first-order PT in the HO central eigenbasis (heavy-quark proxy)
-    pvals, pwaves, pr = ho_first_order_distorted_states(params, masses, L, V;
+    first_order = ho_first_order_distorted_states(params, masses, L, V;
         solver = solver_ho, nlevels = max(nlevels, 4))
     # paper-order: FULL diagonalization of H_central + V in the finite HO basis
-    fvals, fwaves, fr = ho_full_distorted_states(params, masses, L, V;
+    paper = ho_full_distorted_states(params, masses, L, V;
         solver = solver_ho, nlevels = max(nlevels, 4))
     # nonperturbative FD resummation on the fine grid (over-resums)
     H, hr = GIModel.relativistic_hamiltonian(params, masses, L; ngrid = NGRID, rmax = RMAX)
     nvals, nvecs = GIModel.lowest_eigenpairs(Symmetric(Matrix(H) + Matrix(V)), max(nlevels, 4))
-    return (central = (cvals, cvecs, cr), first_order = (pvals, pwaves, pr),
-            paper = (fvals, fwaves, fr), nonpert = (nvals, Matrix(nvecs), collect(Float64, hr)))
+    nonpert = ChannelRadialSolution(nvals, Matrix(nvecs), collect(Float64, hr))
+    return (; central, first_order, paper, nonpert)
 end
 
 # --- Table VII gluonic rows --------------------------------------------------
@@ -126,16 +130,16 @@ function run_audit()
     for (fl, L, nmax) in ((:c, 0, 2), (:c, 1, 1), (:b, 0, 4), (:b, 1, 2))
         mQ = mq[String(fl)]
         masses = ConstituentMasses(mQ, mQ)
-        _, fdv, fdr = channel_solution(
+        fd_solution = channel_solution(
             params, masses, L;
             nlevels = max(nmax, 4),
             solver = FiniteDifferenceSolver(ngrid = NGRID, rmax = RMAX),
         )
-        _, hov, hor = channel_solution(params, masses, L;
+        ho_solution = channel_solution(params, masses, L;
             solver = solver_ho, nlevels = max(nmax, 4))
         for n = 1:nmax
-            Sfd = smeared_S(fdv[:, n], fdr, mQ, L)
-            Sho = smeared_S(hov[:, n], hor, mQ, L)
+            Sfd = smeared_S(radial_wave(fd_solution, n), mQ, L)
+            Sho = smeared_S(radial_wave(ho_solution, n), mQ, L)
             push!(part1, (fl = fl, L = L, n = n, Sfd = Sfd, Sho = Sho, ratio = Sho / Sfd))
         end
     end
@@ -146,13 +150,13 @@ function run_audit()
     mn = ConstituentMasses(mq["q"], mq["q"])
     r0, _ = GIModel.radial_grid(NGRID, RMAX)
     Vpi = GIModel.contact_hyperfine_operator(params, mn, "S", 1, r0)
-    fo, _, _ = ho_first_order_distorted_states(params, mn, 0, Vpi;
+    fo = ho_first_order_distorted_states(params, mn, 0, Vpi;
         solver = solver_ho, nlevels = 4)
-    fu, _, _ = ho_full_distorted_states(params, mn, 0, Vpi;
+    fu = ho_full_distorted_states(params, mn, 0, Vpi;
         solver = solver_ho, nlevels = 4)
     Hn, _ = GIModel.relativistic_hamiltonian(params, mn, 0; ngrid = NGRID, rmax = RMAX)
     nv, _ = GIModel.lowest_eigenpairs(Symmetric(Matrix(Hn) + Matrix(Vpi)), 4)
-    pion = (first_order = fo[1], full = fu[1], nonpert = nv[1])
+    pion = (first_order = fo.eigenvalues_GeV[1], full = fu.eigenvalues_GeV[1], nonpert = nv[1])
 
     # Part 2: gluonic rows under the four treatments
     cache = Dict{Tuple{Symbol,Int,Int,Int},Any}()
@@ -163,12 +167,13 @@ function run_audit()
             sector_waves(fl, L, mult, J; nlevels = max(n, 4))
         end
         row = Dict{Symbol,Any}(:label => label, :paper => paper)
-        for (key, (vals, vecs, r)) in
+        for (key, solution) in
             ((:central, sec.central), (:first_order, sec.first_order),
              (:full, sec.paper), (:nonpert, sec.nonpert))
-            S = smeared_S(vecs[:, n], r, mQ, L)
-            model = gluonic_amp(ch, S, vals[n], mQ)
-            row[key] = (M = vals[n], S = S, model = model, ratio = abs(model) / abs(paper),
+            M = solution.eigenvalues_GeV[n]
+            S = smeared_S(radial_wave(solution, n), mQ, L)
+            model = gluonic_amp(ch, S, M, mQ)
+            row[key] = (M = M, S = S, model = model, ratio = abs(model) / abs(paper),
                         sign_ok = sign(model) == sign(paper))
         end
         push!(part2, (; (k => row[k] for k in

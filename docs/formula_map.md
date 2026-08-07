@@ -171,18 +171,18 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     `appendix_a_momentum_sandwich`, then `appendix_a_closed_form`, then the older
     comparator modes.
 
-- `src/reference_state.jl`: **`ReferenceState`**, **`ReferenceStateWithMasses`** (+ **`FineStructureMultiplet`** overloads from CSV rows),
-  **`load_reference_spectrum`** (CSV IO).
-  Loaded with IO **after** **`sector_comparison.jl`** in **`GIModel.jl`**; **`compute_sector`** / **`compare`** duck-type annotated rows as **`AbstractVector`** with `.constituent_masses` and `.state`.
-- `src/masses_from_content.jl`: **`parse_quark_masses`**, **`resolve_constituent_masses`**, **`attach_constituent_masses`** — map string `sector` +
-  `quark_content` to **`ConstituentMasses`**; **`attach_constituent_masses`** pairs **[ReferenceState](@ref)** rows from CSV with masses via **`resolve_constituent_masses`**.
+- `GIPaper/src/reference_state.jl`: `ReferenceState` and
+  `load_reference_spectrum` own CSV IO.
+- `GIPaper/src/reference_meson.jl`: `reference_meson` maps supported paper
+  sector/content labels to core `Meson` objects and fails loudly otherwise.
   - Paper: Sec. II flavor content; Table II masses.
-
-- `src/sector_solver.jl`: **`RadialChannelKey`**, **`ChannelRadialSolution`**, **`SectorComputation`**, **`solve_sector`**.
-- `src/sector_comparison.jl`: **`compute_sector`** batches **`channel_solution`** calls per distinct
-  **`RadialChannelKey`** and fills **`SectorComputation.channel_cache`**; **`compare`** maps reference rows to
-  cached channels and builds residual **`NamedTuple`** rows; **`write_residual_report`** emits markdown under
-  **`docs/residual_reports/`**.
+- `src/sector_solver.jl`: `RadialChannelKey`, `ChannelRadialSolution`,
+  `SectorComputation`, and `solve_sector` own the native radial-solution cache.
+- `src/spectrum.jl`: `central_spectrum`, `add_spin_corrections`,
+  `add_intra_meson_mixing`, and `compute_spectrum` implement the typed spectrum
+  pipeline.
+- `GIPaper/src/comparison.jl` and `residual_report.jl`: `compare_reference`
+  maps paper rows to core spectra and `write_residual_report` emits markdown.
   Structural overview: **`docs/code_architecture.md`**.
 
 - `src/spin_fine_structure.jl`: first-order color-magnetic + Thomas

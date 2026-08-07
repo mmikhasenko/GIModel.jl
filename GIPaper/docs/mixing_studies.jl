@@ -95,18 +95,19 @@ end
 function isoscalar_solution(params, mq, rows; ngrid = 180, rmax = 18.0)
     qm = ConstituentMasses(mq["q"], mq["q"])
     sm = ConstituentMasses(mq["s"], mq["s"])
-    _, q_vecs, q_r = channel_solution(
+    q_solution = channel_solution(
         params, qm, 0;
         nlevels = 2,
         solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax, kinetic = :relativistic),
     )
-    _, s_vecs, s_r = channel_solution(
+    s_solution = channel_solution(
         params, sm, 0;
         nlevels = 2,
         solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax, kinetic = :relativistic),
     )
     ordered = sort(rows; by = row -> (row.n, row.reference_GeV))
-    s_levels = GIModel.contact_hyperfine_nonperturbative_levels(params, sm, "S", 1, s_r, 2)
+    s_wave = radial_wave(s_solution, 1)
+    s_levels = GIModel.contact_hyperfine_nonperturbative_levels(params, sm, "S", 1, s_wave.r, 2)
     diag = [
         ordered[1].isoscalar_annihilation_unmixed_GeV,
         s_levels[1],
@@ -115,10 +116,10 @@ function isoscalar_solution(params, mq, rows; ngrid = 180, rmax = 18.0)
     ]
     basis = [
         # n nbar rows are the coherent (u ubar + d dbar)/sqrt(2) channel; s sbar are not.
-        pseudoscalar_annihilation_basis_input("1 n nbar", mq["q"], diag[1], RadialWaveOnUniformMesh(q_vecs[:, 1], q_r); isoscalar_coherent = true),
-        pseudoscalar_annihilation_basis_input("1 s sbar", mq["s"], diag[2], RadialWaveOnUniformMesh(s_vecs[:, 1], s_r); isoscalar_coherent = false),
-        pseudoscalar_annihilation_basis_input("2 n nbar", mq["q"], diag[3], RadialWaveOnUniformMesh(q_vecs[:, 2], q_r); isoscalar_coherent = true),
-        pseudoscalar_annihilation_basis_input("2 s sbar", mq["s"], diag[4], RadialWaveOnUniformMesh(s_vecs[:, 2], s_r); isoscalar_coherent = false),
+        pseudoscalar_annihilation_basis_input("1 n nbar", mq["q"], diag[1], radial_wave(q_solution, 1); isoscalar_coherent = true),
+        pseudoscalar_annihilation_basis_input("1 s sbar", mq["s"], diag[2], radial_wave(s_solution, 1); isoscalar_coherent = false),
+        pseudoscalar_annihilation_basis_input("2 n nbar", mq["q"], diag[3], radial_wave(q_solution, 2); isoscalar_coherent = true),
+        pseudoscalar_annihilation_basis_input("2 s sbar", mq["s"], diag[4], radial_wave(s_solution, 2); isoscalar_coherent = false),
     ]
     p1 = isoscalar_pseudoscalar_annihilation_solution(PaperP1Annihilation(), params, basis)
     return p1.block.matrix

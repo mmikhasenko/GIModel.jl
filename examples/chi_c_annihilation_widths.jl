@@ -52,20 +52,18 @@ function fix_outer_antinode_positive!(u)
 end
 
 params, mq = load_parameters_and_quark_masses(PARAMS_PATH)
-params_ho = with_basis(params, HarmonicOscillatorBasis)
 const MC = mq["c"]
 const R, H = GIModel.radial_grid(NGRID, RMAX)
 
 """Ground-state cc̄ P-wave under the spin operator `V` (`V = 0` → central wave)."""
 function pwave_level(V)
-    vals, vecs, r = ho_full_distorted_states(params_ho, ConstituentMasses(MC, MC), 1, V;
-        nlevels = 4, ngrid = NGRID, rmax = RMAX, nbasis = NB)
-    u = fix_outer_antinode_positive!(copy(vecs[:, 1]))
-    wave = RadialWaveOnUniformMesh(u, r)
-    nrm = sum(abs2, u) * wave.h
-    rrms = sqrt(sum(@. u^2 * wave.r^2) * wave.h / nrm)
+    solution = ho_full_distorted_states(params, ConstituentMasses(MC, MC), 1, V;
+        nlevels = 4, solver = OscillatorSolver(nbasis = NB, ngrid = NGRID, rmax = RMAX))
+    raw = radial_wave(solution, 1)
+    wave = MeshWave(fix_outer_antinode_positive!(copy(raw.u)), raw.r)
+    rrms = sqrt(radial_expect(wave, r -> r^2))
     S1 = wavefunction_origin_smearing(wave, MC; L = 1, npoints = NPTS)
-    return (M = vals[1], wave = wave, S1 = S1, rrms = rrms)
+    return (M = solution.eigenvalues_GeV[1], wave = wave, S1 = S1, rrms = rrms)
 end
 
 spin_operator(J) = fine_structure_grid_operator(params, ConstituentMasses(MC, MC), J, R, H; L = 1)

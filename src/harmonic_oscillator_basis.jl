@@ -263,6 +263,73 @@ function ho_basis_matrix(L::Integer, β::Real, r::AbstractVector, nbasis::Intege
 end
 
 """
+    OscillatorWave(L, beta, coefficients)
+
+One normalized radial eigenlevel in its native harmonic-oscillator
+representation. `coefficients[n+1]` multiplies
+`ho_reduced_radial(n, L, beta, r)`. No spatial or momentum mesh is stored.
+"""
+struct OscillatorWave <: RadialWave
+    L::Int
+    beta::Float64
+    coefficients::Vector{Float64}
+    function OscillatorWave(
+        L::Integer,
+        beta::Real,
+        coefficients::AbstractVector{<:Real},
+    )
+        L >= 0 || throw(ArgumentError("OscillatorWave: L must be nonnegative"))
+        beta > 0 || throw(ArgumentError("OscillatorWave: beta must be positive"))
+        isempty(coefficients) && throw(ArgumentError("OscillatorWave: empty coefficients"))
+        coeffs = collect(Float64, coefficients)
+        nrm = norm(coeffs)
+        nrm > 0 || throw(ArgumentError("OscillatorWave: zero-norm coefficients"))
+        return new(Int(L), float(beta), coeffs ./ nrm)
+    end
+end
+
+wave_norm(w::OscillatorWave) = sum(abs2, w.coefficients)
+
+function _oscillator_radial_value(w::OscillatorWave, r::Real)
+    return sum(
+        w.coefficients[n + 1] * ho_reduced_radial(n, w.L, w.beta, r) for
+        n in 0:(length(w.coefficients)-1)
+    )
+end
+
+"""Sample a native oscillator wave on an explicit grid for plotting or export."""
+function sample_wave(w::OscillatorWave, r::AbstractVector{<:Real})
+    samples = [_oscillator_radial_value(w, ri) for ri in r]
+    h = r[2] - r[1]
+    samples ./= sqrt(sum(abs2, samples) * h)
+    return MeshWave(samples, r, h)
+end
+
+function radial_expect(w::OscillatorWave, f)
+    op = ho_operator_matrix(w.L, w.beta, length(w.coefficients), f)
+    return dot(w.coefficients, op * w.coefficients) / wave_norm(w)
+end
+
+function radial_overlap(left::OscillatorWave, right::OscillatorWave, f)
+    nl, nr = sqrt(wave_norm(left)), sqrt(wave_norm(right))
+    if left.L == right.L && left.beta == right.beta
+        n = max(length(left.coefficients), length(right.coefficients))
+        cl = vcat(left.coefficients, zeros(n - length(left.coefficients)))
+        cr = vcat(right.coefficients, zeros(n - length(right.coefficients)))
+        op = ho_operator_matrix(left.L, left.beta, n, f)
+        return dot(cl, op * cr) / (nl * nr)
+    end
+    value, _ = quadgk(
+        r -> _oscillator_radial_value(left, r) * f(r) *
+             _oscillator_radial_value(right, r),
+        0.0,
+        Inf;
+        rtol = 1e-10,
+    )
+    return value / (nl * nr)
+end
+
+"""
     orthonormalize_physical_basis(U, h) -> Matrix
 
 Orthonormalize mesh-sampled basis columns under the physical inner product
@@ -407,8 +474,16 @@ function oscillator_channel_solution(
         end
     end
     _warn_if_beta_railed(best.beta, solver, masses, L)
+    if params.central isa AppendixAMomentumSandwich
+        waves = [OscillatorWave(L, best.beta, view(best.coeffs, :, n)) for n in 1:nlevels]
+        return ChannelRadialSolution(best.values, waves)
+    end
+    # Comparator central methods were assembled in the sampled QR basis, so
+    # their coefficients are not coefficients of the analytic HO functions.
+    # Preserve them honestly as mesh waves rather than mislabelling a hybrid
+    # result as an OscillatorWave.
     waves = physically_normalized_waves(best.basis * best.coeffs, h)
-    return collect(best.values), Matrix(waves), r
+    return ChannelRadialSolution(best.values, waves, r)
 end
 
 # The oscillator half of `resummed_channel_solution` (contact_hyperfine.jl holds
@@ -436,12 +511,12 @@ function _resummed_channel_solution(
     end
     _warn_if_beta_railed(best.beta, solver, masses, L)
     waves = physically_normalized_waves(best.basis * best.coeffs, h)
-    return collect(best.values[1:nlevels]), Matrix(waves[:, 1:nlevels]), r
+    return ChannelRadialSolution(best.values[1:nlevels], waves[:, 1:nlevels], r)
 end
 
 """
     ho_first_order_distorted_states(params, masses, L, V; nlevels, ngrid, rmax, nbasis)
-        -> (values, waves, r)
+        -> ChannelRadialSolution
 
 Paper-order spin-distorted radial waves: diagonalize the central Hamiltonian in
 the harmonic-oscillator subspace (paper β convention — one β per sector,
@@ -497,13 +572,13 @@ function ho_first_order_distorted_states(
         distorted[:, n] = ψ
         push!(values, best.values[n] + Vkn[n, n])
     end
-    return values, distorted, r
+    return ChannelRadialSolution(values, distorted, r)
 end
 
 
 """
     ho_full_distorted_states(params, masses, L, V; solver, nlevels)
-        -> (values, waves, r)
+        -> ChannelRadialSolution
 
 Paper-order spin-distorted radial waves by **full diagonalization** of the
 central-plus-spin Hamiltonian in the finite harmonic-oscillator subspace — the

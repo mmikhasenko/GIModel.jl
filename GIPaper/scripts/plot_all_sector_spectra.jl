@@ -157,15 +157,14 @@ function mixed_rows(rows, params)
             tkey = row_key(triplet)
             masses = ConstituentMasses(singlet.m1_GeV, singlet.m2_GeV)
             sol = get!(solve_cache, (masses, String(singlet.L))) do
-                ev, vecs, r = channel_solution(
+                channel_solution(
                     params, masses, L_ORDER[String(singlet.L)];
                     nlevels = 6,
                     solver = FiniteDifferenceSolver(kinetic = :relativistic),
                 )
-                (eigenvalues_GeV = ev, vectors = vecs, r = r)
             end
-            singlet.n <= size(sol.vectors, 2) || continue
-            wave = RadialWaveOnUniformMesh(sol.vectors[:, singlet.n], sol.r)
+            singlet.n <= length(sol.waves) || continue
+            wave = radial_wave(sol, singlet.n)
             offdiag = spin_orbit_mixing_components(
                 params,
                 masses,

@@ -1,8 +1,8 @@
-# Spin-independent radial sector: cache keys, typed FD solutions, diagnostic equal-mass sweeps.
+# Spin-independent radial sector: cache keys, representation-independent
+# solutions, and diagnostic equal-mass sweeps.
 #
 # Public API (exported from GIModel.jl):
 #   RadialChannelKey, ChannelRadialSolution, SectorComputation, solve_sector
-#   RadialWaveOnUniformMesh(solution::ChannelRadialSolution, radial_level)
 #
 # [`compute_spectrum`](@ref) (`spectrum.jl`) fills [`SectorComputation`](@ref) with one
 # solve per distinct orbital channel.
@@ -35,42 +35,52 @@ RadialChannelKey(m1::Real, m2::Real, L_label::AbstractString) =
     RadialChannelKey(ConstituentMasses(m1, m2), L_label)
 
 """
+    ChannelRadialSolution(eigenvalues_GeV, waves)
     ChannelRadialSolution(eigenvalues_GeV, eigenvectors, r)
 
 Output of one `channel_solution` call, stored in `SectorComputation.channel_cache`:
 
-  - `eigenvalues_GeV`: lowest radial eigenvalues (GeV) of the central Hamiltonian on the mesh.
-  - `eigenvectors`: columns are reduced radial functions ``u_n(r)`` for each level.
-  - `r`: uniform interior radial grid (same spacing as in the FD builder).
+  - `eigenvalues_GeV`: lowest radial eigenvalues in GeV;
+  - `waves`: one native [`RadialWave`](@ref) per eigenvalue (`MeshWave` for FD,
+    `OscillatorWave` for native HO).
 
-Spin-dependent expectations ([`fine_structure_components`](@ref), contact hyperfine) need a
-**single level** ``u_n`` on this mesh — see [`RadialWaveOnUniformMesh`](@ref)`(solution, n)` below,
-which wraps column `n` with the correct spacing `h`.
+Use [`radial_wave`](@ref)`(solution, n)` to retrieve it. The three-argument
+constructor is a convenience for numerical methods that naturally produce a
+matrix of mesh samples; the matrix and grid are immediately folded into
+`MeshWave` objects and are not retained separately.
 """
-struct ChannelRadialSolution
+struct ChannelRadialSolution{W<:RadialWave}
     eigenvalues_GeV::Vector{Float64}
-    eigenvectors::Matrix{Float64}
-    r::Vector{Float64}
+    waves::Vector{W}
+    function ChannelRadialSolution(
+        eigenvalues_GeV::AbstractVector{<:Real},
+        waves::AbstractVector{W},
+    ) where {W<:RadialWave}
+        length(eigenvalues_GeV) == length(waves) || throw(ArgumentError(
+            "ChannelRadialSolution: eigenvalue/wave counts differ",
+        ))
+        return new{W}(collect(Float64, eigenvalues_GeV), collect(W, waves))
+    end
 end
 
-"""
-    RadialWaveOnUniformMesh(solution::ChannelRadialSolution, radial_level::Integer)
+function ChannelRadialSolution(
+    eigenvalues_GeV::AbstractVector{<:Real},
+    eigenvectors::AbstractMatrix{<:Real},
+    r::AbstractVector{<:Real},
+)
+    size(eigenvectors, 2) == length(eigenvalues_GeV) || throw(ArgumentError(
+        "ChannelRadialSolution: eigenvalue/eigenvector counts differ",
+    ))
+    waves = [MeshWave(view(eigenvectors, :, n), r) for n in axes(eigenvectors, 2)]
+    return ChannelRadialSolution(eigenvalues_GeV, waves)
+end
 
-Build [`RadialWaveOnUniformMesh`](@ref) for eigenvector column `radial_level` of `solution`
-(shared mesh `solution.r`, spacing ``h = r_2 - r_1``). Use this in spectrum/comparison
-tooling when you already hold cached [`ChannelRadialSolution`](@ref) data instead of raw `(u, r)` vectors.
-"""
-function RadialWaveOnUniformMesh(sol::ChannelRadialSolution, radial_level::Integer)
-    radial_level >= 1 ||
-        throw(ArgumentError("radial_level must be ≥ 1, got $radial_level"))
-    radial_level <= size(sol.eigenvectors, 2) ||
-        throw(ArgumentError(
-            "radial_level=$radial_level exceeds number of stored eigenvectors $(size(sol.eigenvectors, 2))",
-        ))
-    length(sol.r) >= 2 ||
-        throw(ArgumentError("ChannelRadialSolution.r must have length ≥ 2"))
-    ucol = view(sol.eigenvectors, :, radial_level)
-    return RadialWaveOnUniformMesh(ucol, sol.r)
+"""Return one native radial eigenlevel from a channel solution."""
+function radial_wave(sol::ChannelRadialSolution, radial_level::Integer)
+    1 <= radial_level <= length(sol.waves) || throw(ArgumentError(
+        "radial_level=$radial_level outside stored range 1:$(length(sol.waves))",
+    ))
+    return sol.waves[radial_level]
 end
 
 """

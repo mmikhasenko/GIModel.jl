@@ -1,133 +1,117 @@
-# Code architecture (GIModel)
+# Code architecture
 
-This note is for anyone opening `src/` or `scripts/` after refactors that split
-**solver switches** from **constituent masses** and threaded **`ConstituentMasses`**
-through the radial Hamiltonian and spin-dependent helpers. It replaces an older
-mental model where masses lived inside `GIParameters` or were passed only as raw
-`(m1, m2)` floats at every call site.
+This document describes the current `GIModel` runtime. Paper-specific CSV
+loading, comparisons, plots, and residual reports live in the separate
+`GIPaper/` project; they are not part of the core module.
 
-## Module layout (`src/GIModel.jl`)
+## The central contract
 
-Includes are grouped intentionally:
+Every radial method returns the same object:
 
-1. **Constants and core types** — `constants.jl`, `model_objects.jl`.
-2. **Parameter bookkeeping** — TOML → `GIParameters` (`parameters.jl`), `[masses]` →
-   `QuarkMassTable` (`quark_mass_table.jl`).
-3. **Numerics** — potentials through Appendix-A status (`running_coupling.jl` … `appendix_a_status.jl`),
-   Hamiltonian, `channel_solution`, contact / fine structure.
-4. **State mixing layer** — **`state_mixing.jl`** (`MixingMechanism`,
-   `AntisymmetricSpinOrbit`, `TensorMixing`, `IsoscalarAnnihilation`,
-   `BasisState`, `MixingBlock`, `MixingResult`, `diagonalize_mixing_block`)
-   owns generic mass-matrix bookkeeping for same-`J`, tensor, flavor, or radial
-   mixing blocks.
-5. **Sector cache types + diagnostic sweep** — **`sector_solver.jl`** (`RadialChannelKey`,
-   **`ChannelRadialSolution`**, **`SectorComputation`**, **`solve_sector`**).
-6. **Sector batch solves + comparison + reports** — **`sector_comparison.jl`**
-   (**`compute_sector`**, **`compare`**, **`write_residual_report`**).
-7. **IO (last includes)** — **`reference_state.jl`** (**`ReferenceState`**, **`ReferenceStateWithMasses`**,
-   **`load_reference_spectrum`**),
-   **`masses_from_content.jl`** (**`parse_quark_masses`**, **`resolve_constituent_masses`**, **`attach_constituent_masses`**).
+```julia
+ChannelRadialSolution(
+    eigenvalues_GeV::Vector{Float64},
+    waves::Vector{<:RadialWave},
+)
+```
 
-**`compute_sector`** / **`compare`** take **`AbstractVector`** rows with `.constituent_masses` and `.state`
-(typically **`ReferenceStateWithMasses`** from **`attach_constituent_masses`**), so **`sector_comparison.jl`**
-can load before reference structs are defined; CSV reading and string→mass helpers stay grouped here at the end.
+Obtain a level with `radial_wave(solution, n)`. A consumer must operate on the
+`RadialWave` interface and must not ask the solution which solver produced it.
+There is deliberately no virtual `.eigenvectors`, `.r`, tuple iteration, or
+implicit mesh reconstruction on `ChannelRadialSolution`.
 
-## Loading inputs
+The current representations are:
 
-- **`load_parameters(path)`** → **`GIParameters`** (potential, smearing switches,
-  relativistic factors, fine-structure flags). It does **not** carry quark masses,
-  and it does **not** say how the radial problem will be solved: that is the
-  `RadialSolver` you pass at the call site.
-  `FiniteDifferenceSolver` is the default; `OscillatorSolver` is **the paper's own
-  method** — Eq. (A17) assembled from exact oscillator matrix elements, with no
-  spatial mesh in the operators on the Appendix-A central path. The two are
-  independent algorithms for the same problem and agree at +0.18 MeV (charm) /
-  +0.55 MeV (bottom), with the oscillator answer above, as a variational
-  calculation in a finite basis must be. Both go through the same
-  `channel_solution` / `resummed_channel_solution` entry points, so nothing
-  downstream knows which produced a wave.
-- **`load_quark_masses(path)`** → **`QuarkMassTable`** (`Dict{String,Float64}` with keys
-  `"u"`, `"d"`, `"q"`, `"s"`, `"c"`, `"b"` in GeV).
-- **`load_parameters_and_quark_masses(path)`** → `(GIParameters, QuarkMassTable)`. This is
-  what **scripts** and most tests use: one TOML file with both `[potential]` / `[masses]` /
-  related tables.
+- `MeshWave`: reduced radial samples `u(r)` on a uniform grid; produced by the
+  finite-difference solver and by grid-defined distorted-state solves.
+- `OscillatorWave`: harmonic-oscillator coefficients, `L`, and `beta`; produced
+  natively by the Appendix-A oscillator central solve.
+- `MeshMomentumWave` and `OscillatorMomentumWave`: the corresponding momentum
+  representations returned by `momentum_wave`.
 
-Quark masses are defined under **`[masses]`** in `data/parameters.provisional.toml`
-(Table II–style MeV fields); they are **not** fields on `GIParameters`.
+Shared operations are `wave_norm`, `radial_expect`, `radial_overlap`,
+`momentum_expect`, `momentum_overlap`, and `momentum_functional`. Plotting or a
+genuinely grid-defined operator may explicitly sample a native wave with
+`sample_wave(wave, r)`; that conversion belongs at that boundary, not in the
+solution object.
 
-## Reference rows vs rows with masses
+```mermaid
+flowchart LR
+  P["GIParameters: physics"] --> CS["channel_solution"]
+  M["ConstituentMasses"] --> CS
+  FD["FiniteDifferenceSolver"] --> CS
+  HO["OscillatorSolver"] --> CS
+  CS --> FDS["ChannelRadialSolution{MeshWave}"]
+  CS --> HOS["ChannelRadialSolution{OscillatorWave}"]
+  FDS --> R["radial_wave(solution, n)"]
+  HOS --> R
+  R --> OPS["representation-dispatched radial/momentum operations"]
+  OPS --> SPIN["spin corrections"]
+  OPS --> MIX["mixing blocks"]
+  OPS --> DECAY["decay and annihilation observables"]
+```
 
-1. **`load_reference_spectrum(csv)`** (**`reference_state.jl`**) → `Vector{ReferenceState}` (labels, `n`, `L`, `J`,
-   reference mass, `quark_content`, etc.—no masses yet).
-2. **`attach_constituent_masses`** (**`masses_from_content.jl`**) → **`Vector{ReferenceStateWithMasses}`**,
-   calling **`resolve_constituent_masses`** (**`masses_from_content.jl`**) with `String(state.sector)` and
-   `String(state.quark_content)` per row. Equal-mass quarkonia scripts typically pass `mq["c"]` or `mq["b"]` as the fallback
-   when the CSV row already pins both flavors.
+## Spectrum stages
 
-## Sector workflow (`src/sector_solver.jl`, `src/sector_comparison.jl`)
+The full meson spectrum is a typed pipeline rather than one mutable result:
 
-- **`compute_sector`** (**`sector_comparison.jl`**) builds one finite-difference radial solve per distinct
-  **`RadialChannelKey`**: **`ConstituentMasses` + orbital letter `L`** (rounded masses define cache identity).
-- **`compare`** (**`sector_comparison.jl`**) maps each reference row to the cached channel, picks radial
-  level `n`, and adds contact / fine-structure shifts.
-- **`write_residual_report`** (**`sector_comparison.jl`**) turns **`compare`** output into markdown; script
-  callers pass booleans that mirror the active **`GIParameters`** path for the prose header.
+```mermaid
+flowchart TD
+  I["parameters + Meson + requested BasisState levels"] --> C["central_spectrum"]
+  C --> CC["SectorComputation channel cache"]
+  CC --> CR["one ChannelRadialSolution per masses + L"]
+  C --> CS["CentralSpectrum / CentralState"]
+  CS --> A["add_spin_corrections"]
+  A --> RS["resummed contact states + fine structure"]
+  RS --> COR["CorrectedSpectrum / CorrectedState"]
+  COR --> B["add_intra_meson_mixing"]
+  B --> MB["same-J spin-orbit, tensor, annihilation MixingBlock"]
+  MB --> MR["shared MixingResult"]
+  MR --> MS["MixedSpectrum / MixedState"]
+  MS --> OUT["masses, radial_wave, decay observables, GIPaper reports"]
+```
 
-So batch drivers never pass “sector name” or flavor enums into `compute_sector`; all mass
-information is already on each **`ReferenceStateWithMasses`**.
+`compute_spectrum` is exactly the composition of those three stages.
+`SectorComputation` stores only `params`, the selected `solver`, and the channel
+cache. Later stages reuse that solver whenever they must solve a new eigenproblem.
 
-## Mixing layer (`src/state_mixing.jl`)
+`StateMixing` records how a reported state changed; generic diagonalization is
+owned by `MixingBlock`, `MixingResult`, and `diagonalize_mixing_block`. Mechanism
+code constructs matrices but does not introduce another result container.
 
-Mixing is intentionally above the pure radial/basis-state calculations. The
-marker supertype **`MixingMechanism`** names paper post-diagonalization
-mechanisms; current concrete markers are **`AntisymmetricSpinOrbit`**,
-**`TensorMixing`**, and **`IsoscalarAnnihilation`**. These are comparison-layer
-concepts, not alternate radial solver paths.
+## Source ownership
 
-A **`MixingBlock`** stores a list of **`BasisState`** labels and an arbitrary-size
-Hermitian mass matrix in GeV; **`diagonalize_mixing_block`** returns sorted
-eigenmasses and eigenvectors with stable phases for reports. This keeps
-mechanism-specific matrix construction separate from the linear algebra.
+- `model_objects.jl`: masses and radial-wave interface/representations.
+- `solver_options.jl`: numerical method objects and spin-term switches.
+- `sector_solver.jl`: radial channel key, solution, and spectrum computation cache.
+- `hamiltonian.jl`, `harmonic_oscillator_basis.jl`, `channel_solver.jl`: the FD
+  and oscillator implementations behind `channel_solution`.
+- `contact_hyperfine.jl`, `spin_fine_structure.jl`: spin-dependent operators and
+  distorted-state solves.
+- `state_mixing.jl`: shared mixing matrix/result abstraction.
+- `spectrum.jl`: the three spectrum stages and state-level accessors.
+- `flavor_mixing.jl`, `pseudoscalar_annihilation.jl`: annihilation block builders.
+- `strong_decays.jl`, `annihilation_widths.jl`, `mock_meson_overlaps.jl`:
+  downstream observables consuming `RadialWave`/`MomentumWave`.
+- `GIPaper/`: reference-data interpretation and reproducibility reports.
 
-**`sector_comparison.jl`** adds a read-only **`ComparisonContext`** containing
-`GIParameters` and the already-computed **`ChannelRadialSolution`** cache. It
-does not start new radial solves. Current assignment is dispatched through
-`assign_mixed_rows(::AntisymmetricSpinOrbit, rows, ctx; ...)`, which folds
-open-flavor unequal-mass `^1L_J`/`^3L_J` blocks into `compare` when both partner
-rows are present.
+## Input ownership
 
-The implemented assignment methods are:
+`GIParameters` contains model parameters only. `ConstituentMasses` contains the
+two masses for a dynamical calculation. `FiniteDifferenceSolver` or
+`OscillatorSolver` contains numerical choices. Do not encode the basis in
+`GIParameters`, and do not add loose numerical keywords beside a solver object.
 
-- `assign_mixed_rows(::AntisymmetricSpinOrbit, rows, ctx; ...)` for open-flavor
-  `^1L_J`/`^3L_J` pairs;
-- `assign_mixed_rows(::TensorMixing, rows, ctx; ...)` for triplet
-  `L=J-1`/`L=J+1` pairs such as `^3S_1`/`^3D_1`;
-- `assign_mixed_rows(::IsoscalarAnnihilation, rows, ctx; ...)` for the
-  calibrated isoscalar pseudoscalar control and the literal paper P1/P2
-  formula modes. The model-specific details live behind
-  `CalibratedP1Annihilation`, `PaperP1Annihilation`, and
-  `PaperP2Annihilation`, while comparison only selects the mode.
+## Rules for extensions
 
-## Radial and central-potential API
-
-- **`channel_solution(params, masses::ConstituentMasses, L::Integer; …)`** — spin-independent
-  FD solve for one channel.
-- **`relativistic_hamiltonian` / `nonrelativistic_hamiltonian`** take **`ConstituentMasses`**.
-- **`central_potential_values`** and **`potential_diagonal`** accept either **`ConstituentMasses`**
-  or **`(m1, m2)`** reals; prefer **`ConstituentMasses`** in new code for consistency with the
-  Hamiltonian and **`RadialChannelKey`**.
-
-## Reduced mass
-
-**`reduced_mass(m::ConstituentMasses)`** (and related helpers) live next to **`ConstituentMasses`**
-in `model_objects.jl`, not as stray utilities.
-
-## What *not* to assume anymore
-
-- Masses are **not** stored on **`GIParameters`**.
-- **`compute_sector`** is not driven by a separate “flavor” argument; use annotated rows.
-- Prefer **`ReferenceStateWithMasses`** at the boundary between CSV bookkeeping and numerics;
-  avoid re-parsing `quark_content` inside the solver loop.
-
-Keeping **`docs/formula_map.md`** aligned with this file is part of maintaining a reproducible
-audit trail.
+1. A new radial solver implements `channel_solution` and returns native
+   `RadialWave` objects in `ChannelRadialSolution`.
+2. A new radial representation implements the shared radial and momentum
+   operations required by its consumers.
+3. Physics consumers dispatch on `RadialWave`, never on solver type and never on
+   storage fields belonging to one representation.
+4. A mesh is explicit only where the mathematical operator or output format is
+   actually mesh-defined.
+5. An unavailable path throws or returns `nothing` when the physics term is
+   genuinely inactive; it never returns an empty tuple that triggers a silent
+   algorithm fallback.

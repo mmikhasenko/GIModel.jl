@@ -152,7 +152,7 @@ end
 
 """
     resummed_channel_solution(params, masses, L, V; solver, nlevels)
-        -> (values, waves, r)
+        -> ChannelRadialSolution
 
 Diagonalize the central Hamiltonian **plus** a spin-dependent operator `V`,
 resumming `V` rather than treating it at first order. This is one of the two
@@ -206,7 +206,7 @@ function _resummed_channel_solution(
     values, vectors = lowest_eigenpairs(
         Symmetric(Matrix(hamiltonian) + Matrix(V)), nlevels, solver)
     waves = physically_normalized_waves(Matrix(vectors), h)
-    return collect(values), waves, collect(Float64, r)
+    return ChannelRadialSolution(values, waves, r)
 end
 
 function contact_hyperfine_nonperturbative_levels(
@@ -221,22 +221,37 @@ function contact_hyperfine_nonperturbative_levels(
     if !params.factors.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
         return Float64[]
     end
-    levels, _waves, _r =
-        _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels, solver)
-    return levels
+    solution = _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels, solver)
+    return solution.eigenvalues_GeV
+end
+
+# Representation-free entry used by the spectrum pipeline. The discretization
+# needed to assemble a resummed operator belongs to the selected solver, not to
+# the solved wave or to its consumers.
+function contact_hyperfine_nonperturbative_levels(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L::AbstractString,
+    multiplicity::Integer,
+    nlevels::Integer;
+    solver::RadialSolver = FiniteDifferenceSolver(),
+)
+    r, _ = radial_grid(solver.ngrid, solver.rmax)
+    return contact_hyperfine_nonperturbative_levels(
+        params, masses, L, multiplicity, r, nlevels; solver = solver,
+    )
 end
 
 """
     contact_hyperfine_nonperturbative_states(params, masses, L, multiplicity, r, nlevels)
-        -> (levels::Vector{Float64}, vectors::Matrix{Float64}, r::Vector{Float64})
+        -> Union{Nothing,ChannelRadialSolution}
 
-Like [`contact_hyperfine_nonperturbative_levels`](@ref) but also returns the
-eigenvectors (reduced radial waves `u(r)`, one per column) of the S-wave
-Hamiltonian with the contact-hyperfine operator added non-perturbatively, plus
-the rebuilt grid. The singlet/triplet split of these waves is what makes the
+Like [`contact_hyperfine_nonperturbative_levels`](@ref) but retains the native
+radial waves of the S-wave Hamiltonian with the contact-hyperfine operator added
+non-perturbatively. The singlet/triplet split of these waves is what makes the
 `^1S_0` (e.g. `pi`) more compact than the `^3S_1` (e.g. `rho`) and drives the
-Eq. (20)/(21) realistic-factor ratios. Returns `(Float64[], zeros(0,0),
-Float64[])` when the non-perturbative contact path is inactive.
+Eq. (20)/(21) realistic-factor ratios. Returns `nothing` when the
+non-perturbative contact path is inactive.
 """
 function contact_hyperfine_nonperturbative_states(
     params::GIParameters,
@@ -248,9 +263,23 @@ function contact_hyperfine_nonperturbative_states(
     solver::RadialSolver = FiniteDifferenceSolver(),
 )
     if !params.factors.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
-        return Float64[], zeros(Float64, 0, 0), Float64[]
+        return nothing
     end
     return _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels, solver)
+end
+
+function contact_hyperfine_nonperturbative_states(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    L,
+    multiplicity::Integer,
+    nlevels::Integer;
+    solver::RadialSolver = FiniteDifferenceSolver(),
+)
+    r, _ = radial_grid(solver.ngrid, solver.rmax)
+    return contact_hyperfine_nonperturbative_states(
+        params, masses, L, multiplicity, r, nlevels; solver,
+    )
 end
 
 # Shared body: build the contact operator for this (L, multiplicity) and hand it
@@ -298,16 +327,18 @@ function contact_hyperfine_shift(
     params::GIParameters,
     masses::ConstituentMasses,
     multiplet::FineStructureMultiplet,
-    wave::RadialWaveOnUniformMesh,
+    wave::RadialWave,
 )
-    return _contact_hyperfine_shift_diagonal(
-        params,
-        masses,
-        multiplet.L_label,
-        multiplet.multiplicity,
-        wave.u,
-        wave.r,
+    multiplet.L_label == "S" || return 0.0
+    multiplet.multiplicity in (1, 3) || return 0.0
+    sigma = contact_smearing_sigma(params, masses)
+    expectation = radial_expect(
+        wave,
+        r -> alpha_s_r(r) * delta_sigma_3d(r, sigma),
     )
+    return (1.0 + params.factors.epsilon_c) *
+           (32π / (9 * masses.m1_GeV * masses.m2_GeV)) *
+           expectation * spin_dot(multiplet.multiplicity)
 end
 
 """Convenience: same as [`contact_hyperfine_shift`](@ref)`(params, ConstituentMasses(m1, m2), ...)`."""
@@ -334,16 +365,21 @@ function contact_hyperfine_shift_momentum_sandwich(
     params::GIParameters,
     masses::ConstituentMasses,
     multiplet::FineStructureMultiplet,
-    wave::RadialWaveOnUniformMesh,
+    wave::RadialWave,
 )
-    return _contact_hyperfine_shift_momentum_sandwich_diagonal(
+    multiplet.L_label == "S" || return 0.0
+    multiplet.multiplicity in (1, 3) || return 0.0
+    sigma = contact_smearing_sigma(params, masses)
+    expectation = radial_expect_momentum_sandwich(
         params,
         masses,
-        multiplet.L_label,
-        multiplet.multiplicity,
-        wave.u,
-        wave.r,
+        0,
+        wave,
+        params.factors.epsilon_c,
+        (r, _) -> alpha_s_r(r) * delta_sigma_3d(r, sigma),
     )
+    return (32π / (9 * masses.m1_GeV * masses.m2_GeV)) *
+           expectation * spin_dot(multiplet.multiplicity)
 end
 
 function contact_hyperfine_shift_momentum_sandwich(
@@ -369,7 +405,7 @@ function contact_hyperfine_shift_active(
     params::GIParameters,
     masses::ConstituentMasses,
     multiplet::FineStructureMultiplet,
-    wave::RadialWaveOnUniformMesh,
+    wave::RadialWave,
 )
     if params.factors.contact_momentum_sandwich
         return contact_hyperfine_shift_momentum_sandwich(params, masses, multiplet, wave)

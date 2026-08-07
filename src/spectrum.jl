@@ -40,21 +40,32 @@ end
     StateMixing
 
 Provenance of one intra-meson mixing applied to a [`MixedState`](@ref):
-which mechanism, the block basis labels, this state's eigenvector `components`
-(in block-basis order), and `partner_masses_GeV` — **all** block eigenvalues in
-ascending order, so downstream consumers can reassign eigenvalues under a
-different ordering convention without re-diagonalizing.
+the shared [`MixingResult`](@ref), the eigenstate column selected for this
+member, and per-member diagnostics. Compatibility properties expose
+`mechanism`, `block_label`, `partner_labels`, `components`, and
+`partner_masses_GeV` without storing copies of the block eigensystem.
 """
 struct StateMixing
-    mechanism::String
-    block_label::String
-    partner_labels::Vector{String}
-    components::Vector{Float64}
+    result::MixingResult
+    eigenstate::Int
     offdiag_GeV::Float64
     mixing_angle_deg::Float64
     unmixed_GeV::Float64
-    partner_masses_GeV::Vector{Float64}
 end
+
+function Base.getproperty(m::StateMixing, name::Symbol)
+    name === :mechanism && return getfield(m, :result).block.mechanism
+    name === :block_label && return getfield(m, :result).block.name
+    name === :partner_labels && return [s.label for s in getfield(m, :result).block.basis]
+    name === :components && return @view getfield(m, :result).vectors[:, getfield(m, :eigenstate)]
+    name === :partner_masses_GeV && return getfield(m, :result).masses
+    return getfield(m, name)
+end
+
+Base.propertynames(::StateMixing) = (
+    :result, :eigenstate, :offdiag_GeV, :mixing_angle_deg, :unmixed_GeV,
+    :mechanism, :block_label, :partner_labels, :components, :partner_masses_GeV,
+)
 
 """
     CentralState
@@ -220,14 +231,14 @@ function central_spectrum(
     channel_cache = Dict{RadialChannelKey,ChannelRadialSolution}()
     for L_label in observed_L
         key = RadialChannelKey(masses, L_label)
-        ev, vecs, r = channel_solution(
+        sol = channel_solution(
             params,
             masses,
             L_SYMBOLS[L_label];
             nlevels = nlevels_per_channel,
             solver = solver,
         )
-        channel_cache[key] = ChannelRadialSolution(ev, vecs, r)
+        channel_cache[key] = sol
     end
     computation = SectorComputation(params, solver, channel_cache)
 
@@ -270,7 +281,7 @@ function add_spin_corrections(
         key = RadialChannelKey(masses, state.L)
         sol = channel_cache[key]
         multiplet = FineStructureMultiplet(state.L, state.multiplicity, state.J)
-        wave = RadialWaveOnUniformMesh(sol, state.n)
+        wave = radial_wave(sol, state.n)
         contact_shift = 0.0
         if contact_hyperfine
             nonperturbative = get!(contact_level_cache, (key, state.multiplicity)) do
@@ -279,7 +290,6 @@ function add_spin_corrections(
                     masses,
                     state.L,
                     state.multiplicity,
-                    sol.r,
                     length(sol.eigenvalues_GeV);
                     solver = spec.computation.solver,
                 )
@@ -391,29 +401,22 @@ end
 function _assign_block_members!(
     states::Vector{MixedState},
     member_indices::Vector{Int},
-    mechanism::AbstractString,
-    block_label::AbstractString,
-    basis_labels::Vector{String},
-    mixed_masses::Vector{Float64},
-    vectors::Matrix{Float64},
+    result::MixingResult,
     offdiag_GeV::Real,
     mixing_angle_deg::Real;
     fine_structure_mass_convention = nothing,
 )
     ordered = sort(member_indices; by = i -> states[i].mass_GeV)
-    ascending = sort(mixed_masses)
+    ascending = result.masses
     for (rank, i) in enumerate(ordered)
         # `vectors` columns are ordered by ascending eigenvalue (see
         # diagonalize_mixing_block), matching `ascending`.
         mixing = StateMixing(
-            String(mechanism),
-            String(block_label),
-            basis_labels,
-            collect(vectors[:, rank]),
+            result,
+            rank,
             float(offdiag_GeV),
             float(mixing_angle_deg),
             states[i].mass_GeV,
-            ascending,
         )
         states[i] = if isnothing(fine_structure_mass_convention)
             _with_mixing(states[i], mixing, ascending[rank])
@@ -451,7 +454,7 @@ function _apply_same_j_spin_orbit_mixing!(
         triplet = states[indices[itriplet]]
         key = RadialChannelKey(masses, singlet.L)
         sol = channel_cache[key]
-        radial = RadialWaveOnUniformMesh(sol, singlet.n)
+        radial = radial_wave(sol, singlet.n)
         offdiag = spin_orbit_mixing_components(
             params,
             masses,
@@ -460,15 +463,19 @@ function _apply_same_j_spin_orbit_mixing!(
             enabled = true,
             k_spin_orbit = params.fine_structure.k_spin_orbit,
         )
-        mix = same_j_mixing(singlet.mass_GeV, triplet.mass_GeV, offdiag.total)
+        mix = same_j_mixing(
+            singlet.mass_GeV,
+            triplet.mass_GeV,
+            offdiag.total;
+            basis = [
+                BasisState(singlet.n, singlet.L, 1, singlet.J; label = singlet.label),
+                BasisState(triplet.n, triplet.L, 3, triplet.J; label = triplet.label),
+            ],
+        )
         _assign_block_members!(
             states,
             [indices[isinglet], indices[itriplet]],
-            "antisymmetric_spin_orbit",
-            mix.block.name,
-            [singlet.label, triplet.label],
-            collect(mix.masses),
-            Matrix(mix.vectors),
+            mix.result,
             offdiag.total,
             mix.theta_deg;
             fine_structure_mass_convention = "unequal_mass_same_j_mixed",
@@ -504,8 +511,8 @@ function _apply_tensor_mixing!(
         high = states[indices[ihigh]]
         low_sol = channel_cache[RadialChannelKey(masses, low.L)]
         high_sol = channel_cache[RadialChannelKey(masses, high.L)]
-        low_radial = RadialWaveOnUniformMesh(low_sol, low.n)
-        high_radial = RadialWaveOnUniformMesh(high_sol, high.n)
+        low_radial = radial_wave(low_sol, low.n)
+        high_radial = radial_wave(high_sol, high.n)
         offdiag = tensor_mixing_components(
             params,
             masses,
@@ -529,11 +536,7 @@ function _apply_tensor_mixing!(
         _assign_block_members!(
             states,
             [indices[ilow], indices[ihigh]],
-            "tensor_mixing",
-            block.name,
-            [low.label, high.label],
-            collect(mix.masses),
-            Matrix(mix.vectors),
+            mix,
             offdiag.total,
             NaN,
         )
@@ -586,15 +589,15 @@ function spectrum_state(spec::Spectrum, label::AbstractString)
 end
 
 """
-    radial_wave(spec, label) -> RadialWaveOnUniformMesh
-    radial_wave(spec, L_label, n) -> RadialWaveOnUniformMesh
+    radial_wave(spec, label) -> RadialWave
+    radial_wave(spec, L_label, n) -> RadialWave
 
 The radial wavefunction behind a level of `spec` — `radial_wave(spec, "1^3S_1")`
 is the wave whose eigenvalue is `spectrum_state(spec, "1^3S_1").central_GeV`.
 
 This is the hand-off from the spectrum to every wavefunction-level observable:
 annihilation and leptonic widths, two-photon amplitudes, charge radii and the
-radiative transition moments all take a `RadialWaveOnUniformMesh`. The solve is
+radiative transition moments all take a `RadialWave`. The solve is
 already cached on the spectrum, so this is a lookup, not a recomputation.
 
 There is one wave per level, produced by the spectrum's own solver — the same
@@ -612,10 +615,10 @@ function radial_wave(spec::Spectrum, L_label::AbstractString, n::Integer)
         "spectrum for $(flavor_label(spec.meson)) has no `$L_label` channel; include it in `levels`",
     ))
     sol = cache[key]
-    n <= size(sol.eigenvectors, 2) || throw(ArgumentError(
-        "cached `$L_label` waves for $(flavor_label(spec.meson)) hold $(size(sol.eigenvectors, 2)) levels; requested n=$n",
+    n <= length(sol.waves) || throw(ArgumentError(
+        "cached `$L_label` waves for $(flavor_label(spec.meson)) hold $(length(sol.waves)) levels; requested n=$n",
     ))
-    return RadialWaveOnUniformMesh(sol, n)
+    return radial_wave(sol, n)
 end
 
 function radial_wave(spec::Spectrum, label::AbstractString)

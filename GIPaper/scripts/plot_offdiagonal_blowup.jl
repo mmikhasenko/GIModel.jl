@@ -38,9 +38,13 @@ fixsign(v) = v .* sign(v[argmax(abs.(v))])
 
 """Return the off-diagonal 3S1-3D1 tensor integrand pieces on the mesh."""
 function pieces(solver)
-    _, vS, r = channel_solution(params, m, 0; solver = solver, nlevels = 6)
-    _, vD, _ = channel_solution(params, m, 2; solver = solver, nlevels = 6)
-    uS = fixsign(vS[:, 1]); uD = fixsign(vD[:, 1])
+    solS = channel_solution(params, m, 0; solver = solver, nlevels = 6)
+    solD = channel_solution(params, m, 2; solver = solver, nlevels = 6)
+    r, _ = G.radial_grid(solver.ngrid, solver.rmax)
+    wS = radial_wave(solS, 1); wD = radial_wave(solD, 1)
+    meshS = wS isa MeshWave ? wS : sample_wave(wS, r)
+    meshD = wD isa MeshWave ? wD : sample_wave(wD, r)
+    uS = fixsign(meshS.u); uD = fixsign(meshD.u)
     h = r[2] - r[1]
     side = G.gi_spin_dependent_side_exponent(params.factors.epsilon_t)
     BS = G.momentum_relativization_matrix(m.m1_GeV, m.m2_GeV, side, eigen(G.p2_operator(params, m.m1_GeV, 0, r, h)))
@@ -51,7 +55,7 @@ function pieces(solver)
     (r_fm = r .* HBARC, uD = uD ./ sqrt(dot(uD, uD)), integ_raw = integ_raw, integ_fix = integ_raw ./ normfac)
 end
 
-fd = pieces(params)
+fd = pieces(FiniteDifferenceSolver())
 ho_ = pieces(ho)
 
 fig = Figure(size = (1180, 470))

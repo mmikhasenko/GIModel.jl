@@ -2,6 +2,7 @@ module GIModel
 
 using LinearAlgebra
 using Printf
+using QuadGK: quadgk
 using TOML
 using KrylovKit: eigsolve
 using SpecialFunctions: erf, gamma
@@ -13,10 +14,10 @@ using SpecialFunctions: erf, gamma
 include("constants.jl")
 
 export ConstituentMasses, reduced_mass, FineStructureMultiplet
-export RadialWave, MeshWave, RadialWaveOnUniformMesh
+export RadialWave, MeshWave, OscillatorWave, sample_wave
 export radial_expect, radial_overlap, wave_norm
-export MomentumWave, MeshMomentumWave, momentum_wave, momentum_expect,
-    momentum_functional
+export MomentumWave, MeshMomentumWave, OscillatorMomentumWave,
+    momentum_wave, momentum_expect, momentum_overlap, momentum_functional
 include("model_objects.jl")
 
 # =============================================================================
@@ -43,6 +44,9 @@ include("quark_mass_table.jl")
 export RadialSolver, FiniteDifferenceSolver, OscillatorSolver, SpinTerms,
     numerics_provenance
 include("solver_options.jl")
+
+export RadialChannelKey, ChannelRadialSolution, SectorComputation, solve_sector
+include("sector_solver.jl")
 
 export AbstractQuark, LightQuark, StrangeQuark, HeavyQuark
 export charge, flavor_symbol, mass_GeV
@@ -116,9 +120,6 @@ include("spin_fine_structure.jl")
 export CentralPotentialPath, central_potential_path
 include("appendix_a_status.jl")
 
-export RadialChannelKey, ChannelRadialSolution, SectorComputation, solve_sector
-include("sector_solver.jl")
-
 export radial_wave,
     spectrum_levels,
     StateMixing,
@@ -137,7 +138,8 @@ export radial_wave,
     parameters
 include("spectrum.jl")
 
-export annihilation_basis_input, isoscalar_annihilation_block, pseudoscalar_annihilation_block
+export annihilation_basis_input, fix_annihilation_phase,
+    isoscalar_annihilation_block, pseudoscalar_annihilation_block
 include("flavor_mixing.jl")
 
 # =============================================================================
@@ -180,8 +182,7 @@ export wavefunction_origin_smearing,
     HBARC_FM2
 include("annihilation_widths.jl")
 
-export MockMomentumWave,
-    ALPHA_EM,
+export ALPHA_EM,
     NUCLEON_MASS_GEV,
     photon_momentum,
     m1_transition_moment,

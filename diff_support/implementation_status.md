@@ -1,7 +1,8 @@
 # Differentiation-enabling cleanup: implementation status
 
-Implementation snapshot: integrated and reverified on top of commit `fd281b1`,
-2026-08-06.
+Implementation snapshot: integrated with the native radial-solution abstraction,
+2026-08-07. The audit reports in this directory retain their original snapshot
+types as historical evidence; this status page records the current runtime.
 
 Gates A--C from the audit are implemented. No AD package or runtime dependency
 has been added. The next bounded step is Gate D: separate prepared FD and
@@ -55,12 +56,13 @@ potential_diagonal              Vector{Float64}
 relativistic_hamiltonian        Tuple{Symmetric{Float64,Matrix{Float64}},Vector{Float64}}
 full lowest_eigenpairs          Tuple{Vector{Float64},Matrix{Float64}}
 HO fixed-beta Hamiltonian       Tuple{Symmetric{Float64,Matrix{Float64}},Matrix{Float64}}
-FD channel implementation       Tuple{Vector{Float64},Matrix{Float64},Vector{Float64}}
-HO channel implementation       Tuple{Vector{Float64},Matrix{Float64},Vector{Float64}}
+FD channel implementation       ChannelRadialSolution{MeshWave}
+HO channel implementation       ChannelRadialSolution{OscillatorWave}
 ```
 
 The root test suite additionally applies `@inferred` to these boundaries and to
-both full and Krylov eigenpair paths.
+both full and Krylov eigenpair paths. The solution types are concrete without
+forcing the oscillator representation through a reporting mesh.
 
 ## Verification
 

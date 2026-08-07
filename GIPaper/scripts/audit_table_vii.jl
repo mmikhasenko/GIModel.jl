@@ -46,6 +46,12 @@ function fix_outer_antinode_positive!(u)
     return u
 end
 
+function reporting_wave(wave::RadialWave)
+    r, _ = GIModel.radial_grid(NGRID, RMAX)
+    sampled = wave isa MeshWave ? wave : sample_wave(wave, r)
+    return MeshWave(fix_outer_antinode_positive!(copy(sampled.u)), sampled.r)
+end
+
 # --- paper-order distorted waves (finite HO-basis full diagonalization) ------
 # The single treatment for the whole audit: every wave is a full diagonalization
 # of H_central + V_spin in the paper-β harmonic-oscillator basis (the paper's
@@ -67,19 +73,16 @@ function pwave_operator(params, m1, m2, J)
     return fine_structure_grid_operator(params, ConstituentMasses(m1, m2), J, r, h; L = 1)
 end
 
-# distorted radial family for a QQ̄ sector: (levels, vecs, r) with ∫u²dr = 1.
 function distorted_family(params, solver_ho, m1, m2, L, V; nlevels)
-    vals, waves, r = ho_full_distorted_states(params, ConstituentMasses(m1, m2), L, V;
+    return ho_full_distorted_states(params, ConstituentMasses(m1, m2), L, V;
         solver = solver_ho, nlevels = max(nlevels, 4))
-    return (levels = vals, vecs = waves, r = r)
 end
 
 # central (spin-independent) family on the same HO basis (V = 0), for the
 # ³D₁/³P₁ leptonic rows the paper leaves undistorted.
 function central_family(params, solver_ho, m1, m2, L; nlevels = 2)
-    vals, vecs, r = channel_solution(params, ConstituentMasses(m1, m2), L;
+    return channel_solution(params, ConstituentMasses(m1, m2), L;
         solver = solver_ho, nlevels = max(nlevels, 4))
-    return (levels = vals, vecs = vecs, r = r)
 end
 
 # --- read the paper's predicted amplitudes from the digitized CSV ------------
@@ -182,9 +185,8 @@ function run_gluonic(params, solver_ho, mq, paper)
                 pwave_operator(params, mQ, mQ, J)
             distorted_family(params, solver_ho, mQ, mQ, L, V; nlevels = row.n)
         end
-        u = fix_outer_antinode_positive!(copy(fam.vecs[:, row.n]))
-        wave = RadialWaveOnUniformMesh(u, fam.r)
-        M = fam.levels[row.n]
+        wave = reporting_wave(radial_wave(fam, row.n))
+        M = fam.eigenvalues_GeV[row.n]
         S = wavefunction_origin_smearing(wave, mQ; L = row.L, npoints = NPTS)
         αs = GIModel.alpha_s_q(M)
         model = gluonic_annihilation_amplitude(row.channel, S, αs, mQ) * sqrt(1000)
@@ -265,9 +267,8 @@ function run_leptonic(params, solver_ho, mq, paper)
         else # :Pp_A1
             get!(() -> central_family(params, solver_ho, m1, m2, 1), ccache, (m1, m2, 1))
         end
-        M = fam.levels[row.n]
-        u = fix_outer_antinode_positive!(copy(fam.vecs[:, row.n]))
-        wave = RadialWaveOnUniformMesh(u, fam.r)
+        M = fam.eigenvalues_GeV[row.n]
+        wave = reporting_wave(radial_wave(fam, row.n))
         L = GIModel.LEPTONIC_FACTOR_KINDS[row.kind][1]
         Mt = mock_meson_mass(wave, m1, m2; L = L, npoints = NPTS)
         factor = leptonic_decay_factor(row.kind, wave, m1, m2, M; npoints = NPTS)
@@ -325,8 +326,8 @@ function run_two_photon(params, solver_ho, mq, paper)
         fam = row.kind === :P ?
               get!(() -> swave_family(params, solver_ho, m1, m2, 1), scache, (m1, m2)) :
               get!(() -> central_family(params, solver_ho, m1, m2, 1; nlevels = max(row.n, 1)), ccache, (m1, m2))
-        M = fam.levels[row.n]
-        wave = RadialWaveOnUniformMesh(fix_outer_antinode_positive!(copy(fam.vecs[:, row.n])), fam.r)
+        M = fam.eigenvalues_GeV[row.n]
+        wave = reporting_wave(radial_wave(fam, row.n))
         A = two_photon_amplitude(row.kind, wave, m1, M, row.q_eff; npoints = NPTS)   # GeV^½
         pv, punit = get(paper, row.decay, (NaN, :keV))
         pg = isnan(pv) ? NaN : to_gev(pv, punit)
@@ -360,7 +361,7 @@ function run_two_photon_mixed(params, solver_ho, mq, paper)
     Qss = 1 / 9                          # ss̄
     function psfam(m1, m2)               # pure-flavor ¹S₀ 1S,2S waves
         fam = swave_family(params, solver_ho, m1, m2, 1; nlevels = 3)
-        return [RadialWaveOnUniformMesh(fix_outer_antinode_positive!(copy(fam.vecs[:, n])), fam.r) for n in 1:2]
+        return [reporting_wave(radial_wave(fam, n)) for n in 1:2]
     end
     NN, SS = psfam(mu, mu), psfam(ms, ms)
     comp = [(NN[1], mu, Qnn), (SS[1], ms, Qss), (NN[2], mu, Qnn), (SS[2], ms, Qss)]  # [1nn,1ss,2nn,2ss]
@@ -432,7 +433,7 @@ function run_charge_radii(params, solver_ho, mq, paper)
         m1, m2 = mq[row.f1], mq[row.f2]
         # ¹S₀ ground-state wave for the flavor pair (paper-order distorted)
         fam = swave_family(params, solver_ho, m1, m2, 1; nlevels = 2)
-        wave = RadialWaveOnUniformMesh(fam.vecs[:, 1], fam.r)
+        wave = radial_wave(fam, 1)
         rE2 = charge_radius_squared(wave, m1, row.e1, m2, row.e2) * HBARC_FM2   # fm²
         pap = get(paper, row.decay, NaN)
         ratio = isnan(pap) || pap == 0 ? NaN : rE2 / pap                        # signed

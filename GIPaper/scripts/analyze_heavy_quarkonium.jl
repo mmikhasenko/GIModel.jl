@@ -119,12 +119,12 @@ function emit_split_table(io, title, rows)
 end
 
 function same_j_pwave_mixing_diagnostic(params, masses; ngrid = 450, rmax = 24.0)
-    vals, vecs, r = channel_solution(
+    solution = channel_solution(
         params, masses, 1;
         nlevels = 1,
         solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax, kinetic = :relativistic),
     )
-    radial = RadialWaveOnUniformMesh(vecs[:, 1], r)
+    radial = radial_wave(solution, 1)
     offdiag = spin_orbit_mixing_components(
         params,
         masses,
@@ -140,10 +140,11 @@ function same_j_pwave_mixing_diagnostic(params, masses; ngrid = 450, rmax = 24.0
         k_spin_orbit = params.fine_structure.k_spin_orbit,
         k_tensor = params.fine_structure.k_tensor,
     )
-    mix = same_j_mixing(vals[1], vals[1] + triplet_shift, offdiag.total)
+    central = solution.eigenvalues_GeV[1]
+    mix = same_j_mixing(central, central + triplet_shift, offdiag.total)
     return (
-        singlet = vals[1],
-        triplet = vals[1] + triplet_shift,
+        singlet = central,
+        triplet = central + triplet_shift,
         offdiag = offdiag.total,
         low = mix.masses[1],
         high = mix.masses[2],

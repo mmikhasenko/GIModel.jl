@@ -44,30 +44,28 @@ function s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
     channels = Dict{String,Any}()
     for (label, mass_key) in [("ns", "q"), ("ss", "s"), ("cc", "c"), ("bb", "b")]
         masses = ConstituentMasses(mq[mass_key], mq[mass_key])
-        ev_fd, _vecs_fd, r = channel_solution(
+        fd_solution = channel_solution(
             params, masses, 0;
             nlevels = 2,
             solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax, kinetic = :relativistic),
         )
-        ev, vecs, r_ho = channel_solution(
+        solution = channel_solution(
             params,
             masses,
             0;
             solver = solver_ho,
             nlevels = 2,
         )
-        fix_annihilation_phase!(vecs, r_ho)
-        sol = GIModel.ChannelRadialSolution(ev, vecs, r_ho)
         levels = GIModel.contact_hyperfine_nonperturbative_levels(
             params,
             masses,
             "S",
             1,
-            r,
+            radial_wave(fd_solution, 1).r,
             2,
         )
-        isempty(levels) && (levels = ev_fd)
-        channels[label] = (mass = mq[mass_key], solution = sol, levels = levels)
+        isempty(levels) && (levels = fd_solution.eigenvalues_GeV)
+        channels[label] = (mass = mq[mass_key], solution = solution, levels = levels)
     end
 
     basis = GIModel.PseudoscalarAnnihilationBasisInput[]
@@ -81,7 +79,7 @@ function s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
                 label,
                 channel.mass,
                 channel.levels[n],
-                RadialWaveOnUniformMesh(channel.solution, n);
+                fix_annihilation_phase(radial_wave(channel.solution, n));
                 # TARGET_BASIS is ["1 ns", "1 ss", "1 cc", "1 bb", ...]; only the
                 # nonstrange rows are the coherent (u ubar + d dbar)/sqrt(2) state.
                 isoscalar_coherent = flavor == "ns",

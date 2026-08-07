@@ -17,12 +17,13 @@ These were each found the hard way. Every one is pinned by tests.
    physical ones — they differ by `√h`, and anything quadratic in `u` given the
    wrong convention is off by `h ≈ 0.05`.
 
-2. **The wave interface is the only way to get a `u`.** Seven operations on
-   `RadialWave` (`wave_norm`, `radial_expect`, `radial_overlap`,
-   `momentum_wave`, `momentum_expect`, `momentum_functional`, and `smear` when
-   it lands). Operations normalize internally, so consumers must not.
-   *Consumers* go through the interface; *implementations* of those operations
-   legitimately touch `.u`, `.r`, `.h`.
+2. **The wave interface is the intended way to use a solved radial state.**
+   Operations normalize internally, so consumers must not. Representation
+   implementations may legitimately touch mesh samples or HO coefficients;
+   physics consumers may not. `ChannelRadialSolution` stores native `MeshWave`
+   or `OscillatorWave` objects and exposes them through `radial_wave`; tuple
+   destructuring and virtual mesh fields were removed. Explicit sampling remains
+   valid only at plotting and genuinely grid-defined operator boundaries.
 
 3. **Helpers that are quadratic in a wave must normalize themselves.** An
    unstated "callers must pre-normalize" requirement is invisible at the call
@@ -107,12 +108,15 @@ Table VII ratio drift.
 
 ## Next stages
 
-
-*Nothing is queued.* The four stages this file was written to carry —
-`ho_operator_matrix` performance, B3 solver types, C2 report provenance, C3
-keyword retirement — are all done. What follows is the standing list of things
-known to be unfinished, which is a different kind of list: none of them is
-blocking, and each records why it was left.
+The four original stages this file was written to carry -
+`ho_operator_matrix` performance, B3 solver types, C2 report provenance, and C3
+   keyword retirement - are done. Paper-order spectrum integration is tracked in
+   [`paper_algorithm_work_plan.md`](paper_algorithm_work_plan.md). PA-01 through
+   PA-07 are complete: the solved-state contract is frozen, native oscillator
+   waves exist in both representations, and spectrum/spin/mixing/decay consumers
+   use the shared interface. The next executable unit is **PA-08**, as recorded
+   in that plan. The standing items below remain outside that queue unless a PA
+   unit explicitly absorbs them.
 
 ## Known open items, deliberately not fixed
 
@@ -123,8 +127,11 @@ blocking, and each records why it was left.
   charmed rows only, though strange rows have `r = 0.66`. Recorded as a
   candidate discrepancy rather than "fixed" — unlike the `S_c` coefficient, no
   printed row says the paper is wrong there.
-- **Mixing blocks still run on FD waves** (annihilation, tensor/spin-orbit
-  off-diagonal) — the remaining bounded gap in A17's manifest note.
+- **Some paper-order distorted operators are intrinsically assembled on a
+  reporting/operator mesh.** Their results are returned as `MeshWave`, while
+  central oscillator states remain native `OscillatorWave`. Further analytic
+  HO operator fusion is scheduled in the paper-order work plan; this is no
+  longer a consumer-API limitation.
 - **Comparator central methods keep the mesh** deliberately: several smear
   numerically on it and are not closed-form functions of `r`, so making them
   hybrid would violate invariant 6.

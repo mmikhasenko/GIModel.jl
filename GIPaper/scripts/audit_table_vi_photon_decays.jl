@@ -80,11 +80,11 @@ end
 
 function physical_waves(vecs, r)
     h = r[2] - r[1]
-    waves = RadialWaveOnUniformMesh[]
+    waves = MeshWave[]
     for n = 1:size(vecs, 2)
         u = vecs[:, n] ./ sqrt(h)              # Euclidean → ∫u² dr = 1
         sum(r .* u) < 0 && (u = -u)            # Φ(0) > 0 phase convention
-        push!(waves, RadialWaveOnUniformMesh(u, r, h))
+        push!(waves, MeshWave(u, r, h))
     end
     return waves
 end
@@ -95,14 +95,14 @@ end
 # audit-local names delegate to the exported implementations (PMAX/NP grid and
 # the paper's 0.7/0.5 exponents are the src defaults, so the numbers are
 # unchanged by the promotion).
-const MomentumWave = MockMomentumWave
-momentum_wave(wave::RadialWaveOnUniformMesh, L::Integer) =
+const SampledMomentumWave = MeshMomentumWave
+momentum_wave(wave::MeshWave, L::Integer) =
     mock_momentum_wave(wave, L; pmax = PMAX, npoints = NP)
-mean_energy(mw::MockMomentumWave, m) = mock_mean_energy(mw, m)
-mock_mass(mw::MockMomentumWave, m1, m2) = mock_wave_mass(mw, m1, m2)
-I_overlap(mwx::MockMomentumWave, mwy::MockMomentumWave, Mx, My, m_i) =
+mean_energy(mw::SampledMomentumWave, m) = mock_mean_energy(mw, m)
+mock_mass(mw::SampledMomentumWave, m1, m2) = mock_wave_mass(mw, m1, m2)
+I_overlap(mwx::SampledMomentumWave, mwy::SampledMomentumWave, Mx, My, m_i) =
     mock_meson_overlap(mwx, mwy, m_i; Mx = Mx, My = My)
-E_moment(wx::RadialWaveOnUniformMesh, wy::RadialWaveOnUniformMesh, Ex, Ey, m_i; n = 1) =
+E_moment(wx::MeshWave, wy::MeshWave, Ex, Ey, m_i; n = 1) =
     mock_meson_radial_moment(wx, wy, Ex, Ey, m_i; n = n)
 
 
@@ -117,8 +117,8 @@ struct SWaveSystem
     label::String
     m1::Float64
     m2::Float64
-    singlet::Vector{RadialWaveOnUniformMesh}
-    triplet::Vector{RadialWaveOnUniformMesh}
+    singlet::Vector{MeshWave}
+    triplet::Vector{MeshWave}
     singlet_p::Vector{MomentumWave}
     triplet_p::Vector{MomentumWave}
 end
@@ -502,14 +502,14 @@ function bb_swave_ho_full(multiplicity; nlevels = 3)
     V = G.contact_hyperfine_operator(params, masses, "S", multiplicity, r)
     # ho_full_distorted_states already returns physically normalized waves
     # (∫u² dr = 1); do NOT re-run physical_waves (which assumes Euclidean input).
-    _, waves, r2 = ho_full_distorted_states(params, masses, 0, V;
+    solution = ho_full_distorted_states(params, masses, 0, V;
         solver = solver_ho, nlevels = nlevels)
-    hh = r2[2] - r2[1]
-    out = RadialWaveOnUniformMesh[]
-    for n = 1:size(waves, 2)
-        u = waves[:, n]
-        sum(r2 .* u) < 0 && (u = -u)              # Phi(0) > 0 convention
-        push!(out, RadialWaveOnUniformMesh(u, r2, hh))
+    out = MeshWave[]
+    for n in eachindex(solution.waves)
+        wave = radial_wave(solution, n)
+        u = copy(wave.u)
+        sum(wave.r .* u) < 0 && (u .*= -1)        # Phi(0) > 0 convention
+        push!(out, MeshWave(u, wave.r, wave.h))
     end
     return out
 end

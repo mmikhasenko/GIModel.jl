@@ -29,33 +29,56 @@ struct MeshMomentumWave <: MomentumWave
     phi::Vector{Float64}
 end
 
-"""The original name for [`MeshMomentumWave`](@ref)."""
-const MockMomentumWave = MeshMomentumWave
+"""Exact momentum-space view of a native [`OscillatorWave`](@ref)."""
+struct OscillatorMomentumWave <: MomentumWave
+    source::OscillatorWave
+end
 
 _mm_trapz(x, y) = sum(0.5 * (y[i] + y[i+1]) * (x[i+1] - x[i]) for i = 1:length(x)-1)
 
+function _spherical_bessel_j(L::Integer, x::Real)
+    j0 = abs(x) < 1.0e-8 ? 1.0 - x^2 / 6 : sin(x) / x
+    L == 0 && return j0
+    abs(x) < 1.0e-4 && return x^L / prod(1:2:(2L+1))
+    jm1 = j0
+    j = sin(x) / x^2 - cos(x) / x
+    for l in 1:(L-1)
+        jp1 = (2l + 1) / x * j - jm1
+        jm1, j = j, jp1
+    end
+    return j
+end
+
+function _momentum_radial_wave(radial::MeshWave, p::Real, L::Integer)
+    accum = sum(
+        radial.r[k] * radial.u[k] * _spherical_bessel_j(L, p * radial.r[k]) for
+        k in eachindex(radial.r)
+    )
+    return sqrt(2 / π) * accum * radial.h
+end
+
 """
-    mock_momentum_wave(radial, L; pmax=30.0, npoints=1501) -> MockMomentumWave
+    mock_momentum_wave(radial, L; pmax=30.0, npoints=1501) -> MeshMomentumWave
 
 Spherical-Bessel transform of the reduced radial wave to momentum space,
 normalized so `∫ p² Φ² dp = 1` (i.e. `Φ_L(p) = ∫ dr u(r) j_L(pr) √(2/π) p`, the
 [`_momentum_radial_wave`](@ref) kernel).
 """
-function mock_momentum_wave(radial::RadialWaveOnUniformMesh, L::Integer;
+function mock_momentum_wave(radial::MeshWave, L::Integer;
                             pmax::Real = 30.0, npoints::Integer = 1501)
     p = collect(range(0.0, float(pmax); length = npoints))
     phi = [_momentum_radial_wave(radial, pk, L) for pk in p]
     nrm = sqrt(_mm_trapz(p, p .^ 2 .* phi .^ 2))
     nrm > 0 || throw(ArgumentError("mock_momentum_wave: zero-norm wave"))
-    return MockMomentumWave(p, phi ./ nrm)
+    return MeshMomentumWave(p, phi ./ nrm)
 end
 
 """Mean relativistic quark energy `⟨E⟩ = ∫ p² Φ² √(m²+p²) dp` over a mock wave."""
-mock_mean_energy(mw::MockMomentumWave, m::Real) =
-    _mm_trapz(mw.p, mw.p .^ 2 .* mw.phi .^ 2 .* sqrt.(float(m)^2 .+ mw.p .^ 2))
+mock_mean_energy(mw::MomentumWave, m::Real) =
+    momentum_expect(mw, p -> sqrt(float(m)^2 + p^2))
 
 """Mock mass `M̃ = ⟨E₁⟩ + ⟨E₂⟩` of a mock wave with constituent masses `m1, m2`."""
-mock_wave_mass(mw::MockMomentumWave, m1::Real, m2::Real) =
+mock_wave_mass(mw::MomentumWave, m1::Real, m2::Real) =
     mock_mean_energy(mw, m1) + mock_mean_energy(mw, m2)
 
 """
@@ -66,12 +89,16 @@ with `Mx`, `My` the mock masses of the two states (see [`mock_wave_mass`](@ref))
 
     I_i = √(4 Mx My)/(Mx + My) · ∫ dp p² Φₓ Φ_y (1/m_emit)(m_emit/E)^exponent .
 """
-function mock_meson_overlap(mwx::MockMomentumWave, mwy::MockMomentumWave, m_emit::Real;
+function mock_meson_overlap(mwx::MomentumWave, mwy::MomentumWave, m_emit::Real;
                             Mx::Real, My::Real, exponent::Real = 0.7)
     m = float(m_emit)
     pref = sqrt(4 * Mx * My) / (Mx + My)
-    kern = @. mwx.p^2 * mwx.phi * mwy.phi * (1 / m) * (m / sqrt(m^2 + mwx.p^2))^exponent
-    return pref * _mm_trapz(mwx.p, kern)
+    radial = momentum_overlap(
+        mwx,
+        mwy,
+        p -> (1 / m) * (m / sqrt(m^2 + p^2))^exponent,
+    )
+    return pref * radial
 end
 
 """
@@ -82,10 +109,9 @@ with `Ex`, `Ey` the mean quark energies (see [`mock_mean_energy`](@ref)):
 
     Eₙⁱ = |m_emit / √(Ex Ey)|^exponent · ∫ dr uₓ(r) u_y(r) rⁿ .
 """
-function mock_meson_radial_moment(wx::RadialWaveOnUniformMesh, wy::RadialWaveOnUniformMesh,
+function mock_meson_radial_moment(wx::RadialWave, wy::RadialWave,
                                   Ex::Real, Ey::Real, m_emit::Real;
                                   n::Integer = 1, exponent::Real = 0.5)
-    wx.r == wy.r || throw(ArgumentError("mock_meson_radial_moment: meshes differ"))
     # This kernel IS `radial_overlap` with f(r) = r^n, times the Appendix-D
     # energy prefactor. Going through the interface normalizes both waves, which
     # this used to leave to the caller without saying so -- the same unstated
@@ -124,8 +150,8 @@ rule `μ = e_q I_q - e_q̄ I_q̄` (the antiquark charge enters flipped), so
 charmonium is `+4/3 I_c` and bottomonium `-2/3 I_b`.
 """
 function m1_transition_moment(
-    singlet::MockMomentumWave,
-    triplet::MockMomentumWave,
+    singlet::MomentumWave,
+    triplet::MomentumWave,
     m1_GeV::Real,
     m2_GeV::Real,
     terms,
@@ -150,10 +176,10 @@ explicit `q` (GeV) to override the photon momentum implied by the two masses,
 e.g. to use model rather than measured masses.
 """
 function e1_transition_amplitude(
-    wave_S::RadialWaveOnUniformMesh,
-    mom_S::MockMomentumWave,
-    wave_P::RadialWaveOnUniformMesh,
-    mom_P::MockMomentumWave,
+    wave_S::RadialWave,
+    mom_S::MomentumWave,
+    wave_P::RadialWave,
+    mom_P::MomentumWave,
     m_i::Real,
     coeff_of_q,
     M_parent_GeV::Real,
@@ -175,7 +201,7 @@ end
 # is exact (scale beta -> 1/beta) and the origin value is closed form.
 
 """
-    momentum_wave(w::RadialWave, L; pmax=30.0, npoints=1501) -> MockMomentumWave
+    momentum_wave(w::RadialWave, L; pmax=30.0, npoints=1501) -> MeshMomentumWave
 
 The momentum-space radial wave `Phi(p)`, normalized so `integral p^2 Phi^2 dp = 1`.
 For a [`MeshWave`](@ref) this is a numerical spherical-Bessel transform.
@@ -183,14 +209,88 @@ For a [`MeshWave`](@ref) this is a numerical spherical-Bessel transform.
 momentum_wave(w::MeshWave, L::Integer; pmax::Real = 30.0, npoints::Integer = 1501) =
     mock_momentum_wave(w, L; pmax = pmax, npoints = npoints)
 
+function momentum_wave(w::OscillatorWave, L::Integer = w.L; kwargs...)
+    L == w.L || throw(ArgumentError(
+        "momentum_wave: requested L=$L for OscillatorWave with L=$(w.L)",
+    ))
+    return OscillatorMomentumWave(w)
+end
+
+function _oscillator_momentum_value(mw::OscillatorMomentumWave, p::Real)
+    w = mw.source
+    pf = float(p)
+    if pf == 0
+        w.L > 0 && return 0.0
+        pf = sqrt(eps(Float64)) * w.beta
+    end
+    return sum(
+        w.coefficients[n + 1] * (-1.0)^n *
+        ho_reduced_radial(n, w.L, inv(w.beta), pf) / pf for
+        n in 0:(length(w.coefficients)-1)
+    )
+end
+
 """
-    momentum_expect(mw::MockMomentumWave, g) -> Float64
+    momentum_expect(mw::MeshMomentumWave, g) -> Float64
 
 `integral p^2 Phi(p)^2 g(p) dp`. `g` is called as `g(p)`; `g = p -> sqrt(m^2+p^2)`
 gives the mean relativistic quark energy.
 """
 momentum_expect(mw::MeshMomentumWave, g) =
     _mm_trapz(mw.p, mw.p .^ 2 .* mw.phi .^ 2 .* map(g, mw.p))
+
+function momentum_expect(mw::OscillatorMomentumWave, g)
+    w = mw.source
+    p2 = Symmetric(Matrix(ho_p2_matrix(w.L, w.beta, length(w.coefficients))))
+    fact = eigen(p2)
+    values = map(x -> g(sqrt(max(x, 0.0))), fact.values)
+    op = fact.vectors * Diagonal(values) * fact.vectors'
+    return dot(w.coefficients, op * w.coefficients) / wave_norm(w)
+end
+
+"""`integral p^2 Phi_x(p) Phi_y(p) g(p) dp`, with both waves normalized."""
+function momentum_overlap(left::MeshMomentumWave, right::MeshMomentumWave, g)
+    length(left.p) == length(right.p) || throw(ArgumentError(
+        "momentum_overlap: momentum grids have different sizes",
+    ))
+    all(isapprox.(left.p, right.p; rtol = 1e-12, atol = 1e-14)) ||
+        throw(ArgumentError("momentum_overlap: momentum grids differ"))
+    nl = momentum_expect(left, _ -> 1.0)
+    nr = momentum_expect(right, _ -> 1.0)
+    (nl > 0 && nr > 0) || throw(ArgumentError("momentum_overlap: zero-norm wave"))
+    value = _mm_trapz(
+        left.p,
+        left.p .^ 2 .* left.phi .* right.phi .* map(g, left.p),
+    )
+    return value / sqrt(nl * nr)
+end
+
+
+function momentum_overlap(
+    left::OscillatorMomentumWave,
+    right::OscillatorMomentumWave,
+    g,
+)
+    wl, wr = left.source, right.source
+    if wl.L == wr.L && wl.beta == wr.beta
+        n = max(length(wl.coefficients), length(wr.coefficients))
+        cl = vcat(wl.coefficients, zeros(n - length(wl.coefficients)))
+        cr = vcat(wr.coefficients, zeros(n - length(wr.coefficients)))
+        p2 = Symmetric(Matrix(ho_p2_matrix(wl.L, wl.beta, n)))
+        fact = eigen(p2)
+        values = map(x -> g(sqrt(max(x, 0.0))), fact.values)
+        op = fact.vectors * Diagonal(values) * fact.vectors'
+        return dot(cl, op * cr) / sqrt(wave_norm(wl) * wave_norm(wr))
+    end
+    value, _ = quadgk(
+        p -> p^2 * _oscillator_momentum_value(left, p) *
+             _oscillator_momentum_value(right, p) * g(p),
+        0.0,
+        Inf;
+        rtol = 1e-9,
+    )
+    return value / sqrt(wave_norm(wl) * wave_norm(wr))
+end
 
 """
     momentum_functional(mw::MomentumWave, K) -> Float64
@@ -203,3 +303,13 @@ the wave interface.
 """
 momentum_functional(mw::MeshMomentumWave, K) =
     _mm_trapz(mw.p, mw.p .^ 2 .* mw.phi .* map(K, mw.p))
+
+function momentum_functional(mw::OscillatorMomentumWave, K)
+    value, _ = quadgk(
+        p -> p^2 * _oscillator_momentum_value(mw, p) * K(p),
+        0.0,
+        Inf;
+        rtol = 1e-9,
+    )
+    return value
+end

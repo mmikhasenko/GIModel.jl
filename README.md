@@ -54,6 +54,15 @@ The repository has three first-class deliverables:
     two-gluon and two-photon widths and splitting their ratio into the `15/4`
     spin algebra times the J-dependent distortion of the wave at the origin.
 - `docs/formula_map.md` maps active code paths to paper equations.
+- `docs/original_1985_algorithm_audit.md` compares the paper's three-stage,
+  mesh-free HO spectrum algorithm with the implementation and records the
+  remaining full-Hamiltonian integration gates.
+- `docs/paper_algorithm_work_plan.md` turns that audit into a dependency-ordered
+  queue; PA-01 through PA-07 establish the representation-independent solved-state
+  contract and PA-08 is the next operator-integration unit.
+- `docs/incident_followup_audit.md` records the forensic review of the abandoned
+  migration, the additional stale infrastructure found, and what was repaired or
+  deliberately left as history.
 - `docs/engineering_work_plan.md` is the **code** stream: settled invariants
   (normalization, basis phase, the wave interface), the next architecture
   stages, and the diagnostics already found not to work.

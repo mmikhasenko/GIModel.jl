@@ -57,7 +57,7 @@ end
     abstract type RadialWave
 
 One radial eigenlevel, however it was computed. Consumers ask a `RadialWave`
-for **six operations** and never touch its representation:
+for operations and never touch its representation:
 
 | operation | meaning |
 |---|---|
@@ -65,15 +65,13 @@ for **six operations** and never touch its representation:
 | `radial_overlap(wx, wy, f)` | integral of u_x u_y f(r) dr |
 | `momentum_wave(w, L)` | the momentum-space wave Phi(p) |
 | `momentum_expect(mw, g)` | integral of p^2 |Phi|^2 g(p) dp |
-| `origin_amplitude(w)` | the (smeared) value at r = 0 |
 | `wave_norm(w)` | integral of u^2 dr, guaranteed 1 |
 
 Two implementations, in separate files, that never refer to each other:
 
   - [`MeshWave`](@ref) — samples on a uniform mesh. This is the finite-difference
-    solver's native form, and it is also what the oscillator solver currently
-    returns after reconstructing its coefficients onto the mesh.
-  - `OscillatorWave` — the analytic oscillator representation (β + expansion
+    solver's native form.
+  - [`OscillatorWave`](@ref) — the analytic oscillator representation (β + expansion
     coefficients). It implements an operation **only** when that operation has a
     closed form; anything not yet derived has no method and fails loudly rather
     than quietly discretizing.
@@ -83,7 +81,6 @@ abstract type RadialWave end
 """
     MeshWave(u, r, h)
     MeshWave(u, r)
-    RadialWaveOnUniformMesh(u, r)   # the original name, still accepted
 
 Reduced radial wavefunction ``u(r)`` on a **uniform** interior grid: samples `uᵢ` and radii `rᵢ`
 with spacing `h` (for `length(r) ≥ 2`, the two-argument form sets `h = r[2] - r[1]`).
@@ -92,9 +89,9 @@ This bundles the data [`fine_structure_components`](@ref), [`contact_hyperfine_s
 and [`physical_u_norm`](@ref) rely on. It is **one radial eigenlevel** on the mesh — not the
 full multi-level output of [`channel_solution`](@ref).
 
-For the cached workflow object [`ChannelRadialSolution`](@ref), use the constructor
-`RadialWaveOnUniformMesh(solution, radial_level)` defined in `sector_solver.jl`: it takes
-column `radial_level` of `solution.eigenvectors` together with `solution.r`.
+For a cached [`ChannelRadialSolution`](@ref), use [`radial_wave`](@ref) to
+retrieve the stored native representation. Sample an `OscillatorWave` only for
+an explicit plot/export grid with `sample_wave(wave, r)`.
 
 The explicit `h` argument must agree with the uniform spacing implied by `r` (guardrail).
 """
@@ -125,9 +122,6 @@ struct MeshWave <: RadialWave
         return new(collect(Float64, u), collect(Float64, r), hf)
     end
 end
-
-"""The original name for [`MeshWave`](@ref); the mesh is what it always was."""
-const RadialWaveOnUniformMesh = MeshWave
 
 function MeshWave(u::AbstractVector{<:Real}, r::AbstractVector{<:Real})
     length(r) >= 2 ||
@@ -165,9 +159,9 @@ end
 # =============================================================================
 # The RadialWave interface, implemented for MeshWave by mesh quadrature.
 #
-# Every consumer of a wave goes through these six. Nothing downstream reads
-# `.u`, `.r` or `.h`, so a second implementation (the analytic oscillator one)
-# can be dropped in without touching a single consumer.
+# Consumers should go through this interface. Mesh implementation methods may
+# read `.u`, `.r`, and `.h`; physics consumers must not. The migration from the
+# older mesh-specific API is tracked in `docs/paper_algorithm_work_plan.md`.
 # =============================================================================
 
 """
@@ -203,6 +197,8 @@ function radial_overlap(wx::MeshWave, wy::MeshWave, f)
         throw(ArgumentError("radial_overlap: waves live on different meshes"))
     isapprox(wx.h, wy.h; rtol = 1e-10) ||
         throw(ArgumentError("radial_overlap: mesh spacings differ"))
+    all(isapprox.(wx.r, wy.r; rtol = 1e-10, atol = 1e-12)) ||
+        throw(ArgumentError("radial_overlap: mesh points differ"))
     nx, ny = wave_norm(wx), wave_norm(wy)
     (nx > 0 && ny > 0) || throw(ArgumentError("radial_overlap: zero-norm wave"))
     s = 0.0

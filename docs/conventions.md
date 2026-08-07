@@ -15,9 +15,10 @@ implementation.
 Solver switches (**`GIParameters`**) and flavor masses (**`QuarkMassTable`**) come from the same
 TOML file but different tables: see **`load_parameters`**, **`load_quark_masses`**, and the
 usual combined **`load_parameters_and_quark_masses`** in `src/quark_mass_table.jl`. Masses are
-**not** fields on **`GIParameters`**. **`ReferenceState`** / **`ReferenceStateWithMasses`** are defined in
-**`reference_state.jl`** (first IO include in **`GIModel.jl`**), including **`load_reference_spectrum`**. Reference CSV rows become **`ReferenceState`** via that loader; **`attach_constituent_masses`** (**`masses_from_content.jl`**) produces **`ReferenceStateWithMasses`** for **`compute_sector`** /
-**`compare`**, calling **`resolve_constituent_masses`** (**`masses_from_content.jl`**) with sector/content strings.
+**not** fields on **`GIParameters`**. Paper reference rows and their flavor
+resolution belong to `GIPaper`: `GIPaper/src/reference_state.jl` loads
+`ReferenceState`, `GIPaper/src/reference_meson.jl` converts a row to a core
+`Meson`, and `GIPaper/src/comparison.jl` calls `compute_spectrum`.
 Full call graph: **`docs/code_architecture.md`**.
 
 - Energies and masses are in GeV internally.
@@ -51,14 +52,13 @@ Full call graph: **`docs/code_architecture.md`**.
 `data/reference_spectrum_*.csv` use a `sector` string per file, for example:
 `charmonium`, `bottomonium`, `charmed`, `b_flavored`, `strange`, `isovector`,
 `isoscalar`. These are labels for the reference rows and the residual reports.
-**`attach_constituent_masses`** (**`masses_from_content.jl`**) wraps each **`ReferenceState`** using **`resolve_constituent_masses`**
-(**`masses_from_content.jl`**) with `parse_quark_masses`, passing `String(state.sector)` and `String(state.quark_content)`.
-Then **`compute_sector`** and **`compare`** (**`sector_comparison.jl`**; radial cache types in **`sector_solver.jl`**) map each annotated row to
-Table II masses via the attached **`ConstituentMasses(m1, m2)`** (12-digit rounding) and orbital letter
-`L` in a **`RadialChannelKey`**; identical keys share one cached radial
-finite-difference solve before **`compare`** attaches level `n`, hyperfine, and
-fine-structure shifts using **`RadialWaveOnUniformMesh`** for one column of the
-cached eigenvectors.
+`GIPaper.reference_meson` resolves each row's `quark_content` into a core
+`Meson` with exact `ConstituentMasses`. `compare_reference` groups equal mesons,
+calls `compute_spectrum`, and maps the resulting typed spectrum states back to
+reference rows. Inside GIModel, `RadialChannelKey` normalizes masses only for
+cache identity; physics keeps the exact values. Each cached
+`ChannelRadialSolution` stores native `RadialWave` objects, so comparison code
+does not read eigenvector matrices or meshes.
 
 - Equal-mass quarkonia: `c cbar`, `b bbar` in the `quark_content` column.
 - Heavy-light: semicolon lists such as `c ubar; c dbar` for charmed, similarly
@@ -80,7 +80,7 @@ residuals):
 
 ## Quark order
 
-`quark_content` strings follow the paper-style flavor listing; the parser in
-`masses_from_content.jl` maps the first quark/anti-quark token pair to $(m_1, m_2)$
-for the reduced Hamiltonian. If a row lists multiple $q\bar{q}$ pairs, the first
-valid pair is used unless extended logic is added.
+`quark_content` strings follow the paper-style flavor listing. The explicit
+resolver in `GIPaper/src/reference_meson.jl` maps supported content and sector
+labels to a core `Meson`; unknown or ambiguous content fails loudly rather than
+choosing the first token pair.

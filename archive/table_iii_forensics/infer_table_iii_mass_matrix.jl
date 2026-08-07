@@ -26,12 +26,12 @@ function light_s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
     channels = Dict{String,Any}()
     for (label, mass_key) in [("ns", "q"), ("ss", "s")]
         masses = ConstituentMasses(mq[mass_key], mq[mass_key])
-        ev, vecs, r = channel_solution(
+        sol = channel_solution(
             params, masses, 0;
             nlevels = 2,
             solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax, kinetic = :relativistic),
         )
-        sol = GIModel.ChannelRadialSolution(ev, vecs, r)
+        r = radial_wave(sol, 1).r
         levels = GIModel.contact_hyperfine_nonperturbative_levels(
             params,
             masses,
@@ -54,7 +54,7 @@ function light_s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
                 label,
                 channel.mass,
                 channel.levels[n],
-                RadialWaveOnUniformMesh(channel.solution, n),
+                radial_wave(channel.solution, n),
             ),
         )
     end

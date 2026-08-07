@@ -31,14 +31,14 @@ solve_cache = Dict{Tuple{UInt64,ConstituentMasses,String},Vector{Float64}}()
 function central_levels(solver::RadialSolver, masses::ConstituentMasses, L_label::String)
     key = (objectid(solver), masses, L_label)
     return get!(solve_cache, key) do
-        ev, _, _ = channel_solution(
+        solution = channel_solution(
             params,
             masses,
             L_VALUES[L_label];
             solver = solver,
             nlevels = 6,
         )
-        collect(Float64, ev)
+        collect(Float64, solution.eigenvalues_GeV)
     end
 end
 

@@ -45,15 +45,21 @@ nothing left for a second basis to correct.
 """
 # `fix_annihilation_phase!` works on eigenvector columns; a cached wave must not
 # be mutated in place, so flip a copy.
-function _phase_fixed(w::RadialWaveOnUniformMesh)
+function fix_annihilation_phase(w::MeshWave)
     u = reshape(copy(w.u), :, 1)
     fix_annihilation_phase!(u, w.r)
-    return RadialWaveOnUniformMesh(vec(u), w.r, w.h)
+    return MeshWave(vec(u), w.r, w.h)
+end
+
+function fix_annihilation_phase(w::OscillatorWave)
+    phase, _ = quadgk(r -> r * _oscillator_radial_value(w, r), 0.0, Inf; rtol = 1e-10)
+    phase >= 0 && return w
+    return OscillatorWave(w.L, w.beta, -w.coefficients)
 end
 
 function annihilation_basis_input(spec::SpinResolvedSpectrum, level::BasisState)
     state = spectrum_state(spec, level)
-    wave = _phase_fixed(radial_wave(spec, level.L_label, level.n))
+    wave = fix_annihilation_phase(radial_wave(spec, level.L_label, level.n))
     label = "$(level.n) $(_annihilation_flavor_tag(spec.meson))"
     return pseudoscalar_annihilation_basis_input(
         label,

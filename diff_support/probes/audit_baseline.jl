@@ -40,15 +40,15 @@ function main()
         params, masses, 0, r, h, beta; nbasis = nbasis,
     )))
     ho_values() = eigvals(Symmetric(ho_matrix()))[1:3]
-    ho_selected_values() = first(channel_solution(
+    ho_selected_values() = channel_solution(
         params, masses, 0; solver = ho_solver,
-    ))
+    ).eigenvalues_GeV
 
     println("audit baseline: charmonium, L=0, active Appendix-A central path")
     println("Julia: ", VERSION)
     println("FD context: ngrid=", fd_solver.ngrid, ", rmax=", fd_solver.rmax)
     println("HO context: beta=", beta, ", nbasis=", nbasis,
-        " (current constructor also reconstructs the reporting mesh basis)")
+        " (selected route retains native OscillatorWave coefficients)")
     println()
     println("FD central values [GeV]: ",
         join((@sprintf("%.10f", x) for x in fd_values()), ", "))

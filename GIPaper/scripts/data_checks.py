@@ -405,10 +405,10 @@ def annihilation_score(_args: argparse.Namespace) -> int:
     if {"P1", "P2"} <= {row.get("model") for row in mixings if row.get("confidence") in {"high", "medium"}}:
         clean_points += 10
 
-    source = read_text(ROOT / "src" / "sector_comparison.jl")
+    source = read_text(ROOT / "src" / "comparison.jl")
     tests = read_text(ROOT / "test" / "runtests.jl")
     modes = {
-        ":none": ("scheme == :none", "plain = compare("),
+        ":none": ("scheme in (:none", "plain = compare_reference("),
         ":calibrated_p1": (":calibrated_p1", "isoscalar_pseudoscalar_annihilation = :calibrated_p1"),
         ":paper_p1": ("PaperP1Annihilation", "isoscalar_pseudoscalar_annihilation = :paper_p1"),
         ":paper_p2": ("PaperP2Annihilation", "isoscalar_pseudoscalar_annihilation = :paper_p2"),

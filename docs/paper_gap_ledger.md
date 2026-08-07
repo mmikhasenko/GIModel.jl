@@ -12,6 +12,11 @@ This is the current short list of what is still missing relative to the
 Godfrey-Isgur paper. It is meant to be the durable replacement for older
 handoff/autonomous planning notes.
 
+For the focused architecture audit of the original three-stage HO spectrum
+algorithm, including the distinction between native, standalone, hybrid, and
+missing pieces, see
+[`original_1985_algorithm_audit.md`](original_1985_algorithm_audit.md).
+
 ## Implemented Enough For Current Comparisons
 
 - Table II solver inputs are audited into CSV/TOML, including

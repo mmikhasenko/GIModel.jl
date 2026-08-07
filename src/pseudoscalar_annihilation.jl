@@ -12,7 +12,7 @@ abstract type PseudoscalarSmearingScheme end
 """Legacy FD proxy: coordinate-space origin times one averaged relativistic factor."""
 struct FDOriginP2Smearing <: PseudoscalarSmearingScheme end
 
-"""FD evaluation of the Eq. (17) S-wave momentum integral."""
+"""Numerical evaluation of the Eq. (17) momentum integral."""
 struct FDMomentumIntegralSmearing <: PseudoscalarSmearingScheme
     npoints::Int
 end
@@ -37,7 +37,7 @@ struct PseudoscalarAnnihilationBasisInput
     label::String
     constituent_mass_GeV::Float64
     diagonal_GeV::Float64
-    radial::RadialWaveOnUniformMesh
+    radial::RadialWave
     # Whether this channel is the coherent (u ubar + d dbar)/sqrt(2) combination,
     # which carries a sqrt(2) amplitude factor relative to a single flavor. This
     # is a property of the flavor state, so it is stated, not guessed.
@@ -56,7 +56,7 @@ function pseudoscalar_annihilation_basis_input(
     label::AbstractString,
     constituent_mass_GeV::Real,
     diagonal_GeV::Real,
-    radial::RadialWaveOnUniformMesh;
+    radial::RadialWave;
     isoscalar_coherent::Union{Nothing,Bool} = nothing,
 )
     coherent = if isoscalar_coherent === nothing
@@ -117,60 +117,19 @@ function _alpha_s_mass_scale(mass_GeV::Real)
     return alpha_s_q(q)
 end
 
-function _reduced_p2_expectation(radial::RadialWaveOnUniformMesh)
-    u = radial.u
-    h = radial.h
-    norm = max(sum(abs2, u) * h, eps(Float64))
-    prev = 0.0
-    accum = 0.0
-    for ui in u
-        accum += (ui - prev)^2 / h
-        prev = ui
-    end
-    accum += prev^2 / h
-    return accum / norm
-end
+_reduced_p2_expectation(radial::RadialWave) =
+    momentum_expect(momentum_wave(radial, 0), p -> p^2)
 
 function _s0_smearing_factor(::FDOriginP2Smearing, input::PseudoscalarAnnihilationBasisInput)
     wave = input.radial
+    wave isa MeshWave || throw(ArgumentError(
+        "FDOriginP2Smearing is a legacy mesh-only approximation; use FDMomentumIntegralSmearing for $(typeof(wave))",
+    ))
     origin_R = abs(wave.u[1] / wave.r[1])
     p2 = _reduced_p2_expectation(wave)
     rel = input.constituent_mass_GeV / sqrt(input.constituent_mass_GeV^2 + p2)
     return origin_R * rel / sqrt(4π)
 end
-
-function _j0(x::Real)
-    abs(x) < 1.0e-8 && return 1.0 - x^2 / 6
-    return sin(x) / x
-end
-
-function _spherical_bessel_j(L::Integer, x::Real)
-    L == 0 && return _j0(x)
-    if abs(x) < 1.0e-4
-        # j_L(x) ≈ x^L / (2L+1)!! for small argument.
-        dfact = prod(1:2:(2L+1))
-        return x^L / dfact
-    end
-    jm1 = _j0(x)
-    j = sin(x) / x^2 - cos(x) / x
-    for l in 1:(L-1)
-        jp1 = (2l + 1) / x * j - jm1
-        jm1 = j
-        j = jp1
-    end
-    return j
-end
-
-function _momentum_radial_wave(radial::RadialWaveOnUniformMesh, p::Real, L::Integer)
-    accum = 0.0
-    for k in eachindex(radial.r)
-        accum += radial.r[k] * radial.u[k] * _spherical_bessel_j(L, p * radial.r[k])
-    end
-    return sqrt(2 / π) * accum * radial.h
-end
-
-_momentum_radial_swave(radial::RadialWaveOnUniformMesh, p::Real) =
-    _momentum_radial_wave(radial, p, 0)
 
 """
     _sL_smearing_factor(scheme, input, L)
@@ -184,20 +143,16 @@ function _sL_smearing_factor(
     input::PseudoscalarAnnihilationBasisInput,
     L::Integer,
 )
-    wave = input.radial
     mass = input.constituent_mass_GeV
-    npoints = max(scheme.npoints, 32)
-    pmax = π / wave.h
-    dp = pmax / (npoints - 1)
-    accum = 0.0
-    for k in 1:npoints
-        p = (k - 1) * dp
-        weight = (k == 1 || k == npoints) ? 0.5 : 1.0
-        Φ = _momentum_radial_wave(wave, p, L)
+    kernel = p -> begin
         E = sqrt(mass^2 + p^2)
-        accum += weight * p^2 * Φ * (p / E)^L * mass / E
+        (p / E)^L * mass / E
     end
-    return sqrt(2 / π) * accum * dp / sqrt(4π)
+    mw = input.radial isa MeshWave ?
+         momentum_wave(input.radial, L; pmax = π / input.radial.h,
+                       npoints = max(scheme.npoints, 32)) :
+         momentum_wave(input.radial, L)
+    return sqrt(2 / π) / sqrt(4π) * momentum_functional(mw, kernel)
 end
 
 _s0_smearing_factor(scheme::FDMomentumIntegralSmearing, input::PseudoscalarAnnihilationBasisInput) =
@@ -484,7 +439,7 @@ function isoscalar_pseudoscalar_annihilation_solution(
         matrix;
         mechanism = "paper_p1_pseudoscalar_annihilation",
         source = "GI Eq. (16) with Eq. (18a) and Table III P1 constants",
-        notes = "Uses cached FD radial waves in the Eq. (17) S-wave momentum integral.",
+        notes = "Uses the cached solver-native radial waves through the Eq. (17) momentum interface.",
     )
     return (
         block = block,

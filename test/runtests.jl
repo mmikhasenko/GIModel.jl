@@ -10,6 +10,19 @@ using GIModel
 
 root = dirname(@__DIR__)
 
+# Explicit diagnostic/plot adapter. Production code consumes `radial_wave`
+# directly; tests that validate sampled arrays request that view deliberately.
+function sampled_arrays(sol::ChannelRadialSolution; grid = nothing)
+    sampled = if all(w -> w isa MeshWave, sol.waves)
+        sol.waves
+    else
+        isnothing(grid) && throw(ArgumentError("sampling an oscillator solution requires `grid`"))
+        [sample_wave(w, grid) for w in sol.waves]
+    end
+    r = isnothing(grid) ? first(sampled).r : collect(Float64, grid)
+    return sol.eigenvalues_GeV, hcat((w.u for w in sampled)...), r
+end
+
 @testset "parameter loading" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     @test mq["c"] ≈ 1.628
@@ -57,12 +70,10 @@ end
     fd = FiniteDifferenceSolver(ngrid = 120, rmax = 12.0, nlevels_per_channel = 2)
     Hfd, _ = @inferred GIModel.relativistic_hamiltonian(params, masses, 0; solver = fd)
     @test Hfd isa Symmetric{Float64,Matrix{Float64}}
-    fd_values, fd_vectors, fd_r = @inferred GIModel._channel_solution(
+    fd_solution = @inferred GIModel._channel_solution(
         fd, params, masses, 0, 2,
     )
-    @test fd_values isa Vector{Float64}
-    @test fd_vectors isa Matrix{Float64}
-    @test fd_r isa Vector{Float64}
+    @test fd_solution isa ChannelRadialSolution{MeshWave}
 
     ho = OscillatorSolver(
         nbasis = 8,
@@ -71,12 +82,10 @@ end
         ngrid = 48,
         rmax = 12.0,
     )
-    ho_values, ho_vectors, ho_r = @inferred GIModel._channel_solution(
+    ho_solution = @inferred GIModel._channel_solution(
         ho, params, masses, 0, 2,
     )
-    @test ho_values isa Vector{Float64}
-    @test ho_vectors isa Matrix{Float64}
-    @test ho_r isa Vector{Float64}
+    @test ho_solution isa ChannelRadialSolution{OscillatorWave}
 
     matrix = Symmetric([2.0 1.0; 1.0 2.0])
     for eigensolver in (:full, :krylov)
@@ -146,17 +155,17 @@ end
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     m = mq["c"]
     for kinetic in (:relativistic, :nonrelativistic)
-        full, _vec_full, _r_full = channel_solution(
+        full = channel_solution(
             params, ConstituentMasses(m, m), 0;
             nlevels = 3,
             solver = FiniteDifferenceSolver(ngrid = 120, rmax = 16.0, kinetic = kinetic, eigensolver = :full),
         )
-        krylov, _vec_krylov, _r_krylov = channel_solution(
+        krylov = channel_solution(
             params, ConstituentMasses(m, m), 0;
             nlevels = 3,
             solver = FiniteDifferenceSolver(ngrid = 120, rmax = 16.0, kinetic = kinetic, eigensolver = :krylov),
         )
-        @test krylov ≈ full rtol = 1e-10 atol = 1e-10
+        @test krylov.eigenvalues_GeV ≈ full.eigenvalues_GeV rtol = 1e-10 atol = 1e-10
     end
 end
 
@@ -223,15 +232,21 @@ end
           GIModel.p2_operator(mq["c"], 1, r, h)
 end
 
-@testset "OscillatorSolver channel solve returns mesh wavefunctions" begin
+@testset "OscillatorSolver channel solve returns native waves" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    vals, vecs, r = channel_solution(
+    sol = channel_solution(
         params,
         ConstituentMasses(mq["c"], mq["c"]),
         0;
-        solver = OscillatorSolver(ngrid = 120, rmax = 14.0),
+        solver = OscillatorSolver(beta_grid = [0.7], ngrid = 120, rmax = 14.0),
         nlevels = 3,
     )
+    @test sol isa ChannelRadialSolution{OscillatorWave}
+    @test all(w -> w isa OscillatorWave && wave_norm(w) ≈ 1.0, sol.waves)
+
+    # Sampling is an explicit view, not the stored representation.
+    r, _ = GIModel.radial_grid(120, 14.0)
+    vals, vecs, r = sampled_arrays(sol; grid = r)
     @test length(vals) == 3
     @test size(vecs) == (length(r), 3)
     @test vals[1] < vals[2] < vals[3]
@@ -239,6 +254,17 @@ end
     for col in axes(vecs, 2)
         @test sum(abs2, vecs[:, col]) * h ≈ 1.0 rtol = 1e-10
     end
+
+    # Reporting mesh choices do not participate in the native HO calculation.
+    other = channel_solution(
+        params,
+        ConstituentMasses(mq["c"], mq["c"]),
+        0;
+        solver = OscillatorSolver(beta_grid = [0.7], ngrid = 75, rmax = 9.0),
+        nlevels = 3,
+    )
+    @test other.eigenvalues_GeV ≈ sol.eigenvalues_GeV rtol = 1e-12
+    @test all(other.waves[i].coefficients ≈ sol.waves[i].coefficients for i in 1:3)
 end
 
 @testset "reduced_mass" begin
@@ -277,13 +303,13 @@ end
         params, mq = load_params_with_central(d, name)
         @test params.central isa MethodType
         mc = mq["c"]
-        vals, _v, _r = GIModel.channel_solution(
+        sol = GIModel.channel_solution(
             params, ConstituentMasses(mc, mc), 0;
             nlevels = 2,
             solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax, kinetic = :relativistic),
         )
-        @test isfinite(vals[1]) && isfinite(vals[2])
-        @test vals[1] < vals[2]
+        @test all(isfinite, sol.eigenvalues_GeV)
+        @test sol.eigenvalues_GeV[1] < sol.eigenvalues_GeV[2]
     end
 end
 
@@ -469,84 +495,55 @@ end
 @testset "fine_structure_split: S-wave and P-wave triplet" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     m = mq["c"]
-    _, umat, r =
-        GIModel.channel_solution(
-            params, ConstituentMasses(m, m), 0;
-            nlevels = 2,
-            solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
-        )
-    h = r[2] - r[1]
-    u_s = collect(umat[:, 1])
+    sol_s = GIModel.channel_solution(
+        params, ConstituentMasses(m, m), 0;
+        nlevels = 2,
+        solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
+    )
+    wave_s = radial_wave(sol_s, 1)
     @test GIModel.fine_structure_split(
         params,
-        m,
-        m,
-        "S",
-        3,
-        1,
-        u_s,
-        r,
-        h;
+        ConstituentMasses(m, m),
+        FineStructureMultiplet("S", 3, 1),
+        wave_s;
         k_spin_orbit = params.fine_structure.k_spin_orbit,
         k_tensor = params.fine_structure.k_tensor,
     ) == 0.0
     @test GIModel.fine_structure_split(
         params,
-        m,
-        m,
-        "S",
-        1,
-        0,
-        u_s,
-        r,
-        h;
+        ConstituentMasses(m, m),
+        FineStructureMultiplet("S", 1, 0),
+        wave_s;
         k_spin_orbit = 1.0,
         k_tensor = 1.0,
     ) == 0.0
-    v_p, umat_p, r_p =
-        GIModel.channel_solution(
-            params, ConstituentMasses(m, m), 1;
-            nlevels = 2,
-            solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
-        )
-    h_p = r_p[2] - r_p[1]
-    u1p = collect(umat_p[:, 1])
+    sol_p = GIModel.channel_solution(
+        params, ConstituentMasses(m, m), 1;
+        nlevels = 2,
+        solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
+    )
+    wave_p = radial_wave(sol_p, 1)
     δ0 = GIModel.fine_structure_split(
         params,
-        m,
-        m,
-        "P",
-        3,
-        0,
-        u1p,
-        r_p,
-        h_p;
+        ConstituentMasses(m, m),
+        FineStructureMultiplet("P", 3, 0),
+        wave_p;
         k_spin_orbit = 1.0,
         k_tensor = 1.0,
     )
     δ1 = GIModel.fine_structure_split(
         params,
-        m,
-        m,
-        "P",
-        3,
-        1,
-        u1p,
-        r_p,
-        h_p;
+        ConstituentMasses(m, m),
+        FineStructureMultiplet("P", 3, 1),
+        wave_p;
         k_spin_orbit = 1.0,
         k_tensor = 1.0,
     )
     δ2 = GIModel.fine_structure_split(
         params,
-        m,
-        m,
-        "P",
-        3,
-        2,
-        u1p,
-        r_p,
-        h_p;
+        ConstituentMasses(m, m),
+        FineStructureMultiplet("P", 3, 2),
+        wave_p;
         k_spin_orbit = 1.0,
         k_tensor = 1.0,
     )
@@ -554,14 +551,9 @@ end
     @test δ0 != δ1 || δ1 != δ2
     @test GIModel.fine_structure_split(
         params,
-        m,
-        m,
-        "P",
-        1,
-        0,
-        u1p,
-        r_p,
-        h_p;
+        ConstituentMasses(m, m),
+        FineStructureMultiplet("P", 1, 0),
+        wave_p;
         k_spin_orbit = 1.0,
         k_tensor = 1.0,
     ) == 0.0
@@ -570,25 +562,18 @@ end
 @testset "fine_structure_components: decomposition sums correctly" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     m = mq["c"]
-    _v_p, umat_p, r_p =
-        GIModel.channel_solution(
-            params, ConstituentMasses(m, m), 1;
-            nlevels = 2,
-            solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
-        )
-    h_p = r_p[2] - r_p[1]
-    u1p = collect(umat_p[:, 1])
+    sol_p = GIModel.channel_solution(
+        params, ConstituentMasses(m, m), 1;
+        nlevels = 2,
+        solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
+    )
+    wave_p = radial_wave(sol_p, 1)
     for J in (0, 1, 2)
         comp = GIModel.fine_structure_components(
             params,
-            m,
-            m,
-            "P",
-            3,
-            J,
-            u1p,
-            r_p,
-            h_p;
+            ConstituentMasses(m, m),
+            FineStructureMultiplet("P", 3, J),
+            wave_p;
             k_spin_orbit = 1.0,
             k_tensor = 1.0,
         )
@@ -596,14 +581,9 @@ end
         @test comp.total ≈ comp.spin_orbit + comp.tensor atol = 1e-12
         @test comp.total ≈ GIModel.fine_structure_split(
             params,
-            m,
-            m,
-            "P",
-            3,
-            J,
-            u1p,
-            r_p,
-            h_p;
+            ConstituentMasses(m, m),
+            FineStructureMultiplet("P", 3, J),
+            wave_p;
             k_spin_orbit = 1.0,
             k_tensor = 1.0,
         ) atol = 1e-12
@@ -636,12 +616,12 @@ end
         [1.0 0.2; 0.1 2.0],
     )
 
-    _vals_cc, umat_cc, r_cc = GIModel.channel_solution(
+    sol_cc = GIModel.channel_solution(
         params, ConstituentMasses(mc, mc), 1;
         nlevels = 1,
         solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
     )
-    radial_cc = RadialWaveOnUniformMesh(umat_cc[:, 1], r_cc)
+    radial_cc = radial_wave(sol_cc, 1)
     off_cc = GIModel.spin_orbit_mixing_components(
         params,
         ConstituentMasses(mc, mc),
@@ -656,12 +636,12 @@ end
     @test mix_cc.block isa GIModel.MixingBlock
     @test mix_cc.block.mechanism == "antisymmetric_spin_orbit"
 
-    vals_bc, umat_bc, r_bc = GIModel.channel_solution(
+    sol_bc = GIModel.channel_solution(
         params, ConstituentMasses(mb, mc), 1;
         nlevels = 1,
         solver = FiniteDifferenceSolver(ngrid = 200, rmax = 24.0),
     )
-    radial_bc = RadialWaveOnUniformMesh(umat_bc[:, 1], r_bc)
+    radial_bc = radial_wave(sol_bc, 1)
     off_bc = GIModel.spin_orbit_mixing_components(
         params,
         ConstituentMasses(mb, mc),
@@ -680,9 +660,10 @@ end
         k_spin_orbit = params.fine_structure.k_spin_orbit,
         k_tensor = params.fine_structure.k_tensor,
     )
-    mix_bc = GIModel.same_j_mixing(vals_bc[1], vals_bc[1] + triplet_shift, off_bc.total)
+    central_bc = sol_bc.eigenvalues_GeV[1]
+    mix_bc = GIModel.same_j_mixing(central_bc, central_bc + triplet_shift, off_bc.total)
     @test isfinite(mix_bc.theta_deg)
-    @test minimum(mix_bc.masses) < vals_bc[1] < maximum(mix_bc.masses)
+    @test minimum(mix_bc.masses) < central_bc < maximum(mix_bc.masses)
 end
 
 @testset "legacy fine-structure ε factors are scalar (1+ε) multipliers" begin
@@ -709,11 +690,11 @@ end
 
         params0, mq0 = load_parameters_and_quark_masses(p0)
         mc = mq0["c"]
-        _v_p, umat_p, r_p = GIModel.channel_solution(
+        _v_p, umat_p, r_p = sampled_arrays(GIModel.channel_solution(
             params0, ConstituentMasses(mc, mc), 1;
             nlevels = 2,
             solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
-        )
+        ))
         h_p = r_p[2] - r_p[1]
         u1p = collect(umat_p[:, 1])
 
@@ -800,11 +781,11 @@ end
 
         params0, mq0 = load_parameters_and_quark_masses(p0)
         mc = mq0["c"]
-        _v_p, umat_p, r_p = GIModel.channel_solution(
+        _v_p, umat_p, r_p = sampled_arrays(GIModel.channel_solution(
             params0, ConstituentMasses(mc, mc), 1;
             nlevels = 2,
             solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
-        )
+        ))
         h_p = r_p[2] - r_p[1]
         u1p = collect(umat_p[:, 1])
 
@@ -843,12 +824,11 @@ end
 @testset "contact_hyperfine_shift: normalization + spin algebra" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     m = mq["c"]
-    _vals, umat, r =
-        GIModel.channel_solution(
-            params, ConstituentMasses(m, m), 0;
-            nlevels = 2,
-            solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
-        )
+    _vals, umat, r = sampled_arrays(GIModel.channel_solution(
+        params, ConstituentMasses(m, m), 0;
+        nlevels = 2,
+        solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
+    ))
     u1s = collect(umat[:, 1])
 
     δ_triplet = GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u1s, r)
@@ -867,12 +847,11 @@ end
 @testset "fine structure uses u(r) normalization (scale invariant)" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     m = mq["c"]
-    _v_p, umat_p, r_p =
-        GIModel.channel_solution(
-            params, ConstituentMasses(m, m), 1;
-            nlevels = 2,
-            solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
-        )
+    _v_p, umat_p, r_p = sampled_arrays(GIModel.channel_solution(
+        params, ConstituentMasses(m, m), 1;
+        nlevels = 2,
+        solver = FiniteDifferenceSolver(ngrid = 200, rmax = 20.0),
+    ))
     h_p = r_p[2] - r_p[1]
     u1p = collect(umat_p[:, 1])
     for J in (0, 1, 2)
@@ -1216,21 +1195,18 @@ end
     @test exact.m1_GeV != 1.628
 end
 
-@testset "RadialWaveOnUniformMesh agrees with ChannelRadialSolution column" begin
+@testset "ChannelRadialSolution retains its native radial wave" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     m = mq["c"]
-    ev, vecs, r =
-        GIModel.channel_solution(
+    sol = GIModel.channel_solution(
             params, ConstituentMasses(m, m), 1;
             nlevels = 2,
             solver = FiniteDifferenceSolver(ngrid = 120, rmax = 16.0),
         )
-    sol = GIModel.ChannelRadialSolution(ev, vecs, r)
-    wave = GIModel.RadialWaveOnUniformMesh(sol, 1)
-    h = r[2] - r[1]
-    @test wave.u ≈ vecs[:, 1]
-    @test wave.r ≈ r
-    @test wave.h ≈ h
+    wave = GIModel.radial_wave(sol, 1)
+    @test wave === sol.waves[1]
+    @test wave isa MeshWave
+    @test wave.h ≈ wave.r[2] - wave.r[1]
     mult = GIModel.FineStructureMultiplet("P", 3, 2)
     masses = GIModel.ConstituentMasses(m, m)
     c1 = GIModel.fine_structure_components(
@@ -1241,20 +1217,12 @@ end
         k_spin_orbit = 1.0,
         k_tensor = 1.0,
     )
-    c2 = GIModel.fine_structure_components(
-        params,
-        m,
-        m,
-        "P",
-        3,
-        2,
-        collect(vecs[:, 1]),
-        r,
-        h;
+    split = GIModel.fine_structure_split(
+        params, masses, mult, wave;
         k_spin_orbit = 1.0,
         k_tensor = 1.0,
     )
-    @test c1.total ≈ c2.total rtol = 1e-12 atol = 0.0
+    @test c1.total ≈ split rtol = 1e-12 atol = 0.0
 end
 
 @testset "mixing mechanisms are comparison-layer markers" begin
@@ -1646,7 +1614,6 @@ end
     r, h = GIModel.radial_grid(450, 24.0)
 
     @test MeshWave <: RadialWave
-    @test RadialWaveOnUniformMesh === MeshWave
 
     # --- closed-form cross-checks: the operations must reproduce integrals we
     # --- can do by hand, independently of any solver.
@@ -1675,9 +1642,9 @@ end
     # --- position-space and momentum-space halves of the interface together.
     for key in ("q", "c", "b")
         masses = ConstituentMasses(mq[key], mq[key])
-        _e, waves, rr = channel_solution(params, masses, 0; nlevels = 2)
+        sol = channel_solution(params, masses, 0; nlevels = 2)
         for n in 1:2
-            wn = MeshWave(waves[:, n], rr)
+            wn = radial_wave(sol, n)
             mw = momentum_wave(wn, 0)
             @test isapprox(wave_norm(wn), 1.0; rtol = 1e-10)
             @test isapprox(momentum_expect(mw, p -> 1.0), 1.0; rtol = 1e-6)
@@ -1690,10 +1657,10 @@ end
     # --- Nothing in the solve enforces this; it is a property of the operator,
     # --- so it is a real check on the solve rather than on the interface.
     masses = ConstituentMasses(mq["c"], mq["c"])
-    _e, waves, rr = channel_solution(params, masses, 0; nlevels = 3)
+    sol = channel_solution(params, masses, 0; nlevels = 3)
     for i in 1:3, j in 1:3
-        w_i = MeshWave(waves[:, i], rr)
-        w_j = MeshWave(waves[:, j], rr)
+        w_i = radial_wave(sol, i)
+        w_j = radial_wave(sol, j)
         target = i == j ? 1.0 : 0.0
         @test isapprox(abs(radial_overlap(w_i, w_j, x -> 1.0)), target; atol = 1e-8)
     end
@@ -1704,7 +1671,7 @@ end
     # --- at 2e-12 and 2e-16 of the peak), so a naive sign count reports phantom
     # --- nodes in the ground state.
     for n in 1:3
-        u_n = waves[:, n]
+        u_n = radial_wave(sol, n).u
         cut = 1e-8 * maximum(abs, u_n)
         big = [i for i in eachindex(u_n) if abs(u_n[i]) > cut]
         signs = sign.(u_n[big])
@@ -1716,10 +1683,9 @@ end
     # --- momentum_expect is quadratic in Phi, momentum_functional is linear;
     # --- conflating them is a whole class of factor-of-Phi bug.
     @test MeshMomentumWave <: MomentumWave
-    @test MockMomentumWave === MeshMomentumWave
     mc = mq["c"]
-    _e2, wv2, rr2 = channel_solution(params, ConstituentMasses(mc, mc), 0; nlevels = 1)
-    wq = MeshWave(wv2[:, 1], rr2)
+    solq = channel_solution(params, ConstituentMasses(mc, mc), 0; nlevels = 1)
+    wq = radial_wave(solq, 1)
     mwq = momentum_wave(wq, 0)
     # quadratic with g = 1 is the norm; linear with K = 1 is NOT (different object)
     @test isapprox(momentum_expect(mwq, p -> 1.0), 1.0; rtol = 1e-6)
@@ -1738,9 +1704,9 @@ end
     # --- charge_radius_squared onto `radial_expect` removed the normalization
     # --- that `_rel_momentum_average` was silently relying on, and only a
     # --- rescaled input revealed it (the value moved by a factor of 13.7^2).
-    _e3, wv3, rr3 = channel_solution(params, ConstituentMasses(mq["q"], mq["s"]), 0; nlevels = 1)
-    w_one = MeshWave(wv3[:, 1], rr3)
-    w_big = MeshWave(13.7 .* wv3[:, 1], rr3)
+    sol3 = channel_solution(params, ConstituentMasses(mq["q"], mq["s"]), 0; nlevels = 1)
+    w_one = radial_wave(sol3, 1)
+    w_big = MeshWave(13.7 .* w_one.u, w_one.r)
     for probe in (
         w -> charge_radius_squared(w, mq["q"], 2 // 3, mq["s"], 1 // 3),
         w -> radial_expect(w, x -> x^2),
@@ -1763,10 +1729,9 @@ end
     for key in ("q", "s", "c", "b"), L in 0:2
         masses = ConstituentMasses(mq[key], mq[key])
         for slv in (FiniteDifferenceSolver(), OscillatorSolver())
-            _e, u, r = channel_solution(params, masses, L; solver = slv, nlevels = 2)
-            h = r[2] - r[1]
-            for col in axes(u, 2)
-                @test isapprox(sum(abs2, view(u, :, col)) * h, 1.0; rtol = 1e-10)
+            sol = channel_solution(params, masses, L; solver = slv, nlevels = 2)
+            for wave in sol.waves
+                @test isapprox(wave_norm(wave), 1.0; rtol = 1e-10)
             end
         end
     end
@@ -1787,18 +1752,16 @@ end
     for key in ("q", "c", "b")
         masses = ConstituentMasses(mq[key], mq[key])
         V = Matrix(GIModel.contact_hyperfine_operator(params, masses, "S", 1, r))
-        e_fd, u_fd, r_fd = resummed_channel_solution(
+        sol_fd = resummed_channel_solution(
             params, masses, 0, V; solver = FiniteDifferenceSolver(), nlevels = 2)
-        e_ho, u_ho, r_ho = resummed_channel_solution(
+        sol_ho = resummed_channel_solution(
             params, masses, 0, V; solver = OscillatorSolver(), nlevels = 2)
 
-        # Same mesh out.
-        @test r_fd == r_ho == collect(r)
-        # Same normalization: physical, integral u^2 dr = 1, for BOTH bases.
+        # Same normalization, independent of representation.
         # FD used to return Euclidean eigenvectors (sum u^2 = 1), differing from
         # HO by exactly sqrt(h); anything quadratic in u was then off by h.
-        for u in (u_fd, u_ho), col in axes(u, 2)
-            @test isapprox(sum(abs2, u[:, col]) * h, 1.0; rtol = 1e-10)
+        for wave in vcat(sol_fd.waves, sol_ho.waves)
+            @test isapprox(wave_norm(wave), 1.0; rtol = 1e-10)
         end
         # Same quantity, to the combined accuracy of two now-INDEPENDENT methods.
         # This was 1e-3 while the oscillator path projected the finite-difference
@@ -1809,15 +1772,15 @@ end
         # (bottom) with the oscillator answer correctly ABOVE — variational in a
         # finite basis — and ~1.6 MeV for light quarks, where the finite-difference
         # mesh is itself least converged and sits above the true value.
-        @test abs(e_ho[1] - e_fd[1]) < 3e-3
+        @test abs(sol_ho.eigenvalues_GeV[1] - sol_fd.eigenvalues_GeV[1]) < 3e-3
     end
 
     # The original exported name is the oscillator method of the unified solve.
     masses = ConstituentMasses(mq["c"], mq["c"])
     V = Matrix(GIModel.contact_hyperfine_operator(params, masses, "S", 1, r))
     ho = OscillatorSolver()
-    @test ho_full_distorted_states(params, masses, 0, V; solver = ho, nlevels = 2)[1] ==
-          resummed_channel_solution(params, masses, 0, V; solver = ho, nlevels = 2)[1]
+    @test ho_full_distorted_states(params, masses, 0, V; solver = ho, nlevels = 2).eigenvalues_GeV ==
+          resummed_channel_solution(params, masses, 0, V; solver = ho, nlevels = 2).eigenvalues_GeV
 
     # V must live on the solver's mesh, whichever solver that is.
     bad = zeros(10, 10)
@@ -1833,12 +1796,12 @@ end
     r, _ = GIModel.radial_grid(450, 24.0)
 
     # FD has the non-perturbative contact solve, and returns it.
-    levels, vectors, _ = contact_hyperfine_nonperturbative_states(params, masses, "S", 1, r, 2)
-    @test length(levels) == 2 && size(vectors, 2) == 2
+    solution = contact_hyperfine_nonperturbative_states(params, masses, "S", 1, r, 2)
+    @test length(solution.eigenvalues_GeV) == 2 && length(solution.waves) == 2
 
     # Empty is still the right answer where the path is genuinely inactive:
     # not an S wave, or a multiplicity the contact term does not touch.
-    @test contact_hyperfine_nonperturbative_states(params, masses, "P", 1, r, 2)[1] == Float64[]
+    @test contact_hyperfine_nonperturbative_states(params, masses, "P", 1, r, 2) === nothing
     @test GIModel.contact_hyperfine_nonperturbative_levels(params, masses, "S", 2, r, 2) == Float64[]
 
     # The oscillator basis used to answer "empty" here, which
@@ -1848,13 +1811,13 @@ end
     # the oscillator path now resums in its own space and lands on the same
     # answer. That agreement is what the throw was standing in for.
     ho = OscillatorSolver()
-    lvl_ho, vec_ho, _ =
-        contact_hyperfine_nonperturbative_states(params, masses, "S", 1, r, 2; solver = ho)
-    @test length(lvl_ho) == 2 && size(vec_ho, 2) == 2
-    @test abs(lvl_ho[1] - levels[1]) < 1e-3          # sub-MeV across the two methods
-    @test lvl_ho[1] < 0.15                           # resummed, not first-order (~0.28)
+    solution_ho = contact_hyperfine_nonperturbative_states(
+        params, masses, "S", 1, r, 2; solver = ho)
+    @test length(solution_ho.eigenvalues_GeV) == 2 && length(solution_ho.waves) == 2
+    @test abs(solution_ho.eigenvalues_GeV[1] - solution.eigenvalues_GeV[1]) < 1e-3
+    @test solution_ho.eigenvalues_GeV[1] < 0.15
     @test GIModel.contact_hyperfine_nonperturbative_levels(
-        params, masses, "S", 1, r, 2; solver = ho) ≈ lvl_ho
+        params, masses, "S", 1, r, 2; solver = ho) ≈ solution_ho.eigenvalues_GeV
     ho_pi = spectrum_state(
         compute_spectrum(params, Meson(mq, :q, :q); solver = ho, levels = spectrum_levels(1)),
         "1^1S_0")
@@ -1903,9 +1866,9 @@ end
 
     # The solver threads down to the low tier, and its copy constructor keeps
     # the untouched fields.
-    ev, _, _ = channel_solution(params, meson.constituent_masses, 0;
+    sol = channel_solution(params, meson.constituent_masses, 0;
         solver = FiniteDifferenceSolver(nlevels_per_channel = 3))
-    @test length(ev) == 3
+    @test length(sol.eigenvalues_GeV) == 3
     tuned = FiniteDifferenceSolver(FiniteDifferenceSolver(ngrid = 900); rmax = 32.0)
     @test tuned.ngrid == 900 && tuned.rmax == 32.0 && tuned.kinetic === :relativistic
 
@@ -1989,10 +1952,10 @@ end
     @test all(masses(ho) .>= masses(fine) .- 1e-9)
 
     # Raising nbasis can only lower an oscillator eigenvalue, for the same reason.
-    e24, _, _ = channel_solution(params, meson.constituent_masses, 0;
-        solver = OscillatorSolver(nbasis = 24), nlevels = 3)
-    e40, _, _ = channel_solution(params, meson.constituent_masses, 0;
-        solver = OscillatorSolver(nbasis = 40), nlevels = 3)
+    e24 = channel_solution(params, meson.constituent_masses, 0;
+        solver = OscillatorSolver(nbasis = 24), nlevels = 3).eigenvalues_GeV
+    e40 = channel_solution(params, meson.constituent_masses, 0;
+        solver = OscillatorSolver(nbasis = 40), nlevels = 3).eigenvalues_GeV
     @test all(e40 .<= e24 .+ 1e-9)
 
     # The stage-1 solver is recorded and stages 2-3 reuse it, so one spectrum is
@@ -2018,7 +1981,7 @@ end
     narrow = OscillatorSolver(beta_grid = 0.9:0.1:1.2)
     @test narrow.beta_grid == [0.9, 1.0, 1.1, 1.2]
     @test (@test_logs (:warn,) match_mode = :any channel_solution(
-        params, meson.constituent_masses, 0; solver = narrow, nlevels = 2)) isa Tuple
+        params, meson.constituent_masses, 0; solver = narrow, nlevels = 2)) isa ChannelRadialSolution
 end
 
 @testset "Resolution walls are detected, not silent" begin
@@ -2028,15 +1991,14 @@ end
     # so a compact enough state falls between points and comes back silently
     # under-resolved (at 30 GeV the hyperfine splitting collapses to 0.0025).
     function points_across(m; ngrid = 450, rmax = 24.0)
-        vals, vecs, r = channel_solution(
+        sol = channel_solution(
             params, ConstituentMasses(m, m), 0;
             nlevels = 2,
             solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax),
         )
-        h = r[2] - r[1]
-        u = vecs[:, 1]
-        rms = sqrt(sum(abs2.(u) .* r .^ 2) * h / (sum(abs2, u) * h))
-        return rms / h
+        wave = radial_wave(sol, 1)
+        rms = sqrt(radial_expect(wave, x -> x^2))
+        return rms / wave.h
     end
     # Every sector the paper actually uses must sit clear of the threshold.
     for m in (mq["q"], mq["s"], mq["c"], mq["b"])
@@ -2074,7 +2036,7 @@ end
 
 @testset "Isoscalar coherence factor is stated, not string-matched" begin
     r = collect(range(0.05, 6.0; length = 64))
-    wave = RadialWaveOnUniformMesh(exp.(-r), r)
+    wave = MeshWave(exp.(-r), r)
     mk(label, coh) = pseudoscalar_annihilation_basis_input(label, 0.22, 0.9, wave;
         isoscalar_coherent = coh)
 
@@ -2165,6 +2127,7 @@ end
     @test sum(s.mass_GeV for s in mixed) ≈
           sum(s.mixings[end].unmixed_GeV for s in mixed) atol = 1e-10
     @test mixed[1].mixings[end].partner_masses_GeV == mixed[2].mixings[end].partner_masses_GeV
+    @test mixed[1].mixings[end].result === mixed[2].mixings[end].result
     # lookup by quantum numbers
     s = spectrum_state(spec, 1, "P", 3, 2)
     @test s.label == "1^3P_2"
@@ -2284,12 +2247,13 @@ end
     # gave them, so nothing else downstream changes underfoot -- this solve
     # happens to come out negative, so the flip is real and observable here.
     key = RadialChannelKey(spec.meson.constituent_masses, "S")
-    before = copy(spec.computation.channel_cache[key].eigenvectors)
+    cached = spec.computation.channel_cache[key]
+    before = [copy(w.u) for w in cached.waves]
     raw = radial_wave(spec, "1^1S_0")
     fixed = GIModel.annihilation_basis_input(spec, BasisState(1, "S", 1, 0)).radial
     @test abs.(raw.u) ≈ abs.(fixed.u)
     @test sum(raw.r .* raw.u) < 0 && sum(fixed.r .* fixed.u) > 0   # the flip fired
-    @test spec.computation.channel_cache[key].eigenvectors == before
+    @test [w.u for w in cached.waves] == before
 
     # Both solvers give the same smeared origin factor -- the quantity the second
     # cache was introduced to correct. Agreement here is what makes it removable.
@@ -2366,30 +2330,30 @@ end
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     masses = Meson(mq, :q, :q).constituent_masses
     central = central_spectrum(params, Meson(mq, :q, :q); levels = spectrum_levels(1))
-    r = central.computation.channel_cache[RadialChannelKey(masses, "S")].r
-    h = r[2] - r[1]
+    central_wave = radial_wave(central.computation.channel_cache[RadialChannelKey(masses, "S")], 1)
+    r = central_wave.r
 
-    lvl1, vec1, r1 = contact_hyperfine_nonperturbative_states(params, masses, "S", 1, r, 2)
-    lvl3, vec3, r3 = contact_hyperfine_nonperturbative_states(params, masses, "S", 3, r, 2)
-    @test r1 == r3 == r                     # shared mesh with the central solve
-    @test size(vec1, 2) >= 1 && size(vec3, 2) >= 1
+    sol1 = contact_hyperfine_nonperturbative_states(params, masses, "S", 1, r, 2)
+    sol3 = contact_hyperfine_nonperturbative_states(params, masses, "S", 3, r, 2)
+    @test radial_wave(sol1, 1).r == radial_wave(sol3, 1).r == r
+    @test !isempty(sol1.waves) && !isempty(sol3.waves)
     # levels agree with the energy-only accessor
-    @test lvl1 ≈ GIModel.contact_hyperfine_nonperturbative_levels(params, masses, "S", 1, r, 2)
-    @test lvl3 ≈ GIModel.contact_hyperfine_nonperturbative_levels(params, masses, "S", 3, r, 2)
+    @test sol1.eigenvalues_GeV ≈ GIModel.contact_hyperfine_nonperturbative_levels(params, masses, "S", 1, r, 2)
+    @test sol3.eigenvalues_GeV ≈ GIModel.contact_hyperfine_nonperturbative_levels(params, masses, "S", 3, r, 2)
 
     # ^1S_0 (pi) is more compact than ^3S_1 (rho): smaller <r^2>, lower energy
-    r2(u) = radial_cross_expect_udr(u, u, r, h, (x, _i) -> x^2)
-    @test r2(vec1[:, 1]) < r2(vec3[:, 1])
-    @test lvl1[1] < lvl3[1]
+    @test radial_expect(radial_wave(sol1, 1), x -> x^2) <
+          radial_expect(radial_wave(sol3, 1), x -> x^2)
+    @test sol1.eigenvalues_GeV[1] < sol3.eigenvalues_GeV[1]
 
     # The oscillator basis resums the same operator in its own space and lands
     # on the same answer, so this wrapper is basis-generic. "Empty" is reserved
     # for the genuinely inactive cases (non-S wave, sandwich off); it is never
     # "this basis has no implementation", which is what used to make callers
     # substitute first-order PT and report 0.2842 GeV for the light 1S0.
-    lvl_ho, _, _ = contact_hyperfine_nonperturbative_states(
+    sol_ho = contact_hyperfine_nonperturbative_states(
         params, masses, "S", 1, r, 2; solver = OscillatorSolver())
-    @test abs(lvl_ho[1] - lvl1[1]) < 1e-3
+    @test abs(sol_ho.eigenvalues_GeV[1] - sol1.eigenvalues_GeV[1]) < 1e-3
 end
 
 @testset "Table VII gluonic annihilation (Eq. 17 S_L)" begin
@@ -2399,13 +2363,14 @@ end
     tomev(a) = abs(a) * sqrt(1000)   # GeV^1/2 -> MeV^1/2
 
     # bottomonium (most paper-faithful) S-wave: eta_b / Upsilon central wave
-    vals, vecs, r = channel_solution(
+    sol = channel_solution(
         params, masses, 0;
         nlevels = 2,
         solver = FiniteDifferenceSolver(ngrid = 900, rmax = 24.0),
     )
-    S0 = wavefunction_origin_smearing(RadialWaveOnUniformMesh(vecs[:, 1], r), mb; L = 0)
-    a0 = GIModel.alpha_s_q(vals[1])
+    wave0 = radial_wave(sol, 1)
+    S0 = wavefunction_origin_smearing(wave0, mb; L = 0)
+    a0 = GIModel.alpha_s_q(sol.eigenvalues_GeV[1])
     # zero-parameter amplitudes vs paper (eta_b -> 2g = 2.5, Upsilon -> 3g = 0.21)
     @test 0.85 < tomev(gluonic_annihilation_amplitude(:S0_2g, S0, a0, mb)) / 2.5  < 1.15
     @test 0.85 < tomev(gluonic_annihilation_amplitude(:S1_3g, S0, a0, mb)) / 0.21 < 1.25
@@ -2417,16 +2382,16 @@ end
     end
 
     # P-wave chi_2b via S1 (paper chi_2b -> 2g = 0.35)
-    valsP, vecsP, rP = channel_solution(
+    solP = channel_solution(
         params, masses, 1;
         nlevels = 1,
         solver = FiniteDifferenceSolver(ngrid = 900, rmax = 24.0),
     )
-    S1 = wavefunction_origin_smearing(RadialWaveOnUniformMesh(vecsP[:, 1], rP), mb; L = 1)
-    @test 0.8 < tomev(gluonic_annihilation_amplitude(:P2_2g, S1, GIModel.alpha_s_q(valsP[1]), mb)) / 0.35 < 1.2
+    S1 = wavefunction_origin_smearing(radial_wave(solP, 1), mb; L = 1)
+    @test 0.8 < tomev(gluonic_annihilation_amplitude(:P2_2g, S1, GIModel.alpha_s_q(solP.eigenvalues_GeV[1]), mb)) / 0.35 < 1.2
 
     # S_L is normalization-invariant (the wave is renormalized internally)
-    S0_scaled = wavefunction_origin_smearing(RadialWaveOnUniformMesh(3.0 .* vecs[:, 1], r), mb; L = 0)
+    S0_scaled = wavefunction_origin_smearing(MeshWave(3.0 .* wave0.u, wave0.r), mb; L = 0)
     @test S0_scaled ≈ S0
     # unknown channel is rejected
     @test_throws ArgumentError gluonic_annihilation_amplitude(:bogus, S0, a0, mb)
@@ -2440,13 +2405,12 @@ end
     # triplet ³S₁ wave for a QQ̄; return (M, unit-phase wave)
     function triplet_swave(m, n)
         masses = ConstituentMasses(m, m)
-        _, _, r = channel_solution(
-            params, masses, 0;
-            nlevels = 2,
+        sol = contact_hyperfine_nonperturbative_states(
+            params, masses, "S", 3, 2;
             solver = FiniteDifferenceSolver(ngrid = 1000, rmax = 24.0),
         )
-        lv, vec, r2 = contact_hyperfine_nonperturbative_states(params, masses, "S", 3, r, 2)
-        return lv[n], RadialWaveOnUniformMesh(outer!(copy(vec[:, n])), r2)
+        wave = radial_wave(sol, n)
+        return sol.eigenvalues_GeV[n], MeshWave(outer!(copy(wave.u)), wave.r)
     end
 
     # ψ -> e+e-: f = (16/3)^(1/2) V_ψ, paper 0.12
@@ -2507,7 +2471,7 @@ end
     h = r[2] - r[1]
     phase!(u) = (sum(r .* u) < 0 && (u .*= -1); u)
     u_pi = phase!(v1[:, 1] ./ sqrt(h)); u_rho = phase!(v3[:, 1] ./ sqrt(h))
-    w_pi = RadialWaveOnUniformMesh(u_pi, r); w_rho = RadialWaveOnUniformMesh(u_rho, r)
+    w_pi = MeshWave(u_pi, r); w_rho = MeshWave(u_rho, r)
 
     mw_pi = mock_momentum_wave(w_pi, 0); mw_rho = mock_momentum_wave(w_rho, 0)
     # momentum wave normalized ∫p²Φ²dp=1; mock mass ≥ 2m and finite
@@ -2525,7 +2489,7 @@ end
 
     # Eₙⁱ radial moment: mesh guard + the n=1 self-moment recovers ⟨r⟩ scaling
     @test_throws ArgumentError mock_meson_radial_moment(
-        w_pi, RadialWaveOnUniformMesh(u_pi, r .+ 1.0), 1.0, 1.0, m)
+        w_pi, MeshWave(u_pi, r .+ 1.0), 1.0, 1.0, m)
     E1 = mock_meson_radial_moment(w_pi, w_pi, m, m, m; n = 1, exponent = 0.0)
     @test isapprox(E1, sum(@. u_pi^2 * r) * h; rtol = 1e-9)   # exponent 0 ⇒ ∫u²r dr
     @test mock_meson_radial_moment(w_pi, w_pi, m, m, m; n = 1) > 0
@@ -2571,29 +2535,29 @@ end
 
     # eta_c -> gamma gamma: ¹S₀ cc̄, q_eff = 4/9, paper 2.6 keV^½
     mc = mq["c"]
-    _, _, r = channel_solution(
-        params, ConstituentMasses(mc, mc), 0;
-        nlevels = 2,
+    solηc = contact_hyperfine_nonperturbative_states(
+        params, ConstituentMasses(mc, mc), "S", 1, 2;
         solver = FiniteDifferenceSolver(ngrid = 1000, rmax = 24.0),
     )
-    lv, vec, r2 = contact_hyperfine_nonperturbative_states(params, ConstituentMasses(mc, mc), "S", 1, r, 2)
-    wηc = RadialWaveOnUniformMesh(outer!(copy(vec[:, 1])), r2)
-    Aηc = tokeV(two_photon_amplitude(:P, wηc, mc, lv[1], 4 / 9))
+    rawηc = radial_wave(solηc, 1)
+    wηc = MeshWave(outer!(copy(rawηc.u)), rawηc.r)
+    Aηc = tokeV(two_photon_amplitude(:P, wηc, mc, solηc.eigenvalues_GeV[1], 4 / 9))
     @test 0.85 < Aηc / 2.6 < 1.25
 
     # A2 -> gamma gamma: ³P₂ light isovector, q_eff = (e_u²−e_d²)/√2, paper −1.2 keV^½
     mqk = mq["q"]
-    valsP, vecsP, rP = channel_solution(
+    solP = channel_solution(
         params, ConstituentMasses(mqk, mqk), 1;
         nlevels = 1,
         solver = FiniteDifferenceSolver(ngrid = 1000, rmax = 24.0),
     )
-    wA2 = RadialWaveOnUniformMesh(outer!(copy(vecsP[:, 1])), rP)
-    AA2 = tokeV(two_photon_amplitude(:P2, wA2, mqk, valsP[1], (4 / 9 - 1 / 9) / sqrt(2)))
+    rawA2 = radial_wave(solP, 1)
+    wA2 = MeshWave(outer!(copy(rawA2.u)), rawA2.r)
+    AA2 = tokeV(two_photon_amplitude(:P2, wA2, mqk, solP.eigenvalues_GeV[1], (4 / 9 - 1 / 9) / sqrt(2)))
     @test AA2 < 0                       # −√(4/5) prefactor => negative amplitude
     @test 0.8 < abs(AA2) / 1.2 < 1.2
 
-    @test_throws ArgumentError two_photon_amplitude(:bogus, wηc, mc, lv[1], 4 / 9)
+    @test_throws ArgumentError two_photon_amplitude(:bogus, wηc, mc, solηc.eigenvalues_GeV[1], 4 / 9)
 end
 
 @testset "Table VII charge radii (part d)" begin
@@ -2601,13 +2565,11 @@ end
     mu, ms = mq["q"], mq["s"]
 
     function ps_wave(m1, m2)
-        _, _, r = channel_solution(
-            params, ConstituentMasses(m1, m2), 0;
-            nlevels = 2,
+        sol = contact_hyperfine_nonperturbative_states(
+            params, ConstituentMasses(m1, m2), "S", 1, 2;
             solver = FiniteDifferenceSolver(ngrid = 1200, rmax = 26.0),
         )
-        lv, vec, r2 = contact_hyperfine_nonperturbative_states(params, ConstituentMasses(m1, m2), "S", 1, r, 2)
-        return RadialWaveOnUniformMesh(vec[:, 1], r2)
+        return radial_wave(sol, 1)
     end
 
     # K+ = u s̄ : charges +2/3, +1/3 ; paper r_E² = +(0.59)² fm²  (a prediction)
@@ -2622,7 +2584,7 @@ end
 
     # normalization-invariant (wave renormalized internally)
     w = ps_wave(mu, mu)
-    @test charge_radius_squared(RadialWaveOnUniformMesh(3.0 .* w.u, w.r), mu, 2 / 3, mu, 1 / 3) ≈
+    @test charge_radius_squared(MeshWave(3.0 .* w.u, w.r), mu, 2 / 3, mu, 1 / 3) ≈
           charge_radius_squared(w, mu, 2 / 3, mu, 1 / 3)
 end
 
@@ -2634,13 +2596,14 @@ end
     Qnn = (4 / 9 + 1 / 9) / sqrt(2); Qss = 1 / 9
 
     function psfam(m1, m2)
-        _, _, r = channel_solution(
-            params, ConstituentMasses(m1, m2), 0;
-            nlevels = 3,
+        sol = contact_hyperfine_nonperturbative_states(
+            params, ConstituentMasses(m1, m2), "S", 1, 3;
             solver = FiniteDifferenceSolver(ngrid = 1000, rmax = 24.0),
         )
-        lv, vec, r2 = contact_hyperfine_nonperturbative_states(params, ConstituentMasses(m1, m2), "S", 1, r, 3)
-        return [RadialWaveOnUniformMesh(outer!(copy(vec[:, n])), r2) for n in 1:2]
+        return [begin
+            wave = radial_wave(sol, n)
+            MeshWave(outer!(copy(wave.u)), wave.r)
+        end for n in 1:2]
     end
     NN, SS = psfam(mu, mu), psfam(ms, ms)
     comp = [(NN[1], mu, Qnn), (SS[1], ms, Qss), (NN[2], mu, Qnn), (SS[2], ms, Qss)]
@@ -2673,18 +2636,19 @@ end
     ngrid, rmax = 900, 24.0
     r, h = GIModel.radial_grid(ngrid, rmax)
     tomev(a) = abs(a) * sqrt(1000)
-    sm(u, rr, L) = wavefunction_origin_smearing(
-        RadialWaveOnUniformMesh(outer!(copy(u)), rr), mc; L = L)
+    sm(w::MeshWave, L) = wavefunction_origin_smearing(
+        MeshWave(outer!(copy(w.u)), w.r), mc; L = L)
 
     # 1. basis-fidelity control: HO central S_L matches FD to <2% for charm —
     #    the 15-20% gluonic row residuals were never a basis artifact
-    _, fdv, fdr = channel_solution(
+    fdsol = channel_solution(
         params, masses, 0;
         nlevels = 2,
         solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax),
     )
-    _, hov, hor = channel_solution(params, masses, 0; solver = solver_ho, nlevels = 2)
-    @test 0.98 < sm(hov[:, 1], hor, 0) / sm(fdv[:, 1], fdr, 0) < 1.02
+    hosol = channel_solution(params, masses, 0; solver = solver_ho, nlevels = 2)
+    @test 0.98 < abs(wavefunction_origin_smearing(radial_wave(hosol, 1), mc; L = 0)) /
+                 sm(radial_wave(fdsol, 1), 0) < 1.02
 
     # 2. paper-order treatment: first-order PT in the HO central eigenbasis with
     #    the calibrated spin blocks lands the charm gluonic rows on the paper
@@ -2696,20 +2660,20 @@ end
     ratios = Dict{Symbol,Float64}()
     for (key, L, V, ch, paper) in ((:eta_c, 0, V1, :S0_2g, 4.700), (:psi, 0, V3, :S1_3g, 0.420),
                                    (:chi_0c, 1, VP0, :P0_2g, 2.500), (:chi_2c, 1, VP2, :P2_2g, 0.880))
-        vals, waves, rr = ho_first_order_distorted_states(params, masses, L, V; solver = solver_ho,
+        sol = ho_first_order_distorted_states(params, masses, L, V; solver = solver_ho,
             nlevels = 4)
-        ratios[key] = amp(ch, sm(waves[:, 1], rr, L), vals[1]) / paper
+        ratios[key] = amp(ch, sm(radial_wave(sol, 1), L), sol.eigenvalues_GeV[1]) / paper
         @test 0.85 < ratios[key] < 1.15
     end
 
     # 3. the splitting patterns the central wave misses collapse at paper order:
     #    central waves give ratio-of-ratios eta_c/psi ≈ 0.78, chi_0c/chi_2c ≈ 0.68
-    Sc0 = sm(fdv[:, 1], fdr, 0)
+    Sc0 = sm(radial_wave(fdsol, 1), 0)
     Mc0 = channel_solution(
         params, masses, 0;
         nlevels = 1,
         solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax),
-    )[1][1]
+    ).eigenvalues_GeV[1]
     central_eta_psi = (amp(:S0_2g, Sc0, Mc0) / 4.700) / (amp(:S1_3g, Sc0, Mc0) / 0.420)
     @test central_eta_psi < 0.85
     @test 0.90 < ratios[:eta_c] / ratios[:psi] < 1.10
@@ -2730,8 +2694,8 @@ end
     #    PT over-raises it (≈0.28 GeV).
     nn = ConstituentMasses(mq["q"], mq["q"])
     Vpi = GIModel.contact_hyperfine_operator(params, nn, "S", 1, r)
-    m_full = ho_full_distorted_states(params, nn, 0, Vpi; solver = solver_ho, nlevels = 4)[1][1]
-    m_pt = ho_first_order_distorted_states(params, nn, 0, Vpi; solver = solver_ho, nlevels = 4)[1][1]
+    m_full = ho_full_distorted_states(params, nn, 0, Vpi; solver = solver_ho, nlevels = 4).eigenvalues_GeV[1]
+    m_pt = ho_first_order_distorted_states(params, nn, 0, Vpi; solver = solver_ho, nlevels = 4).eigenvalues_GeV[1]
     m_fd = GIModel.lowest_eigenpairs(
         Symmetric(Matrix(GIModel.relativistic_hamiltonian(params, nn, 0; ngrid = ngrid, rmax = rmax)[1]) + Matrix(Vpi)), 1)[1][1]
     @test m_full < 0.15               # resummed, light pion
@@ -2743,8 +2707,10 @@ end
     #    are served by ONE treatment.
     mc = mq["c"]; cc = ConstituentMasses(mc, mc)
     V1 = GIModel.contact_hyperfine_operator(params, cc, "S", 1, r)
-    v, w, rr = ho_full_distorted_states(params, cc, 0, V1; solver = solver_ho, nlevels = 4)
-    S = wavefunction_origin_smearing(RadialWaveOnUniformMesh(outer!(copy(w[:, 1])), rr), mc; L = 0)
-    eta_c = abs(gluonic_annihilation_amplitude(:S0_2g, S, GIModel.alpha_s_q(v[1]), mc)) * sqrt(1000) / 4.700
+    sol = ho_full_distorted_states(params, cc, 0, V1; solver = solver_ho, nlevels = 4)
+    wave = radial_wave(sol, 1)
+    S = wavefunction_origin_smearing(MeshWave(outer!(copy(wave.u)), wave.r), mc; L = 0)
+    eta_c = abs(gluonic_annihilation_amplitude(
+        :S0_2g, S, GIModel.alpha_s_q(sol.eigenvalues_GeV[1]), mc)) * sqrt(1000) / 4.700
     @test 0.95 < eta_c < 1.20
 end

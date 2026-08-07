@@ -26,20 +26,18 @@ sign follows the radial phase of `radial` (which alternates with the number of
 radial nodes, matching the Table VII sign pattern within a quarkonium family).
 """
 function wavefunction_origin_smearing(
-    radial::RadialWaveOnUniformMesh,
+    radial::RadialWave,
     mass_GeV::Real;
     L::Integer = 0,
     npoints::Integer = 900,
 )
-    u = radial.u
-    nrm = sqrt(sum(abs2, u) * radial.h)
-    nrm > 0 || throw(ArgumentError("wavefunction_origin_smearing: zero-norm radial wave"))
-    wave = RadialWaveOnUniformMesh(u ./ nrm, radial.r)
-    # `false`: this input goes straight to _sL_smearing_factor and never reaches
-    # the coherence factor, so the flag is inert here — stated rather than left
-    # to an empty label.
-    input = PseudoscalarAnnihilationBasisInput("", float(mass_GeV), 0.0, wave, false)
-    return _sL_smearing_factor(FDMomentumIntegralSmearing(npoints), input, L)
+    mass = float(mass_GeV)
+    kernel = p -> begin
+        E = sqrt(mass^2 + p^2)
+        (p / E)^L * mass / E
+    end
+    return sqrt(2 / π) / sqrt(4π) *
+           momentum_functional(_observable_momentum_wave(radial, L, npoints), kernel)
 end
 
 # The four lowest-order gluonic channels of Table VII(c). Each key maps a decay
@@ -88,27 +86,19 @@ gluonic_annihilation_width(channel::Symbol, S_L::Real, alpha_s::Real, mQ::Real) 
 # Leptonic decay constants — the Table VII(a) mock-meson factors (Eqs. D4-D6).
 # -----------------------------------------------------------------------------
 
-# ∫u²dr = 1 copy of a radial wave (the factors carry absolute scale)
-function _unit_norm_wave(radial::RadialWaveOnUniformMesh)
-    nrm = sqrt(sum(abs2, radial.u) * radial.h)
-    nrm > 0 || throw(ArgumentError("zero-norm radial wave"))
-    return RadialWaveOnUniformMesh(radial.u ./ nrm, radial.r)
-end
+# Preserve the historical mesh integration range while letting native HO waves
+# use their exact infinite-domain momentum representation.
+_observable_momentum_wave(w::MeshWave, L::Integer, npoints::Integer) =
+    momentum_wave(w, L; pmax = π / w.h, npoints = max(npoints, 32))
+_observable_momentum_wave(w::RadialWave, L::Integer, npoints::Integer) =
+    momentum_wave(w, L)
 
 # K[w] = (2π)^(-3/2) ∫d³p (4π)^(-1/2) Φ_L(p) w(p): the Eq. (17) kernel with a
 # configurable momentum weight (w ≡ m/E reproduces `_sL_smearing_factor`'s
 # weight at L=0). `wave` must already be unit-normalized.
-function _mock_momentum_kernel(wave::RadialWaveOnUniformMesh, L::Integer, w; npoints::Integer = 900)
-    npts = max(npoints, 32)
-    pmax = π / wave.h
-    dp = pmax / (npts - 1)
-    accum = 0.0
-    for k in 1:npts
-        p = (k - 1) * dp
-        weight = (k == 1 || k == npts) ? 0.5 : 1.0
-        accum += weight * p^2 * _momentum_radial_wave(wave, p, L) * w(p)
-    end
-    return sqrt(2 / π) * accum * dp / sqrt(4π)
+function _mock_momentum_kernel(wave::RadialWave, L::Integer, w; npoints::Integer = 900)
+    return sqrt(2 / π) / sqrt(4π) *
+           momentum_functional(_observable_momentum_wave(wave, L, npoints), w)
 end
 
 """
@@ -119,26 +109,20 @@ averaged over the momentum-space wavefunction `|Φ_L(p)|²` of the radial wave.
 This is the `M̃` appearing in the Table VII(a) leptonic-factor prefactors.
 """
 function mock_meson_mass(
-    radial::RadialWaveOnUniformMesh,
+    radial::RadialWave,
     m1_GeV::Real,
     m2_GeV::Real;
     L::Integer = 0,
     npoints::Integer = 900,
 )
-    wave = _unit_norm_wave(radial)
-    npts = max(npoints, 32)
-    pmax = π / wave.h
-    dp = pmax / (npts - 1)
-    accE, accN = 0.0, 0.0
-    for k in 1:npts
-        p = (k - 1) * dp
-        weight = (k == 1 || k == npts) ? 0.5 : 1.0
-        Φ2 = _momentum_radial_wave(wave, p, L)^2
-        accE += weight * p^2 * Φ2 * (sqrt(m1_GeV^2 + p^2) + sqrt(m2_GeV^2 + p^2))
-        accN += weight * p^2 * Φ2
-    end
-    accN > 0 || throw(ArgumentError("mock_meson_mass: vanishing momentum norm"))
-    return accE / accN
+    mw = _observable_momentum_wave(radial, L, npoints)
+    norm = momentum_expect(mw, _ -> 1.0)
+    norm > 0 || throw(ArgumentError("mock_meson_mass: vanishing momentum norm"))
+    energy = momentum_expect(
+        mw,
+        p -> sqrt(m1_GeV^2 + p^2) + sqrt(m2_GeV^2 + p^2),
+    )
+    return energy / norm
 end
 
 # kind => (orbital L of the wavefunction, needs equal masses)
@@ -169,7 +153,7 @@ factor (fix a phase convention upstream for sign comparisons).
 """
 function leptonic_decay_factor(
     kind::Symbol,
-    radial::RadialWaveOnUniformMesh,
+    radial::RadialWave,
     m1_GeV::Real,
     m2_GeV::Real,
     M_GeV::Real;
@@ -183,8 +167,7 @@ function leptonic_decay_factor(
         throw(ArgumentError("$kind is defined for equal constituent masses (got $m1, $m2)"))
     M > 0 || throw(ArgumentError("meson mass must be positive"))
 
-    wave = _unit_norm_wave(radial)
-    Mtilde = mock_meson_mass(wave, m1, m2; L = L, npoints = npoints)
+    Mtilde = mock_meson_mass(radial, m1, m2; L = L, npoints = npoints)
     w = if kind === :P_P || kind === :V_V
         p -> sqrt(m1 * m2 / (sqrt(m1^2 + p^2) * sqrt(m2^2 + p^2)))
     elseif kind === :Vp_V
@@ -192,7 +175,7 @@ function leptonic_decay_factor(
     else # :Pp_A1
         p -> m1 * p / (m1^2 + p^2)
     end
-    K = _mock_momentum_kernel(wave, L, w; npoints = npoints)
+    K = _mock_momentum_kernel(radial, L, w; npoints = npoints)
     prefactor = kind === :P_P ? 1 / (M * sqrt(Mtilde)) : sqrt(Mtilde) / M^2
     return prefactor * K
 end
@@ -205,17 +188,8 @@ end
 const ALPHA_EM = 1 / 137.036
 
 # raw momentum moment ∫ p² Φ_L(p) w(p) dp over the (unit-normalized) wave
-function _momentum_moment(wave::RadialWaveOnUniformMesh, L::Integer, w; npoints::Integer = 900)
-    npts = max(npoints, 32)
-    pmax = π / wave.h
-    dp = pmax / (npts - 1)
-    accum = 0.0
-    for k in 1:npts
-        p = (k - 1) * dp
-        weight = (k == 1 || k == npts) ? 0.5 : 1.0
-        accum += weight * p^2 * _momentum_radial_wave(wave, p, L) * w(p)
-    end
-    return accum * dp
+function _momentum_moment(wave::RadialWave, L::Integer, w; npoints::Integer = 900)
+    return momentum_functional(_observable_momentum_wave(wave, L, npoints), w)
 end
 
 """
@@ -236,7 +210,7 @@ The sign follows `q_eff` and the wave's phase convention.
 """
 function two_photon_amplitude(
     kind::Symbol,
-    radial::RadialWaveOnUniformMesh,
+    radial::RadialWave,
     m_GeV::Real,
     M_GeV::Real,
     q_eff::Real;
@@ -244,17 +218,16 @@ function two_photon_amplitude(
 )
     m, M = float(m_GeV), float(M_GeV)
     M > 0 || throw(ArgumentError("meson mass must be positive"))
-    wave = _unit_norm_wave(radial)
     if kind === :P
-        Mtilde = mock_meson_mass(wave, m, m; L = 0, npoints = npoints)
-        moment = _momentum_moment(wave, 0, p -> m / sqrt(m^2 + p^2); npoints = npoints)
+        Mtilde = mock_meson_mass(radial, m, m; L = 0, npoints = npoints)
+        moment = _momentum_moment(radial, 0, p -> m / sqrt(m^2 + p^2); npoints = npoints)
         integral = sqrt(4π) * moment                    # ∫d³p φ_P(m/E), S-wave
         return sqrt(6) * q_eff * (ALPHA_EM / m) * (M / Mtilde)^1.5 * (1 / (2π)) * integral
     elseif kind === :P2
         # ³P₂ is a P-wave (orbital L=1); the extra p in the [m·p/E²] weight is the
         # P-wave momentum factor.
-        Mtilde = mock_meson_mass(wave, m, m; L = 1, npoints = npoints)
-        moment = _momentum_moment(wave, 1, p -> m * p / (m^2 + p^2); npoints = npoints)
+        Mtilde = mock_meson_mass(radial, m, m; L = 1, npoints = npoints)
+        moment = _momentum_moment(radial, 1, p -> m * p / (m^2 + p^2); npoints = npoints)
         return -sqrt(4 / 5) * q_eff * (ALPHA_EM / m) * (M / Mtilde)^1.5 * sqrt(2 / π) * moment
     end
     throw(ArgumentError("unknown two-photon kind $kind (expected :P or :P2)"))
@@ -265,25 +238,12 @@ end
 # -----------------------------------------------------------------------------
 
 # <(m/E)^power>_φ = ∫ p² |Φ_0(p)|² (m/E)^power dp over the unit-normalized wave
-function _rel_momentum_average(wave::RadialWaveOnUniformMesh, m::Real, power::Real; npoints::Integer = 900)
-    npts = max(npoints, 32)
-    pmax = π / wave.h
-    dp = pmax / (npts - 1)
-    accum = 0.0
-    for k in 1:npts
-        p = (k - 1) * dp
-        weight = (k == 1 || k == npts) ? 0.5 : 1.0
-        Φ = _momentum_radial_wave(wave, p, 0)
-        accum += weight * p^2 * Φ^2 * (m / sqrt(m^2 + p^2))^power
-    end
-    # Φ is linear in `wave.u`, so this integral is quadratic in the wave's
-    # amplitude. Divide by the norm here rather than requiring every caller to
-    # hand in a pre-normalized wave — that requirement was invisible, and
-    # removing one caller's normalization silently rescaled the result.
-    # Parseval makes ∫u² dr the right divisor; for a normalized wave it is 1.
-    nrm = wave_norm(wave)
+function _rel_momentum_average(wave::RadialWave, m::Real, power::Real; npoints::Integer = 900)
+    mw = _observable_momentum_wave(wave, 0, npoints)
+    nrm = momentum_expect(mw, _ -> 1.0)
     nrm > 0 || throw(ArgumentError("_rel_momentum_average: zero-norm radial wave"))
-    return accum * dp / nrm
+    value = momentum_expect(mw, p -> (m / sqrt(m^2 + p^2))^power)
+    return value / nrm
 end
 
 """Conversion (ħc)² : an r² in GeV⁻² is `HBARC_FM2 · r²` in fm²."""
@@ -304,7 +264,7 @@ quark-position operator, `f` the fit exponent (0.2, fitted to the π⁺). `e1`,
 `−1/3`, `+1/3` for the d and s̄ of K⁰). Multiply by [`HBARC_FM2`](@ref) for fm².
 """
 function charge_radius_squared(
-    radial::RadialWaveOnUniformMesh,
+    radial::RadialWave,
     m1_GeV::Real,
     e1::Real,
     m2_GeV::Real,

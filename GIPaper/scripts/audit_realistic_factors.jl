@@ -67,41 +67,38 @@ function main()
         levels = spectrum_levels(2; L_labels = ("S", "P", "D", "F")))
     cache = central.computation.channel_cache
     sol_S = cache[RadialChannelKey(masses, "S")]
-    r = sol_S.r
-    h = r[2] - r[1]
+    central_S = radial_wave(sol_S, 1)
+    r = central_S.r
 
     # Hyperfine-distinct S-wave ground states: ^1S_0 (pi) and ^3S_1 (rho).
     # Same solver as the central stage that produced `r`: this resolves its own
     # eigenproblem, and a different method here would make one figure two
     # calculations.
     solver = central.computation.solver
-    _, vecs1, r1 = contact_hyperfine_nonperturbative_states(
+    singlet_solution = contact_hyperfine_nonperturbative_states(
         params, masses, "S", 1, r, 2; solver = solver)
-    _, vecs3, r3 = contact_hyperfine_nonperturbative_states(
+    triplet_solution = contact_hyperfine_nonperturbative_states(
         params, masses, "S", 3, r, 2; solver = solver)
-    (isempty(vecs1) || isempty(vecs3)) &&
+    (singlet_solution === nothing || triplet_solution === nothing) &&
         error("non-perturbative contact path inactive; cannot form hyperfine-distinct waves")
-    @assert length(r1) == length(r) == length(r3)
-    u_pi  = vecs1[:, 1]     # ^1S_0
-    u_rho = vecs3[:, 1]     # ^3S_1
+    w_pi = radial_wave(singlet_solution, 1)
+    w_rho = radial_wave(triplet_solution, 1)
 
     # <r^2> of each daughter, as a sanity check that pi is more compact than rho.
-    r2(u) = radial_cross_expect_udr(u, u, r, h, (x, _i) -> x^2)
-    rms_pi  = sqrt(r2(u_pi))
-    rms_rho = sqrt(r2(u_rho))
+    rms_pi = sqrt(radial_expect(w_pi, x -> x^2))
+    rms_rho = sqrt(radial_expect(w_rho, x -> x^2))
 
     # Eq. (20): |<rho| r^(L-1) |M*>| / |<pi| r^(L-1) |M*>| (magnitudes: the
     # eigenvector signs are arbitrary and cancel only for the common parent).
-    function type_a_ratio(u_parent, L)
-        num = abs(radial_cross_expect_udr(u_rho, u_parent, r, h, (x, _i) -> x^(L - 1)))
-        den = abs(radial_cross_expect_udr(u_pi,  u_parent, r, h, (x, _i) -> x^(L - 1)))
+    function type_a_ratio(parent, L)
+        num = abs(radial_overlap(w_rho, parent, x -> x^(L - 1)))
+        den = abs(radial_overlap(w_pi, parent, x -> x^(L - 1)))
         return den == 0 ? NaN : num / den
     end
 
     results = map(TYPE_A_ROWS) do row
         sol_P = cache[RadialChannelKey(masses, row.parent_L)]
-        u_parent = sol_P.eigenvectors[:, row.n]
-        (row, type_a_ratio(u_parent, row.decay_L))
+        (row, type_a_ratio(radial_wave(sol_P, row.n), row.decay_L))
     end
 
     # Eq. (21) type-S: R_S = |<^1S_0|p|M*>| / |<^3S_1|p|M*>|. The momentum
@@ -111,23 +108,22 @@ function main()
     #   <S|p|M*> ∝ ∫ p^3 Φ_0(p) Φ_1^{M*}(p) dp .
     pmax, npx = 30.0, 2001
     pgrid = collect(range(0.0, pmax; length = npx))
-    mom(u, L) = begin
-        w = RadialWaveOnUniformMesh(u, r)
+    mom(w, L) = begin
         phi = [GIModel._momentum_radial_wave(w, p, L) for p in pgrid]
         phi ./ sqrt(trapz(pgrid, pgrid .^ 2 .* phi .^ 2))   # ∫ p² Φ² dp = 1
     end
-    phi_pi = mom(u_pi, 0)
-    phi_rho = mom(u_rho, 0)
+    phi_pi = mom(w_pi, 0)
+    phi_rho = mom(w_rho, 0)
     p2(phi) = trapz(pgrid, pgrid .^ 4 .* phi .^ 2)
     p2_pi, p2_rho = p2(phi_pi), p2(phi_rho)
-    function type_s_ratio(u_parent)
-        phi_par = mom(u_parent, 1)
+    function type_s_ratio(parent)
+        phi_par = mom(parent, 1)
         me(phi_d) = trapz(pgrid, pgrid .^ 3 .* phi_d .* phi_par)
         return abs(me(phi_pi)) / abs(me(phi_rho))
     end
     results_S = map(TYPE_S_ROWS) do row
         sol_P = cache[RadialChannelKey(masses, row.parent_L)]
-        (row, type_s_ratio(sol_P.eigenvectors[:, row.n]))
+        (row, type_s_ratio(radial_wave(sol_P, row.n)))
     end
 
     open(REPORT, "w") do io

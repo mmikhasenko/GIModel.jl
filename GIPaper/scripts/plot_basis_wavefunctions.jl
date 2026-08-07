@@ -64,15 +64,19 @@ degrades the low-level HO representation while FD is unaffected."""
 function basis_waves(params, masses, L_label, level; nlevels = 6)
     Lval = GIModel.L_SYMBOLS[L_label]
     nl = max(nlevels, level)
-    ev_fd, vec_fd, r = channel_solution(
+    fd_solution = channel_solution(
         params, masses, Lval; solver = FiniteDifferenceSolver(), nlevels = nl)
-    ev_ho, vec_ho, _ = channel_solution(
+    ho_solution = channel_solution(
         params, masses, Lval; solver = OscillatorSolver(), nlevels = nl)
+    fd_wave = radial_wave(fd_solution, level)
+    r = fd_wave.r
+    ho_wave = sample_wave(radial_wave(ho_solution, level), r)
     h = r[2] - r[1]
     r_fm = r .* HBARC
-    u_fd = normalize_wave(vec_fd[:, level], h)
-    u_ho = normalize_wave(vec_ho[:, level], h)
-    return (r_fm = r_fm, u_fd = u_fd, u_ho = u_ho, E_fd = ev_fd[level], E_ho = ev_ho[level])
+    u_fd = normalize_wave(fd_wave.u, h)
+    u_ho = normalize_wave(ho_wave.u, h)
+    return (r_fm = r_fm, u_fd = u_fd, u_ho = u_ho,
+        E_fd = fd_solution.eigenvalues_GeV[level], E_ho = ho_solution.eigenvalues_GeV[level])
 end
 
 # Charm and strange constituent masses (GeV), Table II.
