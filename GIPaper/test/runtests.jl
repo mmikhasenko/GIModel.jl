@@ -298,9 +298,12 @@ end
     # mixing must produce a real splitting
     @test abs(mixed[1].predicted_GeV - mixed[2].predicted_GeV) >
           abs(plain[1].predicted_GeV - plain[2].predicted_GeV)
-    # sum of masses is conserved up to the recorded annihilation shifts
+    # Each row now retains its actual q-qbar or s-sbar precursor rather than
+    # pretending both physical states started from the q-qbar diagonal.
     @test sum(row.predicted_GeV for row in mixed) ≈
-          sum(row.predicted_GeV for row in plain) + sum(row.annihilation_shift_GeV for row in mixed) atol = 1e-10
+          sum(row.isoscalar_annihilation_unmixed_GeV for row in mixed) +
+          sum(row.annihilation_shift_GeV for row in mixed) atol = 1e-10
+    @test Set(row.m1_GeV for row in mixed) == Set([mq["q"], mq["s"]])
 end
 
 @testset "table_iii isoscalar scheme: ideal mixing + general Eq.(16)" begin

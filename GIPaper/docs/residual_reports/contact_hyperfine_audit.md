@@ -22,7 +22,7 @@ Numerics: `FiniteDifferenceSolver` — ngrid = 450, rmax = 24.0 GeV^-1 (h = 0.05
 | `charmed` | 4 | 67.1 | 163.2 | 0.343 | 8.5 |
 | `charmed_strange` | 4 | 62.7 | 150.8 | 0.419 | 8.1 |
 | `charmonium` | 7 | 38.4 | 129.0 | 0.553 | 3.7 |
-| `isoscalar` | 2 | 75.3 | 88.9 | 1.351 | 8.3 |
+| `isoscalar` | 2 | 75.3 | 88.9 | 1.351 | 8.6 |
 | `isovector` | 6 | 183.8 | 742.5 | 0.558 | 19.7 |
 | `strange` | 6 | 130.5 | 490.6 | 0.395 | 12.2 |
 
@@ -37,7 +37,7 @@ Numerics: `FiniteDifferenceSolver` — ngrid = 450, rmax = 24.0 GeV^-1 (h = 0.05
 | `charmed` | `1^1S_0` |   -20.2 |  -163.2 | -1230.1 |
 | `charmed_strange` | `1^1S_0` |   -18.0 |  -150.8 |  -724.3 |
 | `strange` | `3^1S_0` |   -17.2 |   -64.2 |  -758.5 |
-| `isoscalar` | `1^3S_1` |   -12.7 |   +88.9 |   +55.7 |
+| `isoscalar` | `1^3S_1` |   -13.3 |   +88.9 |   +55.7 |
 | `charmonium` | `1^1S_0` |   -11.5 |  -129.0 |  -366.0 |
 | `bottomonium` | `3^1S_0` |   -11.2 |   -21.2 |   -36.8 |
 | `bottomonium` | `1^1S_0` |   -10.4 |   -66.3 |  -101.4 |

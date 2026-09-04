@@ -71,8 +71,12 @@ flowchart TD
   COR --> B["add_intra_meson_mixing"]
   B --> MB["complete requested same-J spin-orbit or tensor MixingBlock"]
   MB --> MR["shared MixingResult"]
-  MR --> MS["MixedSpectrum / MixedState"]
+  MR --> MS["single-channel MixedSpectrum / MixedState"]
+  MS --> ISO["optional add_isoscalar_annihilation"]
+  ISO --> AM["Eq. 16-18 flavor/radial MixingResult"]
+  AM --> FS["multi-channel final MixedSpectrum"]
   MS --> PC["physical_components: coefficient + native component wave"]
+  FS --> PC
   PC --> OUT["masses, expectations, decay observables, GIPaper reports"]
 ```
 
@@ -82,13 +86,18 @@ reported central/contact/spin-orbit/tensor values are expectations in that same
 spin-distorted eigenstate and sum to its eigenvalue; they are not differences
 from a second central-only calculation. `SectorComputation` stores only
 `params`, the selected `solver`, and the production fixed-sector solutions.
+For self-conjugate isoscalars, `compute_isoscalar_spectrum` solves the
+nonstrange and strange channels through those same stages and then applies the
+explicitly requested annihilation blocks. Its `Spectrum.channels` and cache own
+both inputs; reference-row naming and ordering remain in GIPaper.
 
 `StateMixing` records how a reported state changed; generic diagonalization is
 owned by `MixingBlock`, `MixingResult`, and `diagonalize_mixing_block`. Mechanism
 code constructs matrices but does not introduce another result container.
 `radial_wave(spec, state)` returns the native fixed-sector wave for an unmixed
-state and deliberately rejects a mixed physical state. Use `physical_components`
-for the latter; no representative or silently unmixed wave is fabricated.
+state and deliberately rejects a mixed physical state. `physical_components`
+recursively composes spectroscopic and flavor mixing, with flavor carried by
+`BasisState.flavors`; no representative or silently unmixed wave is fabricated.
 
 ## Source ownership
 
@@ -103,7 +112,8 @@ for the latter; no representative or silently unmixed wave is fabricated.
 - `state_mixing.jl`: shared mixing matrix/result abstraction.
 - `spectrum.jl`: the independent central diagnostic, production spectrum
   stages, and state-level accessors.
-- `flavor_mixing.jl`, `pseudoscalar_annihilation.jl`: annihilation block builders.
+- `flavor_mixing.jl`, `pseudoscalar_annihilation.jl`: annihilation block builders
+  and the reference-free final isoscalar spectrum stage.
 - `strong_decays.jl`, `annihilation_widths.jl`, `mock_meson_overlaps.jl`:
   downstream observables consuming `RadialWave`/`MomentumWave`.
 - `GIPaper/`: reference-data interpretation and reproducibility reports.

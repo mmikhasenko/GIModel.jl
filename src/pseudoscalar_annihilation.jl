@@ -10,10 +10,10 @@ abstract type PseudoscalarAnnihilationModel end
 abstract type PseudoscalarSmearingScheme end
 
 """Numerical evaluation of the Eq. (17) momentum integral."""
-struct FDMomentumIntegralSmearing <: PseudoscalarSmearingScheme
+struct MomentumIntegralSmearing <: PseudoscalarSmearingScheme
     npoints::Int
 end
-FDMomentumIntegralSmearing() = FDMomentumIntegralSmearing(900)
+MomentumIntegralSmearing() = MomentumIntegralSmearing(900)
 
 """Calibrated rank-one control matching the digitized GI Fig. 5/Table III masses."""
 struct CalibratedP1Annihilation <: PseudoscalarAnnihilationModel end
@@ -22,16 +22,16 @@ struct CalibratedP1Annihilation <: PseudoscalarAnnihilationModel end
 struct PaperP1Annihilation{S<:PseudoscalarSmearingScheme} <: PseudoscalarAnnihilationModel
     smearing::S
 end
-PaperP1Annihilation() = PaperP1Annihilation(FDMomentumIntegralSmearing())
+PaperP1Annihilation() = PaperP1Annihilation(MomentumIntegralSmearing())
 
 """Paper Eq. (18b) mass-dependent pseudoscalar annihilation model."""
 struct PaperP2Annihilation{S<:PseudoscalarSmearingScheme} <: PseudoscalarAnnihilationModel
     smearing::S
 end
-PaperP2Annihilation() = PaperP2Annihilation(FDMomentumIntegralSmearing())
+PaperP2Annihilation() = PaperP2Annihilation(MomentumIntegralSmearing())
 
 struct PseudoscalarAnnihilationBasisInput
-    label::String
+    basis::BasisState
     constituent_mass_GeV::Float64
     diagonal_GeV::Float64
     radial_components::Vector{Tuple{Float64,RadialWave}}
@@ -41,15 +41,22 @@ struct PseudoscalarAnnihilationBasisInput
     isoscalar_coherent::Bool
 end
 
+Base.getproperty(input::PseudoscalarAnnihilationBasisInput, name::Symbol) =
+    name === :label ? getfield(input, :basis).label : getfield(input, name)
+Base.propertynames(::PseudoscalarAnnihilationBasisInput) = (
+    :basis, :label, :constituent_mass_GeV, :diagonal_GeV,
+    :radial_components, :isoscalar_coherent,
+)
+
 function pseudoscalar_annihilation_basis_input(
-    label::AbstractString,
+    basis::BasisState,
     constituent_mass_GeV::Real,
     diagonal_GeV::Real,
     radial::RadialWave;
     isoscalar_coherent::Bool,
 )
     return PseudoscalarAnnihilationBasisInput(
-        String(label),
+        basis,
         float(constituent_mass_GeV),
         float(diagonal_GeV),
         Tuple{Float64,RadialWave}[(1.0, radial)],
@@ -58,7 +65,7 @@ function pseudoscalar_annihilation_basis_input(
 end
 
 function pseudoscalar_annihilation_basis_input(
-    label::AbstractString,
+    basis::BasisState,
     constituent_mass_GeV::Real,
     diagonal_GeV::Real,
     radial_components::AbstractVector{<:Tuple};
@@ -71,7 +78,7 @@ function pseudoscalar_annihilation_basis_input(
         (float(coefficient), wave) for (coefficient, wave) in radial_components
     ]
     return PseudoscalarAnnihilationBasisInput(
-        String(label), float(constituent_mass_GeV), float(diagonal_GeV),
+        basis, float(constituent_mass_GeV), float(diagonal_GeV),
         components, isoscalar_coherent,
     )
 end
@@ -114,7 +121,7 @@ Eq. (17) smearing of the wavefunction at the origin for orbital `L`:
 normalized radial momentum wavefunction obtained from the `j_L` transform.
 """
 function _sL_smearing_factor(
-    scheme::FDMomentumIntegralSmearing,
+    scheme::MomentumIntegralSmearing,
     input::PseudoscalarAnnihilationBasisInput,
     L::Integer,
 )
@@ -133,7 +140,7 @@ function _sL_smearing_factor(
     return sqrt(2 / π) / sqrt(4π) * factor
 end
 
-_s0_smearing_factor(scheme::FDMomentumIntegralSmearing, input::PseudoscalarAnnihilationBasisInput) =
+_s0_smearing_factor(scheme::MomentumIntegralSmearing, input::PseudoscalarAnnihilationBasisInput) =
     _sL_smearing_factor(scheme, input, 0)
 
 """
@@ -170,7 +177,7 @@ function _annihilation_overlap_factor(
 end
 
 function _annihilation_overlap_factor(
-    scheme::FDMomentumIntegralSmearing,
+    scheme::MomentumIntegralSmearing,
     input::PseudoscalarAnnihilationBasisInput,
     L::Integer,
 )
@@ -251,10 +258,7 @@ function _paper_annihilation_matrix(
 end
 
 function _basis_states_from_inputs(basis::AbstractVector{PseudoscalarAnnihilationBasisInput})
-    return [
-        BasisState(i <= 2 ? 1 : 2, "S", 1, 0; label = state.label) for
-        (i, state) in enumerate(basis)
-    ]
+    return [state.basis for state in basis]
 end
 
 """
@@ -271,6 +275,7 @@ function isoscalar_pseudoscalar_annihilation_solution(
     ::CalibratedP1Annihilation,
     diagonal::AbstractVector{<:Real};
     targets,
+    basis = nothing,
 )
     diag = collect(Float64, diagonal)
     targ = sort(collect(Float64, targets))
@@ -286,30 +291,24 @@ function isoscalar_pseudoscalar_annihilation_solution(
     matrix = Matrix(Diagonal(diag)) + annihilation
     fact = eigen(Symmetric(matrix))
     vectors = _phase_fix_columns!(Matrix(fact.vectors))
-    basis = [
-        BasisState(1, "S", 1, 0; label = "1 n nbar"),
-        BasisState(1, "S", 1, 0; label = "1 s sbar"),
-        BasisState(2, "S", 1, 0; label = "2 n nbar"),
-        BasisState(2, "S", 1, 0; label = "2 s sbar"),
-    ]
+    basis_states = isnothing(basis) ? [
+        BasisState(1, "S", 1, 0; label = "1 n nbar", flavors = (:q, :q)),
+        BasisState(1, "S", 1, 0; label = "1 s sbar", flavors = (:s, :s)),
+        BasisState(2, "S", 1, 0; label = "2 n nbar", flavors = (:q, :q)),
+        BasisState(2, "S", 1, 0; label = "2 s sbar", flavors = (:s, :s)),
+    ] : BasisState[state for state in basis]
+    length(basis_states) == length(diag) || throw(ArgumentError(
+        "calibrated annihilation basis size does not match diagonal",
+    ))
     block = MixingBlock(
         "isoscalar ^1S_0 annihilation",
-        basis,
+        basis_states,
         matrix;
         mechanism = "rank_one_calibrated_pseudoscalar_annihilation",
         source = "GI Fig. 5 / Table III P1 diagnostic",
         notes = "Calibrated to digitized GI isoscalar pseudoscalar masses; separate PaperP1Annihilation and PaperP2Annihilation methods implement Eq. (18a,b).",
     )
-    return (
-        block = block,
-        masses = collect(Float64, fact.values),
-        vectors = vectors,
-        diagonal_GeV = diag,
-        targets_GeV = targ,
-        couplings_sqrt_GeV = couplings,
-        weights_GeV = weights,
-        annihilation_matrix_GeV = annihilation,
-    )
+    return MixingResult(block, fact.values, vectors)
 end
 
 """
@@ -321,8 +320,9 @@ General non-pseudoscalar Eq. (16) annihilation block in the channel
 `4π(2L+1) A(^{2S+1}L_J) [α_s(M_j²)α_s(M_i²)/π²]^{n/2} S_L(Ψ_j)S_L(Ψ_i)/(m_i m_j)`
 
 with `n = 2` for `C = +` and `n = 3` for `C = −` (`C = (−1)^{L+S}`) and the
-Eq. (17) smearing `S_L`. `basis` should be built with HO radial wavefunctions
-for paper-consistent wavefunction-at-origin scale.
+Eq. (17) smearing `S_L`. Each input retains its solver-native radial wave;
+`momentum_wave` dispatches on that representation. Select an HO solver in the
+calling spectrum calculation when reproducing the paper algorithm.
 """
 function isoscalar_general_annihilation_solution(
     params::GIParameters,
@@ -331,9 +331,17 @@ function isoscalar_general_annihilation_solution(
     L::Integer,
     multiplicity::Integer,
     J::Integer,
-    smearing::FDMomentumIntegralSmearing = FDMomentumIntegralSmearing(),
+    smearing::MomentumIntegralSmearing = MomentumIntegralSmearing(),
 )
     n = length(basis)
+    expected_L = L_LABELS[Int(L)]
+    all(
+        state.basis.L_label == expected_L &&
+        state.basis.multiplicity == multiplicity &&
+        state.basis.J == J for state in basis
+    ) || throw(ArgumentError(
+        "general annihilation basis does not match requested ^$(multiplicity)$(expected_L)_$(J) channel",
+    ))
     S = multiplicity == 3 ? 1 : 0
     c_even = iseven(L + S)
     n_gluons = c_even ? 2 : 3
@@ -350,7 +358,7 @@ function isoscalar_general_annihilation_solution(
     end
     fact = eigen(Symmetric(matrix))
     vectors = _phase_fix_columns!(Matrix(fact.vectors))
-    basis_states = [BasisState(1, "S", multiplicity, J; label = state.label) for state in basis]
+    basis_states = _basis_states_from_inputs(basis)
     channel = @sprintf("^%d%s_%d", multiplicity, L_LABELS[L], J)
     block = MixingBlock(
         "isoscalar $channel annihilation",
@@ -358,15 +366,9 @@ function isoscalar_general_annihilation_solution(
         matrix;
         mechanism = "general_eq16_annihilation",
         source = "GI Eq. (16) with Table III A($channel)=$(amplitude_A), n=$(n_gluons) gluons",
-        notes = "Uses HO radial waves for paper-consistent wavefunction-at-origin scale.",
+        notes = "Uses solver-native radial waves through the representation-neutral Eq. (17) momentum interface.",
     )
-    return (
-        block = block,
-        masses = collect(Float64, fact.values),
-        vectors = vectors,
-        diagonal_GeV = [state.diagonal_GeV for state in basis],
-        annihilation_matrix_GeV = matrix - Diagonal([state.diagonal_GeV for state in basis]),
-    )
+    return MixingResult(block, fact.values, vectors)
 end
 
 """
@@ -379,7 +381,7 @@ the Table III amplitude `A(^3S_1)` from the parameters (three-gluon bracket,
 function isoscalar_general_s1_solution(
     params::GIParameters,
     basis::AbstractVector{PseudoscalarAnnihilationBasisInput};
-    smearing::FDMomentumIntegralSmearing = FDMomentumIntegralSmearing(),
+    smearing::MomentumIntegralSmearing = MomentumIntegralSmearing(),
 )
     return isoscalar_general_annihilation_solution(
         params,
@@ -419,13 +421,7 @@ function isoscalar_pseudoscalar_annihilation_solution(
         source = "GI Eq. (16) with Eq. (18a) and Table III P1 constants",
         notes = "Uses the cached solver-native radial waves through the Eq. (17) momentum interface.",
     )
-    return (
-        block = block,
-        masses = collect(Float64, fact.values),
-        vectors = vectors,
-        diagonal_GeV = [state.diagonal_GeV for state in basis],
-        annihilation_matrix_GeV = matrix - Diagonal([state.diagonal_GeV for state in basis]),
-    )
+    return MixingResult(block, fact.values, vectors)
 end
 
 function isoscalar_pseudoscalar_annihilation_solution(
@@ -436,6 +432,8 @@ function isoscalar_pseudoscalar_annihilation_solution(
     tol::Real = 1.0e-10,
 )
     n = length(basis)
+    maxiter >= 1 || throw(ArgumentError("PaperP2Annihilation: maxiter must be positive"))
+    tol > 0 || throw(ArgumentError("PaperP2Annihilation: tol must be positive"))
     starts = sort([state.diagonal_GeV for state in basis])
     masses = zeros(Float64, n)
     vectors = zeros(Float64, n, n)
@@ -444,13 +442,20 @@ function isoscalar_pseudoscalar_annihilation_solution(
         M = starts[level]
         matrix = _paper_annihilation_matrix(model, params, basis; pole_mass_GeV = M)
         fact = eigen(Symmetric(matrix))
+        converged = false
         for _ in 1:maxiter
             newM = fact.values[level]
-            abs(newM - M) <= tol && break
+            if abs(newM - M) <= tol
+                converged = true
+                break
+            end
             M = 0.5 * (M + newM)
             matrix = _paper_annihilation_matrix(model, params, basis; pole_mass_GeV = M)
             fact = eigen(Symmetric(matrix))
         end
+        converged || throw(ErrorException(
+            "PaperP2Annihilation pole $level did not converge in $maxiter iterations",
+        ))
         masses[level] = fact.values[level]
         vectors[:, level] .= fact.vectors[:, level]
         matrices[level] = matrix
@@ -464,11 +469,5 @@ function isoscalar_pseudoscalar_annihilation_solution(
         source = "GI Eq. (16) with Eq. (18b) and Table III P2 constants",
         notes = "Each pole is solved as a fixed point of the mass-dependent Eq. (18b) matrix using the Eq. (17) S-wave momentum integral, so eigenvectors are not expected to be orthogonal.",
     )
-    return (
-        block = block,
-        masses = masses,
-        vectors = vectors,
-        diagonal_GeV = [state.diagonal_GeV for state in basis],
-        annihilation_matrices_GeV = matrices,
-    )
+    return MixingResult(block, masses, vectors, matrices)
 end

@@ -600,10 +600,30 @@ end
     @test issorted(generic.masses)
     @test generic.vectors' * generic.vectors ≈ [i == j ? 1.0 : 0.0 for i = 1:3, j = 1:3] atol =
         1e-12
+    @test_throws ArgumentError GIModel.BasisState(0, "S", 3, 1)
+    @test_throws ArgumentError GIModel.BasisState(1, "S", 2, 1)
+    @test_throws ArgumentError GIModel.BasisState(1, "S", 3, -1)
+    @test_throws ArgumentError GIModel.MixingBlock(
+        "empty block", GIModel.BasisState[], zeros(0, 0),
+    )
     @test_throws ArgumentError GIModel.MixingBlock(
         "bad asymmetric block",
         [GIModel.BasisState(1, "S", 3, 1), GIModel.BasisState(1, "D", 3, 1)],
         [1.0 0.2; 0.1 2.0],
+    )
+    @test_throws ArgumentError GIModel.MixingBlock(
+        "duplicate identities",
+        [
+            GIModel.BasisState(1, "S", 3, 1; label = "first"),
+            GIModel.BasisState(1, "S", 3, 1; label = "second"),
+        ],
+        Matrix{Float64}(I, 2, 2),
+    )
+    @test_throws ArgumentError GIModel.MixingResult(
+        generic_block, reverse(generic.masses), generic.vectors,
+    )
+    @test_throws ArgumentError GIModel.MixingResult(
+        generic_block, generic.masses, 2 .* generic.vectors,
     )
 
     sol_cc = GIModel.channel_solution(
@@ -1215,7 +1235,7 @@ end
     @test c1.total ≈ split rtol = 1e-12 atol = 0.0
 end
 
-@testset "mixing mechanisms are comparison-layer markers" begin
+@testset "mixing mechanisms identify model mass-matrix stages" begin
     @test GIModel.AntisymmetricSpinOrbit() isa GIModel.MixingMechanism
     @test GIModel.TensorMixing() isa GIModel.MixingMechanism
     @test GIModel.IsoscalarAnnihilation() isa GIModel.MixingMechanism
@@ -2097,7 +2117,8 @@ end
 @testset "Isoscalar coherence factor is stated, not string-matched" begin
     r = collect(range(0.05, 6.0; length = 64))
     wave = MeshWave(exp.(-r), r)
-    mk(label, coh) = pseudoscalar_annihilation_basis_input(label, 0.22, 0.9, wave;
+    mk(label, coh) = pseudoscalar_annihilation_basis_input(
+        BasisState(1, "S", 1, 0; label = label), 0.22, 0.9, wave;
         isoscalar_coherent = coh)
 
     # The sqrt(2) follows the flag...
@@ -2112,7 +2133,7 @@ end
     @test GIModel._flavor_coherence_factor(mk("1 cc", true)) ≈ sqrt(2)
 
     @test_throws UndefKeywordError pseudoscalar_annihilation_basis_input(
-        "1 ns", 0.22, 0.9, wave)
+        BasisState(1, "S", 1, 0; label = "1 ns"), 0.22, 0.9, wave)
 end
 
 @testset "Meson construction and flavor resolution" begin
@@ -2210,7 +2231,7 @@ end
     @test length(annihilation_input.radial_components) == 2
     @test all(isfinite(first(component)) for component in annihilation_input.radial_components)
     @test isfinite(GIModel._sL_smearing_factor(
-        FDMomentumIntegralSmearing(120), annihilation_input, 0,
+        MomentumIntegralSmearing(120), annihilation_input, 0,
     ))
     # lookup by quantum numbers
     s = spectrum_state(spec, 1, "P", 3, 2)
@@ -2268,16 +2289,40 @@ end
     cal = pseudoscalar_annihilation_block(CalibratedP1Annihilation(), params, nn, ss;
         targets = targets)
     @test sort(cal.masses) ≈ sort(collect(targets)) atol = 1e-10
-    @test all(cal.weights_GeV .>= 0.0)
+    calibrated_diagonal = [
+        spectrum_state(nn, ps_levels[1]).mass_GeV,
+        spectrum_state(ss, ps_levels[1]).mass_GeV,
+        spectrum_state(nn, ps_levels[2]).mass_GeV,
+        spectrum_state(ss, ps_levels[2]).mass_GeV,
+    ]
+    calibrated_update = cal.block.matrix - Diagonal(calibrated_diagonal)
+    @test all(diag(calibrated_update) .>= 0.0)
     # explicit targets are mandatory - the digitized values live in GIPaper
     @test_throws ArgumentError pseudoscalar_annihilation_block(
         CalibratedP1Annihilation(), params, nn, ss)
 
     p1 = pseudoscalar_annihilation_block(PaperP1Annihilation(), params, nn, ss)
     p2 = pseudoscalar_annihilation_block(PaperP2Annihilation(), params, nn, ss)
+    @test cal isa MixingResult
+    @test p1 isa MixingResult
+    @test p2 isa MixingResult
+    @test isempty(p1.pole_matrices)
+    @test length(p2.pole_matrices) == length(p2.masses)
     @test all(isfinite, p1.masses)
     @test all(isfinite, p2.masses)
     @test p1.masses != p2.masses
+    pseudoscalar_basis = [
+        annihilation_basis_input(nn, ps_levels[1]),
+        annihilation_basis_input(ss, ps_levels[1]),
+        annihilation_basis_input(nn, ps_levels[2]),
+        annihilation_basis_input(ss, ps_levels[2]),
+    ]
+    @test_throws ArgumentError GIModel.isoscalar_pseudoscalar_annihilation_solution(
+        PaperP2Annihilation(), params, pseudoscalar_basis; maxiter = 0,
+    )
+    @test_throws ArgumentError GIModel.isoscalar_pseudoscalar_annihilation_solution(
+        PaperP2Annihilation(), params, pseudoscalar_basis; tol = 0.0,
+    )
     # light nn̄ inputs carry the sqrt(2) flavor-coherence label
     input = annihilation_basis_input(nn, ps_levels[1])
     @test input.label == "1 ns"
@@ -2303,7 +2348,116 @@ end
     @test all(isfinite, block.masses)
     # trace conservation: eigenvalue sum equals diagonal sum plus block trace
     diag_sum = spectrum_state(nn3, s1).mass_GeV + spectrum_state(ss3, s1).mass_GeV
-    @test sum(block.masses) ≈ diag_sum + sum(diag(block.annihilation_matrix_GeV)) atol = 1e-10
+    annihilation_matrix = block.block.matrix - Diagonal([
+        spectrum_state(nn3, s1).mass_GeV,
+        spectrum_state(ss3, s1).mass_GeV,
+    ])
+    @test sum(block.masses) ≈ diag_sum + sum(diag(annihilation_matrix)) atol = 1e-10
+end
+
+@testset "PA-16 final isoscalar spectrum owns flavor annihilation" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    solver = FiniteDifferenceSolver(ngrid = 80, rmax = 8.0, nlevels_per_channel = 2)
+    levels = [
+        BasisState(1, "S", 1, 0),
+        BasisState(2, "S", 1, 0),
+        BasisState(1, "S", 3, 1),
+        BasisState(2, "S", 3, 1),
+        BasisState(1, "D", 3, 1),
+    ]
+    nn = compute_spectrum(params, Meson(mq, :q, :q); levels = levels, solver = solver)
+    ss = compute_spectrum(params, Meson(mq, :s, :s); levels = levels, solver = solver)
+    final = add_isoscalar_annihilation(
+        params, nn, ss;
+        amplitudes = Dict(("S", 3, 1) => params.annihilation.s1_A),
+    )
+
+    @test final isa MixedSpectrum
+    @test [(m.flavor1, m.flavor2) for m in final.channels] == [(:q, :q), (:s, :s)]
+    @test length(final.states) == length(nn.states) + length(ss.states)
+    @test all(!isnothing(state.basis.flavors) for state in final.states)
+    @test_throws ArgumentError spectrum_state(final, 1, "S", 3, 1)
+
+    qS = spectrum_state(final, BasisState(1, "S", 3, 1; flavors = (:q, :q)))
+    sS = spectrum_state(final, BasisState(1, "S", 3, 1; flavors = (:s, :s)))
+    q_ann = last(qS.mixings)
+    s_ann = last(sS.mixings)
+    @test q_ann.result === s_ann.result
+    @test q_ann.mechanism == "general_eq16_annihilation"
+    @test qS.mass_GeV == q_ann.result.masses[q_ann.eigenstate]
+    @test sS.mass_GeV == s_ann.result.masses[s_ann.eigenstate]
+    @test_throws ArgumentError radial_wave(final, qS)
+
+    # Tensor S/D mixing precedes flavor mixing. The final state must flatten
+    # both transformations, preserve flavor identity, and remain normalized.
+    components = physical_components(final, qS)
+    @test Set(component.basis.flavors for component in components) ==
+          Set([(:q, :q), (:s, :s)])
+    @test Set(component.basis.L_label for component in components) == Set(["S", "D"])
+    @test sum(abs2(component.coefficient) for component in components) ≈ 1.0 atol = 1e-12
+    @test radial_expect(final, qS, _ -> 1.0) ≈ 1.0 atol = 1e-12
+
+    # The four-state radial/flavor block uses the same final-spectrum and
+    # composition contract: unique native identities and normalized weights.
+    p1_final = add_isoscalar_annihilation(
+        params, nn, ss; pseudoscalar = PaperP1Annihilation(),
+    )
+    p1_state = first(sort(
+        [
+            state for state in p1_final.states if
+            any(m -> m.mechanism == "paper_p1_pseudoscalar_annihilation", state.mixings)
+        ];
+        by = state -> state.mass_GeV,
+    ))
+    p1_components = physical_components(p1_final, p1_state)
+    p1_identities = [
+        (component.basis.n, component.basis.L_label, component.basis.multiplicity,
+         component.basis.J, component.basis.flavors) for component in p1_components
+    ]
+    @test length(p1_identities) == length(unique(p1_identities))
+    @test sum(abs2(component.coefficient) for component in p1_components) ≈ 1.0 atol = 1e-12
+
+    # No reference ordering or implicit amplitude exists in the model stage.
+    combined_only = add_isoscalar_annihilation(params, nn, ss)
+    @test all(
+        mixing -> !occursin("annihilation", mixing.mechanism),
+        Iterators.flatten(state.mixings for state in combined_only.states),
+    )
+    mismatched_ss = compute_spectrum(
+        params, Meson(mq, :s, :s);
+        levels = levels,
+        solver = FiniteDifferenceSolver(ngrid = 90, rmax = 8.0, nlevels_per_channel = 2),
+    )
+    @test_throws ArgumentError add_isoscalar_annihilation(params, nn, mismatched_ss)
+    @test_throws ArgumentError add_isoscalar_annihilation(
+        params, nn, ss; pseudoscalar_targets = [0.5, 1.0, 1.5, 2.0],
+    )
+    @test_throws ArgumentError compute_spectrum(
+        params, Meson(mq, :q, :q);
+        levels = [
+            BasisState(1, "S", 3, 1),
+            BasisState(1, "S", 3, 1; label = "duplicate"),
+        ],
+        solver = solver,
+    )
+
+    # Architecture boundary: core model code must never learn paper-row types,
+    # target masses, or comparison assignment.
+    core_bridge = read(joinpath(root, "src", "flavor_mixing.jl"), String)
+    @test !occursin("ReferenceState", core_bridge)
+    @test !occursin("reference_GeV", core_bridge)
+    @test !occursin("compare_reference", core_bridge)
+
+    # The general builder retains the actual requested orbital channel in its
+    # shared basis; it must never relabel a P-wave block as an S wave.
+    p_level = BasisState(1, "P", 3, 2)
+    nnP = compute_spectrum(params, Meson(mq, :q, :q); levels = [p_level], solver = solver)
+    ssP = compute_spectrum(params, Meson(mq, :s, :s); levels = [p_level], solver = solver)
+    p_block = isoscalar_annihilation_block(
+        params, nnP, ssP, p_level; amplitude_A = params.annihilation.a_3p2,
+    )
+    @test all(basis.L_label == "P" for basis in p_block.block.basis)
+    @test all(basis.flavors in ((:q, :q), (:s, :s)) for basis in p_block.block.basis)
 end
 
 @testset "Annihilation phase convention, on the spectrum's own waves" begin
@@ -2331,7 +2485,7 @@ end
     # Applied without mutating the cached wave. Channel solutions already have
     # a deterministic outer-lobe phase; the annihilation convention may choose
     # the same or opposite sign for a particular radial excitation.
-    key = RadialChannelKey(spec.meson.constituent_masses, "S", 1, 0)
+    key = RadialChannelKey(only(spec.channels).constituent_masses, "S", 1, 0)
     cached = spec.computation.channel_cache[key]
     before = [copy(w.u) for w in cached.waves]
     raw = radial_wave(spec, "1^1S_0")

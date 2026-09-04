@@ -238,11 +238,11 @@ label = "Eq. (16)"
 page = 4
 statement = "General annihilation matrix element with the 4pi(2L+1), (alpha_i alpha_j/pi^2)^(n/2), S_L, and 1/(m_i m_j) factors."
 status = "implemented"
-code = ["src/pseudoscalar_annihilation.jl:isoscalar_general_annihilation_solution"]
-tests = ["annihilation blocks built from two spectra (no reference data)"]
+code = ["src/pseudoscalar_annihilation.jl:isoscalar_general_annihilation_solution", "src/flavor_mixing.jl:add_isoscalar_annihilation"]
+tests = ["annihilation blocks built from two spectra (no reference data)", "PA-16 final isoscalar spectrum owns flavor annihilation"]
 anchor = "paper/vision_ocr/page_images/page-004.png"
 parent = "sec-III"
-notes = "Used for 3S1 (A=+2.5) and 3P2 (A=-0.8) in the :table_iii scheme; the resulting omega/phi and f2/f2' eigenvectors match Table III (see table-iii mixing audit)."
+notes = "Used for 3S1 (A=+2.5) and 3P2 (A=-0.8) in the :table_iii scheme; the resulting omega/phi and f2/f2' eigenvectors match Table III. The eigensystem is owned by the final model Spectrum; only paper-row naming/order remains in GIPaper."
 
 [[unit]]
 id = "eq-17"
@@ -265,6 +265,7 @@ page = 5
 statement = "Pseudoscalar mixing model P1 bracket: A_np exp term plus the (2pi/3)(ln2-1) perturbative piece."
 status = "implemented"
 code = ["src/pseudoscalar_annihilation.jl:PaperP1Annihilation"]
+tests = ["PA-16 final isoscalar spectrum owns flavor annihilation"]
 anchor = "paper/vision_ocr/page_images/page-005.png"
 parent = "sec-III"
 notes = "The :p1 / PaperP1Annihilation mode; Table III constants loaded from [annihilation] in the parameters file."
@@ -277,6 +278,7 @@ page = 5
 statement = "Pseudoscalar mixing model P2 bracket: mass-dependent sign-changing A_np(1-(M/M0)^4) term plus the perturbative piece."
 status = "implemented"
 code = ["src/pseudoscalar_annihilation.jl:PaperP2Annihilation"]
+tests = ["annihilation blocks built from two spectra (no reference data)"]
 anchor = "paper/vision_ocr/page_images/page-005.png"
 parent = "sec-III"
 notes = "The :p2 / PaperP2Annihilation mode, solved as a mass-dependent fixed point (eigenvalue = input mass) so the isoscalar pseudoscalar poles are not treated as orthogonal."

@@ -18,8 +18,8 @@ HO caveat: the spin-independent Hamiltonian is assembled in the oscillator subsp
 | `strange` | 30 | 0 | 10.3 | 43.0 | 10.3 | 42.3 |
 | `charmed_strange` | 11 | 0 | 10.5 | 34.2 | 10.4 | 34.2 |
 | `charmed` | 11 | 0 | 13.0 | 35.2 | 13.0 | 35.2 |
+| `isoscalar` | 40 | 8 | 13.1 | 38.5 | n/a | n/a |
 | `isovector` | 30 | 0 | 14.0 | 55.0 | 13.9 | 53.1 |
-| `isoscalar` | 40 | 8 | 14.2 | 76.2 | n/a | n/a |
 
 ## State Table
 

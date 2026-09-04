@@ -73,10 +73,15 @@ function s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
         n = parse(Int, first(split(label)))
         flavor = last(split(label))
         channel = channels[flavor]
+        basis_flavor = flavor == "ns" ? :q : Symbol(first(flavor, 1))
         push!(
             basis,
             pseudoscalar_annihilation_basis_input(
-                label,
+                BasisState(
+                    n, "S", 1, 0;
+                    label = label,
+                    flavors = (basis_flavor, basis_flavor),
+                ),
                 channel.mass,
                 channel.levels[n],
                 fix_annihilation_phase(radial_wave(channel.solution, n));

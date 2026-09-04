@@ -197,6 +197,55 @@ end
 # are always assigned by reference-mass ordering here regardless of
 # `mixed_assignment` — the reference identity is what distinguishes the rows.
 
+function _annihilation_mixing(state::MixedState)
+    matches = [m for m in state.mixings if occursin("annihilation", m.mechanism)]
+    length(matches) == 1 || throw(ArgumentError(
+        "$(state.label) must carry exactly one annihilation result, got $(length(matches))",
+    ))
+    return only(matches)
+end
+
+function _annihilation_states(spec::MixedSpectrum, n_values, L, multiplicity, J)
+    states = [
+        state for state in spec.states if
+        state.n in n_values && state.L == L &&
+        state.multiplicity == multiplicity && state.J == J &&
+        any(m -> occursin("annihilation", m.mechanism), state.mixings)
+    ]
+    return sort(states; by = state -> state.mass_GeV)
+end
+
+function _annihilation_source_breakdown(
+    nn_spec::MixedSpectrum,
+    ss_spec::MixedSpectrum,
+    state::MixedState,
+)
+    source_spec = if state.basis.flavors == (:q, :q)
+        nn_spec
+    elseif state.basis.flavors == (:s, :s)
+        ss_spec
+    else
+        throw(ArgumentError(
+            "$(state.label) has unexpected isoscalar source flavors $(state.basis.flavors)",
+        ))
+    end
+    source = spectrum_state(
+        source_spec, state.n, state.L, state.multiplicity, state.J,
+    )
+    meson = only(source_spec.channels)
+    return (
+        m1_GeV = meson.constituent_masses.m1_GeV,
+        m2_GeV = meson.constituent_masses.m2_GeV,
+        central_GeV = source.central_GeV,
+        contact_shift_GeV = source.contact_shift_GeV,
+        spin_orbit_vector_shift_GeV = source.spin_orbit_vector_shift_GeV,
+        spin_orbit_thomas_shift_GeV = source.spin_orbit_thomas_shift_GeV,
+        spin_orbit_shift_GeV = source.spin_orbit_shift_GeV,
+        tensor_shift_GeV = source.tensor_shift_GeV,
+        fine_structure_shift_GeV = source.fine_structure_shift_GeV,
+    )
+end
+
 function _assign_pseudoscalar_rows!(
     rows::Vector{NamedTuple},
     scheme::Symbol,
@@ -216,31 +265,39 @@ function _assign_pseudoscalar_rows!(
     seen_n = Set(row.n for (_, row) in matches)
     (1 in seen_n && 2 in seen_n) || return rows
 
-    solution = if scheme == :calibrated_p1
+    final = if scheme == :calibrated_p1
         targets = sort([row.reference_GeV for (_, row) in matches])
-        pseudoscalar_annihilation_block(
-            CalibratedP1Annihilation(),
-            params,
-            nn_spec,
-            ss_spec;
-            targets = targets,
+        add_isoscalar_annihilation(
+            params, nn_spec, ss_spec;
+            pseudoscalar = CalibratedP1Annihilation(),
+            pseudoscalar_targets = targets,
         )
     elseif scheme in (:p1, :paper_p1)
-        pseudoscalar_annihilation_block(PaperP1Annihilation(), params, nn_spec, ss_spec)
+        add_isoscalar_annihilation(
+            params, nn_spec, ss_spec; pseudoscalar = PaperP1Annihilation(),
+        )
     else
-        pseudoscalar_annihilation_block(PaperP2Annihilation(), params, nn_spec, ss_spec)
+        add_isoscalar_annihilation(
+            params, nn_spec, ss_spec; pseudoscalar = PaperP2Annihilation(),
+        )
     end
 
+    physical = _annihilation_states(final, (1, 2), "S", 1, 0)
+    length(physical) == 4 || throw(ArgumentError(
+        "pseudoscalar annihilation did not produce four final model states",
+    ))
     ordered = sort(matches; by = item -> item[2].reference_GeV)
-    for (level, (i, row)) in enumerate(ordered)
-        predicted = solution.masses[level]
+    for ((i, row), state) in zip(ordered, physical)
+        predicted = state.mass_GeV
+        mixing = _annihilation_mixing(state)
         rows[i] = merge(
             row,
+            _annihilation_source_breakdown(nn_spec, ss_spec, state),
             (
-                annihilation_shift_GeV = predicted - row.predicted_GeV,
+                annihilation_shift_GeV = predicted - mixing.unmixed_GeV,
                 annihilation_scheme = String(scheme),
                 isoscalar_annihilation_scheme = String(scheme),
-                isoscalar_annihilation_unmixed_GeV = row.predicted_GeV,
+                isoscalar_annihilation_unmixed_GeV = mixing.unmixed_GeV,
                 predicted_GeV = predicted,
                 residual_MeV = 1000 * (predicted - row.reference_GeV),
             ),
@@ -264,23 +321,26 @@ function _assign_general_s1_rows!(
         row.n == 1
     ]
     length(matches) == 2 || return rows
-    solution = isoscalar_annihilation_block(
-        params,
-        nn_spec,
-        ss_spec,
-        BasisState(1, "S", 3, 1);
-        amplitude_A = params.annihilation.s1_A,
+    final = add_isoscalar_annihilation(
+        params, nn_spec, ss_spec;
+        amplitudes = Dict(("S", 3, 1) => params.annihilation.s1_A),
     )
+    physical = _annihilation_states(final, (1,), "S", 3, 1)
+    length(physical) == 2 || throw(ArgumentError(
+        "general S-wave annihilation did not produce two final model states",
+    ))
     ordered = sort(matches; by = item -> item[2].reference_GeV)
-    for (level, (i, row)) in enumerate(ordered)
-        predicted = solution.masses[level]
+    for ((i, row), state) in zip(ordered, physical)
+        predicted = state.mass_GeV
+        mixing = _annihilation_mixing(state)
         rows[i] = merge(
             row,
+            _annihilation_source_breakdown(nn_spec, ss_spec, state),
             (
-                annihilation_shift_GeV = predicted - row.predicted_GeV,
+                annihilation_shift_GeV = predicted - mixing.unmixed_GeV,
                 annihilation_scheme = "general_s1",
                 isoscalar_annihilation_scheme = "general_s1",
-                isoscalar_annihilation_unmixed_GeV = row.predicted_GeV,
+                isoscalar_annihilation_unmixed_GeV = mixing.unmixed_GeV,
                 predicted_GeV = predicted,
                 residual_MeV = 1000 * (predicted - row.reference_GeV),
             ),
@@ -317,19 +377,24 @@ function _assign_table_iii_rows!(
             scheme = "ideal"
             components = [(1.0, 0.0), (0.0, 1.0)]
         else
-            solution = isoscalar_annihilation_block(
-                params,
-                nn_spec,
-                ss_spec,
-                level;
-                amplitude_A = amplitude,
+            final = add_isoscalar_annihilation(
+                params, nn_spec, ss_spec;
+                amplitudes = Dict((L_label, multiplicity, J) => amplitude),
             )
-            predicted = solution.masses
+            physical = _annihilation_states(final, (n,), L_label, multiplicity, J)
+            length(physical) == 2 || throw(ArgumentError(
+                "annihilation did not produce two final model states for $(level.label)",
+            ))
+            predicted = [state.mass_GeV for state in physical]
             scheme = "general_eq16"
-            components = [
-                (solution.vectors[1, 1], solution.vectors[2, 1]),
-                (solution.vectors[1, 2], solution.vectors[2, 2]),
-            ]
+            components = map(physical) do state
+                mixing = _annihilation_mixing(state)
+                vector = mixing.components
+                basis = mixing.result.block.basis
+                ins = findfirst(b -> b.flavors == (:q, :q), basis)
+                iss = findfirst(b -> b.flavors == (:s, :s), basis)
+                (vector[ins], vector[iss])
+            end
         end
 
         for (lvl, irow) in enumerate(ordered)
@@ -337,18 +402,22 @@ function _assign_table_iii_rows!(
             unmixed = lvl == 1 ? ns_pred : ss_pred
             # The heavier row is dominantly `s sbar`: rewrite its fixed-sector
             # breakdown columns from the strange channel so reports stay truthful.
-            diag_update = lvl == 2 ?
-                (
-                    m1_GeV = ss_spec.meson.constituent_masses.m1_GeV,
-                    m2_GeV = ss_spec.meson.constituent_masses.m2_GeV,
-                    central_GeV = ss.central_GeV,
-                    contact_shift_GeV = ss.contact_shift_GeV,
-                    spin_orbit_vector_shift_GeV = ss.spin_orbit_vector_shift_GeV,
-                    spin_orbit_thomas_shift_GeV = ss.spin_orbit_thomas_shift_GeV,
-                    spin_orbit_shift_GeV = ss.spin_orbit_shift_GeV,
-                    tensor_shift_GeV = ss.tensor_shift_GeV,
-                    fine_structure_shift_GeV = ss.fine_structure_shift_GeV,
-                ) : NamedTuple()
+            diag_update = scheme == "general_eq16" ?
+                _annihilation_source_breakdown(
+                    nn_spec, ss_spec, physical[lvl],
+                ) :
+                (lvl == 2 ?
+                    (
+                        m1_GeV = only(ss_spec.channels).constituent_masses.m1_GeV,
+                        m2_GeV = only(ss_spec.channels).constituent_masses.m2_GeV,
+                        central_GeV = ss.central_GeV,
+                        contact_shift_GeV = ss.contact_shift_GeV,
+                        spin_orbit_vector_shift_GeV = ss.spin_orbit_vector_shift_GeV,
+                        spin_orbit_thomas_shift_GeV = ss.spin_orbit_thomas_shift_GeV,
+                        spin_orbit_shift_GeV = ss.spin_orbit_shift_GeV,
+                        tensor_shift_GeV = ss.tensor_shift_GeV,
+                        fine_structure_shift_GeV = ss.fine_structure_shift_GeV,
+                    ) : NamedTuple())
             rows[irow] = merge(
                 row,
                 diag_update,
@@ -463,10 +532,14 @@ function compare_reference(
     specs = Vector{MixedSpectrum}(undef, length(mesons))
     states = Vector{MixedState}(undef, length(kept))
     for g in eachindex(mesons)
-        levels = [
-            BasisState(kept[i].n, kept[i].L, kept[i].multiplicity, kept[i].J) for
-            i in group_rows[g]
-        ]
+        levels = BasisState[]
+        seen_levels = Set{Tuple{Int,String,Int,Int}}()
+        for i in group_rows[g]
+            key = (kept[i].n, kept[i].L, kept[i].multiplicity, kept[i].J)
+            key in seen_levels && continue
+            push!(seen_levels, key)
+            push!(levels, BasisState(key...))
+        end
         specs[g] = compute_spectrum(
             params, mesons[g];
             levels = levels,
@@ -478,8 +551,10 @@ function compare_reference(
                 tensor = tensor_mixing,
             ),
         )
-        for (k, i) in enumerate(group_rows[g])
-            states[i] = specs[g].states[k]
+        for i in group_rows[g]
+            states[i] = spectrum_state(
+                specs[g], kept[i].n, kept[i].L, kept[i].multiplicity, kept[i].J,
+            )
         end
     end
 

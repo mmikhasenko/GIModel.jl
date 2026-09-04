@@ -15,7 +15,10 @@ using Printf
 const ROOT = dirname(dirname(dirname(abspath(@__FILE__))))   # scripts -> GIPaper -> repo
 const MANIFEST_DIR = joinpath(ROOT, "docs", "paper_manifest")
 const REPORT = joinpath(ROOT, "GIPaper", "docs", "residual_reports", "manifest_check.md")
-const RUNTESTS = joinpath(ROOT, "test", "runtests.jl")
+const TEST_FILES = [
+    joinpath(ROOT, "test", "runtests.jl"),
+    joinpath(ROOT, "GIPaper", "test", "runtests.jl"),
+]
 
 const STATUSES = Set(["reproduced", "partial", "implemented", "folded", "context", "missing", "todo"])
 const KINDS = Set(["equation", "table", "figure", "section", "input", "fit"])
@@ -49,7 +52,10 @@ end
 function main()
     units = load_units()
     ids = Set(u["id"] for u in units)
-    runtests = isfile(RUNTESTS) ? read(RUNTESTS, String) : ""
+    runtests = join(
+        (read(path, String) for path in TEST_FILES if isfile(path)),
+        "\n",
+    )
     # cache file contents for symbol checks
     filecache = Dict{String,String}()
     readcached(p) = get!(filecache, p) do
@@ -78,7 +84,10 @@ function main()
         end
         # tests[]: name must occur in runtests.jl
         for t in get(u, "tests", String[])
-            occursin(String(t), runtests) || push!(problems, (id, "test `$t` not found in test/runtests.jl"))
+            occursin(String(t), runtests) || push!(
+                problems,
+                (id, "test `$t` not found in core or GIPaper test/runtests.jl"),
+            )
         end
         # report / anchor: file must exist (if given)
         for key in ("report", "anchor")

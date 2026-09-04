@@ -44,7 +44,8 @@ label = "Table III"
 page = 11
 statement = "Mixed isoscalar compositions (eta/eta', omega/phi, ... ) for n=1,2 from the general annihilation-mixing amplitude Eq. (16)."
 status = "reproduced"
-code = ["src/state_mixing.jl", "src/flavor_mixing.jl", "GIPaper/scripts/audit_table_iii_mixings.jl"]
+code = ["src/state_mixing.jl", "src/flavor_mixing.jl:add_isoscalar_annihilation", "GIPaper/scripts/audit_table_iii_mixings.jl"]
+tests = ["PA-16 final isoscalar spectrum owns flavor annihilation", "table_iii isoscalar scheme: ideal mixing + general Eq.(16)"]
 report = "GIPaper/docs/residual_reports/table_iii_mixing_audit.md"
 anchor = "paper/vision_ocr/page_images/page-011.png"
 parent = "sec-III"

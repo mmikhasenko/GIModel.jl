@@ -8,8 +8,9 @@
     MixingMechanism
 
 Marker supertype for post-fixed-sector mixing mechanisms. These objects name
-which paper mass-matrix contribution is being assigned at the comparison layer;
-they are not radial solver paths.
+which mass-matrix contribution is being applied to model states; they are not
+radial solver paths. The same bookkeeping covers intra-channel spin mixing and
+cross-channel flavor annihilation.
 """
 abstract type MixingMechanism end
 
@@ -23,11 +24,13 @@ struct TensorMixing <: MixingMechanism end
 struct IsoscalarAnnihilation <: MixingMechanism end
 
 """
-    BasisState(n, L_label, multiplicity, J; label="")
+    BasisState(n, L_label, multiplicity, J; label="", flavors=nothing)
 
-Pure spectroscopic basis state used by a mixing block. This intentionally
-contains only quantum-number bookkeeping; radial matrix elements and physical
-couplings are supplied by the block builder for each mixing mechanism.
+One spectroscopic/flavor basis state used by a mixing block. `flavors` is
+`nothing` for a representation-independent request and `(flavor1, flavor2)`
+once the request belongs to a solved meson channel. Flavor is explicit state
+identity rather than being inferred from display labels such as `"1 ns"`.
+Radial matrix elements and physical couplings are supplied by the block builder.
 """
 struct BasisState
     n::Int
@@ -35,21 +38,43 @@ struct BasisState
     multiplicity::Int
     J::Int
     label::String
+    flavors::Union{Nothing,Tuple{Symbol,Symbol}}
     function BasisState(
         n::Integer,
         L_label::AbstractString,
         multiplicity::Integer,
         J::Integer;
         label::AbstractString = "",
+        flavors = nothing,
     )
         nf = Int(n)
         mf = Int(multiplicity)
         jf = Int(J)
         lf = String(L_label)
+        nf >= 1 || throw(ArgumentError("BasisState: n must be positive"))
+        mf in (1, 3) || throw(ArgumentError(
+            "BasisState: multiplicity must be 1 or 3",
+        ))
+        jf >= 0 || throw(ArgumentError("BasisState: J must be non-negative"))
         label_s = isempty(label) ? @sprintf("%d^%d%s_%d", nf, mf, lf, jf) : String(label)
-        return new(nf, lf, mf, jf, label_s)
+        flavor_pair = if isnothing(flavors)
+            nothing
+        else
+            length(flavors) == 2 || throw(ArgumentError(
+                "BasisState: `flavors` must contain exactly two symbols",
+            ))
+            (_canonical_flavor(Symbol(flavors[1])), _canonical_flavor(Symbol(flavors[2])))
+        end
+        return new(nf, lf, mf, jf, label_s, flavor_pair)
     end
 end
+
+_with_flavors(state::BasisState, meson::Meson; label::AbstractString = state.label) =
+    BasisState(
+        state.n, state.L_label, state.multiplicity, state.J;
+        label = label,
+        flavors = (meson.flavor1, meson.flavor2),
+    )
 
 """
     MixingBlock(name, basis, matrix; mechanism="", source="", notes="")
@@ -74,6 +99,14 @@ struct MixingBlock
         notes::AbstractString = "",
     )
         n = length(basis)
+        n > 0 || throw(ArgumentError("MixingBlock $name: basis must not be empty"))
+        identities = [
+            (state.n, state.L_label, state.multiplicity, state.J, state.flavors) for
+            state in basis
+        ]
+        length(unique(identities)) == n || throw(ArgumentError(
+            "MixingBlock `$name`: basis contains duplicate spectroscopic/flavor identities",
+        ))
         size(matrix) == (n, n) ||
             throw(ArgumentError(
                 "MixingBlock `$name`: matrix size $(size(matrix)) does not match basis length $n",
@@ -93,15 +126,61 @@ struct MixingBlock
 end
 
 """
-    MixingResult(block, masses, vectors)
+    MixingResult(block, masses, vectors[, pole_matrices])
 
-Eigen-decomposition of a [`MixingBlock`](@ref). Columns of `vectors` are
-components in `block.basis`, ordered by ascending `masses`.
+Solution of a [`MixingBlock`](@ref). Columns of `vectors` are components in
+`block.basis`, ordered by ascending `masses`. `pole_matrices` is empty for an
+ordinary Hermitian eigensystem. It contains one effective matrix per pole only
+for the mass-dependent Eq. (18b) fixed-point problem.
 """
 struct MixingResult
     block::MixingBlock
     masses::Vector{Float64}
     vectors::Matrix{Float64}
+    pole_matrices::Vector{Matrix{Float64}}
+    function MixingResult(
+        block::MixingBlock,
+        masses::AbstractVector{<:Real},
+        vectors::AbstractMatrix{<:Real},
+        pole_matrices::AbstractVector{<:AbstractMatrix} = Matrix{Float64}[],
+    )
+        n = length(block.basis)
+        length(masses) == n || throw(ArgumentError(
+            "MixingResult: mass count does not match block basis",
+        ))
+        values = collect(Float64, masses)
+        all(isfinite, values) || throw(ArgumentError(
+            "MixingResult: masses must be finite",
+        ))
+        issorted(values) || throw(ArgumentError(
+            "MixingResult: masses must be ordered ascending with the vector columns",
+        ))
+        size(vectors) == (n, n) || throw(ArgumentError(
+            "MixingResult: vector matrix size does not match block basis",
+        ))
+        all(isfinite, vectors) || throw(ArgumentError(
+            "MixingResult: vectors must be finite",
+        ))
+        all(
+            isapprox(sum(abs2, view(vectors, :, column)), 1.0; rtol = 1e-8, atol = 1e-10)
+            for column in axes(vectors, 2)
+        ) || throw(ArgumentError(
+            "MixingResult: every vector column must have unit norm",
+        ))
+        isempty(pole_matrices) || length(pole_matrices) == n || throw(ArgumentError(
+            "MixingResult: pole_matrices must be empty or contain one matrix per pole",
+        ))
+        matrices = Matrix{Float64}[Matrix{Float64}(matrix) for matrix in pole_matrices]
+        all(size(matrix) == (n, n) for matrix in matrices) || throw(ArgumentError(
+            "MixingResult: every pole matrix must match the block basis",
+        ))
+        return new(
+            block,
+            values,
+            Matrix{Float64}(vectors),
+            matrices,
+        )
+    end
 end
 
 """

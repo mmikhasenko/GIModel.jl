@@ -190,7 +190,7 @@ function trajectories(p, grid)
         for (i, state) in enumerate(s.states)
             M[i, j] = state.mass_GeV
         end
-        total[j] = s.meson.constituent_masses.m1_GeV + s.meson.constituent_masses.m2_GeV
+        total[j] = only(s.channels).constituent_masses.m1_GeV + only(s.channels).constituent_masses.m2_GeV
     end
     row(label) = findfirst(l -> l.label == label, levels)
     hf = 1e3 .* (M[row("1^3S_1"), :] .- M[row("1^1S_0"), :])
@@ -262,7 +262,7 @@ splitting in MeV.
 """
 function snapshot(p, mass_GeV, subtract)
     s = spectrum_at(p, mass_GeV)
-    cm = s.meson.constituent_masses
+    cm = only(s.channels).constituent_masses
     shift = subtract ? cm.m1_GeV + cm.m2_GeV : 0.0
     ys = [state.mass_GeV - shift for state in s.states]
     hf = 1e3 * (spectrum_state(s, "1^3S_1").mass_GeV - spectrum_state(s, "1^1S_0").mass_GeV)

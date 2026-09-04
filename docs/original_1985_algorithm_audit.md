@@ -26,15 +26,17 @@ integration steps:
 5. expose the resulting physical eigenstates and their wavefunctions to all
    observables.
 
-Steps 1-3 and the spectroscopic part of step 5 are now implemented. Native HO
+Steps 1-4 and the state-composition part of step 5 are now implemented. Native HO
 contact, spin-orbit, and tensor matrices enter one fixed-sector Hamiltonian;
 `compute_spectrum` caches the resulting `(L,S,J)` waves; complete requested
 radial subspaces enter the later tensor/antisymmetric-spin-orbit blocks; and
-`physical_components` resolves the final signed component waves. HO has no
-`ngrid`/`rmax` fields and no mesh-operator fallback.
+`physical_components` resolves the final signed component waves through both
+spectroscopic and flavor mixing. HO has no `ngrid`/`rmax` fields and no
+mesh-operator fallback.
 
-Still open are automatic HO basis/beta convergence records and step 4: folding
-isoscalar annihilation into the same model-level physical-state pipeline.
+Still open are automatic HO basis/beta convergence records, migration of every
+flavor-sensitive observable to the final composition, and removal or formal
+isolation of the fitted spin bridge factors.
 
 Therefore:
 
@@ -42,8 +44,9 @@ Therefore:
   calculation;
 - `compute_spectrum(...; solver = OscillatorSolver())` now implements the
   paper's native fixed-sector and spectroscopic-mixing stages;
-- isoscalar annihilation remains a separately invoked block, so the end-to-end
-  three-stage paper algorithm is not yet one call;
+- `compute_isoscalar_spectrum(...; solver=OscillatorSolver())` is the
+  reference-free end-to-end three-stage entry point when explicit annihilation
+  models/amplitudes are supplied;
 - FD remains valuable as an independent convergence and implementation
   comparator, but it should not define the paper-faithful execution path.
 
@@ -112,8 +115,10 @@ flowchart TD
 the production calculation neither calls it nor retains its cache. Both
 solvers follow the production path in their native representations.
 `radial_wave` returns the fixed-sector wave for an unmixed state;
-`physical_components` returns coefficient/wave pairs for a mixed state.
-Isoscalar annihilation is still invoked later through `flavor_mixing.jl`.
+`physical_components` returns flavor-tagged coefficient/wave pairs for a mixed
+state and recursively composes spectroscopic and annihilation transformations.
+`compute_isoscalar_spectrum` owns the final two-flavor result; GIPaper only
+assigns those model eigenstates to named reference rows.
 
 ```mermaid
 flowchart TD
@@ -128,8 +133,10 @@ flowchart TD
     COR --> IM["add_intra_meson_mixing"]
     IM --> MX["complete requested radial blocks from spin-resolved waves"]
     MX --> MS["MixedState + shared MixingResult"]
-    MS --> PC["physical_components"]
-    MS -. "outside public spectrum" .-> AN["GIPaper isoscalar annihilation assignment"]
+    MS --> AN["add_isoscalar_annihilation: explicit Eq. 16-18 blocks"]
+    AN --> FM["final two-channel MixedSpectrum + shared MixingResult"]
+    FM --> PC["physical_components: recursive spectroscopic + flavor composition"]
+    FM -. "reference names/order only" .-> GP["GIPaper row assignment"]
 ```
 
 ## Capability and gap matrix (current)
@@ -160,9 +167,9 @@ Status vocabulary:
 | Stage-2 tensor matrix in the basis of first-stage eigenvectors | `tensor_mixing_components`, `MixingBlock`, `MixingResult` | implemented | Uses every compatible requested radial state. |
 | Stage-2 antisymmetric spin-orbit matrix | two-wave `spin_orbit_mixing_components`, `MixingBlock`, `MixingResult` | implemented | Uses distinct singlet/triplet fixed-sector waves. |
 | General simultaneous radial/spectroscopic mixing | complete blocks in `_apply_same_j_spin_orbit_mixing!` and `_apply_tensor_mixing!` | implemented for disjoint paper mechanisms | A future overlapping mechanism must be assembled in one block, not applied sequentially. |
-| Stage-3 annihilation and flavor/radial mixing | `isoscalar_annihilation_block`, `pseudoscalar_annihilation_block`, general Eq. (16), P1/P2, and GIPaper assignment | implemented kernels, external orchestration | Add a model-level physical-spectrum orchestrator. Keep calibrated P1 clearly separate from the literal paper P1/P2 modes. |
-| Final physical wavefunction/eigenvector | `StateMixing` + `MixingResult`; `physical_components` | implemented for spectroscopic mixing | Flavor-annihilation composition awaits integration. |
-| One paper-order spectrum entry point | `compute_spectrum(...; solver=OscillatorSolver())` | implemented through spectroscopic stage | Fold annihilation into the entry point and add convergence certification. |
+| Stage-3 annihilation and flavor/radial mixing | `add_isoscalar_annihilation`, general Eq. (16), P1/P2 | integrated | Model-order assignment and final composition live in GIModel; reference naming/order and calibrated targets remain explicit in GIPaper. |
+| Final physical wavefunction/eigenvector | `StateMixing` + `MixingResult`; recursive `physical_components` | implemented | Every component carries explicit flavor identity and its solver-native wave. |
+| One paper-order spectrum entry point | `compute_isoscalar_spectrum(...; solver=OscillatorSolver())` | implemented, uncertified | Add automatic convergence and remove/isolate fitted spin bridge factors before headline certification. |
 | Independent FD validation | `FiniteDifferenceSolver` | extra, useful | Preserve as a convergence/reference implementation, not as a hidden dependency of paper mode. |
 
 ## Code evidence map
@@ -177,7 +184,7 @@ Status vocabulary:
 | Cross-sector blocks consume spin-resolved waves and all requested radial levels | [`src/spectrum.jl`](../src/spectrum.jl) |
 | A mixed state resolves to signed native component waves and cannot masquerade as one radial wave | [`physical_components` and `radial_wave` in `src/spectrum.jl`](../src/spectrum.jl) |
 | Annihilation projects the physical composition coherently into the requested channel | [`src/flavor_mixing.jl`](../src/flavor_mixing.jl), [`src/pseudoscalar_annihilation.jl`](../src/pseudoscalar_annihilation.jl) |
-| Flavor-annihilation eigenstates are still returned outside `Spectrum` | [`src/flavor_mixing.jl`](../src/flavor_mixing.jl), [`GIPaper/src/comparison.jl`](../GIPaper/src/comparison.jl) |
+| Flavor-annihilation eigenstates, masses, and native components share the final `Spectrum` | [`src/flavor_mixing.jl`](../src/flavor_mixing.jl), [`src/spectrum.jl`](../src/spectrum.jl) |
 
 ## Architectural conclusion after implementation
 
@@ -195,18 +202,19 @@ embedding a central precursor. Pairwise scalar angles were deliberately removed 
 state because a complete multi-radial block has no unique angle. Reports derive
 an explicitly stated two-row projection from the shared eigenvector instead.
 
-## What "external annihilation orchestration" means
+## What remains external after PA-16
 
-The core can build and diagonalize Eq. (16)-Eq. (18) annihilation blocks from
-two already solved nonstrange/strange spectra. It returns the flavor-mixed
-masses and eigenvectors. What is still external is the ownership of the result:
-`GIPaper.compare_reference` chooses a channel-specific annihilation scheme,
-calls those kernels, assigns the returned eigenvalues to report rows using
-reference ordering, and copies selected flavor coefficients into named tuples.
-The resulting eigenvectors are not stored in `Spectrum`, so a later observable
-cannot ask the model spectrum for the final flavor composition. PA-16 is the
-work of making that eigensystem a model-level final state without importing
-reference-row assignment conventions into GIModel.
+GIModel now owns construction, diagonalization, model-order assignment, final
+masses, and component resolution for Eq. (16)-Eq. (18). `Spectrum.channels`
+holds the nonstrange and strange solved sectors, while one shared
+`MixingResult` supplies each annihilation eigensystem. `physical_components`
+recursively flattens earlier tensor/spin-orbit mixing with the later flavor
+mixing.
+
+Only comparison semantics remain external: `GIPaper.compare_reference` chooses
+which explicit model/control to request, supplies digitized targets for the
+calibrated control, and maps ascending model eigenstates to named paper rows by
+reference ordering. Those choices do not modify the model spectrum.
 
 ## Nonrelativistic and alternative central paths
 
@@ -228,20 +236,18 @@ relativistic Hamiltonian.
 1. **PA-12: convergence control.** Refine beta beyond the current discrete
    grid, enlarge `nbasis` automatically, record achieved tolerances, and fail or
    warn when a requested sector is not converged.
-2. **PA-16: flavor annihilation integration.** Apply literal Eq. (16)-Eq. (18)
-   after spectroscopic mixing inside a model-level physical-spectrum
-   orchestrator. The kernels already consume coherent spectroscopic
-   components, but their flavor eigensystem is still returned separately.
-3. **PA-17/18: consumer and headline certification.** Make flavor-mixed
+2. **PA-17: final-state consumers.** Make flavor-mixed
    observables consume that final composition, remove the fitted
-   `k_spin_orbit`/`k_tensor` bridge from paper mode after calibration is settled,
-   and add convergence reports to the full gate.
+   precursor-vector paths, and retain one coherent phase convention.
+3. **PA-18: native-HO paper certification.** Remove the fitted
+   `k_spin_orbit`/`k_tensor` bridge from paper mode after calibration is settled
+   and add HO convergence reports to the full gate. FD remains a separate
+   implementation comparator, not a PA-18 acceptance criterion.
 
 Outstanding acceptance tests are correspondingly narrow: automatic basis/beta
-convergence metadata, an end-to-end isoscalar state whose mass/eigenvector and
-observables share one composition, and a paper-mode validation without hidden
-spin bridge scales. Native HO/FD fixed-sector agreement, mixed-state
-provenance, cross-wave elements, and enlarged radial blocks are covered now.
+convergence metadata, flavor-sensitive observables consuming the final
+composition, and native-HO paper validation without hidden spin bridge scales.
+The end-to-end isoscalar mass/eigenvector/composition invariant is covered now.
 
 ## What should remain unchanged
 
@@ -265,7 +271,7 @@ Hamiltonian once, uses complete requested cross-sector radial blocks, and
 exposes resolvable physical component waves. It does not reconstruct HO states
 on an FD mesh or run a central-only precursor in production.
 
-The remaining gap to a single end-to-end 1985 calculation is smaller and
-explicit: automatic basis/beta convergence, removal or formal isolation of the
-fitted spin bridge factors, and integration of the already implemented flavor
-annihilation eigensystem into the final `Spectrum` state composition.
+The remaining gap to a certified 1985 calculation is now numerical and
+consumer-facing: automatic basis/beta convergence, migration of all observables
+to the final flavor composition, and removal or formal isolation of the fitted
+spin bridge factors. FD validation remains useful but separate from that claim.

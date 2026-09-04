@@ -94,7 +94,7 @@ include("state_mixing.jl")
 export CalibratedP1Annihilation,
     PaperP1Annihilation,
     PaperP2Annihilation,
-    FDMomentumIntegralSmearing,
+    MomentumIntegralSmearing,
     pseudoscalar_annihilation_basis_input,
     fix_annihilation_phase!,
     isoscalar_pseudoscalar_annihilation_solution,
@@ -140,7 +140,8 @@ export radial_wave,
 include("spectrum.jl")
 
 export annihilation_basis_input, fix_annihilation_phase,
-    isoscalar_annihilation_block, pseudoscalar_annihilation_block
+    isoscalar_annihilation_block, pseudoscalar_annihilation_block,
+    add_isoscalar_annihilation, compute_isoscalar_spectrum
 include("flavor_mixing.jl")
 
 # =============================================================================

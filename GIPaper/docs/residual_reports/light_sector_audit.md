@@ -16,14 +16,14 @@ This report separates raw sector residuals from the rows that should be judged b
 | `charmed` | 11 | 13.0 | 35.2 | 11 | 13.0 | 35.2 | 0 |
 | `charmed_strange` | 11 | 10.5 | 34.2 | 11 | 10.5 | 34.2 | 0 |
 | `charmonium` | 28 | 5.8 | 18.2 | 28 | 5.8 | 18.2 | 0 |
-| `isoscalar` | 48 | 12.0 | 76.2 | 40 | 14.2 | 76.2 | 8 |
+| `isoscalar` | 48 | 11.1 | 38.5 | 40 | 13.1 | 38.5 | 8 |
 | `isovector` | 30 | 14.0 | 55.0 | 30 | 14.0 | 55.0 | 0 |
 | `strange` | 30 | 10.3 | 43.0 | 30 | 10.3 | 43.0 | 0 |
 
 ## Isoscalar Two-Branch Sanity Check
 
 The digitized isoscalar figure lists mixed `n nbar / s sbar` pairs. Comparing both partners to the same `n nbar` radial solution creates an artificial sector-wide failure. As a diagnostic only, the lower member of each pair is compared to an unmixed `n nbar` prediction and the upper member to an unmixed `s sbar` prediction.
-Two-branch diagnostic: rows=48, mean abs=30.8 MeV, max abs=425.0 MeV.
+Two-branch diagnostic: rows=48, mean abs=30.6 MeV, max abs=425.0 MeV.
 
 | state | branch | ref | pred | residual MeV |
 |---|---|---:|---:|---:|
@@ -37,10 +37,10 @@ Two-branch diagnostic: rows=48, mean abs=30.8 MeV, max abs=425.0 MeV.
 | `2^1P_1` | `lower vs nn` | 1.780 | 1.807 |   +27.1 |
 | `1^3P_1` | `lower vs nn` | 1.240 | 1.266 |   +26.2 |
 | `2^3P_0` | `lower vs nn` | 1.780 | 1.756 |   -24.5 |
+| `1^3S_1` | `lower vs nn` | 0.780 | 0.757 |   -22.8 |
+| `1^3G_3` | `lower vs nn` | 2.370 | 2.347 |   -22.6 |
 | `1^3G_5` | `upper vs ss` | 2.470 | 2.492 |   +22.3 |
-| `1^3G_3` | `lower vs nn` | 2.370 | 2.348 |   -22.2 |
-| `1^3S_1` | `lower vs nn` | 0.780 | 0.760 |   -19.9 |
-| `1^3G_3` | `upper vs ss` | 2.540 | 2.521 |   -18.7 |
+| `1^3G_3` | `upper vs ss` | 2.540 | 2.521 |   -19.0 |
 | `1^3G_5` | `lower vs nn` | 2.300 | 2.318 |   +17.6 |
 | `2^1P_1` | `upper vs ss` | 2.010 | 2.027 |   +17.0 |
 

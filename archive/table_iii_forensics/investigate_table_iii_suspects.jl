@@ -123,11 +123,11 @@ function smearing_factor(b::BasisProbe, variant::Symbol)
     elseif variant == :origin_abs
         return abs(R0)
     elseif variant == :momentum_integral
-        return GIModel._s0_smearing_factor(GIModel.FDMomentumIntegralSmearing(), input)
+        return GIModel._s0_smearing_factor(GIModel.MomentumIntegralSmearing(), input)
     elseif variant == :origin_p2_coherent
         return GIModel._flavor_coherence_factor(input) * abs(R0) * rel / sqrt(4π)
     elseif variant == :momentum_integral_coherent
-        return GIModel._annihilation_overlap_factor(GIModel.FDMomentumIntegralSmearing(), input)
+        return GIModel._annihilation_overlap_factor(GIModel.MomentumIntegralSmearing(), input)
     else
         error("unknown smearing variant $variant")
     end

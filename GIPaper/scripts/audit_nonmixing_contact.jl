@@ -222,7 +222,8 @@ end
 
 function compare_isoscalar_branch(params, reference, mass)
     meson = Meson(LightQuark(mass), LightQuark(mass))
-    levels = [BasisState(r.n, r.L, r.multiplicity, r.J) for r in reference]
+    level_keys = unique((r.n, r.L, r.multiplicity, r.J) for r in reference)
+    levels = [BasisState(key...) for key in level_keys]
     spec = compute_spectrum(
         params, meson;
         levels = levels,
@@ -230,7 +231,8 @@ function compare_isoscalar_branch(params, reference, mass)
         terms = SpinTerms(
             contact_hyperfine = true, fine_structure = params.fine_structure.enabled),
     )
-    return [
+    return map(reference) do r
+        st = spectrum_state(spec, r.n, r.L, r.multiplicity, r.J)
         (
             state = r.composition,
             n = r.n,
@@ -238,8 +240,8 @@ function compare_isoscalar_branch(params, reference, mass)
             L = r.L,
             J = r.J,
             predicted_GeV = st.mass_GeV,
-        ) for (r, st) in zip(reference, spec.states)
-    ]
+        )
+    end
 end
 
 function isoscalar_branch_key(row)

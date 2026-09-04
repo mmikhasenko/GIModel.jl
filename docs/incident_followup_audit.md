@@ -82,9 +82,9 @@ latter identifies a fixed sector (`L,S,J`) before radial eigenlevels exist.
 The work is intentionally split among existing repository mechanisms:
 
 - `docs/paper_algorithm_work_plan.md` is the dependency-ordered executable
-  queue. PA-01--PA-11 and PA-13--PA-15 are complete; PA-12 (automatic
-  convergence) and completion of PA-16 (placing flavor-annihilation results in
-  the final spectrum) are the next independent units.
+  queue. PA-01--PA-11 and PA-13--PA-16 are complete; PA-12 (automatic
+  convergence) and PA-17 (final-composition consumers) are the next independent
+  units.
 - `docs/engineering_work_plan.md` records cross-cutting code invariants and
   mistakes that must not recur.
 - `docs/original_1985_algorithm_audit.md` records the paper-vs-code algorithm
@@ -123,6 +123,6 @@ tests.
   103-unit manifest anti-drift check. The final phase-dispatch consolidation was
   then rechecked by both package suites, the Table III audit, and manifest check.
 
-The remaining PA-12/PA-16--PA-18 work is not cleanup from this incident. It is
-automatic numerical certification, flavor-annihilation integration, and final
-headline-path certification.
+The remaining PA-12/PA-17--PA-18 work is not cleanup from this incident. It is
+automatic numerical convergence, final-composition consumer migration, and
+native-HO headline-path certification.

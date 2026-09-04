@@ -53,9 +53,10 @@ requested radial subspaces enter the later antisymmetric-spin-orbit and tensor
 blocks. `physical_components` exposes the resulting signed composition, while
 `radial_wave` rejects mixed states instead of returning a precursor.
 
-The remaining physics work is sharply smaller: automatic HO basis/beta
-convergence metadata and integration of flavor-annihilation blocks into the
-same model-level physical-state pipeline.
+Flavor-annihilation blocks now enter the same model-level physical-state
+pipeline. The remaining physics work is automatic HO basis/beta convergence,
+consumer migration onto the final flavor composition, and paper-path
+certification without unexplained spin bridge factors.
 
 ## Forensic trace of the unfinished abstraction
 
@@ -93,14 +94,10 @@ fixed-`j,l,s` plus mixed physical state.
 | Matrix-element name | exported `matrix_element` generic | Extend it with radial/operator methods if a general operator protocol is adopted. Do not create a second synonymous public function. |
 | HO operator construction | `ho_p2_matrix`, `ho_operator_matrix`, `oscillator_momentum_factor_matrix`, ordinary matrices | Reuse as implementation primitives. Add small operator descriptors only where dispatch must preserve an unevaluated A17 sandwich; do not wrap every existing matrix in a second object graph. |
 
-One result duplication remains outside the spectroscopic pipeline:
-
-1. Four annihilation paths construct a `MixingBlock` and then return named
-   tuples repeating the block, masses, and vectors instead of returning a
-   `MixingResult` plus only their genuinely additional diagnostics.
-
-These are compatibility migrations, not reasons to add another state/result
-hierarchy.
+The former result duplication is gone: all annihilation paths now return the
+same `MixingResult`. The mass-dependent P2 result records its genuinely
+different per-pole effective matrices in that object rather than wrapping a
+second copy of block, masses, and vectors.
 
 ## Basis, radial solution, and physical state are different objects
 
@@ -159,7 +156,7 @@ end
 
 radial_wave(solution::ChannelRadialSolution, n)
 radial_wave(spectrum::Spectrum, state::BasisState) # return stage-correct wave/components
-state_components(spectrum::Spectrum, state::MixedState)
+physical_components(spectrum::Spectrum, state::MixedState)
 
 wave_norm(w::RadialWave)
 radial_expect(w::RadialWave, f)
@@ -243,9 +240,10 @@ former HO-hybrid path has been deleted and no silent fallback is allowed.
 | PA-13R | done | PA-13 | Remove the central-only solve from production and unify the backend algorithm | `compute_spectrum` starts from `fixed_spectrum`; production caches contain only `(L,S,J)` solves. One generic candidate/diagonalization/result algorithm serves HO and FD, while dispatch owns native matrices and waves. FD exposes the same spin-component matrix fields as HO. |
 | PA-14 | done | PA-10, PA-13 | Assemble complete stage-2 spectroscopic blocks | Tensor and antisymmetric spin-orbit blocks use spin-resolved waves and every compatible requested radial state. |
 | PA-15 | done | PA-14 | Complete `MixedState`/`Spectrum` physical components | `StateMixing` shares its `MixingResult`; `physical_components` resolves coefficient/wave pairs and mixed `radial_wave` calls fail loudly. |
-| PA-16 | partial | PA-04, PA-15 | Integrate stage-3 annihilation | Literal annihilation kernels coherently consume the stage-2 spectroscopic projection; their flavor eigensystem still needs to become the final model-level `Spectrum` composition. Calibrated comparison modes remain visibly separate in GIPaper. |
-| PA-17 | partial | PA-07, PA-16 | Finish physical-state consumer migration | Spectroscopic expectations use `physical_components` and cannot silently use a precursor; flavor-mixed observables await PA-16. |
-| PA-18 | pending | PA-12, PA-16, PA-17 | Certify the headline path | Full verification and convergence reports pass for native HO and independent FD; there is no legacy-hybrid mode to preserve. |
+| PA-16 | done | PA-04, PA-15 | Integrate stage-3 annihilation | `compute_isoscalar_spectrum` and `add_isoscalar_annihilation` return a multi-channel `MixedSpectrum`; final masses and recursively flattened native components share one `MixingResult`. Flavor identity is explicit, model assignment is reference-free, and calibrated controls remain explicit. |
+| PA-17 | ready | PA-07, PA-16 | Finish physical-state consumer migration | Move flavor-mixed electromagnetic/decay observables from separately handled annihilation vectors to the final `physical_components` composition. |
+| PA-18 | pending | PA-12, PA-16, PA-17 | Certify the paper headline path | Native HO paper mode passes convergence reports and end-to-end spectrum/observable checks without unexplained spin bridge factors. FD is not an acceptance criterion for the paper path. |
+| FD-COMP | ready | PA-12 | Validate the independent FD comparator | Report internally converged FD results and differences from HO as diagnostic evidence, explicitly outside PA-18 paper certification. |
 
 ## Completed first follow-up: PA-01 through PA-07
 
@@ -270,9 +268,9 @@ The reuse-first slice completed the following checklist:
 7. Added migration regression tests before changing the `StateMixing` and
    `ChannelRadialSolution` storage layouts.
 
-The next independent units are PA-12 (automatic convergence) and completion of
-PA-16 (putting the flavor-annihilation eigensystem into the final spectrum).
-Neither requires another wave, solution, or mixing holder type.
+The next independent units are PA-12 (automatic convergence) and PA-17
+(migrating flavor-sensitive observables to the now-final composition). Neither
+requires another wave, solution, state, or mixing holder type.
 
 ## Migration boundary
 

@@ -38,7 +38,7 @@ end
 """
     StateMixing
 
-Provenance of one intra-meson mixing applied to a [`MixedState`](@ref):
+Provenance of one mixing transformation applied to a [`MixedState`](@ref):
 the shared [`MixingResult`](@ref), the eigenstate column selected for this
 member, and its pre-mixing mass. Derived properties expose `mechanism`,
 `block_label`, `partner_labels`, `components`, `partner_masses_GeV`, and the
@@ -49,6 +49,19 @@ struct StateMixing
     result::MixingResult
     eigenstate::Int
     unmixed_GeV::Float64
+    function StateMixing(
+        result::MixingResult,
+        eigenstate::Integer,
+        unmixed_GeV::Real,
+    )
+        column = Int(eigenstate)
+        1 <= column <= length(result.masses) || throw(ArgumentError(
+            "StateMixing: eigenstate column $column is outside the mixing result",
+        ))
+        mass = float(unmixed_GeV)
+        isfinite(mass) || throw(ArgumentError("StateMixing: unmixed mass must be finite"))
+        return new(result, column, mass)
+    end
 end
 
 function _maximum_offdiag(matrix::AbstractMatrix)
@@ -133,7 +146,7 @@ Base.propertynames(::CorrectedState) = (
 """
     MixedState
 
-A [`CorrectedState`](@ref) plus the intra-meson `mixings` applied to it (empty
+A [`CorrectedState`](@ref) plus the `mixings` applied to it (empty
 for unmixed states) and the final `mass_GeV`. `fine_structure_mass_convention`
 is the mixing-stage view: same-J mixing overrides it to
 `"unequal_mass_same_j_mixed"` while the wrapped `corrected` state keeps the
@@ -178,10 +191,11 @@ end
 """
     Spectrum{S}
 
-Staged model spectrum for one meson: the `meson`, the `states` (in the request
-`levels` order), and the underlying [`SectorComputation`](@ref) (kept so later
-stages and two-meson flavor mixing reuse the cached radial solves; see
-`flavor_mixing.jl`). The stage is the element type `S` of `states`:
+Staged model spectrum over one or more flavor `channels`, the `states` (in the
+request order), and the underlying [`SectorComputation`](@ref). Ordinary
+spectra contain one channel; the final isoscalar spectrum contains the
+nonstrange and strange channels whose native solves participate in flavor
+mixing. The stage is the element type `S` of `states`:
 
   - [`CentralSpectrum`](@ref)` = Spectrum{CentralState}` — [`central_spectrum`](@ref)
   - [`CorrectedSpectrum`](@ref)` = Spectrum{CorrectedState}` — [`fixed_spectrum`](@ref)
@@ -191,10 +205,58 @@ stages and two-meson flavor mixing reuse the cached radial solves; see
 mixing. The [`GIParameters`](@ref) that produced the spectrum live in
 `computation.params`; use [`parameters`](@ref) to retrieve them.
 """
-struct Spectrum{S,M<:Meson,C<:SectorComputation}
-    meson::M
+struct Spectrum{S,C<:SectorComputation}
+    channels::Vector{Meson}
     states::Vector{S}
     computation::C
+    function Spectrum(
+        channels::AbstractVector{<:Meson},
+        states::AbstractVector{S},
+        computation::C,
+    ) where {S,C<:SectorComputation}
+        isempty(channels) && throw(ArgumentError("Spectrum needs at least one flavor channel"))
+        unique_channels = collect(Meson, channels)
+        length(unique(unique_channels)) == length(unique_channels) || throw(ArgumentError(
+            "Spectrum flavor channels must be unique",
+        ))
+        owned_states = collect(S, states)
+        channel_flavors = Set(
+            (meson.flavor1, meson.flavor2) for meson in unique_channels
+        )
+        length(channel_flavors) == length(unique_channels) || throw(ArgumentError(
+            "Spectrum channels must have distinct flavor identities",
+        ))
+        for state in owned_states
+            isnothing(state.basis.flavors) && throw(ArgumentError(
+                "Spectrum state $(state.label) must carry explicit flavor identity",
+            ))
+            state.basis.flavors in channel_flavors || throw(ArgumentError(
+                "Spectrum state $(state.label) belongs to $(state.basis.flavors), " *
+                "which is absent from the spectrum channels",
+            ))
+        end
+        return new{S,C}(unique_channels, owned_states, computation)
+    end
+end
+
+Spectrum(meson::Meson, states::AbstractVector, computation::SectorComputation) =
+    Spectrum([meson], states, computation)
+
+_single_channel(spec::Spectrum) = length(spec.channels) == 1 ? only(spec.channels) :
+    throw(ArgumentError("operation requires a single-channel spectrum; got $(length(spec.channels)) channels"))
+
+function _channel_for(spec::Spectrum, basis::BasisState)
+    if isnothing(basis.flavors)
+        return _single_channel(spec)
+    end
+    idx = findfirst(
+        meson -> (meson.flavor1, meson.flavor2) == basis.flavors,
+        spec.channels,
+    )
+    isnothing(idx) && throw(ArgumentError(
+        "spectrum has no flavor channel $(basis.flavors) for $(basis.label)",
+    ))
+    return spec.channels[idx]
 end
 
 """[`Spectrum`](@ref) after the central solve: `Spectrum{CentralState}`."""
@@ -203,7 +265,7 @@ const CentralSpectrum = Spectrum{CentralState}
 """[`Spectrum`](@ref) with spin-dependent shifts attached: `Spectrum{CorrectedState}`."""
 const CorrectedSpectrum = Spectrum{CorrectedState}
 
-"""[`Spectrum`](@ref) with intra-meson mixing applied: `Spectrum{MixedState}`."""
+"""[`Spectrum`](@ref) with spectroscopic and/or flavor mixing applied: `Spectrum{MixedState}`."""
 const MixedSpectrum = Spectrum{MixedState}
 
 # Stages that carry a spin-resolved `mass_GeV` per state (annihilation-block inputs).
@@ -240,8 +302,16 @@ function central_spectrum(
 )
     nlevels_per_channel = solver.nlevels_per_channel
     isempty(levels) && throw(ArgumentError("central_spectrum: empty `levels`"))
+    level_keys = [(level.n, level.L_label, level.multiplicity, level.J) for level in levels]
+    length(unique(level_keys)) == length(level_keys) || throw(ArgumentError(
+        "central_spectrum: duplicate requested spectroscopic levels",
+    ))
     masses = meson.constituent_masses
     for level in levels
+        (!isnothing(level.flavors) && level.flavors != (meson.flavor1, meson.flavor2)) &&
+            throw(ArgumentError(
+                "central_spectrum: level $(level.label) belongs to $(level.flavors), not $(flavor_label(meson))",
+            ))
         haskey(L_SYMBOLS, level.L_label) ||
             throw(ArgumentError("central_spectrum: unknown orbital label `$(level.L_label)`"))
         1 <= level.n <= nlevels_per_channel || throw(ArgumentError(
@@ -272,7 +342,7 @@ function central_spectrum(
         level.n <= length(sol.eigenvalues_GeV) || throw(ArgumentError(
             "central_spectrum: channel `$(level.L_label)` returned only $(length(sol.eigenvalues_GeV)) levels; requested n=$(level.n)",
         ))
-        CentralState(level, sol.eigenvalues_GeV[level.n])
+        CentralState(_with_flavors(level, meson), sol.eigenvalues_GeV[level.n])
     end
     return Spectrum(meson, states, computation)
 end
@@ -297,8 +367,16 @@ function fixed_spectrum(
     terms::SpinTerms = SpinTerms(),
 )
     isempty(levels) && throw(ArgumentError("fixed_spectrum: empty `levels`"))
+    level_keys = [(level.n, level.L_label, level.multiplicity, level.J) for level in levels]
+    length(unique(level_keys)) == length(level_keys) || throw(ArgumentError(
+        "fixed_spectrum: duplicate requested spectroscopic levels",
+    ))
     masses = meson.constituent_masses
     for level in levels
+        (!isnothing(level.flavors) && level.flavors != (meson.flavor1, meson.flavor2)) &&
+            throw(ArgumentError(
+                "fixed_spectrum: level $(level.label) belongs to $(level.flavors), not $(flavor_label(meson))",
+            ))
         haskey(L_SYMBOLS, level.L_label) || throw(ArgumentError(
             "fixed_spectrum: unknown orbital label `$(level.L_label)`",
         ))
@@ -370,7 +448,7 @@ function fixed_spectrum(
         end
         central_contribution = mass - contact_shift - fs_total
         CorrectedState(
-            level,
+            _with_flavors(level, meson),
             central_contribution,
             contact_shift,
             so_vector,
@@ -405,7 +483,8 @@ function add_intra_meson_mixing(
 )
     same_j_spin_orbit_mixing, tensor_mixing = terms.same_j_spin_orbit, terms.tensor
     params = parameters(spec)
-    masses = spec.meson.constituent_masses
+    meson = _single_channel(spec)
+    masses = meson.constituent_masses
     channel_cache = spec.computation.channel_cache
     states = [
         MixedState(s, StateMixing[], s.fine_structure_mass_convention, s.mass_GeV) for
@@ -413,13 +492,13 @@ function add_intra_meson_mixing(
     ]
     fine_structure_applied =
         any(s -> s.fine_structure_mass_convention != "disabled", spec.states)
-    if same_j_spin_orbit_mixing && fine_structure_applied && !is_equal_flavor(spec.meson)
+    if same_j_spin_orbit_mixing && fine_structure_applied && !is_equal_flavor(meson)
         _apply_same_j_spin_orbit_mixing!(states, params, masses, channel_cache)
     end
     if tensor_mixing && fine_structure_applied
         _apply_tensor_mixing!(states, params, masses, channel_cache)
     end
-    return Spectrum(spec.meson, states, spec.computation)
+    return Spectrum(spec.channels, states, spec.computation)
 end
 
 """
@@ -451,6 +530,9 @@ function _assign_block_members!(
     ;
     fine_structure_mass_convention = nothing,
 )
+    length(member_indices) == length(result.block.basis) || throw(ArgumentError(
+        "mixing member count does not match the result basis",
+    ))
     ordered = sort(member_indices; by = i -> states[i].mass_GeV)
     ascending = result.masses
     for (rank, i) in enumerate(ordered)
@@ -481,6 +563,13 @@ function _cached_state_wave(channel_cache, masses, state)
     return radial_wave(channel_cache[key], state.n)
 end
 
+function _cached_state_wave(spec::Spectrum, state)
+    meson = _channel_for(spec, state.basis)
+    return _cached_state_wave(
+        spec.computation.channel_cache, meson.constituent_masses, state,
+    )
+end
+
 function _apply_same_j_spin_orbit_mixing!(
     states::Vector{MixedState},
     params::GIParameters,
@@ -500,10 +589,7 @@ function _apply_same_j_spin_orbit_mixing!(
         (isempty(singlets) || isempty(triplets)) && continue
         ordered = vcat(sort(singlets; by = i -> states[i].n),
                        sort(triplets; by = i -> states[i].n))
-        basis = [
-            BasisState(s.n, s.L, s.multiplicity, s.J; label = s.label) for
-            s in states[ordered]
-        ]
+        basis = [s.basis for s in states[ordered]]
         matrix = Matrix(Diagonal([states[i].mass_GeV for i in ordered]))
         for ia in eachindex(singlets), ib in eachindex(triplets)
             i, j = singlets[ia], triplets[ib]
@@ -557,9 +643,7 @@ function _apply_tensor_mixing!(
         (isempty(low_indices) || isempty(high_indices)) && continue
         ordered = vcat(sort(low_indices; by = i -> states[i].n),
                        sort(high_indices; by = i -> states[i].n))
-        basis = [
-            BasisState(s.n, s.L, 3, s.J; label = s.label) for s in states[ordered]
-        ]
+        basis = [s.basis for s in states[ordered]]
         matrix = Matrix(Diagonal([states[i].mass_GeV for i in ordered]))
         for i in low_indices, j in high_indices
             low_radial = _cached_state_wave(channel_cache, masses, states[i])
@@ -607,7 +691,7 @@ function spectrum_state(
     multiplicity::Integer,
     J::Integer,
 )
-    idx = findfirst(
+    indices = findall(
         s ->
             s.n == n &&
             s.L == String(L_label) &&
@@ -615,22 +699,44 @@ function spectrum_state(
             s.J == J,
         spec.states,
     )
-    isnothing(idx) && throw(ArgumentError(
-        "spectrum has no state $(n)^$(multiplicity)$(L_label)_$(J) for meson $(flavor_label(spec.meson))",
+    isempty(indices) && throw(ArgumentError(
+        "spectrum has no state $(n)^$(multiplicity)$(L_label)_$(J)",
     ))
-    return spec.states[idx]
+    length(indices) == 1 || throw(ArgumentError(
+        "state $(n)^$(multiplicity)$(L_label)_$(J) is flavor-ambiguous; pass a BasisState with explicit `flavors`",
+    ))
+    return spec.states[only(indices)]
 end
 
-spectrum_state(spec::Spectrum, level::BasisState) =
-    spectrum_state(spec, level.n, level.L_label, level.multiplicity, level.J)
+function spectrum_state(spec::Spectrum, level::BasisState)
+    indices = findall(
+        s ->
+            s.n == level.n &&
+            s.L == level.L_label &&
+            s.multiplicity == level.multiplicity &&
+            s.J == level.J &&
+            (isnothing(level.flavors) || s.basis.flavors == level.flavors),
+        spec.states,
+    )
+    isempty(indices) && throw(ArgumentError(
+        "spectrum has no state matching $(level.label) with flavors=$(level.flavors)",
+    ))
+    length(indices) == 1 || throw(ArgumentError(
+        "state $(level.label) is flavor-ambiguous; set `flavors` on BasisState",
+    ))
+    return spec.states[only(indices)]
+end
 
 function spectrum_state(spec::Spectrum, label::AbstractString)
-    idx = findfirst(s -> s.label == label, spec.states)
-    isnothing(idx) && throw(ArgumentError(
-        "spectrum has no state `$label` for meson $(flavor_label(spec.meson)); " *
+    indices = findall(s -> s.label == label, spec.states)
+    isempty(indices) && throw(ArgumentError(
+        "spectrum has no state `$label`; " *
         "available: $(join((s.label for s in spec.states), ", "))",
     ))
-    return spec.states[idx]
+    length(indices) == 1 || throw(ArgumentError(
+        "state label `$label` is flavor-ambiguous; use spectrum_state(spec, BasisState(...; flavors=(...)))",
+    ))
+    return spec.states[only(indices)]
 end
 
 """
@@ -661,55 +767,75 @@ function radial_wave(spec::Spectrum, state::Union{CentralState,CorrectedState,Mi
             "instead of selecting one precursor radial wave",
         ))
     end
-    masses = spec.meson.constituent_masses
-    cache = spec.computation.channel_cache
-    return _cached_state_wave(cache, masses, state)
+    return _cached_state_wave(spec, state)
 end
 
 """
     physical_components(spec, state_or_label)
 
-Resolve a physical state's spectroscopic composition. Each returned named tuple
-contains the pure `basis` label, its signed `coefficient`, and that component's
-native radial `wave`. Unmixed states return one unit component; mixed states use
-the exact eigenvector stored in their existing [`StateMixing`](@ref).
+Resolve a physical state's fully flattened spectroscopic/flavor composition.
+Each returned named tuple contains the pure `basis` identity, its signed
+`coefficient`, and that component's native radial `wave`. Unmixed states return
+one unit component. Sequential spin and flavor transformations are composed
+from their shared [`StateMixing`](@ref) eigensystems, and paths ending at the
+same native basis state are combined.
 """
 function physical_components(
     spec::Spectrum,
     state::Union{CentralState,CorrectedState,MixedState},
 )
     if !(state isa MixedState) || isempty(state.mixings)
-        basis = BasisState(
-            state.n, state.L, state.multiplicity, state.J; label = state.label,
-        )
+        basis = state.basis
         return [(basis = basis, coefficient = 1.0,
-                 wave = _cached_state_wave(
-                     spec.computation.channel_cache,
-                     spec.meson.constituent_masses,
-                     state,
-                 ))]
+                 wave = _cached_state_wave(spec, state))]
     end
-    length(state.mixings) == 1 || throw(ArgumentError(
-        "physical composition for sequential mixing is not implemented; " *
-        "assemble the mechanisms in one block",
-    ))
-    mixing = only(state.mixings)
+    mixing = last(state.mixings)
     result = mixing.result
     coefficients = @view result.vectors[:, mixing.eigenstate]
-    return [
-        begin
-            component_state = spectrum_state(spec, basis.label)
-            (
-                basis = basis,
-                coefficient = coefficients[i],
-                wave = _cached_state_wave(
-                    spec.computation.channel_cache,
-                    spec.meson.constituent_masses,
-                    component_state,
-                ),
+    components = NamedTuple[]
+    for (i, basis) in pairs(result.block.basis)
+        component_state = spectrum_state(spec, basis)
+        source_indices = findall(
+            source -> source.result === result,
+            component_state.mixings,
+        )
+        length(source_indices) == 1 || throw(ArgumentError(
+            "$(basis.label) does not carry the shared $(result.block.name) result",
+        ))
+        source_index = only(source_indices)
+        source_mixing = component_state.mixings[source_index]
+        prior_mixings = component_state.mixings[1:(source_index - 1)]
+        prior_state = MixedState(
+            component_state.corrected,
+            prior_mixings,
+            component_state.fine_structure_mass_convention,
+            source_mixing.unmixed_GeV,
+        )
+        for component in physical_components(spec, prior_state)
+            push!(components, (
+                basis = component.basis,
+                coefficient = coefficients[i] * component.coefficient,
+                wave = component.wave,
+            ))
+        end
+    end
+    merged = NamedTuple[]
+    positions = Dict{BasisState,Int}()
+    for component in components
+        position = get(positions, component.basis, 0)
+        if position == 0
+            push!(merged, component)
+            positions[component.basis] = length(merged)
+        else
+            prior = merged[position]
+            merged[position] = (
+                basis = prior.basis,
+                coefficient = prior.coefficient + component.coefficient,
+                wave = prior.wave,
             )
-        end for (i, basis) in pairs(result.block.basis)
-    ]
+        end
+    end
+    return merged
 end
 
 physical_components(spec::Spectrum, label::AbstractString) =
@@ -730,7 +856,8 @@ function radial_expect(
         left in components for right in components if
         left.basis.L_label == right.basis.L_label &&
         left.basis.multiplicity == right.basis.multiplicity &&
-        left.basis.J == right.basis.J
+        left.basis.J == right.basis.J &&
+        left.basis.flavors == right.basis.flavors
     )
 end
 
@@ -765,12 +892,11 @@ _stage_values(s::MixedState) = (
 )
 
 function Base.show(io::IO, ::MIME"text/plain", spec::Spectrum{S}) where {S}
-    m = spec.meson
     cols = _stage_columns(S)
+    channel_text = join((flavor_label(m) for m in spec.channels), " + ")
     println(
         io,
-        _stage_name(S), ": ", m.flavor1, " ", m.flavor2, "bar  (m = ",
-        m.constituent_masses.m1_GeV, ", ", m.constituent_masses.m2_GeV, " GeV), ",
+        _stage_name(S), ": ", channel_text, ", ",
         length(spec.states), " levels — all values in GeV",
     )
     width = isempty(spec.states) ? 8 : maximum(length(s.label) for s in spec.states)
@@ -786,12 +912,12 @@ function Base.show(io::IO, ::MIME"text/plain", spec::Spectrum{S}) where {S}
     end
     if S !== CentralState
         nmix = count(s -> !isempty(s.mixings), spec.states)
-        nmix > 0 && print(io, "\n  (", nmix, " levels carry intra-meson mixing; see `.mixings`)")
+        nmix > 0 && print(io, "\n  (", nmix, " levels carry mixing; see `.mixings`)")
     end
     return nothing
 end
 
 Base.show(io::IO, spec::Spectrum{S}) where {S} = print(
-    io, _stage_name(S), "(", flavor_label(spec.meson), ", ",
+    io, _stage_name(S), "(", join((flavor_label(m) for m in spec.channels), "+"), ", ",
     length(spec.states), " levels)",
 )

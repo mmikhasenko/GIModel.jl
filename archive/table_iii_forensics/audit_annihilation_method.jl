@@ -52,7 +52,7 @@ function hidden_s_basis(params, mq, spin; wave_basis = :fd, ngrid = 220, rmax = 
                 diagonal = levels[1],
                 input = input,
                 S_momentum = GIModel._annihilation_overlap_factor(
-                    FDMomentumIntegralSmearing(),
+                    MomentumIntegralSmearing(),
                     input,
                 ),
                 S_legacy = GIModel._flavor_coherence_factor(input) *

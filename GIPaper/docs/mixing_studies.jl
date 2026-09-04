@@ -116,10 +116,10 @@ function isoscalar_solution(params, mq, rows; ngrid = 180, rmax = 18.0)
     ]
     basis = [
         # n nbar rows are the coherent (u ubar + d dbar)/sqrt(2) channel; s sbar are not.
-        pseudoscalar_annihilation_basis_input("1 n nbar", mq["q"], diag[1], radial_wave(q_solution, 1); isoscalar_coherent = true),
-        pseudoscalar_annihilation_basis_input("1 s sbar", mq["s"], diag[2], radial_wave(s_solution, 1); isoscalar_coherent = false),
-        pseudoscalar_annihilation_basis_input("2 n nbar", mq["q"], diag[3], radial_wave(q_solution, 2); isoscalar_coherent = true),
-        pseudoscalar_annihilation_basis_input("2 s sbar", mq["s"], diag[4], radial_wave(s_solution, 2); isoscalar_coherent = false),
+        pseudoscalar_annihilation_basis_input(BasisState(1, "S", 1, 0; label = "1 n nbar", flavors = (:q, :q)), mq["q"], diag[1], radial_wave(q_solution, 1); isoscalar_coherent = true),
+        pseudoscalar_annihilation_basis_input(BasisState(1, "S", 1, 0; label = "1 s sbar", flavors = (:s, :s)), mq["s"], diag[2], radial_wave(s_solution, 1); isoscalar_coherent = false),
+        pseudoscalar_annihilation_basis_input(BasisState(2, "S", 1, 0; label = "2 n nbar", flavors = (:q, :q)), mq["q"], diag[3], radial_wave(q_solution, 2); isoscalar_coherent = true),
+        pseudoscalar_annihilation_basis_input(BasisState(2, "S", 1, 0; label = "2 s sbar", flavors = (:s, :s)), mq["s"], diag[4], radial_wave(s_solution, 2); isoscalar_coherent = false),
     ]
     p1 = isoscalar_pseudoscalar_annihilation_solution(PaperP1Annihilation(), params, basis)
     return p1.block.matrix
