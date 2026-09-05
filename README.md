@@ -43,9 +43,13 @@ The repository has three first-class deliverables:
   public API only, no paper data — in their own environment
   (`examples/Project.toml`: GIModel + CairoMakie + PlutoUI). See
   [examples/README.md](examples/README.md), which doubles as the "how is this
-  package used" walkthrough. Two curated ones, plus
+  package used" walkthrough. Three curated examples, plus
   `examples/played_with_model.jl`, the uncurated scratch notebook (the one file
   there that uses GIPaper, and runs on its environment):
+  - `examples/adaptive_ho_refinement.jl`, a Pluto notebook that shows how the
+    mesh-free HO solver optimizes `β`, enlarges the basis until two successive
+    energy checks pass, records its convergence certificate, and fails loudly
+    at unresolved limits; it ends with an interactive comprehension quiz.
   - `examples/heavy_quark_transition.jl`, a Pluto notebook that dials `m_Q` from
     charm to bottom — `Q Q̄` / `Q q̄` / `Q s̄` switch, the level scheme in
     `n^{2S+1}L_J` and in `J^P` (axis following the spectrum, so only the shape

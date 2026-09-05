@@ -1,7 +1,7 @@
 # Examples
 
 Worked examples of **GIModel** used as a physics tool rather than as a paper
-reproduction. Each one is self-contained; the curated two run against the
+reproduction. Each one is self-contained; the curated examples run against the
 model's public API only — no reaching into internals, no reference data.
 
 The curated examples share one environment (`examples/Project.toml`): GIModel
@@ -14,6 +14,35 @@ One caveat on "public API only": `chi_c_annihilation_widths.jl` calls
 `GIModel.radial_grid`, which is not exported even though the exported
 `fine_structure_grid_operator` needs a mesh from it. That is an API gap, not an
 example reaching past the front door.
+
+## `adaptive_ho_refinement.jl` — how an HO answer earns its certificate
+
+A Pluto notebook that follows one charmonium `¹S₀` channel from an initial
+24-function harmonic-oscillator basis to a certified result. It explains the
+common-`β` variational search, replays each visited basis size as a convergence
+table and plot, identifies every loud failure condition, and finishes with a
+five-question interactive quiz.
+
+```bash
+julia -e 'using Pluto; Pluto.run(notebook="examples/adaptive_ho_refinement.jl")'
+```
+
+The production call returns the ordinary `ChannelRadialSolution` used by later
+physics stages plus its compact `OscillatorConvergence` certificate. The visible
+history is deliberately reconstructed with public, fixed-size
+`OscillatorSolver(converge=false)` calls: those probes label themselves
+`:unchecked` and are never confused with the certified result. No spatial mesh
+or finite-difference fallback appears anywhere in the notebook.
+
+The notebook also states the certificate's boundary explicitly: matrix-element
+quadrature has its own convergence warning, which remains visible and is not
+misrepresented as covered by basis refinement.
+
+The notebook can also be executed non-interactively as a smoke test:
+
+```bash
+julia --project=examples examples/adaptive_ho_refinement.jl
+```
 
 ## `heavy_quark_transition.jl` — charmonium → bottomonium
 
@@ -165,7 +194,7 @@ Points worth copying:
 
 ## `played_with_model.jl` — the scratch pad
 
-The oldest of the three and the only uncurated one, kept because it is what
+The oldest and only uncurated example, kept because it is what
 poking at this model actually looks like: display `params` and the quark-mass
 table, build `Meson(all_masses, :b, :b)`, put `central_spectrum` next to the
 full `compute_spectrum`, then hand the same parameters to GIPaper's
