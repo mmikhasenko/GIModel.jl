@@ -106,7 +106,7 @@ end
 
 # Report-header sentence for each central-potential construction.
 _central_note(::AppendixAMomentumSandwich) =
-    "closed-form GI G̃(r), S̃(r), plus central Coulomb momentum sandwich `A(p)G̃A(p)` on the FD p² eigenbasis, "
+    "closed-form GI G̃(r), S̃(r), plus central Coulomb momentum sandwich `A(p)G̃A(p)` in the solver's native p² representation, "
 _central_note(::AppendixAClosedForm) =
     "closed-form Gaussian-smeared GI G̃(r) and S̃(r), without the central Coulomb momentum sandwich, "
 _central_note(::AppendixADerivativeG) =
@@ -145,15 +145,15 @@ function write_residual_report(
             if use_fine_structure &&
                fine_structure_momentum_sandwich &&
                fine_structure_smeared_kernels
-                " first-order L·S (vector+Thomas) and OGE-tensor with GI momentum-factor sandwiches and smeared-G/S derivative kernels; "
+                " fixed-sector L·S (vector+Thomas) and OGE-tensor diagonalization with GI momentum-factor sandwiches and smeared-G/S derivative kernels; "
             elseif use_fine_structure && fine_structure_momentum_sandwich
-                " first-order L·S (vector+Thomas) and OGE-tensor with GI momentum-factor sandwiches; "
+                " fixed-sector L·S (vector+Thomas) and OGE-tensor diagonalization with GI momentum-factor sandwiches; "
             elseif use_fine_structure && fine_structure_smeared_kernels
-                " first-order L·S (vector+Thomas) and OGE-tensor with smeared-G/S derivative kernels; "
+                " fixed-sector L·S (vector+Thomas) and OGE-tensor diagonalization with smeared-G/S derivative kernels; "
             elseif use_fine_structure
-                " first-order L·S (vector+Thomas) and OGE-tensor; "
+                " fixed-sector L·S (vector+Thomas) and OGE-tensor diagonalization; "
             else
-                " no first-order L·S/tensor; "
+                " no L·S/tensor; "
             end
         central_note = _central_note(central)
         println(

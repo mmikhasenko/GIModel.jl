@@ -275,10 +275,11 @@ function radial_expect_momentum_sandwich(
         p2_fact,
     )
     transformed = B * wave.coefficients
+    rmax = _oscillator_coordinate_cutoff(wave)
     value, _ = quadgk(
         r -> _ho_expansion_value(L, wave.beta, transformed, r)^2 * f(r, 0),
         0.0,
-        Inf;
+        rmax;
         rtol = 1e-9,
     )
     return value / wave_norm(wave)
@@ -364,11 +365,15 @@ function radial_cross_expect_momentum_sandwich(
     )
     c_left = B_left * left.coefficients
     c_right = B_right * right.coefficients
+    rmax = max(
+        _oscillator_coordinate_cutoff(left),
+        _oscillator_coordinate_cutoff(right),
+    )
     value, _ = quadgk(
         r -> _ho_expansion_value(L_left, left.beta, c_left, r) *
              _ho_expansion_value(L_right, right.beta, c_right, r) * f(r, 0),
         0.0,
-        Inf;
+        rmax;
         rtol = 1e-9,
     )
     return value / sqrt(wave_norm(left) * wave_norm(right))

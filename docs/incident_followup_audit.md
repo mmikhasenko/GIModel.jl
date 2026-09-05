@@ -55,6 +55,9 @@ solution types.
 | Annihilation selected one radial wave from a tensor-mixed physical state | Discarded the rest of the signed physical composition or failed once mixed `radial_wave` access became strict | It now coherently projects all matching `(L,S,J)` radial components; no representative wave or mesh fallback exists |
 | `StateMixing` stored a scalar angle and maximum off-diagonal on every member | Duplicated shared-block data and produced `NaN` once mixing blocks correctly contained several radial levels | Removed both stored fields; maximum coupling is derived from the shared block and reports derive an explicitly documented pair projection |
 | GIPaper comparison code reconstructed a supposed `2x2` block from two states | Indexed the wrong masses/components when the shared production block contained more radial levels | It now projects the requested two basis rows from the one shared `MixingResult` while retaining the full physical eigensystem |
+| Adaptive HO exposed `Inf * 0 = NaN` in infinite-interval high-order oscillator integrals | Converged 64-72-state waves could fail only when later observables were evaluated | Native coordinate and momentum quadratures now stop beyond the analytic Gaussian tail; low-order results agree with the old integral to machine precision and high-order regressions cover both spaces |
+| Current-status ledgers and generated report prose still described fixed 24-state, mesh-reconstructed, first-order-FD execution | They contradicted the implemented architecture and even contradicted a computed 2/4 sign result with “all four signs agree” | Report generators were corrected; the gap ledger now names only PA-17, PA-18, and FD-COMP, and generated provenance describes adaptive native fixed-sector solves |
+| The adaptive controller silently raised the advertised initial `nbasis` to `8*nlevels` | Made solver configuration and provenance misleading | Removed; `nbasis` is the actual initial variational size and a request for more eigenlevels fails with instructions to raise it |
 
 ## Duplicate-entity audit
 
@@ -82,9 +85,8 @@ latter identifies a fixed sector (`L,S,J`) before radial eigenlevels exist.
 The work is intentionally split among existing repository mechanisms:
 
 - `docs/paper_algorithm_work_plan.md` is the dependency-ordered executable
-  queue. PA-01--PA-11 and PA-13--PA-16 are complete; PA-12 (automatic
-  convergence) and PA-17 (final-composition consumers) are the next independent
-  units.
+  queue. PA-01--PA-16 are complete; PA-17 (final-composition consumers) and the
+  independent FD comparator audit are the next units.
 - `docs/engineering_work_plan.md` records cross-cutting code invariants and
   mistakes that must not recur.
 - `docs/original_1985_algorithm_audit.md` records the paper-vs-code algorithm
@@ -123,6 +125,6 @@ tests.
   103-unit manifest anti-drift check. The final phase-dispatch consolidation was
   then rechecked by both package suites, the Table III audit, and manifest check.
 
-The remaining PA-12/PA-17--PA-18 work is not cleanup from this incident. It is
-automatic numerical convergence, final-composition consumer migration, and
-native-HO headline-path certification.
+The remaining PA-17--PA-18 work is not cleanup from this incident. It is
+final-composition consumer migration and native-HO headline-path certification;
+PA-12 now supplies the required automatic numerical convergence certificates.

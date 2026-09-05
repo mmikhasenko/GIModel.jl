@@ -54,9 +54,10 @@ blocks. `physical_components` exposes the resulting signed composition, while
 `radial_wave` rejects mixed states instead of returning a precursor.
 
 Flavor-annihilation blocks now enter the same model-level physical-state
-pipeline. The remaining physics work is automatic HO basis/beta convergence,
-consumer migration onto the final flavor composition, and paper-path
-certification without unexplained spin bridge factors.
+pipeline, and native HO sectors now carry automatic basis/beta convergence
+certificates. The remaining physics work is consumer migration onto the final
+flavor composition and paper-path certification without unexplained spin
+bridge factors.
 
 ## Forensic trace of the unfinished abstraction
 
@@ -84,7 +85,7 @@ fixed-`j,l,s` plus mixed physical state.
 | One radial eigenlevel | `RadialWave`, `MeshWave`, `OscillatorWave` | Keep exactly. Both native representations now exist; do not add `FDWave` or `HOWave` synonyms. |
 | Backward-compatible mesh names | Removed | Do not restore aliases; this pre-release code has no compatibility obligation. |
 | Momentum representation | `MomentumWave`, `MeshMomentumWave`, `OscillatorMomentumWave` | Keep without synonyms or another generic momentum abstraction. |
-| Multi-level eigensolution | `ChannelRadialSolution` | Keep its native `Vector{<:RadialWave}`. Add convergence metadata here only when PA-12 defines it; do not add a parallel `FixedSectorSolution`. |
+| Multi-level eigensolution | `ChannelRadialSolution` | Keeps its native `Vector{<:RadialWave}` and one `OscillatorConvergence` certificate for HO. No parallel `FixedSectorSolution` exists. |
 | Calculation cache/provenance | `SectorComputation` | Keep and evolve its cache key/value types. It already owns parameters, solver, and solutions. |
 | Spectroscopic identity | `BasisState` and `FineStructureMultiplet` | Keep both roles explicit: `BasisState` identifies one radial level (`n,L,S,J,label`); `FineStructureMultiplet` identifies a fixed radial sector (`L,S,J`) before an `n` exists. This is containment, not two names for one entity. |
 | Spectrum stages and physical mass | `CentralState`, `CorrectedState`, `MixedState`, `Spectrum` | `central_spectrum` is an independent diagnostic. Production starts at `fixed_spectrum`; `CorrectedState` reuses `BasisState` and does not embed a central precursor. Do not add `SolvedMesonState`. |
@@ -235,7 +236,7 @@ former HO-hybrid path has been deleted and no silent fallback is allowed.
 | PA-09 | done | PA-06 | Implement native HO vector and scalar spin-orbit matrices | `ho_fine_structure_matrices` builds both terms from exact HO spectral factors and position matrices. |
 | PA-10 | done | PA-06 | Implement native HO tensor matrices | Diagonal HO tensor matrices and cross-sector native wave elements are symmetric and covered by solver-agreement tests. |
 | PA-11 | done | PA-08, PA-09, PA-10 | Add the full stage-1 builder to `ChannelRadialSolution` | `fixed_channel_solution` diagonalizes one complete fixed-`L,S,J` Hamiltonian and returns native waves. |
-| PA-12 | partial | PA-11 | Add beta refinement and basis convergence | The complete sector and requested radial range now control beta selection; automatic refinement, convergence metadata, and tolerance enforcement remain. |
+| PA-12 | done | PA-11 | Add beta refinement and basis convergence | One shared controller serves central and complete fixed-sector HO solves: it continuously refines the beta bracket, enlarges the basis until every requested level passes 0.1 MeV on two successive refinements, records energy/wave-overlap deltas on `ChannelRadialSolution`, and fails on a railed bracket or exhausted basis cap. Six-level q/s/c/b S/P calibration is gated by [`ho_convergence.md`](../GIPaper/docs/residual_reports/ho_convergence.md). |
 | PA-13 | done | PA-11 | Route paper-order stage 1 through `compute_spectrum` | Every requested state is resolved from the fixed-sector solve; the HO route has no mesh field or mesh fallback. Fitted fine-structure scale removal remains a separate physics calibration decision. |
 | PA-13R | done | PA-13 | Remove the central-only solve from production and unify the backend algorithm | `compute_spectrum` starts from `fixed_spectrum`; production caches contain only `(L,S,J)` solves. One generic candidate/diagonalization/result algorithm serves HO and FD, while dispatch owns native matrices and waves. FD exposes the same spin-component matrix fields as HO. |
 | PA-14 | done | PA-10, PA-13 | Assemble complete stage-2 spectroscopic blocks | Tensor and antisymmetric spin-orbit blocks use spin-resolved waves and every compatible requested radial state. |
@@ -268,9 +269,9 @@ The reuse-first slice completed the following checklist:
 7. Added migration regression tests before changing the `StateMixing` and
    `ChannelRadialSolution` storage layouts.
 
-The next independent units are PA-12 (automatic convergence) and PA-17
-(migrating flavor-sensitive observables to the now-final composition). Neither
-requires another wave, solution, state, or mixing holder type.
+The next independent unit is PA-17 (migrating flavor-sensitive observables to
+the now-final composition); FD-COMP can proceed independently. Neither requires
+another wave, solution, state, or mixing holder type.
 
 ## Migration boundary
 

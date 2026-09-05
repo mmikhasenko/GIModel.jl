@@ -264,33 +264,32 @@ masses and that detailed smearing is “relegated to Appendix A.”
 
 **What we implement today**
 
-- A **finite-difference** radial mesh with semirelativistic $\sqrt{p^2+m^2}$
-  kinetics and an active closed-form Appendix-A central candidate:
-  `A(p)G~A(p)+S~` on the FD `p^2` eigenbasis. The named central dispatcher also
-  exposes pointwise, `:coulomb_1d`, `:appendix_a_3d_a7a8`, and
-  `:appendix_a_derivative_g` comparison modes so these choices can be measured
-  without editing solver internals.
-- Smeared **contact** hyperfine and first-order **fine structure** on the same
-  $u(r)$. With `contact_momentum_sandwich=true` and
-  `fine_structure_momentum_sandwich=true`, the Table II $\epsilon$ values enter
-  as GI-style momentum-factor sandwiches around the radial operators. With
-  `fine_structure_smeared_kernels=true`, the vector spin-orbit and OGE tensor
-  kernels use derivatives of the closed-form smeared Coulomb $\tilde G(r)$, and
-  the Thomas term uses derivatives of $\tilde G(r)+\tilde S(r)$.
+- A native **harmonic-oscillator** implementation of the paper route and an
+  independent **finite-difference** comparator, both with semirelativistic
+  $\sqrt{p^2+m^2}$ kinetics and the closed-form Appendix-A central operator
+  `A(p)G~A(p)+S~` in their own $p^2$ representations.
+- Smeared contact, symmetric spin-orbit, and diagonal tensor matrices assembled
+  with the central operator in one fixed-$(L,S,J)$ Hamiltonian before
+  diagonalization. The Table II $\epsilon$ values enter through native
+  momentum-factor sandwiches; later tensor and antisymmetric spin-orbit blocks
+  consume the resulting native waves.
+- An adaptive HO beta/basis controller with a recorded convergence certificate.
+  Pointwise and alternate-smearing central methods remain explicitly named
+  standalone comparators.
 
 **What “done” should look like for the spin-independent sector**
 
-- Keep the closed-form FD central path as the headline reproduction candidate,
+- Use converged native HO as the paper path and FD as an independent comparator.
   The focused FD/HO central comparison is complete in
   `docs/residual_reports/appendix_a_ho_comparison.md`: the active central
   operator agrees between bases at the sub-MeV level over the audited channels.
-  The remaining basis/order question is now in the post-diagonalization spin and
-  mixing layers, not in the central (A12)–(A14) operator.
+  The remaining paper-certification question is the non-paper spin bridge
+  strengths, not the central (A12)–(A14) operator or solver representation.
 - The equal-mass spin-dependent operators now use the same closed-form smeared
   $G(r)$ and confinement $S(r)$ derivatives as the active central path. The
   open-flavor antisymmetric spin-orbit block and triplet same-`J` tensor blocks
-  are assigned in the FD comparison path. The remaining spin-side gap is
-  comparison against the paper's perturbative ordering in the HO basis.
+  dispatch on both native wave representations. PA-18 removes or isolates the
+  fitted `k_spin_orbit`/`k_tensor` bridge before headline certification.
 
 **Reference row lock-in:** Table II inputs are checked against
 `data/table_ii_parameters.csv` via `scripts/data_checks.py validate`. Reference
@@ -319,7 +318,7 @@ Appendix A, use the checked split markdown pages and
 | Eq. (6), vector spin-orbit | exact equal-mass radial convention; assigned unequal-mass same-`J` blocks | Eq. (6) uses `alpha_s(r)/r^3` in the pointwise branch and `(1/r)dG~/dr` in the smeared branch. Equal-mass contraction is covered; open-flavor same-`J` antisymmetric spin-orbit mixing is now folded into `compare` when partner rows are present. |
 | Eq. (7), Thomas/scalar spin-orbit | exact equal-mass radial convention; approximate unequal-mass handling | Thomas term uses `(1/2r)dH_conf/dr`, with smeared `G~+S~` derivatives in the active branch. Table II `epsilon_so(S)=+0.055` is now loaded from audited input. |
 | Eq. (12)-(13) and Fig. 2, running `alpha_s` | exact for fitted GI ansatz | `alpha_s(Q^2)` coefficients map to `alpha_s(r)=sum alpha_k erf(gamma_k*r)` with `gamma=(1,sqrt(10),sqrt(1000))/2` GeV. Derivatives are regression-tested. |
-| Eq. (14), staged diagonalization | implemented; paper certification pending | One production algorithm assembles and diagonalizes complete fixed-sector Hamiltonians, with native matrices and waves supplied by solver dispatch. HO is the paper path; FD is an independent comparator. Generic `MixingBlock`/`MixingResult` stages apply antisymmetric spin-orbit, tensor, and flavor-annihilation transformations and expose their recursively composed physical states. Automatic HO convergence and removal/isolation of fitted spin bridge factors remain PA-12/PA-18 work. |
+| Eq. (14), staged diagonalization | implemented; paper certification pending | One production algorithm assembles and diagonalizes complete fixed-sector Hamiltonians, with native matrices and waves supplied by solver dispatch. HO is the paper path and now refines beta/basis to a recorded 0.1 MeV certificate; FD is an independent comparator. Generic `MixingBlock`/`MixingResult` stages apply antisymmetric spin-orbit, tensor, and flavor-annihilation transformations and expose their recursively composed physical states. Removal/isolation of fitted spin bridge factors remains PA-18 work. |
 | Eq. (16), general annihilation matrix element | implemented and integrated | OCR/page pass confirms the `4*pi*(2L+1)`, `alpha_s(M_i^2)alpha_s(M_j^2)`, `S_L(Psi_j)S_L(Psi_i)`, and `1/(m_i m_j)` factors. `isoscalar_general_annihilation_solution` implements the general channel block with the `(alpha_i alpha_j/pi^2)^(n/2)` bracket (`n=2`/`3` for `C=+`/`-`). `add_isoscalar_annihilation` stores the resulting shared `MixingResult` in a final two-channel `Spectrum`, and `physical_components` resolves its flavor-tagged native waves. GIPaper retains only reference-row assignment. |
 | Eq. (17), `S_L(Psi)` wavefunction factor | implemented for general `L` | OCR/page pass confirms the momentum-space normalized-wavefunction factor `(2*pi)^(-3/2) * integral d^3p/sqrt(4*pi) * Phi_i(p) * (p/E_i)^L * (m_i/E_i)`. `_sL_smearing_factor` evaluates this for general `L` through the spectrum wave's native momentum interface; HO and FD agree on this factor to 0.1%. The obsolete coordinate-origin proxy has been removed. |
 | Eq. (18a), pseudoscalar P1 replacement | implemented as `:p1` / `PaperP1Annihilation` | OCR/page pass confirms the bracket replacement `A_np*exp(-(m_i^2+m_j^2)/m_eta^2) + (2*pi/3)(ln2-1) alpha_s(M_j^2)alpha_s(M_i^2)/pi^2`. Table III constants are loaded from `[annihilation]` in `data/parameters.provisional.toml`. |

@@ -13,9 +13,8 @@ function _fixed_channel_matrices(
     multiplet::FineStructureMultiplet,
     beta::Real,
     terms::SpinTerms,
-    nlevels::Integer,
+    nbasis::Integer,
 )
-    nbasis = max(solver.nbasis, nlevels + 4)
     L = L_SYMBOLS[multiplet.L_label]
     central = oscillator_central_matrix(params, masses, L, beta, nbasis)
     contact = terms.contact_hyperfine ? ho_contact_hyperfine_matrix(
@@ -120,20 +119,6 @@ function _fixed_channel_matrices(
     ))
 end
 
-_fixed_channel_candidates(solver::OscillatorSolver) = solver.beta_grid
-_fixed_channel_candidates(::FiniteDifferenceSolver) = (nothing,)
-
-_fixed_channel_waves(
-    ::OscillatorSolver,
-    multiplet::FineStructureMultiplet,
-    beta::Real,
-    vectors::AbstractMatrix,
-    matrices,
-) = [
-    OscillatorWave(L_SYMBOLS[multiplet.L_label], beta, view(vectors, :, n)) for
-    n in axes(vectors, 2)
-]
-
 function _fixed_channel_waves(
     ::FiniteDifferenceSolver,
     multiplet::FineStructureMultiplet,
@@ -146,18 +131,6 @@ function _fixed_channel_waves(
     )
     return [MeshWave(view(normalized, :, n), matrices.r) for n in axes(normalized, 2)]
 end
-
-function _finish_fixed_channel_search!(
-    solver::OscillatorSolver,
-    best,
-    masses::ConstituentMasses,
-    multiplet::FineStructureMultiplet,
-)
-    _warn_if_beta_railed(best.candidate, solver, masses, L_SYMBOLS[multiplet.L_label])
-    return nothing
-end
-
-_finish_fixed_channel_search!(::FiniteDifferenceSolver, best, masses, multiplet) = nothing
 
 """
     fixed_channel_solution(params, masses, multiplet; solver, terms, nlevels)
@@ -174,24 +147,42 @@ function fixed_channel_solution(
     terms::SpinTerms = SpinTerms(),
     nlevels::Integer = solver.nlevels_per_channel,
 )
-    best = nothing
-    for candidate in _fixed_channel_candidates(solver)
+    evaluate = function (beta, nbasis)
         matrices = _fixed_channel_matrices(
-            solver, params, masses, multiplet, candidate, terms, nlevels,
+            solver, params, masses, multiplet, beta, terms, nbasis,
         )
         values, vectors = lowest_eigenpairs(Matrix(matrices.total), nlevels, solver)
-        if isnothing(best) || values[end] < best.values[end]
-            best = (
-                candidate = candidate,
-                matrices = matrices,
-                values = values,
-                vectors = vectors,
-            )
-        end
+        return (values = values, vectors = vectors, matrices = matrices)
     end
-    _finish_fixed_channel_search!(solver, best, masses, multiplet)
-    waves = _fixed_channel_waves(
-        solver, multiplet, best.candidate, best.vectors, best.matrices,
+    result, waves, convergence = _fixed_channel_search(
+        solver, multiplet, nlevels, evaluate,
     )
-    return ChannelRadialSolution(best.values, waves)
+    return ChannelRadialSolution(
+        result.values, waves; convergence = convergence,
+    )
+end
+
+function _fixed_channel_search(
+    solver::OscillatorSolver,
+    multiplet::FineStructureMultiplet,
+    nlevels::Integer,
+    evaluate,
+)
+    best, waves, convergence = _oscillator_solution_search(
+        solver, L_SYMBOLS[multiplet.L_label], nlevels, evaluate,
+    )
+    return best.result, waves, convergence
+end
+
+function _fixed_channel_search(
+    solver::FiniteDifferenceSolver,
+    multiplet::FineStructureMultiplet,
+    nlevels::Integer,
+    evaluate,
+)
+    result = evaluate(nothing, nlevels)
+    waves = _fixed_channel_waves(
+        solver, multiplet, nothing, result.vectors, result.matrices,
+    )
+    return result, waves, nothing
 end

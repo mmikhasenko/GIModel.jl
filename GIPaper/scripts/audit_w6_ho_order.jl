@@ -21,7 +21,7 @@
 #     first-order PT. The light ¹S₀ (pion) mass discriminates (§1b): first-order
 #     PT over-raises it to ~0.28 GeV, while the finite-HO full diagonalization
 #     keeps it light (~0.10 GeV) like the fine-grid FD resummation. Full
-#     diagonalization in the finite paper-β basis lands all 16 gluonic rows in
+#     diagonalization in the converged native-HO basis lands all 16 gluonic rows in
 #     [0.92, 1.14] (median 1.02); the fine-grid FD *over*-resums (eta_b 1.21 vs
 #     the finite-basis 1.14) — a grid-resolution effect, not perturbation order.
 #     First-order PT coincides only in the heavy-quark (small-V) limit.
@@ -43,10 +43,10 @@ const REPORT = joinpath(ROOT, "docs", "residual_reports", "w6_ho_order_validatio
 const NGRID = 1200
 const RMAX = 24.0
 const NPTS = 900
-const NB = 24
+const INITIAL_NBASIS = 24
 
 params, mq = load_parameters_and_quark_masses(PARAMS_PATH)
-solver_ho = OscillatorSolver(nbasis = NB)
+solver_ho = OscillatorSolver(nbasis = INITIAL_NBASIS)
 
 function smeared_S(wave::RadialWave, mQ, L)
     return wavefunction_origin_smearing(wave, mQ; L = L, npoints = NPTS)
@@ -168,12 +168,13 @@ function write_report(part1, pion, part2)
         println(io, "baseline. Zero new parameters: the operators are the spectrum-calibrated")
         println(io, "blocks assembled natively by `fixed_channel_solution`. The **paper-order**")
         println(io, "treatment is full diagonalization of the fixed-(L,S,J) Hamiltonian in")
-        println(io, "the finite paper-beta HO basis; no mesh operator is projected into HO")
+        println(io, "the converged native-HO basis; no mesh operator is projected into HO")
         println(io, "for every subtable.")
         println(io)
         println(io, "## 1. Basis fidelity control: central-wave S_L, HO vs FD")
         println(io)
-        println(io, "The paper-style HO diagonalization (24 states, paper β convention)")
+        println(io, "The paper-style HO diagonalization (adaptive basis starting at 24 states,")
+        println(io, "with continuously refined β and a 0.1 MeV convergence requirement)")
         println(io, "reproduces the FD smeared wavefunction-at-origin to ≤3%. The 15-20% row")
         println(io, "residuals of the central-wave audit are NOT a basis-fidelity artifact —")
         println(io, "and truncation lowers S_L, the wrong direction to explain them.")
@@ -240,7 +241,7 @@ function write_report(part1, pion, part2)
         println(io)
         println(io, "The W4 residual structure (singlet low / triplet high, ³P₀ low / ³P₂ high)")
         println(io, "is the paper's spin-dependent wavefunction distortion, carried by **full")
-        println(io, "diagonalization of `H_central + V_spin` in the finite paper-β HO basis** —")
+        println(io, "diagonalization of `H_central + V_spin` in the converged native-HO basis** —")
         println(io, "the paper's literal method, now used across the whole harmonized Table VII")
         println(io, "audit. The light `¹S₀` mass (§1b) confirms that native HO and FD solve the")
         println(io, "same resummed contact problem without an intermediate grid projection. The former")

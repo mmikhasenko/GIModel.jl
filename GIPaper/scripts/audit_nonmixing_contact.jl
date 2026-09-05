@@ -167,7 +167,7 @@ open(joinpath(report_dir, "basis_nonmixing_comparison.md"), "w") do io
     println(io)
     println(
         io,
-        "HO caveat: the spin-independent Hamiltonian is assembled in the oscillator subspace with a per-channel variational beta scan. One beta is used for each orthogonal channel set, chosen by minimizing the last requested level; spin-dependent expectations are evaluated on reconstructed mesh wavefunctions.",
+        "HO assembles the complete fixed-sector Hamiltonian in the oscillator subspace, continuously refines beta, and enlarges the basis to its recorded convergence certificate. Spin-dependent operators and waves remain native; no mesh is reconstructed for the calculation.",
     )
     println(io)
     println(io, "## Sector Summary")

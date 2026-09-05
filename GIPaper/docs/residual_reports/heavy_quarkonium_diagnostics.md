@@ -5,7 +5,7 @@ Numerics: `FiniteDifferenceSolver` — ngrid = 450, rmax = 24.0 GeV^-1 (h = 0.05
 
 Purpose: check whether the active GI central path reproduces `ccbar`/`bbbar` and the Fig. 9 `bcbar` panel, then separate any remaining mismatch into spin-averaged centers, radial/orbital spacings, and spin splittings.
 
-Active central path: `appendix_a_momentum_sandwich` — Closed-form smeared G̃(r), S̃(r), plus central Coulomb momentum sandwich G' = A(p)G̃A(p) on the FD p² eigenbasis
+Active central path: `appendix_a_momentum_sandwich` — Closed-form smeared G̃(r), S̃(r), plus central Coulomb momentum sandwich G' = A(p)G̃A(p) in the solver's native p² representation
 
 ## charmonium
 

@@ -78,6 +78,7 @@ end
     ho = OscillatorSolver(
         nbasis = 8,
         beta_grid = [0.65],
+        converge = false,
         nlevels_per_channel = 2,
     )
     ho_solution = @inferred GIModel._channel_solution(
@@ -236,7 +237,7 @@ end
         params,
         ConstituentMasses(mq["c"], mq["c"]),
         0;
-        solver = OscillatorSolver(beta_grid = [0.7]),
+        solver = OscillatorSolver(beta_grid = [0.7], converge = false),
         nlevels = 3,
     )
     @test sol isa ChannelRadialSolution{OscillatorWave}
@@ -1743,6 +1744,15 @@ end
             for wave in sol.waves
                 @test isapprox(wave_norm(wave), 1.0; rtol = 1e-10)
             end
+            if slv isa OscillatorSolver
+                @test sol.convergence.status == :converged
+                @test sol.convergence.energy_delta_GeV <= slv.energy_tolerance_GeV
+                @test sol.convergence.refinements >=
+                      GIModel.HO_REQUIRED_CONVERGED_REFINEMENTS
+                @test sol.convergence.max_wave_overlap_defect >= 0
+            else
+                @test isnothing(sol.convergence)
+            end
         end
     end
 
@@ -2025,9 +2035,11 @@ end
 
     # Raising nbasis can only lower an oscillator eigenvalue, for the same reason.
     e24 = channel_solution(params, meson.constituent_masses, 0;
-        solver = OscillatorSolver(nbasis = 24), nlevels = 3).eigenvalues_GeV
+        solver = OscillatorSolver(nbasis = 24, converge = false),
+        nlevels = 3).eigenvalues_GeV
     e40 = channel_solution(params, meson.constituent_masses, 0;
-        solver = OscillatorSolver(nbasis = 40), nlevels = 3).eigenvalues_GeV
+        solver = OscillatorSolver(nbasis = 40, converge = false),
+        nlevels = 3).eigenvalues_GeV
     @test all(e40 .<= e24 .+ 1e-9)
 
     # The stage-1 solver is recorded and stages 2-3 reuse it, so one spectrum is
@@ -2045,9 +2057,15 @@ end
     @test_throws MethodError OscillatorSolver(kinetic = :nonrelativistic)
     @test_throws MethodError OscillatorSolver(eigensolver = :krylov)
     @test_throws ArgumentError OscillatorSolver(nbasis = 0)
+    @test_throws ArgumentError OscillatorSolver(max_nbasis = 1)
+    @test_throws ArgumentError OscillatorSolver(basis_step = 0)
+    @test_throws ArgumentError OscillatorSolver(energy_tolerance_GeV = 0)
+    @test_throws ArgumentError OscillatorSolver(beta_tolerance_GeV = 0)
     @test_throws ArgumentError OscillatorSolver(beta_grid = Float64[])
+    @test_throws ArgumentError OscillatorSolver(beta_grid = [0.5, 0.6])
     @test_throws ArgumentError OscillatorSolver(beta_grid = [0.5, -0.5])
     @test_throws ArgumentError OscillatorSolver(beta_grid = [1.5, 0.5])
+    @test_throws ArgumentError OscillatorSolver(beta_grid = [0.5, 0.5, 0.6])
 
     # The paper's complete fixed-sector Hamiltonian is relativistic. The
     # nonrelativistic FD option remains a central-only comparator and must not
@@ -2057,11 +2075,62 @@ end
         solver = FiniteDifferenceSolver(kinetic = :nonrelativistic),
     )
 
-    # beta_grid is a solver field, not a module constant to go edit in source.
+    # beta_grid is a solver field, not a module constant to edit in source. A
+    # bracket that excludes the minimum now fails rather than returning a
+    # warned-but-usable under-resolved result.
     narrow = OscillatorSolver(beta_grid = 0.9:0.1:1.2)
     @test narrow.beta_grid == [0.9, 1.0, 1.1, 1.2]
-    @test (@test_logs (:warn,) match_mode = :any channel_solution(
-        params, meson.constituent_masses, 0; solver = narrow, nlevels = 2)) isa ChannelRadialSolution
+    @test_throws ErrorException channel_solution(
+        params, meson.constituent_masses, 0; solver = narrow, nlevels = 2)
+
+    @testset "PA-12 adaptive HO convergence is certified or fails loudly" begin
+        # Explicit fixed-size mode is available only as an unchecked convergence
+        # study. Production mode records the continuously refined beta and final
+        # basis certificate on the existing solution object.
+        unchecked = channel_solution(
+            params, meson.constituent_masses, 0;
+            solver = OscillatorSolver(nbasis = 24, converge = false),
+            nlevels = 2,
+        )
+        @test unchecked.convergence.status == :unchecked
+        @test isnothing(unchecked.convergence.energy_delta_GeV)
+        certified = channel_solution(
+            params, meson.constituent_masses, 0;
+            solver = OscillatorSolver(), nlevels = 2,
+        )
+        @test certified.convergence.status == :converged
+        @test certified.convergence.beta_GeV == radial_wave(certified, 1).beta
+        @test certified.convergence.beta_GeV ∉ OscillatorSolver().beta_grid
+        @test certified.convergence.energy_delta_GeV <=
+              certified.convergence.tolerance_GeV
+        high_order_left = OscillatorWave(0, 0.55, [sin(i) for i in 1:64])
+        high_order_right = OscillatorWave(0, 0.65, [cos(i / 2) for i in 1:72])
+        @test isfinite(radial_overlap(high_order_left, high_order_right, _ -> 1.0))
+        high_order_momentum = momentum_wave(high_order_left)
+        @test isfinite(momentum_functional(
+            high_order_momentum, p -> inv(sqrt(1 + p^2)),
+        ))
+        @test isfinite(momentum_overlap(
+            high_order_momentum, momentum_wave(high_order_right), _ -> 1.0,
+        ))
+        too_small = OscillatorSolver(
+            nbasis = 8,
+            max_nbasis = 16,
+            basis_step = 4,
+            energy_tolerance_GeV = 1e-14,
+            beta_grid = [0.8],
+            nlevels_per_channel = 1,
+        )
+        @test_throws ErrorException channel_solution(
+            params, meson.constituent_masses, 0; solver = too_small, nlevels = 1)
+        @test_throws ArgumentError channel_solution(
+            params,
+            meson.constituent_masses,
+            0;
+            solver = OscillatorSolver(nbasis = 1, converge = false),
+            nlevels = 2,
+        )
+    end
 end
 
 @testset "Resolution walls are detected, not silent" begin
@@ -2092,8 +2161,8 @@ end
     # splitting collapses.
     @test points_across(30.0) < GIModel.MIN_POINTS_ACROSS_STATE
 
-    # Same story on the oscillator path: the default beta_grid rails, i.e. the
-    # variational optimum lands on the last candidate, only well above bottomonium.
+    # Same story on the oscillator path: the default beta_grid rails only well
+    # above bottomonium. The adaptive production solve rejects that bracket.
     default_grid = OscillatorSolver().beta_grid
     function best_beta(m)
         mm = ConstituentMasses(m, m)
@@ -2109,9 +2178,9 @@ end
     @test best_beta(mq["b"]) < last(default_grid)     # bottomonium is fine
     @test best_beta(30.0) == last(default_grid)       # railed
 
-    # And the detector is wired to warn (maxlog=1, so this is the first trigger).
-    @test_logs (:warn,) match_mode = :any channel_solution(
-        params, ConstituentMasses(30.0, 30.0), 0; nlevels = 2)
+    @test_throws ErrorException channel_solution(
+        params, ConstituentMasses(30.0, 30.0), 0;
+        solver = OscillatorSolver(), nlevels = 2)
 end
 
 @testset "Isoscalar coherence factor is stated, not string-matched" begin
@@ -2935,8 +3004,9 @@ end
     #    PT over-raises it (≈0.28 GeV).
     nn = ConstituentMasses(mq["q"], mq["q"])
     pion = FineStructureMultiplet("S", 1, 0)
-    m_full = fixed_channel_solution(
-        params, nn, pion; solver = solver_ho, nlevels = 4).eigenvalues_GeV[1]
+    certified_pion = fixed_channel_solution(
+        params, nn, pion; solver = solver_ho, nlevels = 4)
+    m_full = certified_pion.eigenvalues_GeV[1]
     m_fd = fixed_channel_solution(
         params, nn, pion;
         solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax),
@@ -2944,6 +3014,10 @@ end
     ).eigenvalues_GeV[1]
     @test m_full < 0.15               # resummed, light pion
     @test abs(m_full - m_fd) < 0.02   # matches the fine-grid FD resummation
+
+    @test certified_pion.convergence.status == :converged
+    @test certified_pion.convergence.energy_delta_GeV <=
+          solver_ho.energy_tolerance_GeV
 
     # 2. full diagonalization still lands the charm gluonic singlet on the paper
     #    (the spin distortion the central wave misses), so both subtable regimes

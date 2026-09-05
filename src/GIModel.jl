@@ -45,7 +45,8 @@ export RadialSolver, FiniteDifferenceSolver, OscillatorSolver, SpinTerms,
     numerics_provenance
 include("solver_options.jl")
 
-export RadialChannelKey, ChannelRadialSolution, SectorComputation, solve_sector
+export RadialChannelKey, OscillatorConvergence, ChannelRadialSolution,
+    SectorComputation, solve_sector
 include("sector_solver.jl")
 
 export AbstractQuark, LightQuark, StrangeQuark, HeavyQuark

@@ -34,9 +34,10 @@ radial subspaces enter the later tensor/antisymmetric-spin-orbit blocks; and
 spectroscopic and flavor mixing. HO has no `ngrid`/`rmax` fields and no
 mesh-operator fallback.
 
-Still open are automatic HO basis/beta convergence records, migration of every
-flavor-sensitive observable to the final composition, and removal or formal
-isolation of the fitted spin bridge factors.
+Native HO basis/beta convergence is now automatic and recorded on each channel
+solution. Still open are migration of every flavor-sensitive observable to the
+final composition and removal or formal isolation of the fitted spin bridge
+factors.
 
 Therefore:
 
@@ -156,20 +157,20 @@ Status vocabulary:
 | Relativistic kinetic energy in an HO basis | `ho_p2_matrix`, `oscillator_kinetic_matrix` | native | Nothing structural for the central operator. |
 | Smeared central `G~`, `S~` and Coulomb momentum sandwich | `ho_operator_matrix`, `oscillator_momentum_factor_matrix`, `oscillator_hamiltonian_for_beta` | native | Keep the active `AppendixAMomentumSandwich` path as the paper target. Comparator potentials may remain mesh based. |
 | Eq. (A17) position/momentum factorization | Exact HO `p2`, Gauss-Laguerre/DVR position matrices, `ho_momentum_sandwich_matrix` | native | Used by central and every diagonal spin term. |
-| Full fixed-`j,l,s` Hamiltonian diagonalization | `fixed_channel_solution` | native | Automatic convergence control remains. |
+| Full fixed-`j,l,s` Hamiltonian diagonalization | `fixed_channel_solution` | native | Uses the shared adaptive HO convergence controller. |
 | Contact hyperfine in the first diagonalization | `ho_contact_hyperfine_matrix`; FD `contact_hyperfine_operator` | native in both backends | Further formula-level comparison to a direct `nabla^2 G~` construction remains a physics validation item. |
 | Symmetric vector/scalar spin-orbit in the first diagonalization | `ho_fine_structure_matrices`; FD `fine_structure_grid_operator` | native in both backends | Nothing structural. |
 | Diagonal tensor term in the first diagonalization | `ho_fine_structure_matrices`; FD `fine_structure_grid_operator` | native in both backends | Nothing structural. |
 | Paper strengths without extra bridge factors | `k_spin_orbit = 0.48`, `k_tensor = 0.42` in the active parameters | partial/non-paper | Remove these diagnostic scales from the paper mode after native HO A15-A16 matrices reproduce the paper without them. Keep them only in an explicitly named legacy/comparator mode. |
 | Sector-specific eigenvectors after all diagonal spin terms | `RadialChannelKey(masses,L,S,J)` -> `ChannelRadialSolution` | implemented | No sampled view is stored. |
-| Variational `beta` optimization for the complete sector Hamiltonian | `fixed_channel_solution`; `OscillatorSolver.beta_grid` | implemented, coarse scan | Requested radial range controls the objective; refinement and metadata remain. |
-| Expand basis until convergence | Fixed `nbasis`, endpoint warning, and convergence tests | partial | Add a convergence controller over `nbasis` (and beta refinement), record achieved tolerances, and fail or warn on non-convergence. |
+| Variational `beta` optimization for the complete sector Hamiltonian | `fixed_channel_solution`; `_refine_oscillator_beta` | implemented | Requested radial range controls the objective; the coarse grid brackets a continuously refined interior minimum. |
+| Expand basis until convergence | `_oscillator_solution_search`; `OscillatorConvergence` | implemented | Every requested eigenvalue must pass 0.1 MeV on two successive refinements; railing or exhausting `max_nbasis` throws. |
 | Stage-2 tensor matrix in the basis of first-stage eigenvectors | `tensor_mixing_components`, `MixingBlock`, `MixingResult` | implemented | Uses every compatible requested radial state. |
 | Stage-2 antisymmetric spin-orbit matrix | two-wave `spin_orbit_mixing_components`, `MixingBlock`, `MixingResult` | implemented | Uses distinct singlet/triplet fixed-sector waves. |
 | General simultaneous radial/spectroscopic mixing | complete blocks in `_apply_same_j_spin_orbit_mixing!` and `_apply_tensor_mixing!` | implemented for disjoint paper mechanisms | A future overlapping mechanism must be assembled in one block, not applied sequentially. |
 | Stage-3 annihilation and flavor/radial mixing | `add_isoscalar_annihilation`, general Eq. (16), P1/P2 | integrated | Model-order assignment and final composition live in GIModel; reference naming/order and calibrated targets remain explicit in GIPaper. |
 | Final physical wavefunction/eigenvector | `StateMixing` + `MixingResult`; recursive `physical_components` | implemented | Every component carries explicit flavor identity and its solver-native wave. |
-| One paper-order spectrum entry point | `compute_isoscalar_spectrum(...; solver=OscillatorSolver())` | implemented, uncertified | Add automatic convergence and remove/isolate fitted spin bridge factors before headline certification. |
+| One paper-order spectrum entry point | `compute_isoscalar_spectrum(...; solver=OscillatorSolver())` | implemented, uncertified | Numerical HO convergence is certified; remove/isolate fitted spin bridge factors and finish observable migration before headline certification. |
 | Independent FD validation | `FiniteDifferenceSolver` | extra, useful | Preserve as a convergence/reference implementation, not as a hidden dependency of paper mode. |
 
 ## Code evidence map
@@ -233,21 +234,18 @@ relativistic Hamiltonian.
 
 ## Remaining implementation sequence
 
-1. **PA-12: convergence control.** Refine beta beyond the current discrete
-   grid, enlarge `nbasis` automatically, record achieved tolerances, and fail or
-   warn when a requested sector is not converged.
-2. **PA-17: final-state consumers.** Make flavor-mixed
+1. **PA-17: final-state consumers.** Make flavor-mixed
    observables consume that final composition, remove the fitted
    precursor-vector paths, and retain one coherent phase convention.
-3. **PA-18: native-HO paper certification.** Remove the fitted
+2. **PA-18: native-HO paper certification.** Remove the fitted
    `k_spin_orbit`/`k_tensor` bridge from paper mode after calibration is settled
    and add HO convergence reports to the full gate. FD remains a separate
    implementation comparator, not a PA-18 acceptance criterion.
 
-Outstanding acceptance tests are correspondingly narrow: automatic basis/beta
-convergence metadata, flavor-sensitive observables consuming the final
-composition, and native-HO paper validation without hidden spin bridge scales.
-The end-to-end isoscalar mass/eigenvector/composition invariant is covered now.
+Outstanding acceptance tests are correspondingly narrow: flavor-sensitive
+observables consuming the final composition and native-HO paper validation
+without hidden spin bridge scales. Automatic basis/beta convergence metadata
+and the end-to-end isoscalar mass/eigenvector/composition invariant are covered.
 
 ## What should remain unchanged
 
@@ -271,7 +269,8 @@ Hamiltonian once, uses complete requested cross-sector radial blocks, and
 exposes resolvable physical component waves. It does not reconstruct HO states
 on an FD mesh or run a central-only precursor in production.
 
-The remaining gap to a certified 1985 calculation is now numerical and
-consumer-facing: automatic basis/beta convergence, migration of all observables
-to the final flavor composition, and removal or formal isolation of the fitted
-spin bridge factors. FD validation remains useful but separate from that claim.
+The remaining gap to a certified 1985 calculation is consumer- and
+physics-calibration-facing: migrate all observables to the final flavor
+composition and remove or formally isolate the fitted spin bridge factors. HO
+sector convergence is now certified; FD validation remains useful but separate
+from that claim.

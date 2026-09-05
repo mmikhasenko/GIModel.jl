@@ -138,5 +138,8 @@ two masses for a dynamical calculation. `FiniteDifferenceSolver` or
 5. An unavailable path throws or returns `nothing` when the physics term is
    genuinely inactive; it never returns an empty tuple that triggers a silent
    algorithm fallback.
-6. `OscillatorSolver` contains only `nbasis`, `beta_grid`, and requested level
-   capacity. Plot grids are owned by plotting code, never by the HO calculation.
+6. `OscillatorSolver` contains only native-HO numerical controls: the initial,
+   stepped, and maximum basis sizes; energy tolerance; beta bracket/refinement
+   tolerance; convergence mode; and requested level capacity. Plot grids are
+   owned by plotting code, never by the HO calculation. The achieved
+   `OscillatorConvergence` certificate lives on `ChannelRadialSolution`.

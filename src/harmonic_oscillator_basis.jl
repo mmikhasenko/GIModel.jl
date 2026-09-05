@@ -116,13 +116,11 @@ end
 # — every β cancels — so the nodes `xᵢ` and the DVR matrix `Z` are functions of
 # `(L, nq)` alone, and β enters only as the rescaling `rᵢ = √xᵢ / β`.
 #
-# That matters because `oscillator_channel_solution` scans 22 β candidates and
-# assembles two operators (G̃ and S̃) at each, i.e. 44 requests for the same few
-# decompositions per L. Memoizing on `(L, nbasis, nq)` turns the eigensolves from
-# the dominant cost into a one-off: 12 channel solves take 0.33 s sharing one
-# memo against 21.2 s with a memo scoped per solve, a factor of 64. Threading a
-# rule store through five signatures instead would buy explicitness at the price
-# of putting a numerics-internal object in the public API.
+# That matters because the initial beta-bracket scan and its continuous
+# refinement assemble two operators (G̃ and S̃) repeatedly for the same
+# `(L, nbasis, nq)`. Memoizing the dimensionless rule makes those decompositions
+# one-off work. Threading a rule store through five signatures instead would put
+# this numerics-internal object in the public API.
 #
 # Capped by BYTES rather than entry count, because entries span `24 × 64` to
 # `24 × 8192` — 256 of the small ones cost less than one of the large. The gate's
@@ -311,6 +309,20 @@ function _oscillator_radial_value(w::OscillatorWave, r::Real)
     )
 end
 
+# Native HO waves are polynomial times a Gaussian. Integrating them through an
+# infinite-interval variable transform needlessly evaluates the polynomial at
+# enormous arguments, where high-order bases can form `Inf * 0 = NaN`. Ten
+# dimensionless units beyond the classical turning radius suppress the omitted
+# Gaussian tail far below the quadrature tolerances used by observables.
+_oscillator_tail_rho(L::Integer, nbasis::Integer) =
+    sqrt(4 * (nbasis - 1) + 2L + 3) + 10
+
+_oscillator_coordinate_cutoff(w::OscillatorWave) =
+    _oscillator_tail_rho(w.L, length(w.coefficients)) / w.beta
+
+_oscillator_momentum_cutoff(w::OscillatorWave) =
+    _oscillator_tail_rho(w.L, length(w.coefficients)) * w.beta
+
 """Sample a native oscillator wave on an explicit grid for plotting or export."""
 function sample_wave(w::OscillatorWave, r::AbstractVector{<:Real})
     samples = [_oscillator_radial_value(w, ri) for ri in r]
@@ -333,11 +345,15 @@ function radial_overlap(left::OscillatorWave, right::OscillatorWave, f)
         op = ho_operator_matrix(left.L, left.beta, n, f)
         return dot(cl, op * cr) / (nl * nr)
     end
+    rmax = max(
+        _oscillator_coordinate_cutoff(left),
+        _oscillator_coordinate_cutoff(right),
+    )
     value, _ = quadgk(
         r -> _oscillator_radial_value(left, r) * f(r) *
              _oscillator_radial_value(right, r),
         0.0,
-        Inf;
+        rmax;
         rtol = 1e-10,
     )
     return value / (nl * nr)
@@ -478,25 +494,183 @@ function oscillator_hamiltonian_for_beta(
     return oscillator_central_matrix(params, masses, L, β, nbasis), U
 end
 
-# The beta grid does not adapt to the masses. If the variational optimum lands on
-# an ENDPOINT, the true optimum lies outside the grid: the basis cannot represent
-# a state this compact (or this diffuse), and the result is silently
-# under-resolved rather than obviously wrong. Bottomonium picks beta = 1.55 and
-# m_Q = 8 GeV picks 1.95, so with the default grid this stays quiet for every
-# sector the paper uses and first fires around m_Q ~ 15 GeV.
-function _warn_if_beta_railed(
-    best_beta::Real, solver::OscillatorSolver, masses::ConstituentMasses, L::Integer,
-)
+const HO_REQUIRED_CONVERGED_REFINEMENTS = 2
+
+_ho_objective(result) = last(result.values)
+
+function _cached_ho_evaluation!(cache::Dict{Float64,T}, evaluate, beta::Real) where {T}
+    beta_f = float(beta)
+    return get!(cache, beta_f) do
+        result = evaluate(beta_f)
+        all(isfinite, result.values) || throw(ErrorException(
+            "oscillator beta search produced non-finite eigenvalues at beta=$beta_f",
+        ))
+        result
+    end
+end
+
+function _best_cached_ho_evaluation(cache)
+    betas = sort!(collect(keys(cache)))
+    best_beta = first(betas)
+    best_result = cache[best_beta]
+    for beta in Iterators.drop(betas, 1)
+        result = cache[beta]
+        if _ho_objective(result) < _ho_objective(best_result)
+            best_beta, best_result = beta, result
+        end
+    end
+    return (beta = best_beta, result = best_result)
+end
+
+function _local_beta_grid_index!(cache, evaluate, grid, seed)
+    if isnothing(seed)
+        for beta in grid
+            _cached_ho_evaluation!(cache, evaluate, beta)
+        end
+        objectives = [_ho_objective(cache[beta]) for beta in grid]
+        return argmin(objectives)
+    end
+
+    index = argmin(abs.(grid .- seed))
+    index = clamp(index, 2, length(grid) - 1)
+    while true
+        for i in (index - 1):min(index + 1, length(grid))
+            _cached_ho_evaluation!(cache, evaluate, grid[i])
+        end
+        center = _ho_objective(cache[grid[index]])
+        left = _ho_objective(cache[grid[index - 1]])
+        right = _ho_objective(cache[grid[index + 1]])
+        if left < center && left <= right
+            index -= 1
+        elseif right < center && right < left
+            index += 1
+        else
+            return index
+        end
+        1 < index < length(grid) || return index
+    end
+end
+
+function _refine_oscillator_beta(evaluate, solver::OscillatorSolver; seed = nothing)
     grid = solver.beta_grid
-    length(grid) > 1 || return nothing
-    edge = best_beta == last(grid) ? "top" : best_beta == first(grid) ? "bottom" : return nothing
-    @warn """
-    Oscillator basis railed: the optimal beta hit the $edge of `beta_grid` \
-    ($best_beta GeV), so the state lies outside what this basis can represent and \
-    the result is under-resolved. Widen it with \
-    `OscillatorSolver(solver; beta_grid = ...)`.""" m1 = masses.m1_GeV m2 =
-        masses.m2_GeV L maxlog = 1
-    return nothing
+    first_beta = isnothing(seed) ? first(grid) : clamp(float(seed), first(grid), last(grid))
+    first_result = evaluate(first_beta)
+    all(isfinite, first_result.values) || throw(ErrorException(
+        "oscillator beta search produced non-finite eigenvalues at beta=$first_beta",
+    ))
+    cache = Dict{Float64,typeof(first_result)}(first_beta => first_result)
+    if length(grid) == 1
+        return (beta = first_beta, result = first_result)
+    end
+
+    index = _local_beta_grid_index!(cache, evaluate, grid, seed)
+    if index == 1 || index == length(grid)
+        edge = index == 1 ? "lower" : "upper"
+        throw(ErrorException(
+            "oscillator beta optimum reached the $edge beta_grid endpoint " *
+            "($(grid[index]) GeV); widen the declared beta bracket",
+        ))
+    end
+
+    a, b = grid[index - 1], grid[index + 1]
+    inverse_phi = (sqrt(5.0) - 1.0) / 2.0
+    c = b - inverse_phi * (b - a)
+    d = a + inverse_phi * (b - a)
+    fc = _ho_objective(_cached_ho_evaluation!(cache, evaluate, c))
+    fd = _ho_objective(_cached_ho_evaluation!(cache, evaluate, d))
+    while b - a > solver.beta_tolerance_GeV
+        if fc <= fd
+            b, d, fd = d, c, fc
+            c = b - inverse_phi * (b - a)
+            fc = _ho_objective(_cached_ho_evaluation!(cache, evaluate, c))
+        else
+            a, c, fc = c, d, fd
+            d = a + inverse_phi * (b - a)
+            fd = _ho_objective(_cached_ho_evaluation!(cache, evaluate, d))
+        end
+    end
+    return _best_cached_ho_evaluation(cache)
+end
+
+function _oscillator_solution_search(
+    solver::OscillatorSolver,
+    L::Integer,
+    nlevels::Integer,
+    evaluate,
+)
+    nlevels >= 1 || throw(ArgumentError(
+        "oscillator solve requires at least one eigenlevel",
+    ))
+    nlevels <= solver.nbasis || throw(ArgumentError(
+        "oscillator solve requested $nlevels levels from an initial basis of " *
+        "$(solver.nbasis); raise nbasis to at least nlevels",
+    ))
+    initial_nbasis = solver.nbasis
+    initial_nbasis <= solver.max_nbasis || throw(ErrorException(
+        "oscillator convergence needs at least nbasis=$initial_nbasis for $nlevels levels, " *
+        "above max_nbasis=$(solver.max_nbasis)",
+    ))
+
+    beta_seed = nothing
+    previous_values = nothing
+    previous_waves = nothing
+    consecutive = 0
+    refinements = 0
+    nbasis = initial_nbasis
+    best = nothing
+    while true
+        best = _refine_oscillator_beta(
+            beta -> evaluate(beta, nbasis), solver; seed = beta_seed,
+        )
+        waves = [
+            fix_outer_phase(OscillatorWave(L, best.beta, view(best.result.vectors, :, n)))
+            for n in 1:nlevels
+        ]
+        if !solver.converge
+            certificate = OscillatorConvergence(
+                :unchecked, best.beta, nbasis, nothing, nothing,
+                solver.energy_tolerance_GeV, 0,
+            )
+            return best, waves, certificate
+        end
+
+        if !isnothing(previous_values)
+            refinements += 1
+            energy_delta = maximum(abs.(best.result.values .- previous_values))
+            overlap_defect = maximum(
+                max(0.0, 1.0 - min(1.0, abs(radial_overlap(
+                    previous_waves[n], waves[n], _ -> 1.0,
+                )))) for n in 1:nlevels
+            )
+            consecutive = energy_delta <= solver.energy_tolerance_GeV ?
+                          consecutive + 1 : 0
+            if consecutive >= HO_REQUIRED_CONVERGED_REFINEMENTS
+                certificate = OscillatorConvergence(
+                    :converged,
+                    best.beta,
+                    nbasis,
+                    energy_delta,
+                    overlap_defect,
+                    solver.energy_tolerance_GeV,
+                    refinements,
+                )
+                return best, waves, certificate
+            end
+        end
+
+        nbasis == solver.max_nbasis && break
+        previous_values = copy(best.result.values)
+        previous_waves = waves
+        beta_seed = best.beta
+        nbasis = min(nbasis + solver.basis_step, solver.max_nbasis)
+    end
+    final_delta = isnothing(previous_values) || isnothing(best) ? "not measured" :
+                  "$(1000 * maximum(abs.(best.result.values .- previous_values))) MeV"
+    throw(ErrorException(
+        "oscillator basis did not converge through max_nbasis=$(solver.max_nbasis); " *
+        "final requested-level change was $final_delta, tolerance is " *
+        "$(1000 * solver.energy_tolerance_GeV) MeV",
+    ))
 end
 
 function oscillator_channel_solution(
@@ -505,23 +679,18 @@ function oscillator_channel_solution(
     L::Integer;
     solver::OscillatorSolver = OscillatorSolver(),
     nlevels::Integer = solver.nlevels_per_channel,
-    nbasis::Integer = max(solver.nbasis, nlevels + 4),
 )
-    best = nothing
-    for β in solver.beta_grid
-        H = oscillator_central_matrix(params, masses, L, β, nbasis)
+    evaluate = function (β, basis_size)
+        H = oscillator_central_matrix(params, masses, L, β, basis_size)
         vals, vecs = lowest_eigenpairs(Matrix(H), nlevels, solver)
-        # For an orthogonal set in a fixed sector, use one beta for all reported
-        # levels. Following the paper's practical convention, choose the beta
-        # that minimizes the last requested state rather than overfitting the
-        # ground state.
-        if isnothing(best) || vals[end] < best.values[end]
-            best = (beta = β, values = vals, coeffs = vecs)
-        end
+        return (values = vals, vectors = vecs)
     end
-    _warn_if_beta_railed(best.beta, solver, masses, L)
-    waves = [OscillatorWave(L, best.beta, view(best.coeffs, :, n)) for n in 1:nlevels]
-    return ChannelRadialSolution(best.values, waves)
+    best, waves, convergence = _oscillator_solution_search(
+        solver, L, nlevels, evaluate,
+    )
+    return ChannelRadialSolution(
+        best.result.values, waves; convergence = convergence,
+    )
 end
 
 # A matrix without representation metadata is a finite-difference mesh

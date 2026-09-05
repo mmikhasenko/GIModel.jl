@@ -16,7 +16,7 @@ central_potential_path(params::GIParameters)::CentralPotentialPath =
 
 central_potential_path(::AppendixAMomentumSandwich) = CentralPotentialPath(
     "appendix_a_momentum_sandwich",
-    "Closed-form smeared G̃(r), S̃(r), plus central Coulomb momentum sandwich G' = A(p)G̃A(p) on the FD p² eigenbasis",
+    "Closed-form smeared G̃(r), S̃(r), plus central Coulomb momentum sandwich G' = A(p)G̃A(p) in the solver's native p² representation",
     "Active spin-independent GI central candidate from the checked Appendix-A source; takes precedence over diagonal comparator modes.",
 )
 

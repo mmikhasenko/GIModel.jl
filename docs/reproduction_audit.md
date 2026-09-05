@@ -25,7 +25,7 @@ victory claim must be read against this table, not around it.
 | --- | --- | --- | --- |
 | **A. Paper's own inputs** (reproduced as inputs, not refit) | Table II: `b=0.18 GeV²`, `c=−0.253 GeV`, `σ₀=1.80 GeV`, `s=1.55`, quark masses, the four `ε` factors; Fig. 2 `α_s` coefficients `(0.25,0.15,0.20)`/denominators `(1,10,1000)`; Table III annihilation amplitudes `A(³S₁)=2.5`, `A(³P₂)=−0.8`, `P1/P2` `A_np=0.50/0.55`; photon smearing exponents `0.7`/`0.5`; decay oscillator `β=0.40 GeV` | Godfrey-Isgur 1985, audited into `data/` and sync-checked | These are the paper's; using them is faithful reproduction, not fitting. |
 | **B. Paper's own fit, re-performed identically** | Strong-decay strengths `A=1.665`, `S₀=3.287` (leading convention) | Two-point fit to the *same* rows the paper fits (`ρ→ππ`, `B→[ωπ]_S`) | Methodologically identical to the paper (which gets `A=1.67`, `S=3.27`); no extra freedom introduced. (The earlier `table_iv`-convention value `S₀=3.918` is superseded by the leading-S₀ convention that reproduces Table V — see the `fit-A-S0` manifest unit.) |
-| **C. Ours, not in the paper — diagnostic bridging scales** | `k_spin_orbit = 0.48`, `k_tensor = 0.42` (`[fine_structure]` in the TOML) | Two global O(1) multipliers on the **first-order fine-structure expectations evaluated on the FD radial mesh**, chosen to align the FD splittings with the paper's HO-basis result | **This is the one genuine caveat on the spectrum reproduction.** The paper diagonalizes in a harmonic-oscillator basis (Eq. 14) and needs no such factor; our FD first-order fine structure does. The mass *centres*, radial/orbital spacings, contact hyperfine, and mixing *structure* carry no such scale — only the spin-orbit and tensor splitting magnitudes do. **W6** (HO-order validation, A15-A17) is exactly the work that would remove tier-C scales; until then, "spectra reproduced" means centres+spacings to few-MeV and fine-structure splittings up to these two global scales. |
+| **C. Ours, not in the paper — diagnostic bridging scales** | `k_spin_orbit = 0.48`, `k_tensor = 0.42` (`[fine_structure]` in the TOML) | Two global O(1) multipliers inherited from the earlier FD calibration and currently applied in both backend-native fixed-sector matrices | **This is the remaining caveat on literal spectrum reproduction.** Native HO now performs the paper-order fixed-sector diagonalization and needs no mesh bridge, but these two non-paper strengths still scale its spin-orbit and tensor blocks. PA-18 must remove them or isolate them in an explicitly named comparator mode, then certify the formula normalization with paper inputs. |
 
 Everything else in the model is derived (kinetic operator, potentials,
 Clebsch-Gordan/angular factors, overlap kernels) with no adjustable constant.
@@ -34,8 +34,8 @@ new fitted constants** on our side — they reuse tier-A/B values only.
 
 ## 1. Where the residuals live (the logic)
 
-Across every audited table the deviations concentrate in exactly **two**
-places, and neither is a coding error:
+Across the current audits the largest remaining deviations concentrate in two
+places:
 
 1. **Small-offdiagonal same-J mixing angles.** The model's own K1 (strange 1P
    +19.5° vs paper +34°) and charm 1P (−24.8° vs −41°) angles deviate when the
@@ -43,15 +43,15 @@ places, and neither is a coding error:
    Q1/Q2 and Q1c/Q2c decay misses: those rows reproduce the paper's numbers
    exactly when evaluated at the *paper's* angle. Large-offdiagonal angles
    (1D, 1F blocks) agree to a few degrees.
-2. **Light-sector wavefunction overlaps (~15-24%)** and the deepest
-   multi-node cancellations (η↔η′ ordering, Υ″→η_bγ sign, 2S→χ₀ magnitude).
-   All trace to the **FD central-solve vs paper HO-order radial residual** —
-   the same root as the tier-C scales in §0.
+2. **Flavor-mixed and cancellation-sensitive observables**, especially radial
+   η/η′ signs, Υ″→η_bγ, and 2S→χ₀ magnitudes. These still use partially bespoke
+   consumer composition and are the PA-17 migration target.
 
-Both buckets point at the same fix: **W6**, paper-order perturbation theory in
-the HO basis. The model reproduces the paper's *algebra, signs, centres, and
-spacings*; the open gaps are the physics limits the paper itself discusses,
-modulated by our FD-vs-HO basis choice.
+W6 is complete: converged native HO and FD now agree on the central smeared
+origin functional to 0.36% and on the light pion full solve to 0.1 MeV. The
+remaining work is therefore final-state consumer integration (PA-17) and
+removal/isolation of the two bridge strengths (PA-18), not another radial-wave
+or mesh abstraction.
 
 ## 2. Remaining work and costs
 
@@ -60,19 +60,16 @@ what still stands between the current state and "the whole paper, reproduced".
 
 | Remaining | Cost | Blocks victory? |
 | --- | --- | --- |
-| **Table VII** (D4-D8 decay constants + leptonic/γγ/gluonic widths + charge radii; digitize + audit) | **large** (2-3 units: 1 data, 1-2 code) | yes — last untouched table |
-| **W6 HO-order validation** (A15-A17; removes the tier-C scales and the §1 residuals) | **large / research** (background) | it is the deepest fidelity item; "reproduced up to global scales" holds without it, "fully reproduced" is stronger with it |
-| **Strange √3 recoil** (W2c-2: derive the Appendix-B isospin factor for `K*₂→Kπ`; now precisely characterized as non-kinematic) | small (1 unit) | soft — one characterized outlier |
-| **Eq. (21) type-S momentum ratio** (companion to the reproduced type-A factors) | small (1 unit) | soft — quality, not coverage |
-| Promote Table VI/Appendix-D kernels from audit scripts into `src/` + tests | med | no — engineering hygiene |
+| **PA-17 final-state consumers** | medium | yes for flavor-mixed observable certification |
+| **PA-18 literal paper strengths and end-to-end HO certification** | research/calibration | yes for an unqualified original-algorithm claim |
+| **FD-COMP independent convergence audit** | medium | no; comparator evidence only |
 
 **Not reproduction blockers** (context/superseded — candidates for the
 direction-2 demos instead): Table I, Table VIII, Eqs. (11), (15), (23)-(29),
 A1-A6, B37.
 
-**Honest one-line status:** spectra and decay/EM tables are reproduced to the
-few-MeV / ~10-20% level the paper works at, with two global fine-structure
-scales (§0 tier C) standing in for the paper's HO-order treatment; **Table V is
-digitized across every section and reproduced end-to-end (160/178 scoreable rows)
-under the leading-S₀ convention**, so the only untouched table is **Table VII**,
-and the remaining *fidelity* gap is W6.
+**Honest one-line status:** the three-stage native-HO spectrum algorithm,
+adaptive basis convergence, and all paper table audit machinery are present;
+the remaining qualification is that some flavor-sensitive observables have not
+yet migrated to the final physical composition and two non-paper fine-structure
+bridge scales remain active.

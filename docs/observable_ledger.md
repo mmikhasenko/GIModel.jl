@@ -173,7 +173,7 @@ Two independent algorithms solve the same radial problem, behind one interface:
 
 | | `FiniteDifferenceSolver` | `OscillatorSolver` |
 |---|---|---|
-| representation | `u(r)` on a uniform mesh | expansion in 24 oscillator states |
+| representation | `u(r)` on a uniform mesh | adaptive oscillator expansion (starts at 24 states) |
 | `⟨i\|f(p)\|n⟩` | spectral function of the FD `p²` | `ho_p2_matrix`, closed form |
 | `⟨n\|g(r)\|j⟩` | mesh quadrature | `ho_operator_matrix`, Gauss–Laguerre |
 | spatial mesh | yes, intrinsically | **none** (reporting only) |
@@ -188,7 +188,8 @@ grid.
 oscillator Hamiltonian exactly diagonal (1e-14); the virial theorem holds per
 state; `g = 1` returns the identity (4e-15); `g = r²` returns `ho_r2_matrix`
 (1e-12); and the smeared Appendix-A potential matches independent adaptive
-quadrature to 2.8e-16…1.2e-13. Basis size 24 is converged to <0.1 MeV.
+quadrature to 2.8e-16…1.2e-13. The production controller now enlarges the basis
+until all requested energies pass a recorded 0.1 MeV convergence criterion.
 
 **Agreement between the two.** Charm +0.18 MeV, bottom +0.55 MeV, oscillator
 above finite-difference — the correct side for a variational calculation in a

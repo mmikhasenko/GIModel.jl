@@ -282,11 +282,15 @@ function momentum_overlap(
         op = fact.vectors * Diagonal(values) * fact.vectors'
         return dot(cl, op * cr) / sqrt(wave_norm(wl) * wave_norm(wr))
     end
+    pmax = max(
+        _oscillator_momentum_cutoff(wl),
+        _oscillator_momentum_cutoff(wr),
+    )
     value, _ = quadgk(
         p -> p^2 * _oscillator_momentum_value(left, p) *
              _oscillator_momentum_value(right, p) * g(p),
         0.0,
-        Inf;
+        pmax;
         rtol = 1e-9,
     )
     return value / sqrt(wave_norm(wl) * wave_norm(wr))
@@ -305,10 +309,11 @@ momentum_functional(mw::MeshMomentumWave, K) =
     _mm_trapz(mw.p, mw.p .^ 2 .* mw.phi .* map(K, mw.p))
 
 function momentum_functional(mw::OscillatorMomentumWave, K)
+    pmax = _oscillator_momentum_cutoff(mw.source)
     value, _ = quadgk(
         p -> p^2 * _oscillator_momentum_value(mw, p) * K(p),
         0.0,
-        Inf;
+        pmax;
         rtol = 1e-9,
     )
     return value

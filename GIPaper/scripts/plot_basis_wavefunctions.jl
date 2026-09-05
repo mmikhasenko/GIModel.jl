@@ -1,9 +1,9 @@
 #!/usr/bin/env julia
 # Demonstration plots contrasting the finite-difference (FD) and
 # harmonic-oscillator (HO) radial wavefunctions used by the two solver paths.
-# Both return the reduced radial function u(r) on the SAME uniform mesh
-# (the HO path reconstructs its finite-basis solution onto that mesh), so the
-# curves are directly comparable.
+# FD returns mesh samples; HO returns a native analytic oscillator wave. This
+# plotting script explicitly samples the latter on the FD grid only to render
+# directly comparable curves. The calculation itself does not use that mesh.
 
 using Pkg
 Pkg.activate(joinpath(@__DIR__, ".."))

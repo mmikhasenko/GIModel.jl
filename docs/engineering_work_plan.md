@@ -72,7 +72,7 @@ These were each found the hard way. Every one is pinned by tests.
 10. **A report names the numerics that produced it.** Every report writer emits a
    `Numerics:` line via `numerics_provenance`. A residual is a measurement, and
    `mean_abs = 6.0 MeV` is unfalsifiable without knowing whether it came off a
-   450-point mesh or a 24-state oscillator basis.
+   450-point mesh or an adaptively converged oscillator basis.
 
 ## Verification standard
 

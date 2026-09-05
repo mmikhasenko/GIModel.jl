@@ -9,10 +9,11 @@ python3 GIPaper/scripts/data_checks.py validate
 # FiniteDifferences lives in the test target, so run the suites through Pkg.test.
 julia --project=. -e 'using Pkg; Pkg.test()'
 julia --project=GIPaper -e 'using Pkg; Pkg.test()'
+julia GIPaper/scripts/audit_ho_convergence.jl # PA-12: adaptive native-HO certificate
 julia GIPaper/scripts/audit_table_iii_mixings.jl
 julia GIPaper/scripts/reproduce_table_v.jl
 julia GIPaper/scripts/audit_table_vii.jl   # Table VII gluonic annihilation (zero-parameter)
-julia GIPaper/scripts/audit_w6_ho_order.jl # W6: paper-order (HO first-order) spin-distorted waves
+julia GIPaper/scripts/audit_w6_ho_order.jl # W6: paper-order HO full diagonalization
 # The two FD-vs-oscillator audits. Ungated until now, and it showed: the
 # GIModel/GIPaper split (4dfd4c5) broke audit_nonmixing_contact.jl outright, and
 # nobody noticed for a month because nothing ran it -- so both reports were

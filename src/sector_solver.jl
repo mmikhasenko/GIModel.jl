@@ -2,7 +2,8 @@
 # solutions, and diagnostic equal-mass sweeps.
 #
 # Public API (exported from GIModel.jl):
-#   RadialChannelKey, ChannelRadialSolution, SectorComputation, solve_sector
+#   RadialChannelKey, OscillatorConvergence, ChannelRadialSolution,
+#   SectorComputation, solve_sector
 #
 # [`compute_spectrum`](@ref) (`spectrum.jl`) fills [`SectorComputation`](@ref) with one
 # solve per distinct orbital channel.
@@ -52,6 +53,74 @@ RadialChannelKey(
 ) = RadialChannelKey(ConstituentMasses(m1, m2), L_label, multiplicity, J)
 
 """
+    OscillatorConvergence
+
+Numerical certificate attached to an HO [`ChannelRadialSolution`](@ref).
+`status` is `:converged` for an adaptive solve or `:unchecked` when the caller
+explicitly requested `OscillatorSolver(converge=false)`. `energy_delta_GeV` is
+the largest requested-eigenvalue change on the final basis refinement;
+`max_wave_overlap_defect` is `max(1-|<u_N|u_previous>|)` over those levels.
+The latter is recorded for wave-sensitive follow-up audits but is not used as
+an energy-convergence substitute.
+"""
+struct OscillatorConvergence
+    status::Symbol
+    beta_GeV::Float64
+    nbasis::Int
+    energy_delta_GeV::Union{Nothing,Float64}
+    max_wave_overlap_defect::Union{Nothing,Float64}
+    tolerance_GeV::Float64
+    refinements::Int
+    function OscillatorConvergence(
+        status::Symbol,
+        beta_GeV::Real,
+        nbasis::Integer,
+        energy_delta_GeV::Union{Nothing,Real},
+        max_wave_overlap_defect::Union{Nothing,Real},
+        tolerance_GeV::Real,
+        refinements::Integer,
+    )
+        status in (:converged, :unchecked) || throw(ArgumentError(
+            "OscillatorConvergence: status must be :converged or :unchecked",
+        ))
+        beta_GeV > 0 || throw(ArgumentError(
+            "OscillatorConvergence: beta must be positive",
+        ))
+        nbasis >= 1 || throw(ArgumentError(
+            "OscillatorConvergence: nbasis must be positive",
+        ))
+        tolerance_GeV > 0 || throw(ArgumentError(
+            "OscillatorConvergence: tolerance must be positive",
+        ))
+        refinements >= 0 || throw(ArgumentError(
+            "OscillatorConvergence: refinements must be non-negative",
+        ))
+        delta = isnothing(energy_delta_GeV) ? nothing : float(energy_delta_GeV)
+        defect = isnothing(max_wave_overlap_defect) ? nothing :
+                 float(max_wave_overlap_defect)
+        status == :converged && (isnothing(delta) || isnothing(defect)) &&
+            throw(ArgumentError(
+                "OscillatorConvergence: converged status requires final deltas",
+            ))
+        !isnothing(delta) && (!isfinite(delta) || delta < 0) && throw(ArgumentError(
+            "OscillatorConvergence: energy delta must be finite and non-negative",
+        ))
+        !isnothing(defect) && (!isfinite(defect) || defect < 0) && throw(ArgumentError(
+            "OscillatorConvergence: overlap defect must be finite and non-negative",
+        ))
+        return new(
+            status,
+            float(beta_GeV),
+            Int(nbasis),
+            delta,
+            defect,
+            float(tolerance_GeV),
+            Int(refinements),
+        )
+    end
+end
+
+"""
     ChannelRadialSolution(eigenvalues_GeV, waves)
     ChannelRadialSolution(eigenvalues_GeV, mesh_eigenvectors, r)
 
@@ -59,7 +128,9 @@ Output of one `channel_solution` call, stored in `SectorComputation.channel_cach
 
   - `eigenvalues_GeV`: lowest radial eigenvalues in GeV;
   - `waves`: one native [`RadialWave`](@ref) per eigenvalue (`MeshWave` for FD,
-    `OscillatorWave` for native HO).
+    `OscillatorWave` for native HO);
+  - `convergence`: the [`OscillatorConvergence`](@ref) certificate for HO, or
+    `nothing` for a method without an automatic certificate.
 
 Use [`radial_wave`](@ref)`(solution, n)` to retrieve it. The three-argument
 constructor is a convenience for numerical methods that naturally produce a
@@ -69,15 +140,20 @@ matrix of mesh samples; the matrix and grid are immediately folded into
 struct ChannelRadialSolution{W<:RadialWave}
     eigenvalues_GeV::Vector{Float64}
     waves::Vector{W}
+    convergence::Union{Nothing,OscillatorConvergence}
     function ChannelRadialSolution(
         eigenvalues_GeV::AbstractVector{<:Real},
         waves::AbstractVector{W},
+        ;
+        convergence::Union{Nothing,OscillatorConvergence} = nothing,
     ) where {W<:RadialWave}
         length(eigenvalues_GeV) == length(waves) || throw(ArgumentError(
             "ChannelRadialSolution: eigenvalue/wave counts differ",
         ))
         phased = [fix_outer_phase(wave) for wave in waves]
-        return new{W}(collect(Float64, eigenvalues_GeV), collect(W, phased))
+        return new{W}(
+            collect(Float64, eigenvalues_GeV), collect(W, phased), convergence,
+        )
     end
 end
 

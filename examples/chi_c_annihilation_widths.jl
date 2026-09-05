@@ -35,13 +35,13 @@ using Printf
 using GIModel
 
 const PARAMS_PATH = joinpath(dirname(@__DIR__), "data", "parameters.provisional.toml")
-const NGRID, RMAX, NPTS, NB = 1200, 24.0, 900, 24
+const NGRID, RMAX, NPTS, INITIAL_NBASIS = 1200, 24.0, 900, 24
 
 params, mq = load_parameters_and_quark_masses(PARAMS_PATH)
 const MC = mq["c"]
 """Ground-state ccbar P-wave (`J = nothing` selects the central channel)."""
 function pwave_level(J::Union{Nothing,Int})
-    solver = OscillatorSolver(nbasis = NB)
+    solver = OscillatorSolver(nbasis = INITIAL_NBASIS)
     masses = ConstituentMasses(MC, MC)
     solution = isnothing(J) ?
         channel_solution(params, masses, 1; nlevels = 1, solver = solver) :

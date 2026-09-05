@@ -4,7 +4,7 @@
 #   RadialSolver — how the radial problem is solved: which of the two methods,
 #                  and how finely. Changing it must NOT move a mass. When it
 #                  does, the setting was under-resolved, which is what
-#                  `_warn_if_underresolved` and `_warn_if_beta_railed` detect.
+#                  `_warn_if_underresolved` and adaptive HO convergence detect.
 #   SpinTerms    — what is in the Hamiltonian. Each switch is a paper equation,
 #                  so changing it MUST move a mass.
 #
@@ -97,16 +97,22 @@ struct FiniteDifferenceSolver{Kinetic,Eigensolver} <: RadialSolver
     end
 end
 
-# Defaults for the oscillator expansion. `nbasis = 24` converges every sector the
-# paper uses; the β grid deliberately is not tuned per sector, spanning diffuse
-# light states and compact bottomonia in one sweep. Both are now solver fields, so
-# a user who outgrows them passes a bigger `OscillatorSolver` instead of editing
-# this file — which is what `_warn_if_beta_railed` used to have to tell them.
+# Defaults for the oscillator expansion. `nbasis` is the first variational space
+# considered; production solves enlarge it automatically until every requested
+# eigenvalue is stable. The β grid is a hard search bracket spanning diffuse
+# light states and compact bottomonia; the minimum is refined continuously inside
+# it and hitting an endpoint is an error rather than a usable solution.
 const HO_DEFAULT_NBASIS = 24
+const HO_DEFAULT_MAX_NBASIS = 80
+const HO_DEFAULT_BASIS_STEP = 8
+const HO_DEFAULT_ENERGY_TOLERANCE_GEV = 1.0e-4 # 0.1 MeV
+const HO_DEFAULT_BETA_TOLERANCE_GEV = 2.0e-3
 const HO_BETA_GRID = collect(0.25:0.10:2.35)
 
 """
-    OscillatorSolver(; nbasis=24, beta_grid=0.25:0.10:2.35, nlevels_per_channel=6)
+    OscillatorSolver(; nbasis=24, max_nbasis=80, basis_step=8,
+        energy_tolerance_GeV=1e-4, beta_grid=0.25:0.10:2.35,
+        beta_tolerance_GeV=2e-3, converge=true, nlevels_per_channel=6)
 
 Solve by expansion in harmonic-oscillator radial functions — Godfrey & Isgur's
 own method, Eq. (A17). The Hamiltonian is a finite `nbasis × nbasis` matrix, and
@@ -115,43 +121,89 @@ the oscillator scale `β` is a variational parameter scanned over `beta_grid`.
 **There is no mesh on this path.** `p²` has closed-form oscillator
 matrix elements ([`ho_p2_matrix`](@ref)) and the smeared potential is integrated
 by Gauss–Laguerre quadrature ([`ho_operator_matrix`](@ref)), so accuracy is set
-by `nbasis` and `beta_grid` alone. Plotting or export code may explicitly sample
-the returned [`OscillatorWave`](@ref); sampling settings are not solver state.
+by the basis/beta refinement controls below. Plotting or export code may
+explicitly sample the returned [`OscillatorWave`](@ref); sampling settings are
+not solver state.
 
 Fields:
 
-  - `nbasis` — oscillator functions kept. Raising it can only lower an eigenvalue
-    (the calculation is variational), so a mass that keeps falling means the
-    basis was too small.
+  - `nbasis`, `max_nbasis`, `basis_step` — initial, maximum, and increment of
+    the oscillator expansion. With `converge=true`, every requested eigenvalue
+    must change by less than `energy_tolerance_GeV` on two successive
+    refinements. `converge=false` performs one explicitly unchecked fixed-size
+    solve for convergence studies. `nbasis` must be at least the number of
+    eigenlevels requested by a solve.
   - `beta_grid` — the `β` candidates, in GeV. One `β` is chosen per sector, the
     one minimizing the highest requested level, following the paper's convention.
-    If the optimum lands on an endpoint the basis cannot represent the state and
-    `_warn_if_beta_railed` says so.
+    The best grid cell is refined to `beta_tolerance_GeV`; an endpoint optimum
+    fails because the declared bracket does not contain the variational minimum.
+    A one-element grid explicitly fixes beta and therefore has no bracket to rail.
+  - `energy_tolerance_GeV` — maximum basis-refinement change over all requested
+    eigenvalues. The default is 0.1 MeV.
   - `nlevels_per_channel` — radial levels kept per orbital channel.
 """
 struct OscillatorSolver <: RadialSolver
     nbasis::Int
+    max_nbasis::Int
+    basis_step::Int
+    energy_tolerance_GeV::Float64
     beta_grid::Vector{Float64}
+    beta_tolerance_GeV::Float64
+    converge::Bool
     nlevels_per_channel::Int
     function OscillatorSolver(;
         nbasis::Integer = HO_DEFAULT_NBASIS,
+        basis_step::Integer = HO_DEFAULT_BASIS_STEP,
+        max_nbasis::Integer = max(
+            HO_DEFAULT_MAX_NBASIS, nbasis + 2 * basis_step,
+        ),
+        energy_tolerance_GeV::Real = HO_DEFAULT_ENERGY_TOLERANCE_GEV,
         beta_grid::AbstractVector{<:Real} = HO_BETA_GRID,
+        beta_tolerance_GeV::Real = HO_DEFAULT_BETA_TOLERANCE_GEV,
+        converge::Bool = true,
         nlevels_per_channel::Integer = 6,
     )
         nbasis >= 1 ||
             throw(ArgumentError("OscillatorSolver: nbasis must be ≥ 1, got $nbasis"))
+        basis_step >= 1 || throw(ArgumentError(
+            "OscillatorSolver: basis_step must be ≥ 1, got $basis_step",
+        ))
+        max_nbasis >= nbasis || throw(ArgumentError(
+            "OscillatorSolver: max_nbasis=$max_nbasis is below nbasis=$nbasis",
+        ))
+        energy_tolerance_GeV > 0 || throw(ArgumentError(
+            "OscillatorSolver: energy_tolerance_GeV must be positive",
+        ))
         isempty(beta_grid) &&
             throw(ArgumentError("OscillatorSolver: beta_grid must not be empty"))
+        length(beta_grid) == 2 && throw(ArgumentError(
+            "OscillatorSolver: beta_grid needs one fixed value or at least three bracket points",
+        ))
         all(>(0), beta_grid) || throw(ArgumentError(
             "OscillatorSolver: every beta must be positive, got $(collect(beta_grid))",
         ))
         issorted(beta_grid) || throw(ArgumentError(
-            "OscillatorSolver: beta_grid must be sorted; `_warn_if_beta_railed` reads its endpoints",
+            "OscillatorSolver: beta_grid must be sorted",
+        ))
+        all(>(0), diff(collect(beta_grid))) || throw(ArgumentError(
+            "OscillatorSolver: beta_grid must be strictly increasing",
+        ))
+        beta_tolerance_GeV > 0 || throw(ArgumentError(
+            "OscillatorSolver: beta_tolerance_GeV must be positive",
         ))
         nlevels_per_channel >= 1 || throw(ArgumentError(
             "OscillatorSolver: nlevels_per_channel must be ≥ 1, got $nlevels_per_channel",
         ))
-        return new(Int(nbasis), collect(Float64, beta_grid), Int(nlevels_per_channel))
+        return new(
+            Int(nbasis),
+            Int(max_nbasis),
+            Int(basis_step),
+            float(energy_tolerance_GeV),
+            collect(Float64, beta_grid),
+            float(beta_tolerance_GeV),
+            converge,
+            Int(nlevels_per_channel),
+        )
     end
 end
 
@@ -161,7 +213,7 @@ RadialSolver(; kwargs...) = FiniteDifferenceSolver(; kwargs...)
 
 """
     FiniteDifferenceSolver(base; ngrid=..., rmax=...)
-    OscillatorSolver(base; nbasis=..., beta_grid=...)
+    OscillatorSolver(base; nbasis=..., max_nbasis=..., beta_grid=...)
 
 Copy with fields overridden — `FiniteDifferenceSolver(solver; ngrid = 900)` for a
 convergence study that changes one knob and keeps the rest.
@@ -184,11 +236,21 @@ FiniteDifferenceSolver(
 OscillatorSolver(
     base::OscillatorSolver;
     nbasis::Integer = base.nbasis,
+    max_nbasis::Integer = base.max_nbasis,
+    basis_step::Integer = base.basis_step,
+    energy_tolerance_GeV::Real = base.energy_tolerance_GeV,
     beta_grid::AbstractVector{<:Real} = base.beta_grid,
+    beta_tolerance_GeV::Real = base.beta_tolerance_GeV,
+    converge::Bool = base.converge,
     nlevels_per_channel::Integer = base.nlevels_per_channel,
 ) = OscillatorSolver(;
     nbasis = nbasis,
+    max_nbasis = max_nbasis,
+    basis_step = basis_step,
+    energy_tolerance_GeV = energy_tolerance_GeV,
     beta_grid = beta_grid,
+    beta_tolerance_GeV = beta_tolerance_GeV,
+    converge = converge,
     nlevels_per_channel = nlevels_per_channel,
 )
 
@@ -211,10 +273,14 @@ function Base.show(io::IO, ::MIME"text/plain", s::FiniteDifferenceSolver)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", s::OscillatorSolver)
+    basis_text = s.converge ?
+        "nbasis = $(s.nbasis):$(s.basis_step):$(s.max_nbasis) adaptive, ΔE ≤ $(1000 * s.energy_tolerance_GeV) MeV" :
+        "nbasis = $(s.nbasis) unchecked"
     print(
-        io, "OscillatorSolver: nbasis = ", s.nbasis, ", beta in [",
+        io, "OscillatorSolver: ", basis_text, ", beta in [",
         first(s.beta_grid), ", ", last(s.beta_grid), "] GeV (",
-        length(s.beta_grid), " candidates), ", s.nlevels_per_channel,
+        length(s.beta_grid), " bracket points, refined to ", s.beta_tolerance_GeV,
+        " GeV), ", s.nlevels_per_channel,
         " levels/channel",
     )
     return nothing

@@ -56,7 +56,12 @@ function fix_annihilation_phase(w::MeshWave)
 end
 
 function fix_annihilation_phase(w::OscillatorWave)
-    phase, _ = quadgk(r -> r * _oscillator_radial_value(w, r), 0.0, Inf; rtol = 1e-10)
+    phase, _ = quadgk(
+        r -> r * _oscillator_radial_value(w, r),
+        0.0,
+        _oscillator_coordinate_cutoff(w);
+        rtol = 1e-10,
+    )
     phase >= 0 && return w
     return OscillatorWave(w.L, w.beta, -w.coefficients)
 end
@@ -66,7 +71,12 @@ function _annihilation_phase_sign(w::MeshWave)
 end
 
 function _annihilation_phase_sign(w::OscillatorWave)
-    phase, _ = quadgk(r -> r * _oscillator_radial_value(w, r), 0.0, Inf; rtol = 1e-10)
+    phase, _ = quadgk(
+        r -> r * _oscillator_radial_value(w, r),
+        0.0,
+        _oscillator_coordinate_cutoff(w);
+        rtol = 1e-10,
+    )
     return phase < 0 ? -1.0 : 1.0
 end
 

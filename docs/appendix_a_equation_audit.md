@@ -30,12 +30,12 @@ Historical page references used when this ledger was first written:
 | (A8) smeared radial potential definition | clear | implemented as diagnostic convolution and closed-form central path | The direct convolution path remains diagnostic; the active central path uses the closed-form results below. |
 | (A9) mass-dependent smearing width | clear | implemented | `contact_smearing_sigma` is the shared width for contact, central smearing, and smeared derivative kernels. |
 | (A10)-(A11) pointwise `G(r)` and `S(r)` | clear | implemented | `static_coulomb_G`, `static_confinement_S`, and `alpha_s_r` follow these forms. |
-| (A12)-(A14) closed-form `G~`, `S~`, and `tau_k` | clear | active FD analogue | `smeared_coulomb_G_closed`, `smeared_confinement_S_closed`, and `appendix_a_closed_central_values` implement these formulas; tests compare behavior and derivatives. |
-| Coulomb momentum factor after (A14) | clear | active FD analogue | `appendix_a_momentum_sandwich_matrix` builds `A(p) G~ A(p)` on the FD `p^2` eigenbasis. |
-| Spin-dependent `m/E` factor after (A14) | clear | active FD analogue | Contact, tensor, vector spin-orbit, and scalar spin-orbit use the two-sided `1/2 + epsilon_i` sandwich when the corresponding switches are enabled. |
-| (A15) effective Coulomb-side spin operators | mostly clear | assigned FD analogue | Diagonal fine-structure kernels are present, active kernels use smeared `G~` derivatives, and partnered same-`J` tensor blocks are wired into sector comparison. |
-| (A16) scalar/Thomas spin-orbit operator | mostly clear | partial | The equal-mass radial convention is implemented; unequal-mass antisymmetric spin-orbit mixing is now folded into open-flavor same-`J` physical assignment in the FD comparison path. |
-| (A17) HO matrix-element factorization | clear | central basis comparison complete | Both sides of the factorization are now built from exact oscillator matrix elements, so the Appendix-A central path carries no spatial mesh: `ho_p2_matrix` (closed form) for `f(p)`, `ho_operator_matrix` (generalized Gauss-Laguerre in Golub-Welsch form) for `g(r)`, and `A(p)` as a spectral function of the exact p². FD/HO agreement is +0.18 MeV (charm) and +0.55 MeV (bottom) with the oscillator answer correctly ABOVE — variational in a finite basis, which the earlier mesh-projected version could not deliver — and about -1.5 MeV for light quarks, where the FD mesh is itself least converged. Post-diagonalization tensor/annihilation blocks still run on FD waves. |
+| (A12)-(A14) closed-form `G~`, `S~`, and `tau_k` | clear | native HO and FD implementations | `smeared_coulomb_G_closed`, `smeared_confinement_S_closed`, and `appendix_a_closed_central_values` supply the radial functions. FD samples them on its native grid; HO integrates them directly in oscillator matrix elements. |
+| Coulomb momentum factor after (A14) | clear | native HO and FD implementations | FD uses `appendix_a_momentum_sandwich_matrix` on its `p²` eigenbasis; HO uses `ho_momentum_sandwich_matrix` with the exact oscillator `p²` matrix. |
+| Spin-dependent `m/E` factor after (A14) | clear | native HO and FD implementations | Contact, tensor, vector spin-orbit, and scalar spin-orbit use the same two-sided `1/2 + epsilon_i` sandwich through backend-native matrices. |
+| (A15) effective Coulomb-side spin operators | mostly clear | implemented in both backends | `fine_structure_grid_matrices` and `ho_fine_structure_matrices` assemble the corresponding native fixed-sector blocks; cross-sector tensor elements dispatch on native waves. |
+| (A16) scalar/Thomas spin-orbit operator | mostly clear | partial formula certification | The native fixed-sector symmetric term and unequal-mass antisymmetric same-`J` mixing are implemented for both representations. The fitted `k_spin_orbit` bridge still prevents a literal paper-strength certification. |
+| (A17) HO matrix-element factorization | clear | complete fixed-sector implementation | Both sides of the factorization use exact oscillator matrix elements: `ho_p2_matrix` for momentum functions, `ho_operator_matrix` (generalized Gauss-Laguerre in Golub-Welsch form) for position functions, and spectral functions of exact `p²` for momentum sandwiches. `fixed_channel_solution` assembles central, contact, symmetric spin-orbit, and diagonal tensor matrices before diagonalization; later tensor, antisymmetric spin-orbit, and annihilation blocks consume the resulting signed `OscillatorWave`s directly. The adaptive controller refines beta and basis size and attaches an `OscillatorConvergence` certificate; no spatial mesh appears in this path. |
 
 ## Cleared By This Audit
 
@@ -50,14 +50,9 @@ Historical page references used when this ledger was first written:
 
 ## Next Stages
 
-1. Keep the FD active path as the headline reproduction candidate:
-   `G_eff = A(p) G~ A(p) + S~`.
-2. The central FD/HO Appendix-A comparison is complete:
-   `docs/residual_reports/appendix_a_ho_comparison.md`.
-3. Use the HO basis next for paper-order spin-dependent checks, rather than
-   reopening A5/A6.
-4. Tensor same-`J` mixing is now assigned through
-   `assign_mixed_rows(::TensorMixing, ...)`; the unequal-mass antisymmetric
-   spin-orbit block is also assigned for open-flavor partner rows.
-5. Treat literal isoscalar annihilation/P1/P2 as a separate stage using the Eq. (16)-(18)
-   ledger in `docs/formula_map.md`.
+1. Keep FD as an independent implementation comparator, not the headline paper
+   route or a hidden HO dependency.
+2. Migrate the remaining flavor-sensitive observables to the final
+   `physical_components` composition (PA-17).
+3. Remove or explicitly isolate the fitted spin bridge factors and certify the
+   end-to-end native-HO paper route (PA-18).

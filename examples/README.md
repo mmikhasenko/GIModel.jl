@@ -138,7 +138,7 @@ solution = fixed_channel_solution(
     params,
     ConstituentMasses(mc, mc),
     FineStructureMultiplet("P", 3, J);
-    solver = OscillatorSolver(nbasis = NB),
+    solver = OscillatorSolver(),
     nlevels = 4,
 )
 wave = radial_wave(solution, 1)
