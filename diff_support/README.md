@@ -1,9 +1,8 @@
 # Differentiation support research
 
-This directory is the staging area for making the numerical core differentiable
-with respect to continuous model parameters. It deliberately contains research,
-probes, and a transformation plan only. Nothing here is loaded by `GIModel`, and
-no AD package has been added to the project dependencies.
+This directory preserves research and probes for a possible differentiable
+numerical core. It is not an active work plan. Nothing here is loaded by
+`GIModel`, and no AD package has been added to the project dependencies.
 
 Snapshot: repository commit `7aef9a8`, 2026-08-06. The audit also records the
 concurrent, uncommitted HO quadrature memoization separately wherever it affects
@@ -58,8 +57,7 @@ and fixed preparation of its adaptive quadrature.
 ## Documents
 
 - [`audit_report.md`](audit_report.md) gives the general cleanup and
-  type-stability findings, route baselines, ranked risks, and gated execution
-  plan.
+  type-stability findings, route baselines, and ranked risks.
 - [`implementation_status.md`](implementation_status.md) records which audit
   gates are now implemented, verified, and still deliberately deferred.
 - [`code_audit.md`](code_audit.md) traces parameter flow, mutation, control flow,
@@ -75,8 +73,8 @@ and fixed preparation of its adaptive quadrature.
   central-Hamiltonian equations and the proposed spectral derivatives.
 - [`backend_research.md`](backend_research.md) maps current Julia AD backends to
   this codebase and links to primary documentation.
-- [`risk_register_and_plan.md`](risk_register_and_plan.md) turns the findings
-  into ordered, bounded work packages and acceptance gates.
+- [`risk_register.md`](risk_register.md) preserves the cross-route risks and
+  design constraints without scheduling implementation work.
 - [`probes/central_hamiltonian_probe.jl`](probes/central_hamiltonian_probe.jl)
   checks the FD matrix/eigenvalue derivatives.
 - [`probes/ho_fixed_beta_probe.jl`](probes/ho_fixed_beta_probe.jl) independently

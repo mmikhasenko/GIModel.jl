@@ -88,8 +88,8 @@ derivatives cannot propagate through non-Julia code.
 
 The audit snapshot's `Float64` parameter fields and matrix allocations lost Dual
 information on both routes. Parametric leaves and generic central-Hamiltonian
-storage are now implemented; a ForwardDiff experiment still needs the prepared
-route kernels and explicit spectral boundary described in the plan.
+storage are now implemented; a ForwardDiff experiment would still need prepared
+route kernels and the explicit spectral boundary described in the design notes.
 
 For approximately 15--25 continuous model parameters and a vector of predicted
 masses, ForwardDiff can still be a useful Jacobian implementation or oracle.

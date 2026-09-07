@@ -16,16 +16,14 @@ kind = "equation"
 label = "Eq. (19)"
 page = 12
 statement = "Pseudoscalar-emission decay operator (g σ·q + h σ·p'): the two-coupling amplitude for M* -> M + P."
-status = "partial"
-effort = "research"
-next = "Deeper decay model: apply the (g sigma.q + h sigma.p') operator to the model wavefunctions instead of the SU(6)/single-beta SHO limit."
+status = "reproduced"
 code = ["src/strong_decays.jl:strong_decay_amplitude"]
 tests = ["Table V strong-decay model"]
 report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
-metric = "evaluated in the SU(6)/single-beta SHO limit via Table IV classes"
+metric = "Eq. (19) is evaluated through the same SU(6), single-beta SHO reduction used for the paper's numerical strong-decay tables; the Table IV classes and Table V amplitudes use beta = 0.40 GeV and the paper's two-strength fit."
 anchor = "paper/vision_ocr/page_images/page-012.png"
 parent = "sec-IV"
-notes = "The operator is not applied to model wavefunctions directly; its matrix elements enter through the Table IV class algebra and the transcribed Table V coefficients."
+notes = "Direct evaluation of g sigma.q + h sigma.p' between the calculated physical model wavefunctions would be a beyond-paper improvement, not a missing step in reproducing the paper's published numerical treatment."
 
 [[unit]]
 id = "eq-20"

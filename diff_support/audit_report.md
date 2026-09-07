@@ -28,9 +28,9 @@ parameter evaluation:
 3. continuous leaves and masses force `Float64`, and masses are rounded in the
    physics-value constructor.
 
-The repository's engineering plan already schedules the right first structural
-change: separate `FiniteDifferenceSolver` and `OscillatorSolver`, then remove the
-basis marker from `GIParameters`. Differentiation work should build on that
+The completed solver cleanup made the right first structural change: separate
+`FiniteDifferenceSolver` and `OscillatorSolver`, then remove the basis marker
+from `GIParameters`. Any future differentiation work should build on that
 result rather than creating a competing basis-dispatch design.
 
 Local mutation is not a general blocker. Most writes fill newly allocated
@@ -42,7 +42,7 @@ narrow derivative kernel.
 
 | Priority | Finding | Evidence | Required response |
 |---|---|---|---|
-| P0 | Solver identity belongs to numerical context, not physics parameters | `GIParameters{Basis}` and `with_basis`; the engineering plan's B3 split | Complete the solver split and remove the basis parameter before diff-specific APIs |
+| P0 | Solver identity belongs to numerical context, not physics parameters | `GIParameters{Basis}` and `with_basis`; the subsequently completed solver split | Complete the solver split and remove the basis parameter before diff-specific APIs |
 | P1 | Central-potential dispatch is not inferred | `GIParameters{FiniteDifferenceBasis}` is concrete, but `central::CentralPotentialMethod`; `potential_diagonal` infers as `Any` | Parameterize the aggregate by the concrete central method (and, preferably, concrete component types) |
 | P1 | The eigensolver wrapper has a union-shaped contract | `lowest_eigenpairs` branches on a runtime `Symbol`; inferred output contains real/complex and matrix/`Vector{Any}` alternatives | Separate full and Krylov implementations by dispatch and normalize each return type |
 | P1 | Physics masses are rounded before evaluation | `ConstituentMasses` converts to `Float64` and rounds to 12 significant digits | Store exact promoted physics values; normalize only a dedicated cache key |

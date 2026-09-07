@@ -85,22 +85,20 @@ not an observable consumer and does not construct a second physical state.
 
 ## Repository scheduling and follow-up
 
-The work is intentionally split among existing repository mechanisms:
+The surviving responsibilities are intentionally separated:
 
-- `docs/paper_algorithm_work_plan.md` is the dependency-ordered executable
-  queue. PA-01--PA-18 and the optional independent FD comparator audit are
-  complete.
-- `docs/engineering_work_plan.md` records cross-cutting code invariants and
-  mistakes that must not recur.
-- `docs/original_1985_algorithm_audit.md` records the paper-vs-code algorithm
-  gap, not task status.
+- `docs/work_plan.md` is the sole remaining executable plan and contains only
+  completion of the Table VI photon-decay audit.
+- `docs/code_architecture.md` records the settled public contract and extension
+  rules; regression tests pin the numerical invariants that must not recur.
+- `docs/original_1985_algorithm_audit.md` records the completed paper-vs-code
+  algorithm comparison, not task status.
 - `docs/paper_manifest/*.toml` records per-paper-unit reproduction status.
 - `scripts/verify_project.sh` is the repository integration gate, including
   report generation order and coverage.
 
 Do not create another planning file for each implementation slice. Update the
-dependency board and the relevant manifest entry in the same change as code and
-tests.
+one plan and the relevant manifest entry in the same change as code and tests.
 
 ## Deliberately untouched history
 

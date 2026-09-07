@@ -2,8 +2,8 @@
 
 Status: audited baseline plus implementation update, 2026-08-07.
 
-The executable follow-up queue is
-[`paper_algorithm_work_plan.md`](paper_algorithm_work_plan.md).
+The sole remaining reproduction task is tracked in
+[`work_plan.md`](work_plan.md).
 
 ## Executive verdict
 

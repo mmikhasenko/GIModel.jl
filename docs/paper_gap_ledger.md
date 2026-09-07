@@ -1,10 +1,9 @@
 # Paper Gap Ledger
 
 This is the concise physics-facing list of what is still missing relative to
-the 1985 Godfrey–Isgur calculation. Task status and dependency order live in
-[`paper_algorithm_work_plan.md`](paper_algorithm_work_plan.md); equation/table
-status lives in `paper_manifest/*.toml`. This file does not duplicate those
-queues.
+the 1985 Godfrey–Isgur calculation. The sole remaining task lives in
+[`work_plan.md`](work_plan.md); equation/table status lives in
+`paper_manifest/*.toml`. This file does not duplicate that plan.
 
 For the full three-stage algorithm audit and object/method map, see
 [`original_1985_algorithm_audit.md`](original_1985_algorithm_audit.md).
@@ -81,11 +80,14 @@ PA-18 or a dependency of the original 1985 algorithm.
 
 ## Outside the spectrum-algorithm queue
 
-The paper manifest still marks two decay-side units partial: Eq. (19)'s deeper
-wavefunction treatment beyond the SU(6)/single-beta SHO limit, and completion
-of the remaining Table VI rows (including the cancellation-sensitive
-`Upsilon'' -> eta_b gamma` sign). They block a literal “whole paper reproduced”
-claim, but they are not missing stages in the HO meson-spectrum algorithm.
+The paper manifest still marks Table VI partial: the remaining rows must be
+computed or explicitly classified, including the cancellation-sensitive
+`Upsilon'' -> eta_b gamma` sign. This blocks a literal “whole paper reproduced”
+claim, but it is not a missing stage in the HO meson-spectrum algorithm.
+
+Applying Eq. (19) directly to the calculated physical wavefunctions would go
+beyond the paper's numerical SU(6)/single-beta SHO treatment. It is recorded in
+the README as a possible improvement, not as a reproduction gap.
 
 ## Explicitly not missing
 

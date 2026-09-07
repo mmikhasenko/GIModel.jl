@@ -61,15 +61,15 @@ what still stands between the current state and "the whole paper, reproduced".
 
 | Remaining | Cost | Blocks victory? |
 | --- | --- | --- |
-| **Eq. (19) beyond the SU(6)/single-beta SHO limit** | research | yes, for a whole-paper claim |
 | **Complete the remaining Table VI rows and resolve/characterize its cancellation-level residuals** | medium | yes, for a whole-paper claim |
 
 **Not reproduction blockers** (context/superseded — candidates for the
 direction-2 demos instead): Table I, Table VIII, Eqs. (11), (15), (23)-(29),
-A1-A6, B37.
+A1-A6, B37, and direct application of Eq. (19) to the calculated physical
+wavefunctions beyond the paper's single-beta SHO decay approximation.
 
 **Honest one-line status:** the three-stage native-HO spectrum algorithm,
 literal A15-A16 spin operators, adaptive convergence, and final-state consumer
 composition are complete. A whole-paper reproduction claim still requires the
-two decay-side manifest items above. The independent modern FD comparator is
+Table VI item above. The independent modern FD comparator is
 separately certified and does not alter that claim boundary.

@@ -59,19 +59,15 @@ The repository has three first-class deliverables:
     spin algebra times the J-dependent distortion of the wave at the origin.
 - `docs/formula_map.md` maps active code paths to paper equations.
 - `docs/original_1985_algorithm_audit.md` compares the paper's three-stage,
-  mesh-free HO spectrum algorithm with the implementation and records the
-  remaining full-Hamiltonian integration gates.
-- `docs/paper_algorithm_work_plan.md` turns that audit into a dependency-ordered
-  queue; PA-01 through PA-07 establish the representation-independent solved-state
-  contract and PA-08 is the next operator-integration unit.
+  mesh-free HO spectrum algorithm with the completed implementation.
 - `docs/incident_followup_audit.md` records the forensic review of the abandoned
   migration, the additional stale infrastructure found, and what was repaired or
   deliberately left as history.
-- `docs/engineering_work_plan.md` is the **code** stream: settled invariants
-  (normalization, basis phase, the wave interface), the next architecture
-  stages, and the diagnostics already found not to work.
+- `docs/work_plan.md` is the single remaining work plan. It tracks only closure
+  of the Table VI photon-decay audit and can be removed when that unit is done.
 - `diff_support/` contains the pre-implementation audit, equations, numerical
-  probes, backend research, and staged plan for parameter differentiation.
+  probes, backend research, and risk register for possible parameter
+  differentiation.
 - `docs/paper_gap_ledger.md` is the current “what remains vs the paper” list.
 - `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` is the preferred
   searchable Markdown rendering of the paper.
@@ -85,6 +81,24 @@ and `GIPaper/scripts/plot_spectrum_digitizations.py`.
 Concluded material from the reproduction phase (poster, Table III forensics,
 early research notes) lives under `archive/` — see
 [archive/README.md](archive/README.md).
+
+## Possible Improvements Beyond the 1985 Paper
+
+The strong-decay tables in the paper use an analytic SU(6), single-oscillator-
+scale approximation with `beta = 0.40 GeV`. A useful future extension would
+apply the underlying Eq. (19) quark-emission operator
+`g σ·q + h σ·p'` directly between the calculated physical meson
+wavefunctions. That would retain radial nodes, state-dependent length scales,
+spectroscopic/flavor mixing, and the solver-native HO or FD representation in
+the decay amplitude. It is deliberately not a blocker for reproducing the
+paper, because it goes beyond the approximation used for the paper's numerical
+strong-decay results.
+
+Another possible extension is differentiable mass prediction with respect to
+continuous model parameters. The preliminary route-specific numerical evidence
+and the risks around eigenvalue crossings, adaptive beta selection, and state
+identity are preserved under `diff_support/`; they are research notes, not a
+scheduled implementation.
 
 ## Data
 

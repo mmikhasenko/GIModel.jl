@@ -109,8 +109,9 @@ of `decay_amplitude`), while `:table_iv` keeps the printed polynomial.
 3. "Realistic factor" column (SHO -> realistic wavefunction ratios) is recorded
    in the CSV but not applied (the leading-S0 finding superseded the earlier
    "realistic factor folded in" hypothesis).
-4. Table VII (leptonic, two-photon, gluonic decays, charge radii) audit is not
-   started; Table VI photon decays are in the section below.
+4. Applying Eq. (19) directly to the calculated physical waves would be a
+   beyond-paper extension. The original numerical single-beta SHO treatment is
+   reproduced by the Table IV/V path above.
 
 ## Photon Decays `M* -> M gamma` (Sec. IV B, Table VI, Appendix D)
 
@@ -147,25 +148,18 @@ of `decay_amplitude`), while `:table_iv` keeps the printed polynomial.
   (-0.067 vs -0.056). E1 `chi_c`/`chi_b` triplets reproduce at 3-7%; the
   two `2S -> chi_0` rows sit 20-30% high (largest q, node cancellation).
 
-### Open conventions / next steps
+### Current findings and remaining coverage
 
-1. The vision-OCR predicted column in the open-flavor M1 block is displaced
-   by one row against the decay labels; the audit uses shift-corrected
-   values (confirmed by 0.1-2% matches on four independent rows, and the
-   orphaned `-0.55` landing exactly on the computed `F_b*`), but a crop
-   audit of the printed PDF column should confirm the alignment.
-2. `2S -> chi_0` E1 rows: check whether the paper used model masses rather
-   than measured 1984 masses for the photon momentum `q`.
-3. Isoscalar rows (`phi -> eta gamma`, `eta' -> rho gamma`, ...) need the
-   Table III mixing amplitudes folded in — the mixing layer already
-   provides them.
-4. Remaining Table VI blocks: light E1/M2 rows (`A2 -> pi gamma` is the 0.5
-   exponent fit row), strange/charmed P-wave rows, hindered bottomonium
-   rows, and the `psi/Upsilon -> (light) gamma` order-of-magnitude rows
-   (footnote d).
-5. Promote the overlap kernels (`I_i`, `E_n^i`, mock mass, momentum waves)
-   from the audit script into `src/` with regression tests once the
-   conventions above settle.
+1. The page-24 crop audit confirmed the shifted vision-OCR open-flavor M1
+   column; the report uses the image-verified values.
+2. The `2S -> chi_0` photon-momentum convention was checked with measured and
+   model masses. Neither convention explains both residuals.
+3. The isoscalar rows now use the final Table III physical compositions, and
+   the Appendix-D overlap kernels have been promoted into `src/` with tests.
+4. The sole open reproduction task is complete accounting of the canonical 79
+   Table VI rows. The current report evaluates 43 transitions; every remaining
+   radial, excited, mixing-induced, or nominally forbidden row must be computed
+   or explicitly classified.
 
 ## Numerical method (Appendix A, Eq. A17)
 
