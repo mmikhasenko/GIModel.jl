@@ -57,7 +57,8 @@ Flavor-annihilation blocks now enter the same model-level physical-state
 pipeline, native HO sectors carry automatic basis/beta convergence
 certificates, and final observables consume the recursively composed physical
 states. The paper path has been certified with literal A15-A16 strengths; the
-next independent task is the optional FD comparator audit.
+optional FD comparator has now also been certified independently without
+becoming a paper-path dependency.
 
 ## Forensic trace of the unfinished abstraction
 
@@ -244,7 +245,7 @@ former HO-hybrid path has been deleted and no silent fallback is allowed.
 | PA-16 | done | PA-04, PA-15 | Integrate stage-3 annihilation | `compute_isoscalar_spectrum` and `add_isoscalar_annihilation` return a multi-channel `MixedSpectrum`; final masses and recursively flattened native components share one `MixingResult`. Flavor identity is explicit, model assignment is reference-free, and calibrated controls remain explicit. |
 | PA-17 | done | PA-07, PA-16 | Finish physical-state consumer migration | Flavor-mixed electromagnetic/decay observables use `physical_state_amplitude` / `physical_transition_amplitude` over final `physical_components`; no consumer owns a parallel annihilation vector or phase. |
 | PA-18 | done | PA-12, PA-16, PA-17 | Certify the paper headline path | Native HO paper mode passes convergence and end-to-end observable reports with literal A15-A16 contact, spin-orbit, and tensor normalization and no bridge parameters. FD is not an acceptance criterion for the paper path. |
-| FD-COMP | ready | PA-12 | Validate the independent FD comparator | Report internally converged FD results and differences from HO as diagnostic evidence, explicitly outside PA-18 paper certification. |
+| FD-COMP | done | PA-12 | Validate the independent FD comparator | Independent fixed-spacing and fixed-domain sweeps certify masses and wave-sensitive observables; P/F and unequal-mass mixing plus transition functionals are checked, and converged HO differences are reported only as diagnostics in [`fd_comparator_convergence.md`](../GIPaper/docs/residual_reports/fd_comparator_convergence.md). |
 
 ## Completed first follow-up: PA-01 through PA-07
 
@@ -269,9 +270,10 @@ The reuse-first slice completed the following checklist:
 7. Added migration regression tests before changing the `StateMixing` and
    `ChannelRadialSolution` storage layouts.
 
-The original-algorithm queue PA-00--PA-18 is complete. FD-COMP is the next
-independent unit; it validates a modern comparator and requires no additional
-wave, solution, state, or mixing holder type.
+The original-algorithm queue PA-00--PA-18 and optional FD-COMP follow-up are
+complete. FD-COMP added no wave, solution, state, convergence, or mixing holder:
+it drives the existing solver and physical-state interfaces from a report-side
+convergence sweep.
 
 ## Migration boundary
 

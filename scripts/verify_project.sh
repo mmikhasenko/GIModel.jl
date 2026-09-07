@@ -10,6 +10,7 @@ python3 GIPaper/scripts/data_checks.py validate
 julia --project=. -e 'using Pkg; Pkg.test()'
 julia --project=GIPaper -e 'using Pkg; Pkg.test()'
 julia GIPaper/scripts/audit_ho_convergence.jl # PA-12: adaptive native-HO certificate
+julia GIPaper/scripts/audit_fd_convergence.jl # FD-COMP: independent grid/domain certificate
 julia GIPaper/scripts/audit_table_iii_mixings.jl
 julia GIPaper/scripts/reproduce_table_v.jl
 julia GIPaper/scripts/audit_table_vii.jl   # Table VII gluonic annihilation (zero-parameter)

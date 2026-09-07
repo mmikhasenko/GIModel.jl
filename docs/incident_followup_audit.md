@@ -88,8 +88,8 @@ not an observable consumer and does not construct a second physical state.
 The work is intentionally split among existing repository mechanisms:
 
 - `docs/paper_algorithm_work_plan.md` is the dependency-ordered executable
-  queue. PA-01--PA-18 are complete; the independent FD comparator audit is the
-  next unit.
+  queue. PA-01--PA-18 and the optional independent FD comparator audit are
+  complete.
 - `docs/engineering_work_plan.md` records cross-cutting code invariants and
   mistakes that must not recur.
 - `docs/original_1985_algorithm_audit.md` records the paper-vs-code algorithm
@@ -116,7 +116,6 @@ tests.
 
 - GIModel `Pkg.test()`: passed.
 - GIPaper `Pkg.test()`: passed.
-- `scripts/verify_project.sh`: passed after regenerating all audited reports.
 - Paper manifest check: 103 units, 8 fragments, 0 broken links.
 - Type-stability probe: concrete `ChannelRadialSolution{MeshWave}` and
   `ChannelRadialSolution{OscillatorWave}` returns.
@@ -124,9 +123,11 @@ tests.
 - Fixed-beta HO derivative probe: passed.
 - Audit baseline probe: repaired and passed.
 - Every edited Julia paper/example script: syntax parsed successfully.
+- FD-COMP: independent fixed-domain/fixed-spacing sweeps passed for eight
+  six-level calibration sectors, eight mixed states, and three cross-state
+  transition functionals.
 - `scripts/verify_project.sh`: passed, including all report writers and the
-  103-unit manifest anti-drift check. The final phase-dispatch consolidation was
-  then rechecked by both package suites, the Table III audit, and manifest check.
+  103-unit manifest anti-drift check.
 
 The post-incident PA-17--PA-18 audit is also complete. It found four additional
 physics defects that the attached worker report did not identify: the contact
@@ -137,8 +138,7 @@ parameters obscured those errors. The literal A15-A16 implementation now has no
 bridge parameters, and final flavor-mixed observables consume the one shared
 `MixedSpectrum` composition instead of reconstructing vectors locally.
 
-The original spectrum-algorithm queue is therefore closed. Its only scheduled
-infrastructure follow-up is FD-COMP: a focused numerical certification of the
-independent FD comparator, explicitly outside the native-HO paper path. The
-separate whole-paper manifest still tracks the partial Eq. (19) and Table VI
-decay units.
+The original spectrum-algorithm queue and its optional FD-COMP infrastructure
+follow-up are therefore closed. FD is a numerically certified independent
+comparator, explicitly outside the native-HO paper path. The separate whole-
+paper manifest still tracks the partial Eq. (19) and Table VI decay units.

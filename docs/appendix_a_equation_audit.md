@@ -48,8 +48,8 @@ Historical page references used when this ledger was first written:
   smearing (A7)-(A14), momentum factors, effective operators (A15)-(A16), and
   HO factorization (A17).
 
-## Next Stage
+## Completed follow-up
 
-PA-17 and PA-18 are complete. Keep FD as an independent implementation
-comparator and perform its own convergence audit (FD-COMP); it is not the
-headline paper route or a hidden HO dependency.
+PA-17, PA-18, and the optional FD-COMP follow-up are complete. FD remains an
+independently converged implementation comparator; it is not the headline paper
+route or a hidden HO dependency.

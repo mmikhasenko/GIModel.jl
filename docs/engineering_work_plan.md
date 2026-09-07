@@ -76,6 +76,14 @@ These were each found the hard way. Every one is pinned by tests.
    `mean_abs = 6.0 MeV` is unfalsifiable without knowing whether it came off a
    450-point mesh or an adaptively converged oscillator basis.
 
+11. **FD resolution and extent are separate errors.** Increasing `ngrid` and
+    `rmax` together does not establish convergence: it changes the grid spacing
+    and box reach at once. FD-COMP varies one while holding the other fixed and
+    gates masses, RMS radii, smeared-origin factors, transitions, and mixed
+    eigenspaces. Observable momentum transforms are capped at the independently
+    checked 60 GeV range; allowing `pmax = π/h` to grow at fixed `npoints`
+    made momentum quadrature coarser as the coordinate mesh was refined.
+
 ## Verification standard
 
 Every stage: `bash scripts/verify_project.sh` exit 0 **and** all residual
@@ -108,17 +116,14 @@ elements are a well-posed problem with no reference data needed — `p²` and `r
 reconstructing the oscillator Hamiltonian to 1e-14 is worth more than watching a
 Table VII ratio drift.
 
-## Next stages
+## Completed stages
 
-The four original stages this file was written to carry -
-`ho_operator_matrix` performance, B3 solver types, C2 report provenance, and C3
-   keyword retirement - are done. Paper-order spectrum integration is tracked in
-   [`paper_algorithm_work_plan.md`](paper_algorithm_work_plan.md). PA-01 through
-   PA-07 are complete: the solved-state contract is frozen, native oscillator
-   waves exist in both representations, and spectrum/spin/mixing/decay consumers
-   use the shared interface. The next executable unit is **PA-08**, as recorded
-   in that plan. The standing items below remain outside that queue unless a PA
-   unit explicitly absorbs them.
+The four original stages this file was written to carry—`ho_operator_matrix`
+performance, solver types, report provenance, and keyword retirement—are done.
+The paper-order spectrum queue PA-00--PA-18 and the optional FD-COMP numerical
+certificate are also complete. There is no remaining spectrum-infrastructure
+unit scheduled here; the paper manifest separately tracks unfinished decay
+physics.
 
 ## Known open items, deliberately not fixed
 
@@ -129,11 +134,6 @@ The four original stages this file was written to carry -
   charmed rows only, though strange rows have `r = 0.66`. Recorded as a
   candidate discrepancy rather than "fixed" — unlike the `S_c` coefficient, no
   printed row says the paper is wrong there.
-- **Some paper-order distorted operators are intrinsically assembled on a
-  reporting/operator mesh.** Their results are returned as `MeshWave`, while
-  central oscillator states remain native `OscillatorWave`. Further analytic
-  HO operator fusion is scheduled in the paper-order work plan; this is no
-  longer a consumer-API limitation.
 - **Comparator central methods keep the mesh** deliberately: several smear
   numerically on it and are not closed-form functions of `r`, so making them
   hybrid would violate invariant 6.

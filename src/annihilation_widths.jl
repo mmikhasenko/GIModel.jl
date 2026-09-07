@@ -86,10 +86,23 @@ gluonic_annihilation_width(channel::Symbol, S_L::Real, alpha_s::Real, mQ::Real) 
 # Leptonic decay constants — the Table VII(a) mock-meson factors (Eqs. D4-D6).
 # -----------------------------------------------------------------------------
 
-# Preserve the historical mesh integration range while letting native HO waves
-# use their exact infinite-domain momentum representation.
+# The production FD grid has h ≈ 24/450, hence a Nyquist momentum just below
+# 60 GeV. That range is already well beyond the support of every paper-sector
+# wave (including bottomonium). Letting pmax continue to grow as π/h while
+# keeping `npoints` fixed makes the *momentum* quadrature coarser when the
+# coordinate mesh is refined, so a nominal convergence study can make linear
+# observables drift after the underlying wave has converged. Retain the
+# representable range on coarse grids, but cap the physical observable integral
+# at the range certified by FD-COMP. Native HO waves still use their exact
+# infinite-domain representation below.
+const FD_OBSERVABLE_PMAX_GEV = 60.0
 _observable_momentum_wave(w::MeshWave, L::Integer, npoints::Integer) =
-    momentum_wave(w, L; pmax = π / w.h, npoints = max(npoints, 32))
+    momentum_wave(
+        w,
+        L;
+        pmax = min(π / w.h, FD_OBSERVABLE_PMAX_GEV),
+        npoints = max(npoints, 32),
+    )
 _observable_momentum_wave(w::RadialWave, L::Integer, npoints::Integer) =
     momentum_wave(w, L)
 

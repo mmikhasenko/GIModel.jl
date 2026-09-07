@@ -2970,6 +2970,26 @@ end
     @test ratios[:chi_0c] / ratios[:chi_2c] > 0.80   # central-wave value ≈ 0.68
 end
 
+@testset "FD observable momentum cutoff is refinement-stable" begin
+    # Refining an FD coordinate mesh must not silently coarsen the momentum
+    # quadrature used by annihilation/leptonic observables. The production grid
+    # already reaches the certified 60 GeV physical cutoff; finer grids retain
+    # that range instead of extending pmax = π/h at fixed npoints.
+    r_coarse = collect(range(0.05, 20.0; step = 0.05))
+    r_fine = collect(range(0.025, 20.0; step = 0.025))
+    trial(r) = MeshWave(r .* exp.(-r), r)
+    coarse_momentum = GIModel._observable_momentum_wave(trial(r_coarse), 0, 900)
+    fine_momentum = GIModel._observable_momentum_wave(trial(r_fine), 0, 900)
+    @test last(coarse_momentum.p) ≈ min(π / 0.05, GIModel.FD_OBSERVABLE_PMAX_GEV)
+    @test last(fine_momentum.p) == GIModel.FD_OBSERVABLE_PMAX_GEV
+    @test length(coarse_momentum.p) == length(fine_momentum.p) == 900
+    for mass in (0.22, 4.977)
+        coarse = wavefunction_origin_smearing(trial(r_coarse), mass; L = 0)
+        fine = wavefunction_origin_smearing(trial(r_fine), mass; L = 0)
+        @test abs(coarse - fine) / abs(fine) < 1.0e-3
+    end
+end
+
 @testset "Native HO full fixed-channel diagonalization" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     solver_ho = OscillatorSolver()

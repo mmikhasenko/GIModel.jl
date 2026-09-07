@@ -125,6 +125,17 @@ two masses for a dynamical calculation. `FiniteDifferenceSolver` or
 `OscillatorSolver` contains numerical choices. Do not encode the basis in
 `GIParameters`, and do not add loose numerical keywords beside a solver object.
 
+## Numerical qualification
+
+`OscillatorSolver` owns its adaptive convergence certificate because beta and
+basis refinement are part of that solver. FD accuracy has two independent
+external controls, spacing and box extent, so its package-level qualification
+is a report-side sweep rather than another result-holder type. The historical
+`FiniteDifferenceSolver()` defaults `(450, 24)` remain useful for fast reports;
+precision HO cross-checks use `(2400, 32)`. The complete q/s/c/b, P/F mixing,
+and transition audit is
+[`fd_comparator_convergence.md`](../GIPaper/docs/residual_reports/fd_comparator_convergence.md).
+
 ## Rules for extensions
 
 1. A new radial solver implements `channel_solution` and returns native

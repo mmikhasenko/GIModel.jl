@@ -60,17 +60,24 @@ all 16 gluonic signs with median magnitude ratio 1.05, all 26 leptonic signs,
 and all 8 clean two-photon signs. The two excited isoscalar-pseudoscalar signs
 remain a visible model discrepancy, not an implementation fallback.
 
-### FD-COMP — independent FD convergence report
+### FD-COMP — independent FD convergence report (complete)
 
-FD should be validated on its own terms by varying `ngrid` and `rmax`, then
-compared with the converged HO result as diagnostic evidence. FD agreement is
-useful, but it is not an acceptance condition for PA-18.
+FD is validated on its own terms by varying `ngrid` at fixed `rmax` and varying
+`rmax` at fixed spacing. The six-level q/s/c/b `1S0` and `3P2` calibration gates
+masses, RMS radii, and smeared-origin factors; separate blocks cover unequal-
+mass P mixing, direct P/F tensor mixing, and allowed/cancellation-sensitive
+transition functionals. The certified precision profile is `(ngrid, rmax) =
+(2400, 32.0)`; `(450, 24.0)` remains the faster historical report setting.
 
-Acceptance: internally converged FD masses and wave-sensitive observables are
-reported separately from the paper certification.
+The audit also found and fixed an FD observable-adapter defect: `pmax = π/h`
+grew under coordinate refinement while the momentum sample count stayed fixed,
+silently coarsening the momentum quadrature. The transform now caps the
+independently checked physical range at 60 GeV.
 
-This is the next spectrum-infrastructure item. It is comparator validation, not
-unfinished work in the original 1985 HO algorithm.
+Results and the complete sweeps are in
+[`fd_comparator_convergence.md`](../GIPaper/docs/residual_reports/fd_comparator_convergence.md).
+HO agreement remains diagnostic evidence, not an acceptance condition for
+PA-18 or a dependency of the original 1985 algorithm.
 
 ## Outside the spectrum-algorithm queue
 

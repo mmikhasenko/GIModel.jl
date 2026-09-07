@@ -50,6 +50,9 @@ places:
 W6 is complete: converged native HO and FD agree on the central smeared origin
 functional to 0.44% and on the light-pion full solve to 0.1 MeV. PA-17 and
 PA-18 are complete; no additional radial-wave or mesh abstraction is needed.
+The optional FD-COMP follow-up is also complete: independent spacing/domain
+sweeps certify a precision comparator profile, mixed eigenspaces, and wave-
+sensitive observables without making FD part of the paper route.
 
 ## 2. Remaining work and costs
 
@@ -60,7 +63,6 @@ what still stands between the current state and "the whole paper, reproduced".
 | --- | --- | --- |
 | **Eq. (19) beyond the SU(6)/single-beta SHO limit** | research | yes, for a whole-paper claim |
 | **Complete the remaining Table VI rows and resolve/characterize its cancellation-level residuals** | medium | yes, for a whole-paper claim |
-| **FD-COMP independent convergence audit** | medium | no; comparator evidence only |
 
 **Not reproduction blockers** (context/superseded — candidates for the
 direction-2 demos instead): Table I, Table VIII, Eqs. (11), (15), (23)-(29),
@@ -69,5 +71,5 @@ A1-A6, B37.
 **Honest one-line status:** the three-stage native-HO spectrum algorithm,
 literal A15-A16 spin operators, adaptive convergence, and final-state consumer
 composition are complete. A whole-paper reproduction claim still requires the
-two decay-side manifest items above; FD-COMP concerns only the independent
-modern comparator.
+two decay-side manifest items above. The independent modern FD comparator is
+separately certified and does not alter that claim boundary.

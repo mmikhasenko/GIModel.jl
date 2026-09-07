@@ -232,12 +232,13 @@ accepted by the standalone `channel_solution`/`central_spectrum` diagnostic but
 rejected by `fixed_spectrum` instead of being silently converted to the
 relativistic Hamiltonian.
 
-## Remaining implementation sequence
+## Completed implementation sequence
 
-PA-00--PA-18 are complete. The only scheduled follow-up is **FD-COMP**:
-measure the independent finite-difference implementation's own `ngrid`/`rmax`
-convergence, then compare it with HO as diagnostic evidence. It is not part of
-the original 1985 algorithm or a condition on the certified HO path.
+PA-00--PA-18 are complete. The optional **FD-COMP** follow-up is also complete:
+the independent finite-difference implementation has separate `ngrid` and
+`rmax` convergence sweeps, followed by an HO comparison used only as diagnostic
+evidence. It is not part of the original 1985 algorithm or a condition on the
+certified HO path.
 
 ## What should remain unchanged
 

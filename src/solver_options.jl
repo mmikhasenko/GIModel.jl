@@ -49,10 +49,15 @@ abstract type RadialSolver end
 
 Solve on a uniform radial mesh. Here the mesh **is** the method: every operator
 is a matrix on it, so `ngrid` and `rmax` set the accuracy of the answer.
+The defaults are the package's fast report settings. The independent FD-COMP
+audit certifies `(ngrid, rmax) = (2400, 32.0)` for precision cross-checks over
+the paper's q/s/c/b sectors; this is a modern comparator profile, not part of
+the original HO algorithm.
 
 Fields:
 
-  - `ngrid`, `rmax` — the uniform mesh `r ∈ (0, rmax]` with `ngrid` points.
+  - `ngrid`, `rmax` — the `ngrid` interior points
+    `rᵢ = i rmax/(ngrid+1)`, with Dirichlet boundaries at `0` and `rmax`.
     Heavy quarkonium is compact and needs points, not reach; light mesons need
     reach. Too coarse and the spin-dependent shifts degrade long before the
     eigenvalues visibly do — see `MIN_POINTS_ACROSS_STATE`.
@@ -266,7 +271,7 @@ with_mesh(s::FiniteDifferenceSolver, ngrid::Integer, rmax::Real) =
 function Base.show(io::IO, ::MIME"text/plain", s::FiniteDifferenceSolver)
     print(
         io, "FiniteDifferenceSolver: ngrid = ", s.ngrid, ", rmax = ", s.rmax,
-        " GeV^-1 (h = ", round(s.rmax / s.ngrid, digits = 5), "), ", s.kinetic,
+        " GeV^-1 (h = ", round(s.rmax / (s.ngrid + 1), digits = 5), "), ", s.kinetic,
         ", ", s.eigensolver, ", ", s.nlevels_per_channel, " levels/channel",
     )
     return nothing
