@@ -209,37 +209,21 @@ RelativisticFactors(
 )
 
 """
-    FineStructure(; enabled=true, k_spin_orbit=0.5, k_tensor=0.4)
+    FineStructure(; enabled=true)
 
-Vector + Thomas spin-orbit and OGE-tensor first-order corrections on the FD
-radial `u(r)`: master switch and the global scales aligning with the paper's
-HO result.
+Master switch for the Appendix-A spin-orbit and tensor operators. Their
+strengths are fixed by Eqs. (A15)-(A16); there are no fitted bridge factors.
 """
-struct FineStructure{T<:Real}
+struct FineStructure
     enabled::Bool
-    k_spin_orbit::T
-    k_tensor::T
 end
 
-function FineStructure(;
-    enabled::Bool = true,
-    k_spin_orbit::Real = 0.5,
-    k_tensor::Real = 0.4,
-)
-    spin_orbit, tensor = promote(k_spin_orbit, k_tensor)
-    return FineStructure(enabled, spin_orbit, tensor)
-end
+FineStructure(; enabled::Bool = true) = FineStructure(enabled)
 
 FineStructure(
     base::FineStructure;
     enabled::Bool = base.enabled,
-    k_spin_orbit::Real = base.k_spin_orbit,
-    k_tensor::Real = base.k_tensor,
-) = FineStructure(;
-    enabled = enabled,
-    k_spin_orbit = k_spin_orbit,
-    k_tensor = k_tensor,
-)
+) = FineStructure(; enabled = enabled)
 
 """
     AnnihilationAmplitudes(; p1_A_np=0.5, p1_m_eta=0.548, p2_A_np=0.55, p2_M0=1.17,
@@ -363,6 +347,12 @@ function gi_parameters_from_raw(raw)::GIParameters
     rf = get(raw, "relativistic_factors", Dict{String,Any}())
     fs = get(raw, "fine_structure", Dict{String,Any}())
     ann = get(raw, "annihilation", Dict{String,Any}())
+    legacy_spin_keys = filter(key -> haskey(fs, key), ("k_spin_orbit", "k_tensor"))
+    isempty(legacy_spin_keys) || throw(ArgumentError(
+        "removed non-paper fine-structure setting(s): $(join(legacy_spin_keys, ", ")); " *
+        "A15-A16 strengths are fixed by the paper",
+    ))
+
     return GIParameters(
         potential = ConfinementPotential(
             b = pot["b_GeV2"],
@@ -392,8 +382,6 @@ function gi_parameters_from_raw(raw)::GIParameters
         ),
         fine_structure = FineStructure(
             enabled = get(fs, "enabled", true),
-            k_spin_orbit = float(get(fs, "k_spin_orbit", 0.5)),
-            k_tensor = float(get(fs, "k_tensor", 0.4)),
         ),
         annihilation = AnnihilationAmplitudes(
             p1_A_np = float(get(ann, "p1_A_np", 0.5)),

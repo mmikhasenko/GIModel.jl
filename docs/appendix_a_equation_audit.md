@@ -33,8 +33,8 @@ Historical page references used when this ledger was first written:
 | (A12)-(A14) closed-form `G~`, `S~`, and `tau_k` | clear | native HO and FD implementations | `smeared_coulomb_G_closed`, `smeared_confinement_S_closed`, and `appendix_a_closed_central_values` supply the radial functions. FD samples them on its native grid; HO integrates them directly in oscillator matrix elements. |
 | Coulomb momentum factor after (A14) | clear | native HO and FD implementations | FD uses `appendix_a_momentum_sandwich_matrix` on its `p²` eigenbasis; HO uses `ho_momentum_sandwich_matrix` with the exact oscillator `p²` matrix. |
 | Spin-dependent `m/E` factor after (A14) | clear | native HO and FD implementations | Contact, tensor, vector spin-orbit, and scalar spin-orbit use the same two-sided `1/2 + epsilon_i` sandwich through backend-native matrices. |
-| (A15) effective Coulomb-side spin operators | mostly clear | implemented in both backends | `fine_structure_grid_matrices` and `ho_fine_structure_matrices` assemble the corresponding native fixed-sector blocks; cross-sector tensor elements dispatch on native waves. |
-| (A16) scalar/Thomas spin-orbit operator | mostly clear | partial formula certification | The native fixed-sector symmetric term and unequal-mass antisymmetric same-`J` mixing are implemented for both representations. The fitted `k_spin_orbit` bridge still prevents a literal paper-strength certification. |
+| (A15) effective Coulomb-side spin operators | clear | reproduced in both backends | The contact term uses the analytic Laplacian `sum(alpha_k delta_tau_k)`; vector self/pair terms retain their `11`, `22`, `12` masses; and the conventional Pauli `S12` angular matrix carries the required `1/12` spin-operator conversion. Fixed and cross-sector matrices dispatch on native waves. |
+| (A16) scalar/Thomas spin-orbit operator | clear | reproduced in both backends | Separate `11` and `22` scalar-confinement derivatives produce both diagonal symmetric and unequal-mass antisymmetric same-`J` terms. No Coulomb derivative is duplicated into A16 and no fitted bridge factor remains. |
 | (A17) HO matrix-element factorization | clear | complete fixed-sector implementation | Both sides of the factorization use exact oscillator matrix elements: `ho_p2_matrix` for momentum functions, `ho_operator_matrix` (generalized Gauss-Laguerre in Golub-Welsch form) for position functions, and spectral functions of exact `p²` for momentum sandwiches. `fixed_channel_solution` assembles central, contact, symmetric spin-orbit, and diagonal tensor matrices before diagonalization; later tensor, antisymmetric spin-orbit, and annihilation blocks consume the resulting signed `OscillatorWave`s directly. The adaptive controller refines beta and basis size and attaches an `OscillatorConvergence` certificate; no spatial mesh appears in this path. |
 
 ## Cleared By This Audit
@@ -48,11 +48,8 @@ Historical page references used when this ledger was first written:
   smearing (A7)-(A14), momentum factors, effective operators (A15)-(A16), and
   HO factorization (A17).
 
-## Next Stages
+## Next Stage
 
-1. Keep FD as an independent implementation comparator, not the headline paper
-   route or a hidden HO dependency.
-2. Migrate the remaining flavor-sensitive observables to the final
-   `physical_components` composition (PA-17).
-3. Remove or explicitly isolate the fitted spin bridge factors and certify the
-   end-to-end native-HO paper route (PA-18).
+PA-17 and PA-18 are complete. Keep FD as an independent implementation
+comparator and perform its own convergence audit (FD-COMP); it is not the
+headline paper route or a hidden HO dependency.

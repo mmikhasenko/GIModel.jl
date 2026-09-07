@@ -67,12 +67,11 @@ function _fixed_channel_matrices(
                 params, masses, multiplet.L_label, multiplet.multiplicity, r,
             )
         else
-            sigma = contact_smearing_sigma(params, masses)
             strength = (1 + params.factors.epsilon_c) *
                        (32pi / (9 * masses.m1_GeV * masses.m2_GeV)) *
                        spin_dot(multiplet.multiplicity)
             Diagonal([
-                strength * alpha_s_r(ri) * delta_sigma_3d(ri, sigma) for ri in r
+                strength * smeared_contact_kernel(params, masses, ri) for ri in r
             ])
         end
     else

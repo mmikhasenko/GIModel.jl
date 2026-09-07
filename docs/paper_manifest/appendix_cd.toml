@@ -109,7 +109,7 @@ report = "GIPaper/docs/residual_reports/table_vii_annihilation_em.md"
 metric = "Gamma(P->l nu) = G^2 f_P^2 m_l^2/(8 pi M_P) (M_P^2-m_l^2)^2; fed the measured f_pi/M_pi=0.936 it reproduces the pi->mu nu width to 4% (the omitted Cabibbo cos^2 theta_C)"
 anchor = "paper/vision_ocr/page_images/page-040.png"
 parent = "app-D"
-notes = "Implemented as leptonic_pseudoscalar_width (exact Eq. D7, reduced G^2 = no CKM). Validated against experiment by feeding the measured constant; applied to the model's own f it carries the Table VII f-residual squared. The model's light 1S0 pion mass (0.10 GeV < m_mu) closes the pi phase space -- the light-pseudoscalar pathology also seen in f_pi. Table VII lists the constant, not the width. OCR-located on page-image 40."
+notes = "Implemented as leptonic_pseudoscalar_width (exact Eq. D7, reduced G^2 = no CKM). Validated against experiment by feeding the measured constant; applied to the model's own f it carries the Table VII f-residual squared. The literal A15 contact gives the model light 1S0 pion mass 0.149 GeV, so the pi-to-mu-nu phase space is open. Table VII lists the constant, not the width. OCR-located on page-image 40."
 
 [[unit]]
 id = "D8"

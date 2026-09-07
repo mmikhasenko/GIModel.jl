@@ -42,26 +42,21 @@ epsilon_c = -0.168
 epsilon_t = 0.025
 epsilon_so_vector = -0.035
 epsilon_so_scalar = 0.055
-# Active research path for the contact term: apply the GI momentum-dependent
-# factor as a Hermitian sandwich around the smeared contact operator.
+# Appendix A15: apply the GI momentum-dependent factor as a Hermitian sandwich
+# around the exact Laplacian contact operator.
 contact_momentum_sandwich = true
-# Active research path for tensor and spin-orbit radial kernels: apply the same
-# GI-style Hermitian momentum-factor sandwich to first-order fine-structure
-# expectations. The angular algebra is still the existing equal-mass diagnostic
-# convention; unequal-mass mixing is a later step.
+# Appendix A15-A16: apply the GI Hermitian momentum-factor sandwiches to the
+# vector/scalar spin-orbit and tensor operators. Both diagonal fixed-sector
+# terms and unequal-mass antisymmetric mixing use this prescription.
 fine_structure_momentum_sandwich = true
-# Active research path for fine-structure radial kernels: use derivatives of the
-# closed-form smeared Coulomb G~ and smeared confinement S~ where the GI spin
-# operators require dG/dr, d²G/dr², or d(G+S)/dr.
+# Use derivatives of the closed-form smeared Coulomb G~ and confinement S~:
+# A15 uses dG/dr and d²G/dr²; A16 uses dS/dr without duplicating Coulomb.
 fine_structure_smeared_kernels = true
 
 [fine_structure]
-# Vector + Thomas (scalar) spin–orbit and OGE-tensor, first order on the FD
-# radial u(r) with the post-A14 ε momentum factors and global scales to align
-# with the paper’s HO result.
+# Appendix-A vector + scalar spin–orbit and tensor operators. Their strengths
+# are fixed by Eqs. (A15)-(A16); this section contains only the master switch.
 enabled = true
-k_spin_orbit = 0.48
-k_tensor = 0.42
 
 [annihilation]
 # Paper Table III pseudoscalar model constants.

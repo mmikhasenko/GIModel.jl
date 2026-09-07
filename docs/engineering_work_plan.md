@@ -37,7 +37,9 @@ These were each found the hard way. Every one is pinned by tests.
 
 5. **An unimplemented path fails, it does not fall back.** Returning an empty
    result that a caller reads as "use something else" produced a 3× wrong pion
-   (0.2842 vs 0.0950 GeV) with no warning.
+   with no warning. The historical fallback gave 0.2842 GeV; the then-current
+   contact implementation gave 0.0950 GeV, and the later literal A15 Laplacian
+   correction established the final resummed value near 0.149 GeV.
 
 6. **Eq. (A17) is atomic.** An exact momentum side with a mesh-projected
    potential is not the Hamiltonian of any single problem, is not variational,

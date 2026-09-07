@@ -19,14 +19,14 @@ for each `M* -> P ^3S_1` decay. We reproduce it from the model's own
 **hyperfine-distinct** `rho`/`pi` wavefunctions and the central `M*`
 radial wave -- a direct wavefunction test, independent of the `(A, S0)` fit.
 
-Daughter compactness (sanity check): `sqrt<r^2>` is **1.830 GeV^-1** for `pi` (`^1S_0`) vs **2.884 GeV^-1** for `rho` (`^3S_1`) -- the pi is more compact, as required, ratio 1.58.
+Daughter compactness (sanity check): `sqrt<r^2>` is **1.969 GeV^-1** for `pi` (`^1S_0`) vs **2.870 GeV^-1** for `rho` (`^3S_1`) -- the pi is more compact, as required, ratio 1.46.
 
 | decay group | parent | decay L | r-weight | computed R_A | paper |
 |---|:-:|:-:|:-:|---:|:-:|
-| `A2 -> rho pi (1^3P_2)` | P1 | 2 | r^1 | **1.65** | (1.5) |
-| `rho2/omega2 -> [VP]_F (1^3D_2)` | D1 | 3 | r^2 | **2.03** | (1.7) |
-| `g/omega3 -> [VP]_F (1^3D_3)` | D1 | 3 | r^2 | **2.03** | (1.8) |
-| `delta/h -> [VP]_G (1^3F_4)` | F1 | 4 | r^3 | **2.23** | (2.1) |
+| `A2 -> rho pi (1^3P_2)` | P1 | 2 | r^1 | **1.50** | (1.5) |
+| `rho2/omega2 -> [VP]_F (1^3D_2)` | D1 | 3 | r^2 | **1.81** | (1.7) |
+| `g/omega3 -> [VP]_F (1^3D_3)` | D1 | 3 | r^2 | **1.81** | (1.8) |
+| `delta/h -> [VP]_G (1^3F_4)` | F1 | 4 | r^3 | **1.97** | (2.1) |
 
 ## Reading
 
@@ -63,14 +63,14 @@ radial part is multiplication by `p` and the common angular factor cancels
 in the ratio, leaving `<S|p|M*> ∝ ∫ p³ Φ_0(p) Φ_1^{M*}(p) dp` on the model's
 own hyperfine-distinct `pi`/`rho` momentum waves.
 
-Momentum compactness (sanity check): `<p^2>` is **1.109 GeV²** for `pi` (`^1S_0`) vs **0.294 GeV²** for `rho` (`^3S_1`) -- the pi carries the larger momentum, ratio 3.77, so `R_S > 1` as the paper requires.
+Momentum compactness (sanity check): `<p^2>` is **0.888 GeV²** for `pi` (`^1S_0`) vs **0.300 GeV²** for `rho` (`^3S_1`) -- the pi carries the larger momentum, ratio 2.96, so `R_S > 1` as the paper requires.
 
 | decay group | parent | computed R_S | paper |
 |---|:-:|---:|:-:|
-| `epsilon/kappa -> P P (1^3P_0)` | P1 | **1.17** | (1.2-1.3) |
-| `B -> (omega pi)_S (1^1P_1)` | P1 | **1.17** | (1.2-1.3) |
+| `epsilon/kappa -> P P (1^3P_0)` | P1 | **1.16** | (1.2-1.3) |
+| `B -> (omega pi)_S (1^1P_1)` | P1 | **1.16** | (1.2-1.3) |
 
-- **Sign and magnitude reproduced:** `R_S = 1.17` on the `1P` parent sits just below the
+- **Sign and magnitude reproduced:** `R_S = 1.16` on the `1P` parent sits just below the
   paper's `~1.2-1.3` -- the same-order agreement as the type-A rows, within
   the paper's own "rough indication" caveat. The `1^3P_0` (`epsilon`/`kappa`)
   and `1^1P_1` (`B`) type-S rows share the spin-independent central `1P`

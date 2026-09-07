@@ -1,13 +1,14 @@
 # W6 — paper-order (finite HO-basis) validation of the spin-distorted waves
 
 Scores the Table VII gluonic subtable under three treatments of the
-spin-dependent operators (smeared contact for S-waves, calibrated
-spin-orbit + tensor for ³P_J), against the spin-independent central-wave
-baseline. Zero new parameters: the operators are the spectrum-calibrated
+spin-dependent operators (smeared contact for S-waves, literal
+A15-A16 spin-orbit + tensor for ³P_J), against the spin-independent
+central-wave baseline. Zero bridge parameters: the operator strengths are
+fixed by the paper equations and Table-II epsilon values. They are the
 blocks assembled natively by `fixed_channel_solution`. The **paper-order**
 treatment is full diagonalization of the fixed-(L,S,J) Hamiltonian in
 the converged native-HO basis; no mesh operator is projected into HO
-for every subtable.
+at every stage.
 
 ## 1. Basis fidelity control: central-wave S_L, HO vs FD
 
@@ -38,8 +39,8 @@ fixed-channel diagonalizations with independent representations:
 
 | treatment | pion ¹S₀ mass (GeV) |
 |---|---:|
-| **native finite-HO full diagonalization** | **0.0958** |
-| independent fine-grid FD full diagonalization | 0.0957 |
+| **native finite-HO full diagonalization** | **0.1491** |
+| independent fine-grid FD full diagonalization | 0.1490 |
 
 The two methods reproduce the light pion with no HO-to-mesh fallback.
 
@@ -51,26 +52,26 @@ The two methods reproduce the light pion with no HO-to-mesh fallback.
 
 | decay | paper amp | central | **paper HO** | full FD | M_paper |
 |---|---:|:-:|:-:|:-:|---:|
-| `eta_c -> 2g` | +4.700 | 0.87 | **1.11** | 1.11 | 2.959 |
-| `psi -> 3g` | +0.420 | 1.11 | **1.02** | 1.02 | 3.091 |
-| `eta'_c -> 2g` | -2.700 | 0.99 | **1.08** | 1.08 | 3.619 |
-| `psi' -> 3g` | -0.280 | 1.06 | **1.01** | 1.01 | 3.680 |
-| `eta_b -> 2g` | +2.500 | 0.98 | **1.21** | 1.21 | 9.391 |
-| `Upsilon -> 3g` | +0.210 | 1.13 | **1.05** | 1.05 | 9.458 |
-| `eta'_b -> 2g` | -1.700 | 1.01 | **1.17** | 1.18 | 9.972 |
-| `Upsilon' -> 3g` | -0.150 | 1.11 | **1.05** | 1.05 | 10.004 |
-| `Upsilon'' -> 3g` | +0.130 | 1.09 | **1.04** | 1.05 | 10.354 |
-| `Upsilon''' -> 3g` | -0.110 | 1.18 | **1.13** | 1.13 | 10.633 |
-| `chi_2c -> 2g` | +0.880 | 1.14 | **1.09** | 1.09 | 3.533 |
-| `chi_0c -> 2g` | +2.500 | 0.78 | **0.95** | 0.95 | 3.458 |
-| `chi_2b -> 2g` | +0.350 | 0.98 | **0.94** | 0.94 | 9.888 |
-| `chi_0b -> 2g` | +0.820 | 0.81 | **1.00** | 1.01 | 9.854 |
-| `chi'_2b -> 2g` | -0.370 | 0.98 | **0.94** | 0.94 | 10.255 |
-| `chi'_0b -> 2g` | -0.820 | 0.85 | **1.01** | 1.01 | 10.231 |
+| `eta_c -> 2g` | +4.700 | 0.87 | **1.05** | 1.06 | 2.967 |
+| `psi -> 3g` | +0.420 | 1.11 | **1.04** | 1.04 | 3.091 |
+| `eta'_c -> 2g` | -2.700 | 0.99 | **1.06** | 1.06 | 3.626 |
+| `psi' -> 3g` | -0.280 | 1.06 | **1.02** | 1.02 | 3.679 |
+| `eta_b -> 2g` | +2.500 | 0.98 | **1.17** | 1.17 | 9.393 |
+| `Upsilon -> 3g` | +0.210 | 1.13 | **1.06** | 1.06 | 9.459 |
+| `eta'_b -> 2g` | -1.700 | 1.01 | **1.13** | 1.14 | 9.975 |
+| `Upsilon' -> 3g` | -0.150 | 1.11 | **1.06** | 1.06 | 10.004 |
+| `Upsilon'' -> 3g` | +0.130 | 1.09 | **1.05** | 1.06 | 10.354 |
+| `Upsilon''' -> 3g` | -0.110 | 1.18 | **1.14** | 1.14 | 10.633 |
+| `chi_2c -> 2g` | +0.880 | 1.14 | **1.02** | 1.02 | 3.546 |
+| `chi_0c -> 2g` | +2.500 | 0.78 | **1.03** | 1.03 | 3.439 |
+| `chi_2b -> 2g` | +0.350 | 0.98 | **0.88** | 0.88 | 9.895 |
+| `chi_0b -> 2g` | +0.820 | 0.81 | **1.09** | 1.09 | 9.844 |
+| `chi'_2b -> 2g` | -0.370 | 0.98 | **0.89** | 0.89 | 10.260 |
+| `chi'_0b -> 2g` | -0.820 | 0.85 | **1.08** | 1.08 | 10.224 |
 
 - central: median 0.994, spread [0.78, 1.18]
-- paper HO (full diag): median 1.044, spread [0.94, 1.21]
-- full FD: median 1.046, spread [0.94, 1.21]
+- paper HO (full diag): median 1.055, spread [0.88, 1.17]
+- full FD: median 1.057, spread [0.88, 1.17]
 
 ## 3. Splitting-pattern collapse
 
@@ -79,13 +80,13 @@ the treatment carries the paper's full spin-splitting of the origin.
 
 | pattern | central | paper (full diag) |
 |---|:-:|:-:|
-| `eta_c/psi` | 0.78 | 1.08 |
-| `eta'_c/psi'` | 0.94 | 1.07 |
-| `eta_b/Upsilon` | 0.87 | 1.15 |
-| `eta'_b/Upsilon'` | 0.92 | 1.12 |
-| `chi_0c/chi_2c` | 0.68 | 0.88 |
-| `chi_0b/chi_2b` | 0.83 | 1.07 |
-| `chi'_0b/chi'_2b` | 0.87 | 1.08 |
+| `eta_c/psi` | 0.78 | 1.02 |
+| `eta'_c/psi'` | 0.94 | 1.03 |
+| `eta_b/Upsilon` | 0.87 | 1.10 |
+| `eta'_b/Upsilon'` | 0.92 | 1.07 |
+| `chi_0c/chi_2c` | 0.68 | 1.01 |
+| `chi_0b/chi_2b` | 0.83 | 1.23 |
+| `chi'_0b/chi'_2b` | 0.87 | 1.21 |
 
 ## Conclusion
 

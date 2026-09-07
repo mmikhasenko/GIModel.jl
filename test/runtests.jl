@@ -34,7 +34,6 @@ end
     @test params.factors.epsilon_so_vector ≈ -0.035
     @test params.factors.epsilon_so_scalar ≈ 0.055
     @test params.fine_structure.enabled == true
-    @test params.fine_structure.k_spin_orbit > 0.0
     @test isconcretetype(typeof(params))
     @test fieldtype(typeof(params), :central) === AppendixAMomentumSandwich
 
@@ -49,9 +48,8 @@ end
     varied_factors = RelativisticFactors(params.factors; epsilon_c = -0.2)
     @test varied_factors.epsilon_c == -0.2
     @test varied_factors.epsilon_t == params.factors.epsilon_t
-    varied_fine = FineStructure(params.fine_structure; k_tensor = 0.45)
-    @test varied_fine.k_tensor == 0.45
-    @test varied_fine.enabled == params.fine_structure.enabled
+    varied_fine = FineStructure(params.fine_structure; enabled = false)
+    @test !varied_fine.enabled
     varied_annihilation = AnnihilationAmplitudes(params.annihilation; s1_A = 2.6)
     @test varied_annihilation.s1_A == 2.6
     @test varied_annihilation.p1_A_np == params.annihilation.p1_A_np
@@ -496,17 +494,13 @@ end
         params,
         ConstituentMasses(m, m),
         FineStructureMultiplet("S", 3, 1),
-        wave_s;
-        k_spin_orbit = params.fine_structure.k_spin_orbit,
-        k_tensor = params.fine_structure.k_tensor,
+        wave_s,
     ) == 0.0
     @test GIModel.fine_structure_split(
         params,
         ConstituentMasses(m, m),
         FineStructureMultiplet("S", 1, 0),
-        wave_s;
-        k_spin_orbit = 1.0,
-        k_tensor = 1.0,
+        wave_s,
     ) == 0.0
     sol_p = GIModel.channel_solution(
         params, ConstituentMasses(m, m), 1;
@@ -518,25 +512,19 @@ end
         params,
         ConstituentMasses(m, m),
         FineStructureMultiplet("P", 3, 0),
-        wave_p;
-        k_spin_orbit = 1.0,
-        k_tensor = 1.0,
+        wave_p,
     )
     δ1 = GIModel.fine_structure_split(
         params,
         ConstituentMasses(m, m),
         FineStructureMultiplet("P", 3, 1),
-        wave_p;
-        k_spin_orbit = 1.0,
-        k_tensor = 1.0,
+        wave_p,
     )
     δ2 = GIModel.fine_structure_split(
         params,
         ConstituentMasses(m, m),
         FineStructureMultiplet("P", 3, 2),
-        wave_p;
-        k_spin_orbit = 1.0,
-        k_tensor = 1.0,
+        wave_p,
     )
     @test isfinite(δ0) && isfinite(δ1) && isfinite(δ2)
     @test δ0 != δ1 || δ1 != δ2
@@ -544,9 +532,7 @@ end
         params,
         ConstituentMasses(m, m),
         FineStructureMultiplet("P", 1, 0),
-        wave_p;
-        k_spin_orbit = 1.0,
-        k_tensor = 1.0,
+        wave_p,
     ) == 0.0
 end
 
@@ -564,9 +550,7 @@ end
             params,
             ConstituentMasses(m, m),
             FineStructureMultiplet("P", 3, J),
-            wave_p;
-            k_spin_orbit = 1.0,
-            k_tensor = 1.0,
+            wave_p,
         )
         @test comp.spin_orbit ≈ comp.spin_orbit_vector + comp.spin_orbit_thomas atol = 1e-12
         @test comp.total ≈ comp.spin_orbit + comp.tensor atol = 1e-12
@@ -574,9 +558,7 @@ end
             params,
             ConstituentMasses(m, m),
             FineStructureMultiplet("P", 3, J),
-            wave_p;
-            k_spin_orbit = 1.0,
-            k_tensor = 1.0,
+            wave_p,
         ) atol = 1e-12
     end
 end
@@ -637,8 +619,7 @@ end
         params,
         ConstituentMasses(mc, mc),
         "P",
-        radial_cc;
-        k_spin_orbit = params.fine_structure.k_spin_orbit,
+        radial_cc,
     )
     @test off_cc.total == 0.0
     mix_cc = GIModel.same_j_mixing(3.5, 3.6, off_cc.total)
@@ -657,8 +638,7 @@ end
         params,
         ConstituentMasses(mb, mc),
         "P",
-        radial_bc;
-        k_spin_orbit = params.fine_structure.k_spin_orbit,
+        radial_bc,
     )
     @test isfinite(off_bc.total)
     @test off_bc.total != 0.0
@@ -667,9 +647,7 @@ end
         params,
         ConstituentMasses(mb, mc),
         FineStructureMultiplet("P", 3, 1),
-        radial_bc;
-        k_spin_orbit = params.fine_structure.k_spin_orbit,
-        k_tensor = params.fine_structure.k_tensor,
+        radial_bc,
     )
     central_bc = sol_bc.eigenvalues_GeV[1]
     mix_bc = GIModel.same_j_mixing(central_bc, central_bc + triplet_shift, off_bc.total)
@@ -719,9 +697,7 @@ end
             2,
             u1p,
             r_p,
-            h_p;
-            k_spin_orbit = 1.0,
-            k_tensor = 1.0,
+            h_p,
         )
         @test comp0.tensor != 0.0
         @test comp0.spin_orbit_vector != 0.0
@@ -736,9 +712,7 @@ end
             2,
             u1p,
             r_p,
-            h_p;
-            k_spin_orbit = 1.0,
-            k_tensor = 1.0,
+            h_p,
         )
         compv = GIModel.fine_structure_components(
             load_parameters(pv),
@@ -749,9 +723,7 @@ end
             2,
             u1p,
             r_p,
-            h_p;
-            k_spin_orbit = 1.0,
-            k_tensor = 1.0,
+            h_p,
         )
         comps = GIModel.fine_structure_components(
             load_parameters(ps),
@@ -762,9 +734,7 @@ end
             2,
             u1p,
             r_p,
-            h_p;
-            k_spin_orbit = 1.0,
-            k_tensor = 1.0,
+            h_p,
         )
 
         @test compt.tensor / comp0.tensor ≈ 1.5 rtol = 1e-12 atol = 0.0
@@ -815,12 +785,10 @@ end
             2,
             u1p,
             r_p,
-            h_p;
-            k_spin_orbit = 0.0,
-            k_tensor = 1.0,
+            h_p,
         )
         @test comp.I_tk ≈ Itk rtol = 1e-12 atol = 0.0
-        expected = (1.0 / (3.0 * mc * mc)) * Itk * GIModel.tensor_triplet_LJ(1, 2, 1)
+        expected = Itk * GIModel.tensor_triplet_LJ(1, 2, 1) / (12.0 * mc * mc)
         @test comp.tensor ≈ expected rtol = 1e-12 atol = 0.0
     end
 end
@@ -875,9 +843,7 @@ end
             J,
             u1p,
             r_p,
-            h_p;
-            k_spin_orbit = 1.0,
-            k_tensor = 1.0,
+            h_p,
         )
         scaled_hi = GIModel.fine_structure_components(
             params,
@@ -888,9 +854,7 @@ end
             J,
             3.0 .* u1p,
             r_p,
-            h_p;
-            k_spin_orbit = 1.0,
-            k_tensor = 1.0,
+            h_p,
         )
         scaled_lo = GIModel.fine_structure_components(
             params,
@@ -901,9 +865,7 @@ end
             J,
             0.2 .* u1p,
             r_p,
-            h_p;
-            k_spin_orbit = 1.0,
-            k_tensor = 1.0,
+            h_p,
         )
         @test scaled_hi.total ≈ base.total rtol = 1e-12 atol = 0.0
         @test scaled_lo.total ≈ base.total rtol = 1e-12 atol = 0.0
@@ -1038,28 +1000,29 @@ end
             2,
             collect(u),
             collect(r),
-            h;
-            k_spin_orbit = 1.0,
-            k_tensor = 0.0,
+            h,
         )
-        @test comp.I_cm ≈ I_cm rtol = 1e-12 atol = 0.0
-        inv2_cm = 0.5 * (1.0 / m^2 + 1.0 / m^2 + 2.0 / (m * m))
+        scaled_cm = (1 + params.factors.epsilon_so_vector) * I_cm
+        @test comp.I_vector_11 ≈ scaled_cm rtol = 1e-12 atol = 0.0
+        @test comp.I_vector_22 ≈ scaled_cm rtol = 1e-12 atol = 0.0
+        @test comp.I_vector_12 ≈ scaled_cm rtol = 1e-12 atol = 0.0
         ls = GIModel.LdotS(1, 1, 2)
-        expected_vec = inv2_cm * ls * (1.0 + params.factors.epsilon_so_vector) * I_cm
+        expected_vec = ls * (3 / (2m^2)) * scaled_cm
         @test comp.spin_orbit_vector ≈ expected_vec rtol = 1e-12 atol = 0.0
 
-        I_tp = GIModel.radial_expect_udr(
+        I_scalar = GIModel.radial_expect_udr(
             u,
             r,
             h,
             (ri, i) -> begin
                 r0 = max(ri, 1.0e-8)
-                (1.0 / (2.0 * r0)) * (params.potential.b + GIModel.dV_coul_central_dr(r0, params))
+                params.potential.b / r0
             end,
         )
-        @test comp.I_tp ≈ I_tp rtol = 1e-12 atol = 0.0
-        inv2_tp = 0.5 * (1.0 / m^2 + 1.0 / m^2)
-        expected_tp = (-inv2_tp) * ls * (1.0 + params.factors.epsilon_so_scalar) * I_tp
+        scaled_scalar = (1 + params.factors.epsilon_so_scalar) * I_scalar
+        @test comp.I_scalar_11 ≈ scaled_scalar rtol = 1e-12 atol = 0.0
+        @test comp.I_scalar_22 ≈ scaled_scalar rtol = 1e-12 atol = 0.0
+        expected_tp = -ls * scaled_scalar / (2m^2)
         @test comp.spin_orbit_thomas ≈ expected_tp rtol = 1e-12 atol = 0.0
     end
 end
@@ -1162,15 +1125,12 @@ end
     r = collect(0.05:0.05:1.0)
     h = r[2] - r[1]
     u = exp.(-2.0 .* r)
-    sigma = GIModel.contact_smearing_sigma(params, m, m)
+    masses = ConstituentMasses(m, m)
     expectation = GIModel.radial_expect_udr(
         u,
         r,
         h,
-        (ri, i) -> begin
-            delta_sigma = sigma^3 / (pi^(3 / 2)) * exp(-(sigma * ri)^2)
-            GIModel.alpha_s_r(ri) * delta_sigma
-        end,
+        (ri, i) -> GIModel.smeared_contact_kernel(params, masses, ri),
     )
     manual =
         (1.0 + params.factors.epsilon_c) *
@@ -1179,6 +1139,26 @@ end
         GIModel.spin_dot(3)
     @test GIModel.contact_hyperfine_shift(params, m, m, "S", 3, u, r) ≈ manual rtol = 1e-12 atol =
         0.0
+end
+
+@testset "A15 contact is the Laplacian of the smeared Coulomb kernel" begin
+    params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
+    masses = ConstituentMasses(mq["q"], mq["s"])
+    sigma = GIModel.contact_smearing_sigma(params, masses)
+
+    for r in (0.0, 0.15, 0.8, 2.0)
+        expected = sum(zip(GIModel.ALPHA_COEFFS, GIModel.ALPHA_GAMMAS)) do (alpha, gamma)
+            tau = inv(sqrt(inv(sigma^2) + inv(gamma^2)))
+            alpha * GIModel.delta_sigma_3d(r, tau)
+        end
+        @test GIModel.smeared_contact_kernel(params, masses, r) ≈ expected rtol = 2e-15
+    end
+
+    @test fieldnames(FineStructure) == (:enabled,)
+    @test_throws MethodError FineStructure(; k_tensor = 0.42)
+    parameter_text = read(joinpath(root, "data", "parameters.provisional.toml"), String)
+    @test !occursin("k_spin_orbit", parameter_text)
+    @test !occursin("k_tensor", parameter_text)
 end
 
 @testset "post-A14 spin-dependent momentum exponent gives energy denominators" begin
@@ -1224,14 +1204,10 @@ end
         params,
         masses,
         mult,
-        wave;
-        k_spin_orbit = 1.0,
-        k_tensor = 1.0,
+        wave,
     )
     split = GIModel.fine_structure_split(
-        params, masses, mult, wave;
-        k_spin_orbit = 1.0,
-        k_tensor = 1.0,
+        params, masses, mult, wave,
     )
     @test c1.total ≈ split rtol = 1e-12 atol = 0.0
 end
@@ -1788,8 +1764,6 @@ end
     )
     components = fine_structure_components(
         params, masses, FineStructureMultiplet("P", 3, 2), wP,
-        k_spin_orbit = params.fine_structure.k_spin_orbit,
-        k_tensor = params.fine_structure.k_tensor,
     )
     @test all(
         M -> isapprox(Matrix(M), Matrix(M)'; atol = 1e-13),
@@ -1810,8 +1784,6 @@ end
     fdmat = GIModel.fine_structure_grid_matrices(params, masses, 2, r, h; L = 1)
     fdcomp = fine_structure_components(
         params, masses, FineStructureMultiplet("P", 3, 2), wfd,
-        k_spin_orbit = params.fine_structure.k_spin_orbit,
-        k_tensor = params.fine_structure.k_tensor,
     )
     expect(M) = h * dot(wfd.u, M * wfd.u) / wave_norm(wfd)
     @test expect(fdmat.spin_orbit_vector) ≈ fdcomp.spin_orbit_vector atol = 1e-10
@@ -1885,7 +1857,7 @@ end
 
     # The oscillator basis used to answer "empty" here, which
     # the old spectrum correction stage read as "fall back to first-order PT": the light
-    # 1S0 came out 0.2842 GeV against the resummed 0.0950. U1 made that a loud
+    # 1S0 came out 0.2842 GeV against the correctly resummed 0.149 GeV. U1 made that a loud
     # failure, U2 unified the solve, and B1 made this wrapper basis-generic — so
     # the oscillator path now resums in its own space and lands on the same
     # answer. That agreement is what the throw was standing in for.
@@ -1894,7 +1866,7 @@ end
         params, masses, "S", 1, 2; solver = ho)
     @test length(solution_ho.eigenvalues_GeV) == 2 && length(solution_ho.waves) == 2
     @test abs(solution_ho.eigenvalues_GeV[1] - solution.eigenvalues_GeV[1]) < 1e-3
-    @test solution_ho.eigenvalues_GeV[1] < 0.15
+    @test 0.12 < solution_ho.eigenvalues_GeV[1] < 0.18
     @test GIModel.contact_hyperfine_nonperturbative_levels(
         params, masses, "S", 1, 2; solver = ho) ≈ solution_ho.eigenvalues_GeV
     @test_throws ArgumentError contact_hyperfine_nonperturbative_states(
@@ -1902,12 +1874,12 @@ end
     ho_pi = spectrum_state(
         compute_spectrum(params, Meson(mq, :q, :q); solver = ho, levels = spectrum_levels(1)),
         "1^1S_0")
-    @test ho_pi.mass_GeV < 0.15
+    @test 0.12 < ho_pi.mass_GeV < 0.18
 
     # The FD front door is untouched and still resums.
     fd_pi = spectrum_state(
         compute_spectrum(params, Meson(mq, :q, :q); levels = spectrum_levels(1)), "1^1S_0")
-    @test fd_pi.mass_GeV < 0.15        # resummed; first-order PT lands near 0.28
+    @test 0.12 < fd_pi.mass_GeV < 0.18 # resummed; first-order PT lands near 0.28
 end
 
 @testset "RadialSolver is numerics, SpinTerms is physics" begin
@@ -2485,6 +2457,19 @@ end
     ]
     @test length(p1_identities) == length(unique(p1_identities))
     @test sum(abs2(component.coefficient) for component in p1_components) ≈ 1.0 atol = 1e-12
+    weights = Dict(
+        component.basis => float(i) for (i, component) in enumerate(p1_components)
+    )
+    @test physical_state_amplitude(p1_final, p1_state) do component
+        weights[component.basis]
+    end ≈ sum(
+        component.coefficient * weights[component.basis] for
+        component in p1_components
+    )
+    @test physical_transition_amplitude(p1_final, p1_state, p1_state) do left, right
+        left.basis.flavors == right.basis.flavors ?
+        radial_overlap(left.wave, right.wave, _ -> 1.0) : 0.0
+    end ≈ 1.0 atol = 1e-10
 
     # No reference ordering or implicit amplitude exists in the model stage.
     combined_only = add_isoscalar_annihilation(params, nn, ss)
@@ -2906,33 +2891,25 @@ end
 @testset "Table VII mixed eta/eta' two-photon (P1 coherent sum)" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     mu, ms = mq["q"], mq["s"]
-    outer!(u) = (pk = maximum(abs, u); i = findlast(x -> abs(x) > 0.2pk, u);
-                 (i !== nothing && u[i] < 0) && (u .*= -1); u)
     Qnn = (4 / 9 + 1 / 9) / sqrt(2); Qss = 1 / 9
-
-    function psfam(m1, m2)
-        sol = contact_hyperfine_nonperturbative_states(
-            params, ConstituentMasses(m1, m2), "S", 1, 3;
-            solver = FiniteDifferenceSolver(ngrid = 1000, rmax = 24.0),
-        )
-        return [begin
-            wave = radial_wave(sol, n)
-            MeshWave(outer!(copy(wave.u)), wave.r)
-        end for n in 1:2]
-    end
-    NN, SS = psfam(mu, mu), psfam(ms, ms)
-    comp = [(NN[1], mu, Qnn), (SS[1], ms, Qss), (NN[2], mu, Qnn), (SS[2], ms, Qss)]
-
     psl = [GIModel.BasisState(1, "S", 1, 0), GIModel.BasisState(2, "S", 1, 0)]
-    vl = [GIModel.BasisState(1, "S", 3, 1)]
-    nn_spec = GIModel.compute_spectrum(params, Meson(:q, :q, ConstituentMasses(mu, mu)); levels = vcat(psl, vl))
-    ss_spec = GIModel.compute_spectrum(params, Meson(:s, :s, ConstituentMasses(ms, ms)); levels = vcat(psl, vl))
-    psb = GIModel.pseudoscalar_annihilation_block(GIModel.PaperP1Annihilation(), params, nn_spec, ss_spec)
-
-    ggamp(col, Mphys) = sum(psb.vectors[k, col] *
-        two_photon_amplitude(:P, comp[k][1], comp[k][2], Mphys, comp[k][3]) for k in 1:4) * sqrt(1e6)
-    Aη = ggamp(1, 0.548)
-    Aη′ = ggamp(2, 0.958)
+    final = compute_isoscalar_spectrum(
+        params,
+        Meson(LightQuark(mu), LightQuark(mu)),
+        Meson(StrangeQuark(ms), StrangeQuark(ms));
+        levels = psl,
+        solver = FiniteDifferenceSolver(ngrid = 1000, rmax = 24.0),
+        pseudoscalar = PaperP1Annihilation(),
+    )
+    states = sort(final.states; by = state -> state.mass_GeV)
+    function ggamp(state, Mphys)
+        return physical_state_amplitude(final, state) do component
+            mass, charge = component.basis.flavors == (:q, :q) ? (mu, Qnn) : (ms, Qss)
+            two_photon_amplitude(:P, component.wave, mass, Mphys, charge)
+        end * sqrt(1e6)
+    end
+    Aη = ggamp(states[1], 0.548)
+    Aη′ = ggamp(states[2], 0.958)
     # both positive, and the η<η' ordering that IDEAL mixing gets backwards
     @test Aη > 0 && Aη′ > 0
     @test abs(Aη) < abs(Aη′)
@@ -2961,8 +2938,8 @@ end
     @test 0.98 < abs(wavefunction_origin_smearing(radial_wave(hosol, 1), mc; L = 0)) /
                  sm(radial_wave(fdsol, 1), 0) < 1.02
 
-    # 2. paper-order treatment: first-order PT in the HO central eigenbasis with
-    #    the calibrated spin blocks lands the charm gluonic rows on the paper
+    # 2. Paper-order full diagonalization with literal A15-A16 spin blocks
+    #    lands the charm gluonic rows on the paper.
     amp(ch, S, M) = tomev(gluonic_annihilation_amplitude(ch, S, GIModel.alpha_s_q(M), mc))
     ratios = Dict{Symbol,Float64}()
     cases = (
@@ -3000,7 +2977,7 @@ end
 
     # 1. The paper's treatment is FULL diagonalization in the finite HO basis,
     #    not first-order PT. The light ¹S₀ (pion) mass discriminates: full-diag
-    #    keeps it resummed (≈0.10 GeV) like the fine-grid FD, while first-order
+    #    keeps it resummed (≈0.15 GeV) like the fine-grid FD, while first-order
     #    PT over-raises it (≈0.28 GeV).
     nn = ConstituentMasses(mq["q"], mq["q"])
     pion = FineStructureMultiplet("S", 1, 0)
@@ -3012,7 +2989,7 @@ end
         solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax),
         nlevels = 4,
     ).eigenvalues_GeV[1]
-    @test m_full < 0.15               # resummed, light pion
+    @test 0.12 < m_full < 0.18        # resummed, near the paper's 0.15 GeV
     @test abs(m_full - m_fd) < 0.02   # matches the fine-grid FD resummation
 
     @test certified_pion.convergence.status == :converged

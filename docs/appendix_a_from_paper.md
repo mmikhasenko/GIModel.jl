@@ -27,32 +27,31 @@ outputs and should only be used for provenance comparison.
 - **(A12)**, **(A13)**, and **(A14)** – Closed-form smeared `G~`, smeared `S~`,
   and `tau_k`. These are implemented by `smeared_coulomb_G_closed`,
   `smeared_confinement_S_closed`, and `appendix_a_closed_central_values`.
-- The active central candidate adds the subsequent Coulomb momentum factor as
-  `A(p) G~ A(p)` on the finite-difference `p^2` eigenbasis.
+- The active central path adds the subsequent Coulomb momentum factor as
+  `A(p) G~ A(p)`, assembled natively in either HO or FD representation.
 
-## What Remains Approximate
+## Effective operators and factorization
 
 - **(A5)** and **(A6)** – Derivational context only. They motivate the later
   prescription, but the local markdown still has spin-label risk and should not
   be used as a direct coefficient source.
-- **(A15)** and **(A16)** – Effective spin-dependent operators are partially
-  represented. Diagonal contact/fine-structure paths use GI-style momentum
-  sandwiches and smeared kernels, and open-flavor same-`J` antisymmetric
-  spin-orbit assignment plus partnered tensor assignment are active in the FD
-  comparison path.
-- **(A17)** – The HO matrix-element factorization is available as a basis path,
-  but the physical comparison path still needs paper-order staging: fixed-sector
-  HO diagonalization followed by the same mixing mechanisms, plus literal
-  annihilation mass-matrix blocks.
+- **(A15)** – Contact, vector spin-orbit, and tensor operators are implemented
+  literally. The contact kernel is the analytic Laplacian of `G~`; `11`, `22`,
+  and `12` mass pairs remain separate; the Pauli-`S12` convention carries the
+  required factor `1/12`.
+- **(A16)** – Separate scalar-confinement `11` and `22` derivatives generate
+  both diagonal and unequal-mass antisymmetric spin-orbit terms.
+- **(A17)** – HO position and momentum matrix elements are assembled without a
+  mesh, beta/basis are refined variationally, complete fixed sectors are
+  diagonalized, and the later tensor/spin-orbit/annihilation blocks consume the
+  resulting native waves.
 
 **Repository consequence:** the flag `appendix_a_smearing` remains the older
 experimental (A7)–(A8) 3D blur of pointwise `G` and `S`; keep it as a diagnostic
 branch. The active central reproduction branch is
 `appendix_a_momentum_sandwich`, which uses closed-form `G~`, `S~`, plus
-`A(p)G~A(p)`. The remaining serious milestone is no longer "get A12-A13 into
-code"; it is to compare the FD analogue against the paper's HO matrix-element
-ordering, then add tensor and literal annihilation blocks through the
-post-diagonalization mixing layer.
+`A(p)G~A(p)`. The original HO algorithm and its post-diagonalization mixing
+layer are complete; FD remains an independent modern comparator.
 
 ## Quick PDF map
 

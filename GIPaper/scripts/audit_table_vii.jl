@@ -44,12 +44,12 @@ reporting_wave(wave::RadialWave) = wave
 # --- paper-order distorted waves (finite HO-basis full diagonalization) ------
 # The single treatment for the whole audit: every wave is a full diagonalization
 # of H_central + V_spin in the paper-β harmonic-oscillator basis (the paper's
-# literal method). V_spin is the smeared contact for S-waves and the calibrated
-# spin-orbit+tensor operator for the ³P_J chi rows; a central row passes V = 0.
+# literal method). V_spin is the A15 smeared contact for S-waves and the literal
+# A15-A16 spin-orbit+tensor operator for the ³P_J chi rows.
 # This resolves the wave-choice inconsistency W6 exposed (gluonic previously used
 # spin-independent central waves; leptonic/γγ used the FD nonperturbative
 # resummation): the finite basis gives the gluonic rows their missing spin
-# distortion yet keeps the light ¹S₀ pseudoscalars resummed (pion ≈0.10 GeV),
+# distortion yet keeps the light ¹S₀ pseudoscalars resummed (pion ≈0.15 GeV),
 # where a first-order-PT treatment would fail.
 
 function distorted_family(params, solver_ho, m1, m2, L, multiplicity, J; nlevels)
@@ -336,7 +336,7 @@ end
 # prescription). The physical mock-meson mass M_P is used in (M/M̃)^(3/2) — GI's
 # mock-meson prescription — because the model underpredicts the light-
 # pseudoscalar masses and the (M/M̃)^(3/2) factor is acutely mass-sensitive.
-const GG_MIXED = [   # (CSV label, block column, physical M_P GeV)
+const GG_MIXED = [   # (CSV label, physical-state mass order, physical M_P GeV)
     ("eta -> gamma gamma",     1, 0.548),
     ("eta' -> gamma gamma",    2, 0.958),
     ("eta_r -> gamma gamma",   3, 1.295),   # ~ eta(1295)
@@ -347,29 +347,44 @@ function run_two_photon_mixed(params, solver_ho, mq, paper)
     mu, ms = mq["q"], mq["s"]
     Qnn = (4 / 9 + 1 / 9) / sqrt(2)     # (uū+dd̄)/√2 effective charge
     Qss = 1 / 9                          # ss̄
-    function psfam(m1, m2)               # pure-flavor ¹S₀ 1S,2S waves
-        fam = swave_family(params, solver_ho, m1, m2, 1; nlevels = 3)
-        return [reporting_wave(radial_wave(fam, n)) for n in 1:2]
-    end
-    NN, SS = psfam(mu, mu), psfam(ms, ms)
-    comp = [(NN[1], mu, Qnn), (SS[1], ms, Qss), (NN[2], mu, Qnn), (SS[2], ms, Qss)]  # [1nn,1ss,2nn,2ss]
-
     psl = [GIModel.BasisState(1, "S", 1, 0), GIModel.BasisState(2, "S", 1, 0)]
-    vl = [GIModel.BasisState(1, "S", 3, 1)]
-    nn_spec = GIModel.compute_spectrum(params, Meson(LightQuark(mu), LightQuark(mu)); levels = vcat(psl, vl))
-    ss_spec = GIModel.compute_spectrum(params, Meson(StrangeQuark(ms), StrangeQuark(ms)); levels = vcat(psl, vl))
-    psb = GIModel.pseudoscalar_annihilation_block(GIModel.PaperP1Annihilation(), params, nn_spec, ss_spec)
+    final = compute_isoscalar_spectrum(
+        params,
+        Meson(LightQuark(mu), LightQuark(mu)),
+        Meson(StrangeQuark(ms), StrangeQuark(ms));
+        levels = psl,
+        solver = solver_ho,
+        pseudoscalar = PaperP1Annihilation(),
+    )
+    states = sort(
+        [state for state in final.states if
+         state.L == "S" && state.multiplicity == 1 && state.J == 0 &&
+         any(mix -> occursin("annihilation", mix.mechanism), state.mixings)];
+        by = state -> state.mass_GeV,
+    )
+    length(states) == length(GG_MIXED) || error(
+        "expected $(length(GG_MIXED)) final pseudoscalars, got $(length(states))",
+    )
 
     results = NamedTuple[]
     for (label, col, Mphys) in GG_MIXED
-        a = psb.vectors[:, col]
-        A = sum(a[k] * two_photon_amplitude(:P, comp[k][1], comp[k][2], Mphys, comp[k][3]; npoints = NPTS)
-                for k in 1:4)                                   # GeV^½
+        state = states[col]
+        components = physical_components(final, state)
+        A = physical_state_amplitude(final, state) do component
+            flavors = component.basis.flavors
+            m, charge = flavors == (:q, :q) ? (mu, Qnn) :
+                        flavors == (:s, :s) ? (ms, Qss) :
+                        error("unexpected pseudoscalar flavor component $flavors")
+            two_photon_amplitude(
+                :P, component.wave, m, Mphys, charge; npoints = NPTS,
+            )
+        end
         model = from_gev(A, :keV)
         pv, _ = get(paper, label, (NaN, :keV))
         ratio = isnan(pv) || pv == 0 ? NaN : abs(model) / abs(pv)
         sign_ok = !isnan(pv) && pv != 0 && sign(model) == sign(pv)
-        push!(results, (label = label, M = Mphys, mix = a,
+        push!(results, (label = label, M = Mphys,
+                        mix = [component.coefficient for component in components],
                         model = model, paper = pv, ratio = ratio, sign_ok = sign_ok))
     end
     return results
@@ -509,10 +524,10 @@ function main()
         println(io)
         println(io, "`S_L(Ψ)` is the Eq. (17) smeared wavefunction-at-origin")
         println(io, "(`wavefunction_origin_smearing`), `α_s = α_s(M)` at the meson mass, `m_Q`")
-        println(io, "the constituent quark mass. Waves are the paper-order **finite-HO-basis")
-        println(io, "native **full fixed-channel diagonalization** of `H_central + V_spin`:")
+        println(io, "the constituent quark mass. Waves come from the paper-order **native")
+        println(io, "finite-HO-basis full fixed-channel diagonalization** of `H_central + V_spin`:")
         println(io, "the smeared contact for the S-waves (singlet/triplet split) and the")
-        println(io, "calibrated spin-orbit+tensor operator for the ³P_J chi rows — the same")
+        println(io, "literal A15-A16 spin-orbit+tensor operator for the ³P_J chi rows — the same")
         println(io, "treatment used for every other subtable below (W6). Amplitudes in `MeV^(1/2)`.")
         println(io)
         println(io, @sprintf("**%d gluonic rows scored; median |model|/|paper| = %.2f; signs agree on %d/%d.** ",
@@ -582,8 +597,8 @@ function main()
         println(io, "`eV^½`, the rest in `keV^½`).")
         println(io)
         println(io, "The clean-flavor rows are below; the strongly-mixed isoscalar pseudoscalars")
-        println(io, "(`", join(GG_DEFERRED, "`, `"), "`) follow in their own table (they need the P1")
-        println(io, "mixing block). `f`/`f'` use ideal tensor mixing (`f₂` nonstrange, `f₂'` =")
+        println(io, "(`", join(GG_DEFERRED, "`, `"), "`) follow in their own table (they use the final")
+        println(io, "P1-mixed spectrum). `f`/`f'` use ideal tensor mixing (`f₂` nonstrange, `f₂'` =")
         println(io, "`ss̄`); the hypothetical t-tbar `eta_t` is not modelled.")
         println(io)
         println(io, @sprintf("**%d clean-flavor two-photon rows; median |model|/|paper| = %.2f; signs agree on %d/%d.**",
@@ -599,8 +614,9 @@ function main()
         end
         println(io)
         println(io, "**Isoscalar-mixed pseudoscalars** (`η`, `η'`, `η_r`, `η'_r`) — a coherent")
-        println(io, "sum over the `[1nn, 1ss, 2nn, 2ss]` components with amplitudes from the P1")
-        println(io, "pseudoscalar-annihilation block (Sec. V A), using the physical mock-meson")
+        println(io, "sum over the final state's signed `[1nn, 1ss, 2nn, 2ss]` native components")
+        println(io, "from `compute_isoscalar_spectrum` / `physical_components` (Sec. V A),")
+        println(io, "using the physical mock-meson")
         println(io, "`M_P`. Ideal mixing cannot be used here: it inverts the `η<η'` ordering.")
         println(io, @sprintf("Median |model|/|paper| = %.2f; signs agree on %d/%d.",
             ggmmed, count(r -> r.sign_ok, ggm), length(ggmratios)))
@@ -683,10 +699,9 @@ function main()
         println(io, "`ψ'` 1.46, `ψ` 1.84): the ratios track the omitted QCD `(1 − 16α_s/3π)`")
         println(io, "radiative correction, which shrinks with α_s from charm to bottom and would")
         println(io, "bring each toward 1 — not a wavefunction miss (`f_ψ` itself is 1.01x the")
-        println(io, "paper). The weak `π→μν` row is not tabled here: the model's light `¹S₀` mass")
-        println(io, "(`0.10 GeV < m_μ`) closes the phase space — the same light-pseudoscalar")
-        println(io, "pathology that inflates `f_π`. Widths are exercised end-to-end; the paper")
-        println(io, "tabulates only the constants.")
+        println(io, "paper). The corrected A15 contact kernel puts the model pion at 0.149 GeV,")
+        println(io, "so `π→μν` is open and its Table-VII constant is 0.98 of the paper value.")
+        println(io, "The paper tabulates constants rather than these derived widths.")
         println(io)
         println(io, "## Reading")
         println(io)
@@ -697,30 +712,26 @@ function main()
         println(io, "  finite-HO-basis full diagonalization of `H_central + V_spin`. This gives")
         println(io, "  the gluonic rows their spin-dependent origin distortion — the singlet-low/")
         println(io, "  triplet-high and ³P₀-low/³P₂-high structure of the spin-independent")
-        println(io, "  central waves collapses, and every row lands in `[0.92, 1.14]` (median")
-        println(io, "  1.02) — while keeping the light `¹S₀` pseudoscalars resummed (a")
+        println(io, "  central waves collapses, and every row lands in `[0.88, 1.17]` (median")
+        println(io, "  1.05) — while keeping the light `¹S₀` pseudoscalars resummed (a")
         println(io, "  first-order-PT treatment would over-raise the pion mass and halve `f_π`).")
         println(io, "- **Heavy quarkonia are near-exact** in both slices (`f_ψ` and the `Υ`")
         println(io, "  tower within ~10%, gluonic bottomonium within a few percent).")
-        println(io, "- **`f_π` is the largest miss (1.55×)** and is a pure meson-mass")
-        println(io, "  sensitivity: `P_P ∝ 1/M`, and the model's hyperfine-driven `¹S₀`")
-        println(io, "  nonstrange mass (~0.10 GeV) is well below the physical `m_π`; using the")
-        println(io, "  physical mass brings `f_π` to ~1.4, at the paper's own 1.3 (itself 37%")
-        println(io, "  above the measured 0.95 — the pion is a known hard case). The heavier")
-        println(io, "  pseudoscalars, with less mass sensitivity, land within ~10%.")
+        println(io, "- **The pion is no longer a mass pathology.** The literal smeared-contact")
+        println(io, "  Laplacian gives 0.149 GeV and `f_π` at 0.98 of the paper value.")
         println(io, "- **Signs reproduce under one convention** (outermost antinode positive)")
-        println(io, "  across all slices: the alternation down each radial tower is the node")
-        println(io, "  structure of the wavefunction-at-origin.")
+        println(io, "  for gluonic, leptonic, and clean-flavor two-photon rows. The two radial")
+        println(io, "  isoscalar-pseudoscalar signs remain an explicit P1 discrepancy.")
         println(io, "- **Two-photon** rows with clean flavor content reproduce well (`A2` 0.93,")
         println(io, "  `f₂` 0.98, the `η_c` pair ~1.08); `f'` is off (ideal tensor mixing, which")
         println(io, "  the paper's own footnote calls very `f`-`f'`-sensitive) and `π→γγ` shares")
         println(io, "  the `f_π` meson-mass sensitivity (here through `(M/M̃)^{3/2}`).")
         println(io, "- Isoscalar-mixing corrections (folded into the paper's numbers) are part of")
         println(io, "  the `ω`/`φ` leptonic residual. The strongly-mixed isoscalar pseudoscalar")
-        println(io, "  `γγ` rows are reproduced via the P1 block (`η<η'` ordering and all signs")
-        println(io, "  right, ~30–50% on magnitude) — ideal mixing cannot do these at all.")
-        println(io, "- **Charge radii** are excellent: the `K⁺` (0.585 vs 0.59 fm) and `K⁰`")
-        println(io, "  (−0.315 vs −0.30 fm) are genuine predictions (only `f` is fit, on the")
+        println(io, "  `γγ` rows are reproduced via the final P1-composed states: the ground-state")
+        println(io, "  ordering and signs agree, while both radial signs and some magnitudes do not.")
+        println(io, "- **Charge radii** are excellent: the `K⁺` and `K⁰` rows in the table")
+        println(io, "  are genuine predictions (only `f` is fit, on the")
         println(io, "  `π⁺`), reproducing both the magnitude and the negative `K⁰` sign from the")
         println(io, "  charge-weighted quark radii.")
     end

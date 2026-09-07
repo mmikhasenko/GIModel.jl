@@ -14,7 +14,7 @@ None — every reference resolves.
 
 | section | units | reproduced | partial | implemented | folded | context | todo/missing | derived |
 |---|---:|---:|---:|---:|---:|---:|---:|:-:|
-| Appendix A — Relativistic smearing & operator ordering | 17 | 2 | 1 | 8 | 0 | 6 | 0 | partial |
+| Appendix A — Relativistic smearing & operator ordering | 17 | 3 | 0 | 8 | 0 | 6 | 0 | implemented |
 | Appendix B — Flavor/spin operators & SHO wavefunctions | 8 | 0 | 0 | 3 | 4 | 1 | 0 | implemented |
 | Appendix C — Helicity to partial-wave decay amplitudes | 3 | 0 | 0 | 1 | 1 | 1 | 0 | implemented |
 | Appendix D — Mock-meson electromagnetic matrix elements | 8 | 3 | 0 | 3 | 2 | 0 | 0 | implemented |
@@ -30,6 +30,5 @@ Projected from every `missing`/`partial`/`todo` unit — not a separate list, so
 
 | unit | section | status | effort | next step |
 |---|---|:-:|:-:|---|
-| Eq. (A16) | Appendix A — Relativistic smearing & operator ordering | partial | research | Unequal-mass antisymmetric spin-orbit as a standalone operator (currently folded into the open-flavor same-J assignment at the mixing stage). |
 | Eq. (19) | Sec. IV — Meson decays | partial | research | Deeper decay model: apply the (g sigma.q + h sigma.p') operator to the model wavefunctions instead of the SU(6)/single-beta SHO limit. |
-| Table VI | Sec. IV — Meson decays | partial | medium | Refine the eta<->eta' P1 mixing weights (research: the ordering is a mixing-block eigenvector property, not a wave one, so distorted waves cannot move it). The Appendix-D mock-meson kernels are now promoted into src (mock_meson_overlaps.jl) with tests, and both open rows were re-scored with the W6 paper-order waves -- neither is a wave-distortion residual (see notes). |
+| Table VI | Sec. IV — Meson decays | partial | medium | Extend the audit to the remaining Table VI rows and investigate the residual sign of the deeply cancelled Upsilon'' -> eta_b gamma amplitude. The final-state composition now reproduces the eta/eta' M1 ordering without a report-local vector or phase. |

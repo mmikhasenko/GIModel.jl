@@ -20,10 +20,9 @@
 #  3. The paper's treatment is FULL DIAGONALIZATION in the FINITE HO basis, not
 #     first-order PT. The light ¹S₀ (pion) mass discriminates (§1b): first-order
 #     PT over-raises it to ~0.28 GeV, while the finite-HO full diagonalization
-#     keeps it light (~0.10 GeV) like the fine-grid FD resummation. Full
+#     keeps it light (~0.15 GeV) like the fine-grid FD resummation. Full
 #     diagonalization in the converged native-HO basis lands all 16 gluonic rows in
-#     [0.92, 1.14] (median 1.02); the fine-grid FD *over*-resums (eta_b 1.21 vs
-#     the finite-basis 1.14) — a grid-resolution effect, not perturbation order.
+#     [0.88, 1.17] (median 1.06) after the literal A15-A16 normalization is used.
 #     First-order PT coincides only in the heavy-quark (small-V) limit.
 #
 # Wave sources: `fixed_channel_solution` with native HO and independent FD
@@ -163,13 +162,14 @@ function write_report(part1, pion, part2)
         println(io, "# W6 — paper-order (finite HO-basis) validation of the spin-distorted waves")
         println(io)
         println(io, "Scores the Table VII gluonic subtable under three treatments of the")
-        println(io, "spin-dependent operators (smeared contact for S-waves, calibrated")
-        println(io, "spin-orbit + tensor for ³P_J), against the spin-independent central-wave")
-        println(io, "baseline. Zero new parameters: the operators are the spectrum-calibrated")
+        println(io, "spin-dependent operators (smeared contact for S-waves, literal")
+        println(io, "A15-A16 spin-orbit + tensor for ³P_J), against the spin-independent")
+        println(io, "central-wave baseline. Zero bridge parameters: the operator strengths are")
+        println(io, "fixed by the paper equations and Table-II epsilon values. They are the")
         println(io, "blocks assembled natively by `fixed_channel_solution`. The **paper-order**")
         println(io, "treatment is full diagonalization of the fixed-(L,S,J) Hamiltonian in")
         println(io, "the converged native-HO basis; no mesh operator is projected into HO")
-        println(io, "for every subtable.")
+        println(io, "at every stage.")
         println(io)
         println(io, "## 1. Basis fidelity control: central-wave S_L, HO vs FD")
         println(io)

@@ -76,11 +76,13 @@ Two exact self-checks, needing no reference data:
     very Jacobi matrix that generated the rule — to ~1e-13.
 
 `nq` (the quadrature size, distinct from `nbasis`) doubles until the result stops
-moving by `rtol`. The default 1e-10 is well below what the eigenvalues need
-(~1e-6 GeV) and is reached by every `(L, β)` in `HO_BETA_GRID`; the most diffuse
-`β = 0.25` needs the most nodes, since a smooth non-polynomial `g` needs more nodes than a
-polynomial one and diffuse `β` needs more than compact `β`. Verified against
-`QuadGK` on the Appendix-A smeared potential: agreement 2.8e-16 to 1.2e-13.
+moving by `rtol`. The default `1e-10` is well below what central-potential
+eigenvalues need (~`1e-6` GeV) and is reached throughout `HO_BETA_GRID` for the
+smooth Appendix-A central kernels. The very narrow Gaussian contact/tensor
+kernels at deliberately diffuse endpoint bases use a separately certified
+`1e-8`: after the A15 mass prefactor their remaining matrix uncertainty is
+below the 0.1 MeV spectrum gate. Verified against `QuadGK` on the Appendix-A
+smeared potential: agreement 2.8e-16 to 1.2e-13.
 """
 function ho_operator_matrix(
     L::Integer, β::Real, nbasis::Integer, g;
@@ -440,7 +442,8 @@ function ho_momentum_sandwich_matrix(
     nbasis::Integer,
     masses::ConstituentMasses,
     epsilon::Real,
-    kernel,
+    kernel;
+    rtol::Real = 1e-10,
 )
     p2 = Symmetric(Matrix(ho_p2_matrix(L, beta, nbasis)))
     B = momentum_relativization_matrix(
@@ -449,7 +452,7 @@ function ho_momentum_sandwich_matrix(
         gi_spin_dependent_side_exponent(epsilon),
         eigen(p2),
     )
-    K = ho_operator_matrix(L, beta, nbasis, kernel)
+    K = ho_operator_matrix(L, beta, nbasis, kernel; rtol = rtol)
     return Symmetric(B * K * B)
 end
 

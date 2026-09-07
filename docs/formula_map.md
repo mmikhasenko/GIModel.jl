@@ -185,50 +185,28 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
   maps paper rows to core spectra and `write_residual_report` emits markdown.
   Structural overview: **`docs/code_architecture.md`**.
 
-- `src/spin_fine_structure.jl`: first-order color-magnetic + Thomas
-  (scalar confinement) spin–orbit and an OGE-style tensor term on the FD radial
-  mesh; unsmeared Coulomb-kernel tensor term derived from $G(r)=-4\alpha_s(r)/(3r)$
-  via $(1/r)\,dG/dr-d^2G/dr^2$ (so running $\alpha_s$ contributes $\alpha_s'(r)$
-  and $\alpha_s''(r)$ pieces); Table II
-  $\epsilon_t$, $\epsilon_{\rm so(v)}$, $\epsilon_{\rm so(s)}$ are now applied
-  as GI-style Hermitian momentum-factor sandwiches around the tensor, vector
-  spin–orbit, and scalar Thomas radial kernels; global `k_spin_orbit`,
-  `k_tensor` in `[fine_structure]`.
-  - Paper: spin-dependent structure around Eqs. (3)–(7) (text), and the post-A14
-    Appendix-A momentum-factor prescription for the $\epsilon$ factors. Tensor
-    angular factors for triplet $J=L-1,L,L+1$ states use the closed forms
-    $-2(L+1)/(2L-1)$, $2$, and $-2L/(2L+3)$, whose $(2J+1)$-weighted
-    average vanishes across the triplet multiplet. The spin–orbit implementation
-    now follows the *paper text* Eqs. (6)–(7) directly: the color-magnetic piece
-    uses $\alpha_s(r)/r^3$ (Eq. (6), **no** $\alpha_s'(r)$ term), while the
-    Thomas-precession piece uses $(1/2r)\,dH^{\rm conf}/dr$ (Eq. (7), which
-    **does** include $\alpha_s'(r)$ through $d/dr[-\alpha_s(r)/r]$ when running
-    $\alpha_s(r)$ is inserted). For unequal masses the exact operator contains
-    both symmetric and antisymmetric spin–orbit structures; the current
-    diagnostic code keeps only the symmetric contraction into total $L\!\cdot\!S$
-    (exact in the equal-mass validation sectors `ccbar`/`bbbar`).
-    The tensor radial kernel is still built from the derivative of the pointwise
-    running-Coulomb $G(r)$ rather than derivatives of $\tilde G(r)$; the momentum
-    sandwich supplies the dominant GI relativization. The next more exact
-    replacement is to derive tensor/spin-orbit kernels from the Appendix-A
-    smeared $\tilde G(r)$. In the present step we keep the **Coulomb-limit color
-    factor** implied by
-    $G(r)=-4\alpha_s/(3r)$ and evaluate the full unsmeared running-$\alpha_s$
-    kernel $(1/r)\,dG/dr-d^2G/dr^2$, so the tensor prefactor reduces to
-    $(4/(3m_1m_2))\langle\alpha_s(r)/r^3\rangle$ in the constant-$\alpha_s$
-    limit and includes the corresponding $\alpha_s'(r)$ and $\alpha_s''(r)$
-    contributions for the actual running ansatz.
-    Radial expectation values treat
-    FD eigenvectors as reduced radial functions $u(r)$ with $\int |u|^2\,dr=1$
-    (uniform-mesh proxy $\sum |u_i|^2 h = 1$; no additional $4\pi$ factor).
-    Scales $k$ bridge the small FD basis to the large HO result and are
-    diagnostic, not paper refits.
-  - Audit hook: `fine_structure_components(...)` returns the `spin_orbit` and
-    `tensor` contributions (and their sum), splits the spin–orbit term into
-    `spin_orbit_vector` (color-magnetic) and `spin_orbit_thomas` (scalar
-    confinement / Thomas), and also exposes the underlying radial expectation
-    values `I_cm`, `I_tp`, and `I_tk` so reports can separate “radial integral”
-    effects from angular/mass prefactors.
+- `src/contact_hyperfine.jl` and `src/spin_fine_structure.jl`: literal A15-A16
+  contact, vector/scalar spin–orbit, and tensor operators. Each `11`, `22`, or
+  `12` term has its own smeared kernel, mass denominator, and two-sided
+  $(m_\alpha m_\beta/E_\alpha E_\beta)^{1/2+\epsilon_i}$ factor. HO builds these
+  as native matrices; FD builds the same decomposition on its native grid.
+  - The contact density is the analytic Laplacian of A12,
+    $\sum_k\alpha_k\delta_{\tau_k}(r)$.
+  - Diagonal triplets use
+    $\langle\mathbf S_1\!\cdot\!\mathbf L\rangle=
+    \langle\mathbf S_2\!\cdot\!\mathbf L\rangle=
+    \langle\mathbf S\!\cdot\!\mathbf L\rangle/2$; unequal-mass same-$J$
+    mixing uses the corresponding antisymmetric difference.
+  - A16 contains only the scalar-confinement `11` and `22` derivatives.
+  - `tensor_triplet_LJ` stores conventional Pauli-$S_{12}$ angular elements;
+    the A15 spin bracket is therefore $S_{12}/12$.
+  - No fitted spin-strength multiplier exists. `FineStructure` is only a master
+    switch; Table-II $\epsilon_c$, $\epsilon_t$, $\epsilon_{so(v)}$, and
+    $\epsilon_{so(s)}$ supply the paper's relativization.
+  - `fine_structure_components(...)` exposes `I_vector_11`, `I_vector_22`,
+    `I_vector_12`, `I_scalar_11`, `I_scalar_22`, and `I_tk` together with the
+    assembled contributions. Radial expectation values use the shared
+    `RadialWave` normalization contract.
   - Regression tests in `test/runtests.jl`: triplet tensor/L·S angular sum rules
     and Coulomb $d\alpha_s/dr$ consistency; the OGE tensor kernel
     $K(r)=(1/r)\,dG/dr-d^2G/dr^2$ is also checked against finite-difference
@@ -283,13 +261,11 @@ masses and that detailed smearing is “relegated to Appendix A.”
   The focused FD/HO central comparison is complete in
   `docs/residual_reports/appendix_a_ho_comparison.md`: the active central
   operator agrees between bases at the sub-MeV level over the audited channels.
-  The remaining paper-certification question is the non-paper spin bridge
-  strengths, not the central (A12)–(A14) operator or solver representation.
+  PA-18 completed the A15-A16 normalization and paper-path certification.
 - The equal-mass spin-dependent operators now use the same closed-form smeared
   $G(r)$ and confinement $S(r)$ derivatives as the active central path. The
   open-flavor antisymmetric spin-orbit block and triplet same-`J` tensor blocks
-  dispatch on both native wave representations. PA-18 removes or isolates the
-  fitted `k_spin_orbit`/`k_tensor` bridge before headline certification.
+  dispatch on both native wave representations with no fitted bridge factor.
 
 **Reference row lock-in:** Table II inputs are checked against
 `data/table_ii_parameters.csv` via `scripts/data_checks.py validate`. Reference
@@ -311,33 +287,27 @@ Appendix A, use the checked split markdown pages and
 
 | Paper item | Status | Implementation/readout |
 | --- | --- | --- |
-| Eq. (1a)-(1b), semirelativistic Hamiltonian | FD and HO analogues implemented | `relativistic_hamiltonian` uses `sqrt(p^2+m_1^2)+sqrt(p^2+m_2^2)` on the finite-difference `p^2` operator. Passing an `OscillatorSolver` selects the finite oscillator-basis analogue, which is tested; FD remains the default headline comparison path. |
+| Eq. (1a)-(1b), semirelativistic Hamiltonian | FD and HO analogues implemented | `relativistic_hamiltonian` uses `sqrt(p^2+m_1^2)+sqrt(p^2+m_2^2)` on the finite-difference `p^2` operator. Passing an `OscillatorSolver` selects the finite oscillator-basis analogue; native HO is the paper path and FD is the independent modern comparator. |
 | Eq. (3), spin-independent color Coulomb plus linear confinement | exact color-singlet sign/normalization for pointwise limit | `central_potential = b*r - 4*alpha_s(r)/(3r) + c`; the color-singlet factor turns Eq. (3) into this form. |
-| Eq. (4), contact hyperfine | active GI-style approximation | S-wave contact uses the smeared delta and the post-A14 `m/E` sandwich. In the FD sector, S-wave contact is diagonalized nonperturbatively with the central Hamiltonian, matching the paper's fixed-`L,S,J` first diagonalization more closely than a first-order shift. |
-| Eq. (4), tensor hyperfine | assigned FD analogue | Angular factors, the Coulomb-limit color factor, and the same-`J` off-diagonal angular factor are tested. Active kernels use derivatives of closed-form smeared `G~` when enabled, and partnered triplet `L=J-1`/`L=J+1` rows are folded into `compare` through `TensorMixing`. |
-| Eq. (6), vector spin-orbit | exact equal-mass radial convention; assigned unequal-mass same-`J` blocks | Eq. (6) uses `alpha_s(r)/r^3` in the pointwise branch and `(1/r)dG~/dr` in the smeared branch. Equal-mass contraction is covered; open-flavor same-`J` antisymmetric spin-orbit mixing is now folded into `compare` when partner rows are present. |
-| Eq. (7), Thomas/scalar spin-orbit | exact equal-mass radial convention; approximate unequal-mass handling | Thomas term uses `(1/2r)dH_conf/dr`, with smeared `G~+S~` derivatives in the active branch. Table II `epsilon_so(S)=+0.055` is now loaded from audited input. |
+| Eq. (4), contact hyperfine | reproduced in the Appendix-A prescription | `smeared_contact_kernel` is the analytic Laplacian of A12, `sum(alpha_k delta_tau_k)`, enclosed by the post-A14 `m/E` sandwich and diagonalized with the central Hamiltonian. |
+| Eq. (4), tensor hyperfine | reproduced through A15 | Native HO and FD use derivatives of closed-form smeared `G~`, the literal `S12/12` contraction, and complete same-`J` `L=J-1`/`L=J+1` radial mixing blocks. Angular factors and matrix symmetry are tested. |
+| Eq. (6), vector spin-orbit | reproduced through A15 | Separate `G11`, `G22`, and `G12` sandwiches produce diagonal symmetric and unequal-mass antisymmetric contractions. |
+| Eq. (7), Thomas/scalar spin-orbit | reproduced through A16 | Separate scalar-confinement `S11` and `S22` sandwiches produce diagonal symmetric and unequal-mass antisymmetric contractions; no Coulomb derivative is duplicated here. |
 | Eq. (12)-(13) and Fig. 2, running `alpha_s` | exact for fitted GI ansatz | `alpha_s(Q^2)` coefficients map to `alpha_s(r)=sum alpha_k erf(gamma_k*r)` with `gamma=(1,sqrt(10),sqrt(1000))/2` GeV. Derivatives are regression-tested. |
-| Eq. (14), staged diagonalization | implemented; paper certification pending | One production algorithm assembles and diagonalizes complete fixed-sector Hamiltonians, with native matrices and waves supplied by solver dispatch. HO is the paper path and now refines beta/basis to a recorded 0.1 MeV certificate; FD is an independent comparator. Generic `MixingBlock`/`MixingResult` stages apply antisymmetric spin-orbit, tensor, and flavor-annihilation transformations and expose their recursively composed physical states. Removal/isolation of fitted spin bridge factors remains PA-18 work. |
+| Eq. (14), staged diagonalization | implemented and certified | One production algorithm assembles and diagonalizes complete fixed-sector Hamiltonians, with native matrices and waves supplied by solver dispatch. HO refines beta/basis to a recorded 0.1 MeV certificate. Generic `MixingBlock`/`MixingResult` stages apply antisymmetric spin-orbit, tensor, and flavor-annihilation transformations and expose recursively composed physical states to all consumers. |
 | Eq. (16), general annihilation matrix element | implemented and integrated | OCR/page pass confirms the `4*pi*(2L+1)`, `alpha_s(M_i^2)alpha_s(M_j^2)`, `S_L(Psi_j)S_L(Psi_i)`, and `1/(m_i m_j)` factors. `isoscalar_general_annihilation_solution` implements the general channel block with the `(alpha_i alpha_j/pi^2)^(n/2)` bracket (`n=2`/`3` for `C=+`/`-`). `add_isoscalar_annihilation` stores the resulting shared `MixingResult` in a final two-channel `Spectrum`, and `physical_components` resolves its flavor-tagged native waves. GIPaper retains only reference-row assignment. |
 | Eq. (17), `S_L(Psi)` wavefunction factor | implemented for general `L` | OCR/page pass confirms the momentum-space normalized-wavefunction factor `(2*pi)^(-3/2) * integral d^3p/sqrt(4*pi) * Phi_i(p) * (p/E_i)^L * (m_i/E_i)`. `_sL_smearing_factor` evaluates this for general `L` through the spectrum wave's native momentum interface; HO and FD agree on this factor to 0.1%. The obsolete coordinate-origin proxy has been removed. |
 | Eq. (18a), pseudoscalar P1 replacement | implemented as `:p1` / `PaperP1Annihilation` | OCR/page pass confirms the bracket replacement `A_np*exp(-(m_i^2+m_j^2)/m_eta^2) + (2*pi/3)(ln2-1) alpha_s(M_j^2)alpha_s(M_i^2)/pi^2`. Table III constants are loaded from `[annihilation]` in `data/parameters.provisional.toml`. |
 | Eq. (18b), pseudoscalar P2 replacement | implemented as `:p2` / `PaperP2Annihilation` | OCR/page pass confirms the mass-dependent sign-changing term `A_np*(1-(M/M0)^4)*exp(-(m_i^2+m_j^2)/M0^2 - M^4/(4M0^4))` plus the perturbative `(alpha_s(M^2)/pi)^2` term. The implementation solves each pole as a mass-dependent fixed point, so the vectors are not treated as orthogonal. |
 | Table II parameters | audited for active solver inputs | CSV/TOML sync is tested. The latest audited correction is `epsilon_so(S)=+0.055`. Remaining low-confidence labels should still be promoted only after image/PDF checks. |
-| Table III isoscalar mixings | visible page-11 rows promoted; reproduced by `:table_iii` | The visible page-11 pseudoscalar P1/P2 rows plus `1^3S_1` and `1^3P_2` rows are promoted into clean `mixings.csv`. The general Eq. (16) blocks reproduce the non-pseudoscalar eigenvectors, and `table_iii_mixing_audit.md` shows the literal P1/P2 modes on HO waves reproduce the qualitative pseudoscalar structure (mean amplitude RMS 0.180/0.114). Channels not listed in Table III are ideally mixed, as the caption prescribes. |
+| Table III isoscalar mixings | visible page-11 rows promoted; reproduced by `:table_iii` | The visible page-11 pseudoscalar P1/P2 rows plus `1^3S_1` and `1^3P_2` rows are promoted into clean `mixings.csv`. The general Eq. (16) blocks reproduce the non-pseudoscalar eigenvectors, and `table_iii_mixing_audit.md` gives mean amplitude RMS 0.074/0.023 for literal P1/P2. Channels not listed in Table III are ideally mixed, as the caption prescribes. |
 | Appendix A (A7)-(A9), Gaussian smearing and sigma | exact for contact width and diagnostic convolution | A9 width is implemented and tested; A7-A8 3D convolution is available as a diagnostic path, not the paper's main spin-independent calculation. |
-| Appendix A post-A14 spin-dependent momentum factors | active FD analogue | Side exponent is `1/2+epsilon_i`, so `epsilon=0` replaces `1/(m_1m_2)` by `1/(E_1E_2)` after the two-sided sandwich. |
-| Appendix A (A12)-(A14), closed-form smeared `G~`, `S~`, `tau_k` | active FD analogue; local source clear | Closed-form `G~` and `S~` are implemented and tested against quadrature/derivatives. This is still an FD analogue unless routed through the HO matrix-element workflow. |
-| Appendix A (A15)-(A17), effective operators and HO matrix elements | central comparison complete; spin/mixing ordering partial | Central Coulomb momentum sandwich is active on the FD `p^2` eigenbasis and agrees with the finite-HO central realization at sub-MeV precision in `appendix_a_ho_comparison.md`. Spin-side sandwiches are active for expectations; post-diagonalization spin/mixing ordering remains a target. |
+| Appendix A post-A14 spin-dependent momentum factors | native HO and FD | Side exponent is `1/2+epsilon_i`, so `epsilon=0` replaces `1/(m_1m_2)` by `1/(E_1E_2)` after the two-sided sandwich. |
+| Appendix A (A12)-(A14), closed-form smeared `G~`, `S~`, `tau_k` | native HO and FD | Closed-form `G~` and `S~` are tested against quadrature/derivatives and enter the HO matrix-element workflow directly. |
+| Appendix A (A15)-(A17), effective operators and HO matrix elements | reproduced and certified | Native HO assembles literal contact, vector/scalar spin-orbit, and tensor matrices with exact A17 factorization, diagonalizes complete fixed sectors, then applies full radial mixing blocks. `ho_convergence.md`, `w6_ho_order_validation.md`, and the Table VI/VII reports gate the path. |
 
-## Not Yet Implemented
+## Remaining physics comparisons
 
-- Paper-order spin/mixing comparison on top of the already validated central
-  FD/HO Appendix-A operator.
-- Exact paper-order validation of the momentum-factor sandwiches in the spin
-  couplings against the original HO-basis perturbation workflow.
-- HO-order validation of the now-active antisymmetric spin-orbit and tensor
-  blocks.
 - Literal pseudoscalar P1/P2 spectral scoring and the residual eta-prime
   amplitude discrepancy. With HO wavefunctions in Eq. (17) and the corrected
   Eq. (16) gluon-power bracket, the earlier under-mixing diagnosis is

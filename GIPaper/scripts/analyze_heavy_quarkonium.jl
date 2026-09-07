@@ -130,15 +130,12 @@ function same_j_pwave_mixing_diagnostic(params, masses; ngrid = 450, rmax = 24.0
         masses,
         "P",
         radial;
-        k_spin_orbit = params.fine_structure.k_spin_orbit,
     )
     triplet_shift = fine_structure_split(
         params,
         masses,
         FineStructureMultiplet("P", 3, 1),
         radial;
-        k_spin_orbit = params.fine_structure.k_spin_orbit,
-        k_tensor = params.fine_structure.k_tensor,
     )
     central = solution.eigenvalues_GeV[1]
     mix = same_j_mixing(central, central + triplet_shift, offdiag.total)

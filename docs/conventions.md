@@ -72,11 +72,12 @@ Addressed in this file or `docs/formula_map.md` for the diagnostic build:
   Code Conventions** above). Tensor and spin–orbit operator forms are mapped in
   `docs/formula_map.md` to Eqs. (3)–(7) and Appendix A context.
 
-Pending or only partially specified in code (do not over-interpret current
-residuals):
+Implemented in the production spectrum path:
 
-- Full mixed-state mass-matrix labeling for $^1L_J$ / $^3L_J$ sectors,
-- isoscalar ($I=0$) and hidden-flavor annihilation as in the full GI treatment.
+- complete mixed-state mass matrices for $^1L_J$ / $^3L_J$ and tensor-linked
+  triplet sectors; and
+- isoscalar ($I=0$) annihilation with recursively composed, flavor-tagged
+  physical states.
 
 ## Quark order
 

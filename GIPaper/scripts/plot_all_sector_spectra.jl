@@ -170,7 +170,6 @@ function mixed_rows(rows, params)
                 masses,
                 String(singlet.L),
                 wave;
-                k_spin_orbit = params.fine_structure.k_spin_orbit,
             ).total
             isapprox(offdiag, 0.0; atol = 1e-12, rtol = 0.0) && continue
             mix = same_j_mixing(singlet.predicted_GeV, triplet.predicted_GeV, offdiag)

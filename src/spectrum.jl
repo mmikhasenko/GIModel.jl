@@ -430,8 +430,6 @@ function fixed_spectrum(
                 multiplet,
                 wave;
                 enabled = true,
-                k_spin_orbit = params.fine_structure.k_spin_orbit,
-                k_tensor = params.fine_structure.k_tensor,
             )
             so_vector = comp.spin_orbit_vector
             so_thomas = comp.spin_orbit_thomas
@@ -598,7 +596,6 @@ function _apply_same_j_spin_orbit_mixing!(
             element = spin_orbit_mixing_components(
                 params, masses, states[i].L, left, right;
                 enabled = true,
-                k_spin_orbit = params.fine_structure.k_spin_orbit,
             ).total
             row = findfirst(==(i), ordered)
             col = findfirst(==(j), ordered)
@@ -651,7 +648,6 @@ function _apply_tensor_mixing!(
             element = tensor_mixing_components(
                 params, masses, low_radial, high_radial, states[i].J;
                 enabled = true,
-                k_tensor = params.fine_structure.k_tensor,
             ).total
             row = findfirst(==(i), ordered)
             col = findfirst(==(j), ordered)
@@ -840,6 +836,64 @@ end
 
 physical_components(spec::Spectrum, label::AbstractString) =
     physical_components(spec, spectrum_state(spec, label))
+
+"""
+    physical_state_amplitude(kernel, spec, state_or_label)
+
+Coherently apply a linear amplitude `kernel(component)` to every signed native
+component of one physical state. This is the observable-side counterpart of
+[`physical_components`](@ref): consumers do not need to read a mixing matrix or
+reconstruct a parallel flavor/radial coefficient vector.
+
+`kernel` receives one named tuple with `basis`, `coefficient`, and `wave`
+fields. Its return value must exclude the mixing coefficient; this function
+multiplies by that coefficient exactly once.
+"""
+function physical_state_amplitude(
+    kernel,
+    spec::Spectrum,
+    state::Union{CentralState,CorrectedState,MixedState},
+)
+    return sum(
+        component.coefficient * kernel(component) for
+        component in physical_components(spec, state)
+    )
+end
+
+physical_state_amplitude(kernel, spec::Spectrum, label::AbstractString) =
+    physical_state_amplitude(kernel, spec, spectrum_state(spec, label))
+
+"""
+    physical_transition_amplitude(kernel, spec, left, right)
+
+Coherently apply a bilinear transition `kernel(left_component,
+right_component)` between two physical states. The signed coefficients of both
+states are composed automatically. The kernel owns the observable's selection
+rules: it should return zero for flavor, spin, or angular components that the
+operator does not connect.
+"""
+function physical_transition_amplitude(
+    kernel,
+    spec::Spectrum,
+    left::Union{CentralState,CorrectedState,MixedState},
+    right::Union{CentralState,CorrectedState,MixedState},
+)
+    left_components = physical_components(spec, left)
+    right_components = physical_components(spec, right)
+    return sum(
+        a.coefficient * b.coefficient * kernel(a, b) for
+        a in left_components for b in right_components
+    )
+end
+
+physical_transition_amplitude(
+    kernel,
+    spec::Spectrum,
+    left::AbstractString,
+    right::AbstractString,
+) = physical_transition_amplitude(
+    kernel, spec, spectrum_state(spec, left), spectrum_state(spec, right),
+)
 
 function radial_expect(
     spec::Spectrum,

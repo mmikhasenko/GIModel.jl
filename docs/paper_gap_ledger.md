@@ -28,31 +28,37 @@ For the full three-stage algorithm audit and object/method map, see
 - FD remains an independent implementation/comparator. It is not part of the
   original paper algorithm and is not a hidden fallback for HO.
 
-## Remaining gaps
+## Completed final integration
 
 ### PA-17 — final-state observable consumers
 
-Some flavor-sensitive electromagnetic and decay reports still assemble their
-own flavor/annihilation coefficient vectors. They must consume the final
-`physical_components` composition directly so masses, coefficients, phases,
-and waves all come from the same physical state.
-
-Acceptance: no observable maintains a parallel flavor eigenvector or selects a
-representative wave from a mixed state; ground and radial isoscalar rows are
-covered by end-to-end tests.
+Complete. Flavor-sensitive electromagnetic reports now call
+`physical_state_amplitude` or `physical_transition_amplitude` on the final
+`Spectrum`. Their kernels see signed `physical_components`; no report owns a
+second annihilation eigenvector, state-dependent phase, or representative wave.
 
 ### PA-18 — literal paper-strength certification
 
-The active parameters still contain `k_spin_orbit = 0.48` and
-`k_tensor = 0.42`. These are repository bridge factors, not parameters in the
-paper. Native HO matrices and staging are implemented, but the headline paper
-mode cannot be called literal until those factors are removed or isolated in an
-explicitly named comparator mode and the resulting formula normalization is
-validated.
+Complete. The non-paper `k_spin_orbit` and `k_tensor` parameters and call
+arguments were deleted. During the formula audit, three compensating errors
+were exposed and corrected directly from A15-A16:
 
-Acceptance: the native-HO spectrum and observable gate passes with paper inputs,
-adaptive convergence certificates, final physical-state consumers, and no
-unexplained spin bridge scale.
+- the contact density is the Laplacian of the smeared Coulomb potential,
+  `sum(alpha_k * delta_tau_k)`, not `alpha_s(r) * delta_sigma`;
+- A16 contains the self-pair scalar-confinement derivatives, not a second
+  Coulomb derivative; and
+- the conventional Pauli `S12` angular matrix element multiplies the A15
+  spin bracket with `1/12`, not `1/3`.
+
+The A15 vector self/pair masses and A16 scalar self masses are assembled
+separately before their fixed angular contractions. The same literal kernels
+serve fixed-sector and later antisymmetric/tensor mixing elements.
+
+The native-HO convergence gate passes six radial levels in q/s/c/b `1S0` and
+`3P2` sectors without quadrature warnings. The end-to-end Table-VII gate keeps
+all 16 gluonic signs with median magnitude ratio 1.05, all 26 leptonic signs,
+and all 8 clean two-photon signs. The two excited isoscalar-pseudoscalar signs
+remain a visible model discrepancy, not an implementation fallback.
 
 ### FD-COMP — independent FD convergence report
 
@@ -62,6 +68,17 @@ useful, but it is not an acceptance condition for PA-18.
 
 Acceptance: internally converged FD masses and wave-sensitive observables are
 reported separately from the paper certification.
+
+This is the next spectrum-infrastructure item. It is comparator validation, not
+unfinished work in the original 1985 HO algorithm.
+
+## Outside the spectrum-algorithm queue
+
+The paper manifest still marks two decay-side units partial: Eq. (19)'s deeper
+wavefunction treatment beyond the SU(6)/single-beta SHO limit, and completion
+of the remaining Table VI rows (including the cancellation-sensitive
+`Upsilon'' -> eta_b gamma` sign). They block a literal “whole paper reproduced”
+claim, but they are not missing stages in the HO meson-spectrum algorithm.
 
 ## Explicitly not missing
 

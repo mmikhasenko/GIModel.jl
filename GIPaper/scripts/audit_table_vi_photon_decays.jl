@@ -226,72 +226,81 @@ end
 # n nbar / s sbar 1S waves (sys["nn"] / sys["ss"]).
 
 println("solving isoscalar P1/S1 mixing blocks (Table III machinery) ...")
-let
-    nn_meson = G.Meson(G.LightQuark(m_ud), G.LightQuark(m_ud))
-    ss_meson = G.Meson(G.StrangeQuark(m_s), G.StrangeQuark(m_s))
-    ps_levels = [G.BasisState(1, "S", 1, 0), G.BasisState(2, "S", 1, 0)]
-    v_level = G.BasisState(1, "S", 3, 1)
-    nn_spec = G.compute_spectrum(params, nn_meson; levels = vcat(ps_levels, [v_level]))
-    ss_spec = G.compute_spectrum(params, ss_meson; levels = vcat(ps_levels, [v_level]))
+nn_meson = G.Meson(G.LightQuark(m_ud), G.LightQuark(m_ud))
+ss_meson = G.Meson(G.StrangeQuark(m_s), G.StrangeQuark(m_s))
+ps_levels = [G.BasisState(1, "S", 1, 0), G.BasisState(2, "S", 1, 0)]
+v_level = G.BasisState(1, "S", 3, 1)
+iso_spec = G.compute_isoscalar_spectrum(
+    params,
+    nn_meson,
+    ss_meson;
+    levels = vcat(ps_levels, [v_level]),
+    solver = FiniteDifferenceSolver(
+        ngrid = NGRID, rmax = RMAX, nlevels_per_channel = 3,
+    ),
+    pseudoscalar = G.PaperP1Annihilation(),
+    amplitudes = Dict(("S", 3, 1) => params.annihilation.s1_A),
+)
 
-    # Pseudoscalar P1 block: columns are [eta, eta', eta(2S), eta'(2S)],
-    # rows are the [1 nn, 1 ss, 2 nn, 2 ss] flavor basis.  We take the ground
-    # 1S flavor content (rows 1,2) of eta (col 1) and eta' (col 2).
-    psb = G.pseudoscalar_annihilation_block(G.PaperP1Annihilation(), params, nn_spec, ss_spec)
-    eta_nn, eta_ss = psb.vectors[1, 1], psb.vectors[2, 1]
-    etap_nn, etap_ss = psb.vectors[1, 2], psb.vectors[2, 2]
+annihilation_states(multiplicity) = sort(
+    [state for state in iso_spec.states if
+     state.L == "S" && state.multiplicity == multiplicity &&
+     any(mix -> occursin("annihilation", mix.mechanism), state.mixings)];
+    by = state -> state.mass_GeV,
+)
+pseudoscalars = annihilation_states(1)
+vectors = annihilation_states(3)
+length(pseudoscalars) == 4 || error("expected four final pseudoscalars")
+length(vectors) == 2 || error("expected two final vectors")
+eta, etap = pseudoscalars[1:2]
+omega, phi = vectors
 
-    # Vector S1 block over [nn, ss]: columns [omega, phi].
-    vb = G.isoscalar_annihilation_block(params, nn_spec, ss_spec, v_level;
-        amplitude_A = params.annihilation.s1_A)
-    om_nn, om_ss = vb.vectors[1, 1], vb.vectors[2, 1]
-    phi_nn, phi_ss = vb.vectors[1, 2], vb.vectors[2, 2]
+inv_3s2 = 1 / (3 * sqrt(2.0))  # nn isoscalar V<->P coefficient
+# The pure ss M1 operator carries the strange-quark charge sign. Combined with
+# the signed eta/eta' components this produces the +/- Table VI pair; it is an
+# operator convention, not a state-dependent phase adjustment.
+s2_3 = -sqrt(2.0) / 3
+inv_s2 = 1 / sqrt(2.0)         # isovector rho coefficient
 
-    # Reduced pure-flavor isoscalar M1 moments (mu/mu_N), computed with the same
-    # I_i kernel used for every other row.  m_nn uses the n nbar 1S waves, m_ss
-    # the s sbar 1S waves; the (nP, nV) indices are both 1 (1S -> 1S).
-    m_nn(coeff) = coeff * m1_moment(sys["nn"], 1, 1, [(1.0, m_ud)]) # coeff * I_d * M_N
-    m_ss(coeff) = coeff * m1_moment(sys["ss"], 1, 1, [(1.0, m_s)])  # coeff * I_s * M_N
-
-    inv_3s2 = 1 / (3 * sqrt(2.0))  # nn isoscalar V<->P coefficient
-    s2_3 = sqrt(2.0) / 3           # ss coefficient
-    inv_s2 = 1 / sqrt(2.0)         # isovector rho coefficient
-
-    # Relative flavor phase: the eigenvector phase convention of the P1 block
-    # puts eta with a NEGATIVE s sbar component (a_eta^ss = -0.50), which would
-    # flip phi->eta (an I_s-dominated row) negative against the paper's +0.71.
-    # The paper's isoscalar mixing takes the physical eta with the OPPOSITE
-    # relative n nbar / s sbar phase (a_eta^nn, a_eta^ss both effectively same
-    # sign for the I_s channel).  We fix this by choosing the s sbar reduced
-    # moment's sign so the anchor row phi->eta comes out positive; this leaves
-    # every n nbar-dominated row (omega->eta, rho->eta, eta'->rho) untouched and
-    # simultaneously delivers the paper's RELATIVE sign phi->eta (+) vs
-    # phi->eta' (-).  No magnitude is rescaled.
-    ss_phase = (phi_ss * eta_ss) < 0 ? -1.0 : 1.0
-
-    # Physical amplitude = sum over flavors of (a_V^f * a_P^f * reduced_f), with
-    # the s sbar reduced moment carried at the paper-consistent relative phase.
-    iso_M1(aV_nn, aV_ss, aP_nn, aP_ss) =
-        aV_nn * aP_nn * m_nn(inv_3s2) + ss_phase * aV_ss * aP_ss * m_ss(s2_3)
-
-    # rho is pure n nbar isovector; only the nn pseudoscalar component enters,
-    # with the isovector (1/sqrt2) coefficient.
-    iso_M1_rho(aP_nn) = aP_nn * m_nn(inv_s2)
-
-    push!(m1_rows, ("phi -> eta gamma   [mixed P1/S1]",
-        iso_M1(phi_nn, phi_ss, eta_nn, eta_ss), "+0.71"))
-    push!(m1_rows, ("phi -> eta' gamma  [mixed P1/S1]",
-        iso_M1(phi_nn, phi_ss, etap_nn, etap_ss), "-0.66"))
-    push!(m1_rows, ("omega -> eta gamma [mixed P1/S1]",
-        iso_M1(om_nn, om_ss, eta_nn, eta_ss), "+0.50"))
-    # eta' -> omega gamma is the same overlap as omega -> eta' (detailed balance)
-    push!(m1_rows, ("eta' -> omega gamma [mixed P1/S1]",
-        iso_M1(om_nn, om_ss, etap_nn, etap_ss), "+0.63"))
-    push!(m1_rows, ("rho -> eta gamma   [mixed P1]",
-        iso_M1_rho(eta_nn), "+1.53"))
-    push!(m1_rows, ("eta' -> rho gamma  [mixed P1]",
-        iso_M1_rho(etap_nn), "+1.85"))
+function isoscalar_m1(pseudoscalar, vector)
+    return physical_transition_amplitude(iso_spec, pseudoscalar, vector) do p, v
+        p.basis.flavors == v.basis.flavors || return 0.0
+        m, coeff = p.basis.flavors == (:q, :q) ? (m_ud, inv_3s2) :
+                   p.basis.flavors == (:s, :s) ? (m_s, s2_3) :
+                   error("unexpected isoscalar flavor $(p.basis.flavors)")
+        m1_transition_moment(
+            momentum_wave(p.wave, 0), momentum_wave(v.wave, 0),
+            m, m, [(coeff, m)],
+        )
+    end
 end
+
+function isovector_m1(pseudoscalar)
+    return physical_state_amplitude(iso_spec, pseudoscalar) do component
+        component.basis.flavors == (:q, :q) || return 0.0
+        m1_transition_moment(
+            momentum_wave(component.wave, 0), sys["nn"].triplet_p[1],
+            m_ud, m_ud, [(inv_s2, m_ud)],
+        )
+    end
+end
+
+push!(m1_rows, ("phi -> eta gamma   [mixed P1/S1]", isoscalar_m1(eta, phi), "+0.71"))
+push!(m1_rows, ("phi -> eta' gamma  [mixed P1/S1]", isoscalar_m1(etap, phi), "-0.66"))
+push!(m1_rows, ("omega -> eta gamma [mixed P1/S1]", isoscalar_m1(eta, omega), "+0.50"))
+# eta' -> omega gamma is the same overlap as omega -> eta' (detailed balance)
+push!(m1_rows, ("eta' -> omega gamma [mixed P1/S1]", isoscalar_m1(etap, omega), "+0.63"))
+push!(m1_rows, ("rho -> eta gamma   [mixed P1]", isovector_m1(eta), "+1.53"))
+push!(m1_rows, ("eta' -> rho gamma  [mixed P1]", isovector_m1(etap), "+1.85"))
+
+component_coefficient(state, n, flavors) = only(
+    component.coefficient for component in physical_components(iso_spec, state) if
+    component.basis.n == n && component.basis.flavors == flavors
+)
+eta_ordering = (
+    a_eta_nn = component_coefficient(eta, 1, (:q, :q)),
+    a_etap_nn = component_coefficient(etap, 1, (:q, :q)),
+)
 
 # --- E1 rows (quarkonium chi systems) ----------------------------------------
 
@@ -482,19 +491,18 @@ end
 
 reldev(val, paper) = abs(val - paper) / abs(paper)
 
-# --- W6 paper-order re-score of the two open rows ----------------------------
-# The manifest flagged the eta<->eta' M1 ordering and the Upsilon'' -> eta_b
-# hindered sign as candidates for re-scoring with the W6 paper-order distorted
-# waves. This block does exactly that and records an HONEST NEGATIVE result:
-# neither is a spin-wavefunction-distortion residual.
+# --- W6 paper-order residual checks ------------------------------------------
+# The manifest formerly flagged the eta<->eta' M1 ordering and the Upsilon'' ->
+# eta_b hindered sign. The complete physical-state composition above resolves
+# the first; this block checks whether paper-order distorted waves resolve the
+# second (they do not).
 #  (a) Upsilon'' -> eta_b hindered: recompute with the native fixed-channel HO
 #      diagonalization used by the harmonized Table VII audit.
 #      For the heavy b bbar sector the paper-order wave equals the FD wave to a
 #      few percent, so the deep I - recoil cancellation does NOT flip sign.
-#  (b) eta<->eta' ordering is set by the P1 annihilation MIXING WEIGHTS
-#      (a_eta^nn / a_eta'^nn), which are eigenvector properties of the block and
-#      independent of the radial wave — distorted waves cannot move them.
-println("re-scoring the two open rows with native fixed-channel HO waves ...")
+#  (b) The eta<->eta' diagnostic records why the two 1nn coefficients alone do
+#      not determine a transition between fully composed physical states.
+println("checking Table VI residuals with native fixed-channel HO waves ...")
 solver_ho = OscillatorSolver()
 function bb_swave_ho_full(multiplicity; nlevels = 3)
     masses = ConstituentMasses(m_b, m_b)
@@ -529,18 +537,6 @@ open_row_rescore = let
     end
     rows
 end
-# P1 pseudoscalar mixing weights (wave-independent): recompute the block.
-eta_ordering = let
-    nn_meson = G.Meson(G.LightQuark(m_ud), G.LightQuark(m_ud))
-    ss_meson = G.Meson(G.StrangeQuark(m_s), G.StrangeQuark(m_s))
-    ps_levels = [G.BasisState(1, "S", 1, 0), G.BasisState(2, "S", 1, 0)]
-    v_level = G.BasisState(1, "S", 3, 1)
-    nn_spec = G.compute_spectrum(params, nn_meson; levels = vcat(ps_levels, [v_level]))
-    ss_spec = G.compute_spectrum(params, ss_meson; levels = vcat(ps_levels, [v_level]))
-    psb = G.pseudoscalar_annihilation_block(G.PaperP1Annihilation(), params, nn_spec, ss_spec)
-    (a_eta_nn = psb.vectors[1, 1], a_etap_nn = psb.vectors[1, 2])
-end
-
 # --- report ------------------------------------------------------------------
 
 outpath = joinpath(root, "docs", "residual_reports", "table_vi_photon_decays.md")
@@ -573,8 +569,9 @@ open(outpath, "w") do io
     println(io, "`eta' -> rho gamma`, ...) fold in the real eta/eta'/omega/phi flavor")
     println(io, "content from the SAME Table III mixing machinery the spectrum audit uses:")
     println(io, "`PaperP1Annihilation` for the 1S0 nonet, the general S1 block for the 3S1")
-    println(io, "nonet (`compute_spectrum` -> `pseudoscalar_annihilation_block` /")
-    println(io, "`isoscalar_annihilation_block`).  Each physical moment is the")
+    println(io, "nonet (`compute_isoscalar_spectrum` -> `physical_components`). Each physical")
+    println(io, "moment is composed by `physical_transition_amplitude`, not by reading an")
+    println(io, "annihilation eigenvector or selecting a representative radial wave. It is the")
     println(io, "flavor-weighted sum `a_V^nn a_P^nn * m_nn + a_V^ss a_P^ss * m_ss` of the")
     println(io, "two pure-flavor reduced moments, whose coefficients (`1/(3 sqrt2) I_d`")
     println(io, "for n nbar, `sqrt2/3 I_s` for s sbar, `1/sqrt2 I_d` for the isovector rho)")
@@ -591,25 +588,18 @@ open(outpath, "w") do io
     println(io)
     println(io, "### Isoscalar block notes")
     println(io)
-    println(io, "- **Signs reproduce the paper exactly** across all six isoscalar rows,")
-    println(io, "  including the relative sign `phi->eta` (+) vs `phi->eta'` (-), which is")
-    println(io, "  the nontrivial mixing prediction.  The s sbar reduced moment is carried")
-    println(io, "  at the relative flavor phase that makes the I_s-dominated `phi->eta`")
-    println(io, "  positive (the P1 eigenvector convention puts `a_eta^ss < 0`); this leaves")
-    println(io, "  every n nbar-dominated row untouched.")
-    println(io, "- Magnitudes: the n nbar/s sbar *dominant* rows land within ~15-25%")
-    println(io, "  (`phi->eta'` -0.56 vs -0.66, `omega->eta` +0.38 vs +0.50, `rho->eta`")
-    println(io, "  +1.17 vs +1.53) -- the same ~6-10% light-sector I overlap residual seen")
-    println(io, "  in `omega->pi` (+1.95 vs +2.07) compounded by the mixing projection.")
-    println(io, "- The `eta` vs `eta'` ORDERING differs from the paper: our P1 block gives")
-    println(io, "  `a_eta^nn = 0.85 > a_eta'^nn = 0.43`, so our `rho->eta` (+1.17) exceeds")
-    println(io, "  `eta'->rho` (+0.60), whereas the paper's formula column shows the same")
-    println(io, "  `+1/sqrt2 I_d(eta_ns,rho)` for both but numerically ranks `eta'->rho`")
-    println(io, "  (+1.85) ABOVE `rho->eta` (+1.53).  This inversion is a property of the")
-    println(io, "  P1 pseudoscalar mixing weights (and the paper's per-row evaluation of the")
-    println(io, "  I overlap at the physical eta vs eta' mass), not of this pipeline: every")
-    println(io, "  quark-level kernel and the mixing block are shared with the audited")
-    println(io, "  Table III spectrum.  Flagged as the open item for the isoscalar block.")
+    println(io, "- The relative `phi->eta` (+) vs `phi->eta'` (-) sign follows from the")
+    println(io, "  signed final-state components and the fixed negative strange-quark M1")
+    println(io, "  coefficient. No report-local state rephasing or paper-sign anchor is used.")
+    println(io, "- The six isoscalar signs and the `eta'->rho > rho->eta` ordering reproduce")
+    println(io, "  the paper. Magnitudes remain 25-36% low on the largest residuals")
+    println(io, "  (`phi->eta'` -0.422 vs -0.66, `omega->eta` +0.328 vs +0.50,")
+    println(io, "  `rho->eta` +1.021 vs +1.53). These are visible physics residuals, not")
+    println(io, "  a report-local vector, phase, or wave-representation discrepancy.")
+    println(io, "- The ordering is recovered only after composing every signed radial/flavor")
+    println(io, "  component. A comparison of the two 1nn coefficients alone is insufficient:")
+    println(io, "  the physical states also contain 2nn/ss components and use their own")
+    println(io, "  transition kernels.")
     println(io)
     println(io, "## E1 (and mixed) multipole amplitudes (MeV^(1/2))")
     println(io)
@@ -628,18 +618,18 @@ open(outpath, "w") do io
     println(io)
     println(io, "- **`A2 -> pi gamma` is the paper's fit row for the 0.5 exponent** (the")
     println(io, "  E_n^i prefactor), so it is the E1-pipeline normalization check, mirroring")
-    println(io, "  `rho -> pi gamma` for the M1 pipeline. Computed +0.51 vs the +0.55 fit")
+    println(io, "  `rho -> pi gamma` for the M1 pipeline. Computed +0.569 vs the +0.55 fit")
     println(io, "  target -- the same ~6-8% light-sector wavefunction residual seen there,")
     println(io, "  reached with NO new fitted constant (the exponent is the paper's).")
     println(io, "- The light E1/M2 rows reproduce the paper cleanly: `A2 -> rho gamma`")
-    println(io, "  +0.149 vs +0.15 and `A2 -> omega gamma` +0.441 vs +0.44 are within 1%,")
-    println(io, "  `A1 -> pi gamma` +0.61 vs +0.56, `B -> pi gamma` +0.57 vs +0.63, and")
-    println(io, "  `f' -> phi gamma` -0.309 vs -0.31 (sign and magnitude). A2/A1/B use the")
+    println(io, "  +0.148 vs +0.15 and `A2 -> omega gamma` +0.438 vs +0.44 are within 1%,")
+    println(io, "  `A1 -> pi gamma` +0.675 vs +0.56, `B -> pi gamma` +0.631 vs +0.63, and")
+    println(io, "  `f' -> phi gamma` -0.307 vs -0.31 (sign and magnitude). A2/A1/B use the")
     println(io, "  central 1P n nbar wave, f' the 1P s sbar wave -- both J-independent at")
     println(io, "  first order, differing only via q and the printed angular coefficient.")
     println(io, "- `K*(1420) -> K gamma` (strange 1P) folds the two emitting-quark channels")
     println(io, "  `2/(3 m_u) E1^u + 1/(3 m_s) E1^s` on the same n sbar 1S->1P overlap;")
-    println(io, "  computed +0.44 vs +0.48 (~9%, consistent with the light residual).")
+    println(io, "  computed +0.473 vs +0.48 (~2%).")
     println(io, "- There are no separate charmed P-wave E1 rows in Table VI beyond the")
     println(io, "  charmonium chi_c/psi' block already audited; the printed charmed sector")
     println(io, "  of the E1 table is exhausted by the strange K*(1420) row.")
@@ -687,13 +677,14 @@ open(outpath, "w") do io
             name, d_meas, mm[1], mm[2], d_model, closer)
     end
     println(io)
-    println(io, "## W6 paper-order re-score of the two open rows")
+    println(io, "## W6 paper-order residual checks")
     println(io)
-    println(io, "The two open Table VI items were re-scored with the W6 paper-order")
+    println(io, "The two formerly open Table VI diagnostics were re-scored with the W6 paper-order")
     println(io, "distorted waves (native finite-HO fixed-channel diagonalization,")
     println(io, "the harmonized Table VII treatment). **Honest negative result: neither is a")
     println(io, "spin-wavefunction-distortion residual, so the paper-order waves do not")
-    println(io, "resolve them.**")
+    println(io, "resolve the deeply cancelled bottomonium sign. The isoscalar ordering is")
+    println(io, "resolved instead by composing the complete physical states.**")
     println(io)
     println(io, "**(a) `Upsilon'' -> eta_b gamma` hindered sign.** Recomputed on the")
     println(io, "paper-order waves:")
@@ -712,15 +703,14 @@ open(outpath, "w") do io
     println(io, "model's resolving power, independent of the S-wave treatment. The allowed")
     println(io, "rows and the first hindered row (`Upsilon'`) are reproduced.")
     println(io)
-    @printf(io, "**(b) `eta <-> eta'` M1 ordering.** The ordering is `a_eta^nn / a_eta'^nn = %.3f / %.3f = %.2f`,\n",
+    @printf(io, "**(b) `eta <-> eta'` M1 composition.** The 1nn coefficients are `a_eta^nn / a_eta'^nn = %.3f / %.3f = %.2f`,\n",
         eta_ordering.a_eta_nn, eta_ordering.a_etap_nn, eta_ordering.a_eta_nn / eta_ordering.a_etap_nn)
-    println(io, "an eigenvector property of the P1 pseudoscalar-annihilation mixing block")
-    println(io, "(`pseudoscalar_annihilation_block`) that is **independent of the radial")
-    println(io, "wave** — the M1 `I` overlap is the common `nn` `1S -> 1S` kernel for both")
-    println(io, "rows. Distorted waves cannot move this ratio; the open item is a mixing-")
-    println(io, "weight question (the P1 block vs the paper's per-mass evaluation), not a")
-    println(io, "wavefunction one. See `w6_ho_order_validation.md` for the paper-order")
-    println(io, "treatment and its §1b light-mass discriminator.")
+    println(io, "but these two numbers do not determine the transition ordering. The shared")
+    println(io, "`physical_transition_amplitude` also composes the signed 2nn and ss pieces")
+    println(io, "with their native waves. The resulting `eta'->rho` (+1.419) exceeds")
+    println(io, "`rho->eta` (+1.021), agreeing with the paper's ordering without a local")
+    println(io, "phase or vector adjustment. See `w6_ho_order_validation.md` for the")
+    println(io, "paper-order treatment and its §1b light-mass discriminator.")
     println(io)
     println(io, "## Conventions used")
     println(io)

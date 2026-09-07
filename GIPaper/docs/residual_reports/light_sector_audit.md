@@ -9,40 +9,40 @@ This report separates raw sector residuals from the rows that should be judged b
 
 | sector | raw rows | raw mean abs | raw max abs | non-mixed rows | non-mixed mean abs | non-mixed max abs | excluded |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| `bottom_charm` | 7 | 4.5 | 12.7 | 6 | 5.2 | 12.7 | 1 |
-| `bottom_light` | 7 | 7.5 | 17.8 | 6 | 8.0 | 17.8 | 1 |
-| `bottom_strange` | 7 | 4.4 | 10.2 | 6 | 4.4 | 10.2 | 1 |
-| `bottomonium` | 30 | 4.1 | 12.2 | 28 | 3.9 | 12.2 | 2 |
-| `charmed` | 11 | 13.0 | 35.2 | 11 | 13.0 | 35.2 | 0 |
-| `charmed_strange` | 11 | 10.5 | 34.2 | 11 | 10.5 | 34.2 | 0 |
-| `charmonium` | 28 | 5.8 | 18.2 | 28 | 5.8 | 18.2 | 0 |
-| `isoscalar` | 48 | 11.1 | 38.5 | 40 | 13.1 | 38.5 | 8 |
-| `isovector` | 30 | 14.0 | 55.0 | 30 | 14.0 | 55.0 | 0 |
-| `strange` | 30 | 10.3 | 43.0 | 30 | 10.3 | 43.0 | 0 |
+| `bottom_charm` | 7 | 4.1 | 7.1 | 6 | 4.6 | 7.1 | 1 |
+| `bottom_light` | 7 | 3.3 | 5.2 | 6 | 3.3 | 5.2 | 1 |
+| `bottom_strange` | 7 | 2.9 | 6.2 | 6 | 2.9 | 6.2 | 1 |
+| `bottomonium` | 30 | 3.9 | 8.8 | 28 | 3.6 | 8.6 | 2 |
+| `charmed` | 11 | 6.5 | 16.0 | 11 | 6.5 | 16.0 | 0 |
+| `charmed_strange` | 11 | 5.2 | 15.7 | 11 | 5.2 | 15.7 | 0 |
+| `charmonium` | 28 | 3.0 | 8.8 | 28 | 3.0 | 8.8 | 0 |
+| `isoscalar` | 48 | 7.3 | 37.6 | 40 | 8.5 | 37.6 | 8 |
+| `isovector` | 30 | 7.8 | 37.6 | 30 | 7.8 | 37.6 | 0 |
+| `strange` | 30 | 6.7 | 21.4 | 30 | 6.7 | 21.4 | 0 |
 
 ## Isoscalar Two-Branch Sanity Check
 
 The digitized isoscalar figure lists mixed `n nbar / s sbar` pairs. Comparing both partners to the same `n nbar` radial solution creates an artificial sector-wide failure. As a diagnostic only, the lower member of each pair is compared to an unmixed `n nbar` prediction and the upper member to an unmixed `s sbar` prediction.
-Two-branch diagnostic: rows=48, mean abs=30.6 MeV, max abs=425.0 MeV.
+Two-branch diagnostic: rows=48, mean abs=25.7 MeV, max abs=371.5 MeV.
 
 | state | branch | ref | pred | residual MeV |
 |---|---|---:|---:|---:|
-| `1^1S_0` | `lower vs nn` | 0.520 | 0.095 |  -425.0 |
-| `1^1S_0` | `upper vs ss` | 0.960 | 0.630 |  -330.5 |
-| `2^1S_0` | `lower vs nn` | 1.440 | 1.279 |  -161.3 |
-| `2^1S_0` | `upper vs ss` | 1.630 | 1.565 |   -64.7 |
+| `1^1S_0` | `lower vs nn` | 0.520 | 0.149 |  -371.5 |
+| `1^1S_0` | `upper vs ss` | 0.960 | 0.655 |  -305.2 |
+| `2^1S_0` | `lower vs nn` | 1.440 | 1.292 |  -148.4 |
+| `2^1S_0` | `upper vs ss` | 1.630 | 1.577 |   -52.9 |
 | `1^1P_1` | `lower vs nn` | 1.220 | 1.258 |   +37.6 |
 | `1^1P_1` | `upper vs ss` | 1.470 | 1.498 |   +28.0 |
-| `1^3P_1` | `upper vs ss` | 1.480 | 1.508 |   +27.8 |
 | `2^1P_1` | `lower vs nn` | 1.780 | 1.807 |   +27.1 |
-| `1^3P_1` | `lower vs nn` | 1.240 | 1.266 |   +26.2 |
-| `2^3P_0` | `lower vs nn` | 1.780 | 1.756 |   -24.5 |
-| `1^3S_1` | `lower vs nn` | 0.780 | 0.757 |   -22.8 |
-| `1^3G_3` | `lower vs nn` | 2.370 | 2.347 |   -22.6 |
-| `1^3G_5` | `upper vs ss` | 2.470 | 2.492 |   +22.3 |
-| `1^3G_3` | `upper vs ss` | 2.540 | 2.521 |   -19.0 |
-| `1^3G_5` | `lower vs nn` | 2.300 | 2.318 |   +17.6 |
+| `1^3P_0` | `lower vs nn` | 1.090 | 1.068 |   -21.8 |
+| `1^3P_2` | `lower vs nn` | 1.280 | 1.297 |   +17.5 |
+| `1^3P_0` | `upper vs ss` | 1.360 | 1.343 |   -17.3 |
 | `2^1P_1` | `upper vs ss` | 2.010 | 2.027 |   +17.0 |
+| `1^3P_1` | `lower vs nn` | 1.240 | 1.223 |   -16.8 |
+| `2^3P_0` | `lower vs nn` | 1.780 | 1.767 |   -12.5 |
+| `2^3P_1` | `lower vs nn` | 1.820 | 1.808 |   -11.8 |
+| `2^3P_0` | `upper vs ss` | 1.990 | 1.979 |   -11.3 |
+| `1^3S_1` | `lower vs nn` | 0.780 | 0.770 |   -10.0 |
 
 ## Audit Read
 

@@ -488,7 +488,7 @@ def annihilation_score(_args: argparse.Namespace) -> int:
             f.write(f"| {model} | {fp} | {cp} | {ip} | {sp} | {mp} | {total} | {mean} | {rms_text} |\n")
         f.write("\n## Missing Points\n\n")
         f.write("- Mixing points come from the mean Table III amplitude RMS in `table_iii_mixing_audit.md` (20 if <= 0.20, 10 if <= 0.35), evaluated on HO-basis wavefunctions with the Φ(0)>0 annihilation phase convention.\n")
-        f.write("- Spectral points use the same thresholds for every model (20 if mean abs residual <= 25 MeV, 10 if <= 50): the calibrated control is scored against the digitized Fig. 5 labels, the literal modes against the paper-model mass targets in `table_iii_mixing_audit.md`. Literal-mode masses inherit the light-sector unperturbed-diagonal residuals (the FD pi sits ~55 MeV below the paper's 0.15 GeV), which is the next quality target.\n")
+        f.write("- Spectral points use the same thresholds for every model (20 if mean abs residual <= 25 MeV, 10 if <= 50): the calibrated control is scored against the digitized Fig. 5 labels, the literal modes against the paper-model mass targets in `table_iii_mixing_audit.md`. Literal-mode mass residuals are reported there directly rather than attributed to an obsolete solver discrepancy.\n")
     print("wrote docs/residual_reports/annihilation_model_scorecard.md")
     print("top score:", max(row[-1] for row in rows), "/ 100")
     return 0

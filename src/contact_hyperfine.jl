@@ -1,7 +1,7 @@
 # Public API (exported from GIModel.jl):
 #   spin_dot, contact_smearing_sigma
 
-"""
+raw"""
     contact_smearing_sigma(params, m1, m2) -> Float64
     contact_smearing_sigma(params, masses::ConstituentMasses) -> Float64
 
@@ -60,6 +60,33 @@ function delta_sigma_3d(r::Real, σ::Real)
     return σ^3 / (π^(3 / 2)) * exp(-(σ * ri)^2)
 end
 
+raw"""
+    smeared_contact_kernel(params, masses, r)
+
+The radial contact kernel obtained from the Laplacian of the Appendix-A
+smeared Coulomb potential.  With
+
+``\widetilde G(r)=-\sum_k 4\alpha_k\,\mathrm{erf}(\tau_k r)/(3r)``
+
+Eq. (A15) gives a contact density proportional to
+``\sum_k \alpha_k\delta_{\tau_k}(r)``, where
+``\tau_k^{-2}=\gamma_k^{-2}+\sigma_{12}^{-2}``.  This is not the product
+``\alpha_s(r)\delta_{\sigma_{12}}(r)``: that older approximation both changed
+the operator and introduced a non-analytic ``sqrt(x)`` dependence into the HO
+quadrature variable ``x=(\beta r)^2``.
+"""
+function smeared_contact_kernel(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    r::Real,
+)
+    σ = contact_smearing_sigma(params, masses)
+    return sum(
+        α * delta_sigma_3d(r, inv(sqrt(inv(σ^2) + inv(γ^2)))) for
+        (α, γ) in zip(ALPHA_COEFFS, ALPHA_GAMMAS)
+    )
+end
+
 """
 Appendix A's post-A14 prescription places
 `(m1*m2/(E1*E2))^(1/2 + epsilon_i)` on each side of a spin-dependent potential.
@@ -90,8 +117,7 @@ function contact_hyperfine_operator(
     p2_fact = eigen(p2_operator(params, m1, 0, r, h))
     side_exponent = gi_spin_dependent_side_exponent(params.factors.epsilon_c)
     B = momentum_relativization_matrix(m1, m2, side_exponent, p2_fact)
-    sigma = contact_smearing_sigma(params, masses)
-    kernel = Diagonal([alpha_s_r(ri) * delta_sigma_3d(ri, sigma) for ri in r])
+    kernel = Diagonal([smeared_contact_kernel(params, masses, ri) for ri in r])
     strength = (32 * π / (9 * m1 * m2)) * spin_dot(multiplicity)
     return Symmetric(strength * (B * kernel * B))
 end
@@ -116,14 +142,18 @@ function ho_contact_hyperfine_matrix(
     params.factors.contact_momentum_sandwich || throw(ArgumentError(
         "native HO contact requires the Appendix-A momentum-sandwich prescription",
     ))
-    sigma = contact_smearing_sigma(params, masses)
     radial = ho_momentum_sandwich_matrix(
         L,
         beta,
         nbasis,
         masses,
         params.factors.epsilon_c,
-        r -> alpha_s_r(r) * delta_sigma_3d(r, sigma),
+        r -> smeared_contact_kernel(params, masses, r),
+        # The adaptive beta scan includes deliberately diffuse endpoints. A
+        # 1e-8 radial-matrix tolerance keeps their narrow heavy-quark Gaussian
+        # finite while remaining safely below the solver's 0.1 MeV energy gate
+        # after the A15 mass prefactor; the accepted beta is tighter in practice.
+        rtol = 1e-8,
     )
     strength = (32pi / (9 * masses.m1_GeV * masses.m2_GeV)) *
                spin_dot(multiplicity)
@@ -143,14 +173,13 @@ function _contact_hyperfine_shift_diagonal(
     L == "S" || return 0.0
     multiplicity in (1, 3) || return 0.0
     length(r) >= 2 || return 0.0
-    sigma = contact_smearing_sigma(params, masses)
     h = r[2] - r[1]
     expectation = radial_expect_udr(
         vector,
         r,
         h,
         (ri, i) -> begin
-            alpha_s_r(ri) * delta_sigma_3d(ri, sigma)
+            smeared_contact_kernel(params, masses, ri)
         end,
     )
     (1.0 + params.factors.epsilon_c) *
@@ -345,10 +374,9 @@ function contact_hyperfine_shift(
 )
     multiplet.L_label == "S" || return 0.0
     multiplet.multiplicity in (1, 3) || return 0.0
-    sigma = contact_smearing_sigma(params, masses)
     expectation = radial_expect(
         wave,
-        r -> alpha_s_r(r) * delta_sigma_3d(r, sigma),
+        r -> smeared_contact_kernel(params, masses, r),
     )
     return (1.0 + params.factors.epsilon_c) *
            (32π / (9 * masses.m1_GeV * masses.m2_GeV)) *
@@ -383,14 +411,13 @@ function contact_hyperfine_shift_momentum_sandwich(
 )
     multiplet.L_label == "S" || return 0.0
     multiplet.multiplicity in (1, 3) || return 0.0
-    sigma = contact_smearing_sigma(params, masses)
     expectation = radial_expect_momentum_sandwich(
         params,
         masses,
         0,
         wave,
         params.factors.epsilon_c,
-        (r, _) -> alpha_s_r(r) * delta_sigma_3d(r, sigma),
+        (r, _) -> smeared_contact_kernel(params, masses, r),
     )
     return (32π / (9 * masses.m1_GeV * masses.m2_GeV)) *
            expectation * spin_dot(multiplet.multiplicity)

@@ -54,10 +54,10 @@ blocks. `physical_components` exposes the resulting signed composition, while
 `radial_wave` rejects mixed states instead of returning a precursor.
 
 Flavor-annihilation blocks now enter the same model-level physical-state
-pipeline, and native HO sectors now carry automatic basis/beta convergence
-certificates. The remaining physics work is consumer migration onto the final
-flavor composition and paper-path certification without unexplained spin
-bridge factors.
+pipeline, native HO sectors carry automatic basis/beta convergence
+certificates, and final observables consume the recursively composed physical
+states. The paper path has been certified with literal A15-A16 strengths; the
+next independent task is the optional FD comparator audit.
 
 ## Forensic trace of the unfinished abstraction
 
@@ -237,13 +237,13 @@ former HO-hybrid path has been deleted and no silent fallback is allowed.
 | PA-10 | done | PA-06 | Implement native HO tensor matrices | Diagonal HO tensor matrices and cross-sector native wave elements are symmetric and covered by solver-agreement tests. |
 | PA-11 | done | PA-08, PA-09, PA-10 | Add the full stage-1 builder to `ChannelRadialSolution` | `fixed_channel_solution` diagonalizes one complete fixed-`L,S,J` Hamiltonian and returns native waves. |
 | PA-12 | done | PA-11 | Add beta refinement and basis convergence | One shared controller serves central and complete fixed-sector HO solves: it continuously refines the beta bracket, enlarges the basis until every requested level passes 0.1 MeV on two successive refinements, records energy/wave-overlap deltas on `ChannelRadialSolution`, and fails on a railed bracket or exhausted basis cap. Six-level q/s/c/b S/P calibration is gated by [`ho_convergence.md`](../GIPaper/docs/residual_reports/ho_convergence.md). |
-| PA-13 | done | PA-11 | Route paper-order stage 1 through `compute_spectrum` | Every requested state is resolved from the fixed-sector solve; the HO route has no mesh field or mesh fallback. Fitted fine-structure scale removal remains a separate physics calibration decision. |
+| PA-13 | done | PA-11 | Route paper-order stage 1 through `compute_spectrum` | Every requested state is resolved from the fixed-sector solve; the HO route has no mesh field or mesh fallback. |
 | PA-13R | done | PA-13 | Remove the central-only solve from production and unify the backend algorithm | `compute_spectrum` starts from `fixed_spectrum`; production caches contain only `(L,S,J)` solves. One generic candidate/diagonalization/result algorithm serves HO and FD, while dispatch owns native matrices and waves. FD exposes the same spin-component matrix fields as HO. |
 | PA-14 | done | PA-10, PA-13 | Assemble complete stage-2 spectroscopic blocks | Tensor and antisymmetric spin-orbit blocks use spin-resolved waves and every compatible requested radial state. |
 | PA-15 | done | PA-14 | Complete `MixedState`/`Spectrum` physical components | `StateMixing` shares its `MixingResult`; `physical_components` resolves coefficient/wave pairs and mixed `radial_wave` calls fail loudly. |
 | PA-16 | done | PA-04, PA-15 | Integrate stage-3 annihilation | `compute_isoscalar_spectrum` and `add_isoscalar_annihilation` return a multi-channel `MixedSpectrum`; final masses and recursively flattened native components share one `MixingResult`. Flavor identity is explicit, model assignment is reference-free, and calibrated controls remain explicit. |
-| PA-17 | ready | PA-07, PA-16 | Finish physical-state consumer migration | Move flavor-mixed electromagnetic/decay observables from separately handled annihilation vectors to the final `physical_components` composition. |
-| PA-18 | pending | PA-12, PA-16, PA-17 | Certify the paper headline path | Native HO paper mode passes convergence reports and end-to-end spectrum/observable checks without unexplained spin bridge factors. FD is not an acceptance criterion for the paper path. |
+| PA-17 | done | PA-07, PA-16 | Finish physical-state consumer migration | Flavor-mixed electromagnetic/decay observables use `physical_state_amplitude` / `physical_transition_amplitude` over final `physical_components`; no consumer owns a parallel annihilation vector or phase. |
+| PA-18 | done | PA-12, PA-16, PA-17 | Certify the paper headline path | Native HO paper mode passes convergence and end-to-end observable reports with literal A15-A16 contact, spin-orbit, and tensor normalization and no bridge parameters. FD is not an acceptance criterion for the paper path. |
 | FD-COMP | ready | PA-12 | Validate the independent FD comparator | Report internally converged FD results and differences from HO as diagnostic evidence, explicitly outside PA-18 paper certification. |
 
 ## Completed first follow-up: PA-01 through PA-07
@@ -269,9 +269,9 @@ The reuse-first slice completed the following checklist:
 7. Added migration regression tests before changing the `StateMixing` and
    `ChannelRadialSolution` storage layouts.
 
-The next independent unit is PA-17 (migrating flavor-sensitive observables to
-the now-final composition); FD-COMP can proceed independently. Neither requires
-another wave, solution, state, or mixing holder type.
+The original-algorithm queue PA-00--PA-18 is complete. FD-COMP is the next
+independent unit; it validates a modern comparator and requires no additional
+wave, solution, state, or mixing holder type.
 
 ## Migration boundary
 

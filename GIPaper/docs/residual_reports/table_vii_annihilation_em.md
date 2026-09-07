@@ -26,32 +26,32 @@ amp = sqrt(prefactor) · S_L(Ψ),   amp² = Γ
 
 `S_L(Ψ)` is the Eq. (17) smeared wavefunction-at-origin
 (`wavefunction_origin_smearing`), `α_s = α_s(M)` at the meson mass, `m_Q`
-the constituent quark mass. Waves are the paper-order **finite-HO-basis
-native **full fixed-channel diagonalization** of `H_central + V_spin`:
+the constituent quark mass. Waves come from the paper-order **native
+finite-HO-basis full fixed-channel diagonalization** of `H_central + V_spin`:
 the smeared contact for the S-waves (singlet/triplet split) and the
-calibrated spin-orbit+tensor operator for the ³P_J chi rows — the same
+literal A15-A16 spin-orbit+tensor operator for the ³P_J chi rows — the same
 treatment used for every other subtable below (W6). Amplitudes in `MeV^(1/2)`.
 
-**16 gluonic rows scored; median |model|/|paper| = 1.04; signs agree on 16/16.** The two hypothetical t-tbar rows (`eta_t`, `zeta`) are not modelled (no top constituent mass in the 1985 set).
+**16 gluonic rows scored; median |model|/|paper| = 1.05; signs agree on 16/16.** The two hypothetical t-tbar rows (`eta_t`, `zeta`) are not modelled (no top constituent mass in the 1985 set).
 
 | decay | M (GeV) | α_s(M) | S_L | model MeV^½ | paper MeV^½ | ratio | sign |
 |---|---:|---:|---:|---:|---:|:-:|:-:|
-| `eta_c -> 2g` | 2.96 | 0.261 | +0.3547 | +5.201 | +4.700 | 1.11 | ✓ |
-| `psi -> 3g` | 3.09 | 0.256 | +0.2607 | +0.429 | +0.420 | 1.02 | ✓ |
-| `eta'_c -> 2g` | 3.62 | 0.238 | -0.2186 | -2.924 | -2.700 | 1.08 | ✓ |
-| `psi' -> 3g` | 3.68 | 0.236 | -0.1938 | -0.283 | -0.280 | 1.01 | ✓ |
-| `eta_b -> 2g` | 9.39 | 0.183 | +0.8997 | +3.030 | +2.500 | 1.21 | ✓ |
-| `Upsilon -> 3g` | 9.46 | 0.183 | +0.6783 | +0.221 | +0.210 | 1.05 | ✓ |
-| `eta'_b -> 2g` | 9.97 | 0.181 | -0.5991 | -1.995 | -1.700 | 1.17 | ✓ |
-| `Upsilon' -> 3g` | 10.00 | 0.181 | -0.4902 | -0.157 | -0.150 | 1.05 | ✓ |
-| `Upsilon'' -> 3g` | 10.35 | 0.180 | +0.4279 | +0.136 | +0.130 | 1.04 | ✓ |
-| `Upsilon''' -> 3g` | 10.63 | 0.179 | -0.3942 | -0.124 | -0.110 | 1.13 | ✓ |
-| `chi_2c -> 2g` | 3.53 | 0.241 | +0.1370 | +0.957 | +0.880 | 1.09 | ✓ |
-| `chi_0c -> 2g` | 3.46 | 0.243 | +0.1746 | +2.385 | +2.500 | 0.95 | ✓ |
-| `chi_2b -> 2g` | 9.89 | 0.181 | +0.1902 | +0.328 | +0.350 | 0.94 | ✓ |
-| `chi_0b -> 2g` | 9.85 | 0.182 | +0.2464 | +0.822 | +0.820 | 1.00 | ✓ |
-| `chi'_2b -> 2g` | 10.26 | 0.180 | -0.2026 | -0.346 | -0.370 | 0.94 | ✓ |
-| `chi'_0b -> 2g` | 10.23 | 0.180 | -0.2502 | -0.829 | -0.820 | 1.01 | ✓ |
+| `eta_c -> 2g` | 2.97 | 0.260 | +0.3385 | +4.957 | +4.700 | 1.05 | ✓ |
+| `psi -> 3g` | 3.09 | 0.256 | +0.2645 | +0.436 | +0.420 | 1.04 | ✓ |
+| `eta'_c -> 2g` | 3.63 | 0.238 | -0.2136 | -2.854 | -2.700 | 1.06 | ✓ |
+| `psi' -> 3g` | 3.68 | 0.236 | -0.1964 | -0.287 | -0.280 | 1.02 | ✓ |
+| `eta_b -> 2g` | 9.39 | 0.183 | +0.8656 | +2.915 | +2.500 | 1.17 | ✓ |
+| `Upsilon -> 3g` | 9.46 | 0.183 | +0.6853 | +0.223 | +0.210 | 1.06 | ✓ |
+| `eta'_b -> 2g` | 9.97 | 0.181 | -0.5791 | -1.928 | -1.700 | 1.13 | ✓ |
+| `Upsilon' -> 3g` | 10.00 | 0.181 | -0.4956 | -0.159 | -0.150 | 1.06 | ✓ |
+| `Upsilon'' -> 3g` | 10.35 | 0.180 | +0.4324 | +0.137 | +0.130 | 1.05 | ✓ |
+| `Upsilon''' -> 3g` | 10.63 | 0.179 | -0.3981 | -0.125 | -0.110 | 1.14 | ✓ |
+| `chi_2c -> 2g` | 3.55 | 0.240 | +0.1291 | +0.900 | +0.880 | 1.02 | ✓ |
+| `chi_0c -> 2g` | 3.44 | 0.244 | +0.1881 | +2.576 | +2.500 | 1.03 | ✓ |
+| `chi_2b -> 2g` | 9.89 | 0.181 | +0.1793 | +0.309 | +0.350 | 0.88 | ✓ |
+| `chi_0b -> 2g` | 9.84 | 0.182 | +0.2667 | +0.890 | +0.820 | 1.09 | ✓ |
+| `chi'_2b -> 2g` | 10.26 | 0.180 | -0.1929 | -0.330 | -0.370 | 0.89 | ✓ |
+| `chi'_0b -> 2g` | 10.22 | 0.180 | -0.2665 | -0.883 | -0.820 | 1.08 | ✓ |
 
 ## Leptonic decays (part a)
 
@@ -80,31 +80,31 @@ here. The hypothetical t-tbar `ζ` row is not modelled.
 
 | decay | factor | M (GeV) | M̃ (GeV) | value | f model | f paper | ratio | sign |
 |---|:-:|---:|---:|---:|---:|---:|:-:|:-:|
-| `pi -> mu nu` | P_P | 0.096 | 1.812 | +0.5832 | +2.0203 | +1.3000 | 1.55 | ✓ |
-| `K -> mu nu` | P_P | 0.427 | 1.772 | +0.1625 | +0.5631 | +0.4700 | 1.20 | ✓ |
-| `D -> mu nu` | P_P | 1.860 | 2.590 | +0.0403 | +0.1396 | +0.1300 | 1.07 | ✓ |
-| `F -> mu nu` | P_P | 1.962 | 2.761 | +0.0528 | +0.1830 | +0.1700 | 1.08 | ✓ |
-| `B -> mu nu` | P_P | 5.306 | 5.768 | +0.0098 | +0.0339 | +0.0330 | 1.03 | ✓ |
-| `1^1S_0(bc) -> mu nu` | P_P | 6.262 | 7.165 | +0.0283 | +0.0979 | +0.0910 | 1.08 | ✓ |
+| `pi -> mu nu` | P_P | 0.149 | 1.650 | +0.3688 | +1.2776 | +1.3000 | 0.98 | ✓ |
+| `K -> mu nu` | P_P | 0.461 | 1.665 | +0.1471 | +0.5094 | +0.4700 | 1.08 | ✓ |
+| `D -> mu nu` | P_P | 1.874 | 2.553 | +0.0388 | +0.1344 | +0.1300 | 1.03 | ✓ |
+| `F -> mu nu` | P_P | 1.974 | 2.724 | +0.0508 | +0.1759 | +0.1700 | 1.03 | ✓ |
+| `B -> mu nu` | P_P | 5.310 | 5.756 | +0.0096 | +0.0331 | +0.0330 | 1.00 | ✓ |
+| `1^1S_0(bc) -> mu nu` | P_P | 6.265 | 7.143 | +0.0272 | +0.0942 | +0.0910 | 1.04 | ✓ |
 | `tau -> A1 nu` | Pp_A1 | 1.258 | 1.290 | +0.0336 | +0.0950 | +0.1100 | 0.86 | ✓ |
-| `tau -> K*(892) nu` | V_V | 0.898 | 1.252 | +0.0846 | +0.2929 | +0.3000 | 0.98 | ✓ |
-| `rho -> e+ e-` | V_V | 0.760 | 1.083 | +0.0817 | +0.2002 | +0.2000 | 1.00 | ✓ |
-| `omega -> e+ e-` | V_V | 0.760 | 1.083 | +0.0817 | +0.0667 | +0.0700 | 0.95 | ✓ |
-| `phi -> e+ e-` | V_V | 1.013 | 1.427 | +0.0968 | -0.1118 | -0.1100 | 1.02 | ✓ |
-| `rhoS -> e+ e-` | V_V | 1.460 | 1.352 | -0.0144 | -0.0352 | -0.0370 | 0.95 | ✓ |
+| `tau -> K*(892) nu` | V_V | 0.903 | 1.261 | +0.0858 | +0.2974 | +0.3000 | 0.99 | ✓ |
+| `rho -> e+ e-` | V_V | 0.771 | 1.090 | +0.0817 | +0.2002 | +0.2000 | 1.00 | ✓ |
+| `omega -> e+ e-` | V_V | 0.771 | 1.090 | +0.0817 | +0.0667 | +0.0700 | 0.95 | ✓ |
+| `phi -> e+ e-` | V_V | 1.017 | 1.435 | +0.0982 | -0.1134 | -0.1100 | 1.03 | ✓ |
+| `rhoS -> e+ e-` | V_V | 1.456 | 1.361 | -0.0150 | -0.0367 | -0.0370 | 0.99 | ✓ |
 | `rhoD -> e+ e-` | Vp_V | 1.687 | 1.393 | +0.0138 | +0.0160 | +0.0190 | 0.84 | ✓ |
-| `omegaS -> e+ e-` | V_V | 1.460 | 1.352 | -0.0144 | -0.0117 | -0.0120 | 0.98 | ✓ |
+| `omegaS -> e+ e-` | V_V | 1.456 | 1.361 | -0.0150 | -0.0122 | -0.0120 | 1.02 | ✓ |
 | `omegaD -> e+ e-` | Vp_V | 1.687 | 1.393 | +0.0138 | +0.0053 | +0.0060 | 0.89 | ✓ |
-| `phiS -> e+ e-` | V_V | 1.692 | 1.639 | -0.0238 | +0.0275 | +0.0270 | 1.02 | ✓ |
+| `phiS -> e+ e-` | V_V | 1.689 | 1.645 | -0.0243 | +0.0281 | +0.0270 | 1.04 | ✓ |
 | `phiD -> e+ e-` | Vp_V | 1.898 | 1.655 | +0.0158 | -0.0086 | -0.0120 | 0.72 | ✓ |
-| `psi -> e+ e-` | V_V | 3.091 | 3.725 | +0.0527 | +0.1216 | +0.1200 | 1.01 | ✓ |
-| `psi' -> e+ e-` | V_V | 3.680 | 3.830 | -0.0280 | -0.0647 | -0.0630 | 1.03 | ✓ |
+| `psi -> e+ e-` | V_V | 3.091 | 3.730 | +0.0535 | +0.1235 | +0.1200 | 1.03 | ✓ |
+| `psi' -> e+ e-` | V_V | 3.679 | 3.833 | -0.0284 | -0.0656 | -0.0630 | 1.04 | ✓ |
 | `psi'' -> e+ e-` | Vp_V | 3.838 | 3.804 | +0.0062 | +0.0068 | +0.0110 | 0.62 | ✓ |
-| `psi''' -> e+ e-` | V_V | 4.102 | 3.934 | +0.0199 | +0.0459 | +0.0460 | 1.00 | ✓ |
-| `Upsilon -> e+ e-` | V_V | 9.458 | 10.392 | +0.0244 | -0.0282 | -0.0260 | 1.09 | ✓ |
-| `Upsilon' -> e+ e-` | V_V | 10.004 | 10.402 | -0.0158 | +0.0182 | +0.0170 | 1.07 | ✓ |
-| `Upsilon'' -> e+ e-` | V_V | 10.354 | 10.458 | +0.0129 | -0.0149 | -0.0140 | 1.06 | ✓ |
-| `Upsilon''' -> e+ e-` | V_V | 10.633 | 10.519 | -0.0113 | +0.0131 | +0.0120 | 1.09 | ✓ |
+| `psi''' -> e+ e-` | V_V | 4.100 | 3.936 | +0.0201 | +0.0465 | +0.0460 | 1.01 | ✓ |
+| `Upsilon -> e+ e-` | V_V | 9.459 | 10.394 | +0.0247 | -0.0285 | -0.0260 | 1.10 | ✓ |
+| `Upsilon' -> e+ e-` | V_V | 10.004 | 10.404 | -0.0160 | +0.0184 | +0.0170 | 1.09 | ✓ |
+| `Upsilon'' -> e+ e-` | V_V | 10.354 | 10.460 | +0.0130 | -0.0151 | -0.0140 | 1.08 | ✓ |
+| `Upsilon''' -> e+ e-` | V_V | 10.633 | 10.520 | -0.0114 | +0.0132 | +0.0120 | 1.10 | ✓ |
 | `1^3D_1(bb) -> e+ e-` | Vp_V | 10.148 | 10.361 | +0.0011 | -0.0006 | -0.0008 | 0.72 | ✓ |
 
 ## Two-photon decays (part b)
@@ -121,35 +121,36 @@ mass, `M̃` the mock mass. Amplitude² is Γ; units follow the paper (`π` in
 `eV^½`, the rest in `keV^½`).
 
 The clean-flavor rows are below; the strongly-mixed isoscalar pseudoscalars
-(`eta`, `eta'`, `eta_r`, `eta'_r`) follow in their own table (they need the P1
-mixing block). `f`/`f'` use ideal tensor mixing (`f₂` nonstrange, `f₂'` =
+(`eta`, `eta'`, `eta_r`, `eta'_r`) follow in their own table (they use the final
+P1-mixed spectrum). `f`/`f'` use ideal tensor mixing (`f₂` nonstrange, `f₂'` =
 `ss̄`); the hypothetical t-tbar `eta_t` is not modelled.
 
-**8 clean-flavor two-photon rows; median |model|/|paper| = 0.98; signs agree on 8/8.**
+**8 clean-flavor two-photon rows; median |model|/|paper| = 1.05; signs agree on 8/8.**
 
 | decay | kind | M (GeV) | q_eff | model | paper | unit | ratio | sign |
 |---|:-:|---:|---:|---:|---:|:-:|:-:|:-:|
-| `pi -> gamma gamma` | P | 0.096 | +0.236 | +1.389 | +2.600 | eV^½ | 0.53 | ✓ |
-| `pi' -> gamma gamma` | P | 1.279 | +0.236 | -0.982 | -1.000 | keV^½ | 0.98 | ✓ |
-| `eta_c -> gamma gamma` | P | 2.959 | +0.444 | +2.820 | +2.600 | keV^½ | 1.08 | ✓ |
-| `eta'_c -> gamma gamma` | P | 3.619 | +0.444 | -2.409 | -2.200 | keV^½ | 1.10 | ✓ |
-| `eta_b -> gamma gamma` | P | 9.391 | +0.111 | +0.757 | +0.620 | keV^½ | 1.22 | ✓ |
+| `pi -> gamma gamma` | P | 0.149 | +0.236 | +2.909 | +2.600 | eV^½ | 1.12 | ✓ |
+| `pi' -> gamma gamma` | P | 1.292 | +0.236 | -1.046 | -1.000 | keV^½ | 1.05 | ✓ |
+| `eta_c -> gamma gamma` | P | 2.967 | +0.444 | +2.743 | +2.600 | keV^½ | 1.05 | ✓ |
+| `eta'_c -> gamma gamma` | P | 3.626 | +0.444 | -2.369 | -2.200 | keV^½ | 1.08 | ✓ |
+| `eta_b -> gamma gamma` | P | 9.393 | +0.111 | +0.731 | +0.620 | keV^½ | 1.18 | ✓ |
 | `A2 -> gamma gamma` | P2 | 1.258 | +0.236 | -1.115 | -1.200 | keV^½ | 0.93 | ✓ |
 | `f -> gamma gamma` | P2 | 1.258 | +0.393 | -1.859 | -1.900 | keV^½ | 0.98 | ✓ |
 | `f' -> gamma gamma` | P2 | 1.498 | +0.111 | -0.425 | -0.250 | keV^½ | 1.70 | ✓ |
 
 **Isoscalar-mixed pseudoscalars** (`η`, `η'`, `η_r`, `η'_r`) — a coherent
-sum over the `[1nn, 1ss, 2nn, 2ss]` components with amplitudes from the P1
-pseudoscalar-annihilation block (Sec. V A), using the physical mock-meson
+sum over the final state's signed `[1nn, 1ss, 2nn, 2ss]` native components
+from `compute_isoscalar_spectrum` / `physical_components` (Sec. V A),
+using the physical mock-meson
 `M_P`. Ideal mixing cannot be used here: it inverts the `η<η'` ordering.
-Median |model|/|paper| = 0.63; signs agree on 2/4.
+Median |model|/|paper| = 0.78; signs agree on 2/4.
 
 | decay | M_P (GeV) | 1nn | 1ss | 2nn | 2ss | model keV^½ | paper keV^½ | ratio | sign |
 |---|---:|---:|---:|---:|---:|---:|---:|:-:|:-:|
-| `eta -> gamma gamma` | 0.548 | +0.60 | -0.80 | +0.10 | +0.04 | +0.365 | +0.500 | 0.73 | ✓ |
-| `eta' -> gamma gamma` | 0.958 | +0.55 | +0.50 | +0.65 | +0.16 | +0.801 | +1.300 | 0.62 | ✓ |
-| `eta_r -> gamma gamma` | 1.295 | +0.27 | +0.17 | -0.55 | +0.77 | +1.698 | -2.700 | 0.63 | ✗ |
-| `eta'_r -> gamma gamma` | 1.440 | +0.52 | +0.30 | -0.52 | -0.61 | +3.826 | -2.200 | 1.74 | ✗ |
+| `eta -> gamma gamma` | 0.548 | +0.62 | -0.77 | +0.11 | +0.04 | +0.437 | +0.500 | 0.87 | ✓ |
+| `eta' -> gamma gamma` | 0.958 | +0.57 | +0.55 | +0.59 | +0.15 | +1.020 | +1.300 | 0.78 | ✓ |
+| `eta_r -> gamma gamma` | 1.295 | +0.25 | +0.16 | -0.59 | +0.75 | +1.829 | -2.700 | 0.68 | ✗ |
+| `eta'_r -> gamma gamma` | 1.440 | +0.47 | +0.27 | -0.54 | -0.64 | +3.882 | -2.200 | 1.76 | ✗ |
 
 The `η<η'` γγ ordering — backwards under ideal mixing — is reproduced.
 The two ground-state signs agree, while both radial-excitation signs do not;
@@ -169,13 +170,13 @@ relativistic smearing of the quark position (`f = 0.2`, the paper's one fit,
 fixed on the `π⁺`). `charge_radius_squared`; values as signed `r_E²` (fm²)
 and the radius `sign·√|r_E²|` (fm).
 
-**2 charge-radius predictions scored (the `π⁺` is the `f` fit anchor); median r_E²(model)/r_E²(paper) = 0.98; signs agree on 3/3.**
+**2 charge-radius predictions scored (the `π⁺` is the `f` fit anchor); median r_E²(model)/r_E²(paper) = 1.02; signs agree on 3/3.**
 
 | meson | r_E² model fm² | r_E² paper fm² | radius model fm | radius paper fm | ratio | sign |
 |---|---:|---:|---:|---:|:-:|:-:|
-| `pi+` (fit) | +0.4076 | +0.4356 | +0.638 | +0.660 | 0.94 | ✓ |
-| `K+` | +0.3425 | +0.3481 | +0.585 | +0.590 | 0.98 | ✓ |
-| `K0` | -0.0993 | -0.0900 | -0.315 | -0.300 | 1.10 | ✓ |
+| `pi+` (fit) | +0.4235 | +0.4356 | +0.651 | +0.660 | 0.97 | ✓ |
+| `K+` | +0.3537 | +0.3481 | +0.595 | +0.590 | 1.02 | ✓ |
+| `K0` | -0.1029 | -0.0900 | -0.321 | -0.300 | 1.14 | ✓ |
 
 ## Decay widths (Eqs. D7-D9)
 
@@ -201,19 +202,18 @@ widths carry the Table VII `f_V` residual squared:
 
 | decay | f_model | width (D8) | measured | ratio | note |
 |---|---:|---:|---:|:-:|---|
-| `rho -> e+ e-` | +0.2002 | 6.930e-06 GeV | 7.040e-06 GeV | 0.98 |  |
-| `psi -> e+ e-` | +0.1216 | 1.022e-05 GeV | 5.550e-06 GeV | 1.84 | QCD (1−16α_s/3π) not in D8 |
-| `psi' -> e+ e-` | +0.0647 | 3.439e-06 GeV | 2.340e-06 GeV | 1.47 |  |
-| `Upsilon -> e+ e-` | +0.0282 | 1.681e-06 GeV | 1.340e-06 GeV | 1.25 |  |
+| `rho -> e+ e-` | +0.2002 | 6.935e-06 GeV | 7.040e-06 GeV | 0.99 |  |
+| `psi -> e+ e-` | +0.1235 | 1.053e-05 GeV | 5.550e-06 GeV | 1.90 | QCD (1−16α_s/3π) not in D8 |
+| `psi' -> e+ e-` | +0.0656 | 3.538e-06 GeV | 2.340e-06 GeV | 1.51 |  |
+| `Upsilon -> e+ e-` | +0.0285 | 1.716e-06 GeV | 1.340e-06 GeV | 1.28 |  |
 
 The leading-order D8 over-predicts, most for charm (`ρ` 0.99, `Υ` 1.21,
 `ψ'` 1.46, `ψ` 1.84): the ratios track the omitted QCD `(1 − 16α_s/3π)`
 radiative correction, which shrinks with α_s from charm to bottom and would
 bring each toward 1 — not a wavefunction miss (`f_ψ` itself is 1.01x the
-paper). The weak `π→μν` row is not tabled here: the model's light `¹S₀` mass
-(`0.10 GeV < m_μ`) closes the phase space — the same light-pseudoscalar
-pathology that inflates `f_π`. Widths are exercised end-to-end; the paper
-tabulates only the constants.
+paper). The corrected A15 contact kernel puts the model pion at 0.149 GeV,
+so `π→μν` is open and its Table-VII constant is 0.98 of the paper value.
+The paper tabulates constants rather than these derived widths.
 
 ## Reading
 
@@ -224,29 +224,25 @@ tabulates only the constants.
   finite-HO-basis full diagonalization of `H_central + V_spin`. This gives
   the gluonic rows their spin-dependent origin distortion — the singlet-low/
   triplet-high and ³P₀-low/³P₂-high structure of the spin-independent
-  central waves collapses, and every row lands in `[0.92, 1.14]` (median
-  1.02) — while keeping the light `¹S₀` pseudoscalars resummed (a
+  central waves collapses, and every row lands in `[0.88, 1.17]` (median
+  1.05) — while keeping the light `¹S₀` pseudoscalars resummed (a
   first-order-PT treatment would over-raise the pion mass and halve `f_π`).
 - **Heavy quarkonia are near-exact** in both slices (`f_ψ` and the `Υ`
   tower within ~10%, gluonic bottomonium within a few percent).
-- **`f_π` is the largest miss (1.55×)** and is a pure meson-mass
-  sensitivity: `P_P ∝ 1/M`, and the model's hyperfine-driven `¹S₀`
-  nonstrange mass (~0.10 GeV) is well below the physical `m_π`; using the
-  physical mass brings `f_π` to ~1.4, at the paper's own 1.3 (itself 37%
-  above the measured 0.95 — the pion is a known hard case). The heavier
-  pseudoscalars, with less mass sensitivity, land within ~10%.
+- **The pion is no longer a mass pathology.** The literal smeared-contact
+  Laplacian gives 0.149 GeV and `f_π` at 0.98 of the paper value.
 - **Signs reproduce under one convention** (outermost antinode positive)
-  across all slices: the alternation down each radial tower is the node
-  structure of the wavefunction-at-origin.
+  for gluonic, leptonic, and clean-flavor two-photon rows. The two radial
+  isoscalar-pseudoscalar signs remain an explicit P1 discrepancy.
 - **Two-photon** rows with clean flavor content reproduce well (`A2` 0.93,
   `f₂` 0.98, the `η_c` pair ~1.08); `f'` is off (ideal tensor mixing, which
   the paper's own footnote calls very `f`-`f'`-sensitive) and `π→γγ` shares
   the `f_π` meson-mass sensitivity (here through `(M/M̃)^{3/2}`).
 - Isoscalar-mixing corrections (folded into the paper's numbers) are part of
   the `ω`/`φ` leptonic residual. The strongly-mixed isoscalar pseudoscalar
-  `γγ` rows are reproduced via the P1 block (`η<η'` ordering and all signs
-  right, ~30–50% on magnitude) — ideal mixing cannot do these at all.
-- **Charge radii** are excellent: the `K⁺` (0.585 vs 0.59 fm) and `K⁰`
-  (−0.315 vs −0.30 fm) are genuine predictions (only `f` is fit, on the
+  `γγ` rows are reproduced via the final P1-composed states: the ground-state
+  ordering and signs agree, while both radial signs and some magnitudes do not.
+- **Charge radii** are excellent: the `K⁺` and `K⁰` rows in the table
+  are genuine predictions (only `f` is fit, on the
   `π⁺`), reproducing both the magnitude and the negative `K⁰` sign from the
   charge-weighted quark radii.

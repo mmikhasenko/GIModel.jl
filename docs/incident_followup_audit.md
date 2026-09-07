@@ -79,14 +79,17 @@ this pre-release repository does not carry a backward-compatibility layer.
 `BasisState` and `FineStructureMultiplet` are intentionally not consolidated:
 the former identifies a particular radial level (`n,L,S,J,label`), while the
 latter identifies a fixed sector (`L,S,J`) before radial eigenlevels exist.
+The remaining direct `.vectors` access in `audit_table_iii_mixings.jl` compares
+the low-level `MixingResult` itself with the paper's printed eigenvectors; it is
+not an observable consumer and does not construct a second physical state.
 
 ## Repository scheduling and follow-up
 
 The work is intentionally split among existing repository mechanisms:
 
 - `docs/paper_algorithm_work_plan.md` is the dependency-ordered executable
-  queue. PA-01--PA-16 are complete; PA-17 (final-composition consumers) and the
-  independent FD comparator audit are the next units.
+  queue. PA-01--PA-18 are complete; the independent FD comparator audit is the
+  next unit.
 - `docs/engineering_work_plan.md` records cross-cutting code invariants and
   mistakes that must not recur.
 - `docs/original_1985_algorithm_audit.md` records the paper-vs-code algorithm
@@ -125,6 +128,17 @@ tests.
   103-unit manifest anti-drift check. The final phase-dispatch consolidation was
   then rechecked by both package suites, the Table III audit, and manifest check.
 
-The remaining PA-17--PA-18 work is not cleanup from this incident. It is
-final-composition consumer migration and native-HO headline-path certification;
-PA-12 now supplies the required automatic numerical convergence certificates.
+The post-incident PA-17--PA-18 audit is also complete. It found four additional
+physics defects that the attached worker report did not identify: the contact
+term multiplied `alpha_s(r)` by a second Gaussian instead of taking the exact
+Laplacian of the smeared Coulomb kernel; A16 duplicated a Coulomb derivative;
+the tensor normalization was four times too large; and fitted spin bridge
+parameters obscured those errors. The literal A15-A16 implementation now has no
+bridge parameters, and final flavor-mixed observables consume the one shared
+`MixedSpectrum` composition instead of reconstructing vectors locally.
+
+The original spectrum-algorithm queue is therefore closed. Its only scheduled
+infrastructure follow-up is FD-COMP: a focused numerical certification of the
+independent FD comparator, explicitly outside the native-HO paper path. The
+separate whole-paper manifest still tracks the partial Eq. (19) and Table VI
+decay units.

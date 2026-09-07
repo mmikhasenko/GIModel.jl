@@ -123,6 +123,8 @@ include("appendix_a_status.jl")
 
 export radial_wave,
     physical_components,
+    physical_state_amplitude,
+    physical_transition_amplitude,
     spectrum_levels,
     StateMixing,
     CentralState,
