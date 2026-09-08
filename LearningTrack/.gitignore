@@ -1,0 +1,5 @@
+# Generated course PDFs and LaTeX intermediates
+/pdf/
+
+# Rendered pages used for local visual checks
+/tmp/

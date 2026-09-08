@@ -1,0 +1,187 @@
+\documentclass[11pt]{article}
+\newcommand{\SheetCode}{Theory 02}
+\input{../course-common.tex}
+\begin{document}
+\sheettitle{Sheet 2: Angular momentum and meson identity}{How $n^{2S+1}L_J$ becomes $J^{PC}$}{Prerequisite: Sheet 1. \difficulty{★--★★★} \quad \timebox{2--3 hours}}
+
+\begin{goals}
+Couple two spin-$1/2$ constituents to orbital angular momentum; derive meson
+parity and charge conjugation; identify which channels may mix; compute the
+basic spin expectation values used throughout GI.
+\end{goals}
+\begin{reading}
+Selected reading in Landau--Lifshitz, \emph{Quantum Mechanics: Non-Relativistic
+Theory}: Ch. IV, ``Angular Momentum,'' Ch. VIII, ``Spin,'' Ch. IX, ``Identity
+of Particles,'' and Ch. XIV, ``Addition of Angular Momenta.'' This is a
+reference selection, not the organizing structure of the sheet.
+\end{reading}
+
+The spectroscopic notation is $n^{2S+1}L_J$ with $L=S,P,D,F,\ldots$ for
+$0,1,2,3,\ldots$.
+
+
+\begin{problem}{Problem 1 ★ — Enumerate allowed $J$ values}
+Prove that coupling orbital $L$ and total spin $S$ permits
+$J=|L-S|,\ldots,L+S$. List the $S$- and $P$-wave $q\bar q$ multiplets.
+\end{problem}
+\begin{solution}
+The triangle rule for addition of angular momenta gives the range. For $L=0$:
+$^1S_0$ and $^3S_1$. For $L=1$: $^1P_1$ and
+$^3P_{0,1,2}$. The radial label $n$ distinguishes repeated multiplets but does
+not affect angular quantum numbers.
+\end{solution}
+\begin{quiz}
+Why can $^1P_1$ and $^3P_1$ mix while $^1P_1$ and $^3P_2$ cannot? \answer a
+rotational scalar Hamiltonian preserves $J$.
+\end{quiz}
+
+\begin{problem}{Problem 2 ★★ — Derive $P$ and $C$}
+For a fermion--antifermion state, derive $P=(-1)^{L+1}$. For a neutral
+self-conjugate flavor state, let charge conjugation interchange the quark and
+antiquark and derive $C=(-1)^{L+S}$ by keeping track of the orbital, spin, and
+fermionic exchange signs. Compute $J^{PC}$ for the six multiplets above.
+\end{problem}
+\begin{solution}
+Spatial inversion gives $Y_{Lm}(-\widehat{\bm r})=(-1)^LY_{Lm}$, while the
+intrinsic parities of a fermion and its antifermion have product $-1$. Hence
+$P=(-1)^{L+1}$.
+
+For charge conjugation, write the spin wavefunction in the tensor-product basis
+$\ket{s_1}\otimes\ket{s_2}$. Interchanging the two spin labels gives
+\[
+P_{12}^{\rm spin}\ket{S M_S}=(-1)^{S+1}\ket{S M_S}:
+\]
+the $S=1$ triplet is symmetric and the $S=0$ singlet is antisymmetric. The same
+interchange sends the relative coordinate $\bm r=\bm r_q-\bm r_{\bar q}$ to
+$-\bm r$, contributing $(-1)^L$. Finally, in a state written with creation
+operators $b^\dagger d^\dagger\ket0$, charge conjugation first produces
+$d^\dagger b^\dagger\ket0=-b^\dagger d^\dagger\ket0$; the last equality is the
+fermionic anticommutation sign. Therefore
+\[
+C=-(-1)^L(-1)^{S+1}=(-1)^{L+S}.
+\]
+Thus
+$^1S_0:0^{-+}$, $^3S_1:1^{--}$, $^1P_1:1^{+-}$, and
+$^3P_{0,1,2}:0^{++},1^{++},2^{++}$.
+\end{solution}
+\begin{quiz}
+Why is $C$ not a label for a charged or open-flavor meson? \answer charge
+conjugation changes its flavor content, so it is not an eigenstate of $C$.
+\end{quiz}
+
+\begin{problem}{Problem 3 ★ — Compute $\bm S_1\cdot\bm S_2$}
+Begin with the tensor-product states
+$\ket\uparrow\otimes\ket\uparrow$, $\ket\uparrow\otimes\ket\downarrow$,
+$\ket\downarrow\otimes\ket\uparrow$, and
+$\ket\downarrow\otimes\ket\downarrow$. Construct the three symmetric states
+with total spin $S=1$ (the triplet) and the one antisymmetric state with $S=0$
+(the singlet). For a normalized state $\ket\psi$, the notation
+$\expect O_\psi\equiv\bra\psi O\ket\psi$ means the expectation value, or mean
+result of repeated measurements, of $O$. Compute
+$\expect{\bm S_1\cdot\bm S_2}_{S=0}$ and
+$\expect{\bm S_1\cdot\bm S_2}_{S=1}$.
+\end{problem}
+\begin{solution}
+The coupled spin states are
+\[
+\begin{aligned}
+\ket{1,1}&=\ket{\uparrow\uparrow},&
+\ket{1,0}&=\frac{\ket{\uparrow\downarrow}+\ket{\downarrow\uparrow}}{\sqrt2},&
+\ket{1,-1}&=\ket{\downarrow\downarrow},\\
+\ket{0,0}&=\frac{\ket{\uparrow\downarrow}-\ket{\downarrow\uparrow}}{\sqrt2}.
+\end{aligned}
+\]
+From $\bm S^2=(\bm S_1+\bm S_2)^2$,
+\[
+\bm S_1\cdot\bm S_2=\frac12[S(S+1)-\tfrac34-\tfrac34].
+\]
+The result is $-3/4$ for $S=0$ and $+1/4$ for $S=1$.
+\end{solution}
+\begin{quiz}
+Let $E_0$ be the energy before the contact correction and let its positive
+radial coefficient be $A>0$, so
+$\Delta E=A\expect{\bm S_1\cdot\bm S_2}$. Which corrected energy is higher?
+\answer $E_{S=1}=E_0+A/4$ is increased above $E_0$, while
+$E_{S=0}=E_0-3A/4$ is decreased below it. Thus ``pushed upward'' means that the
+corrected energy is larger than the uncorrected energy.
+\end{quiz}
+
+\begin{problem}{Problem 4 ★ — Compute $\bm L\cdot\bm S$}
+Derive its diagonal expectation in a state $\ket{LSJM}$ and tabulate the
+$^3P_J$ values.
+\end{problem}
+\begin{solution}
+$2\bm L\cdot\bm S=\bm J^2-\bm L^2-\bm S^2$, hence
+\[
+\expect{\bm L\cdot\bm S}=\tfrac12[J(J+1)-L(L+1)-S(S+1)].
+\]
+For $L=S=1$, the values at $J=0,1,2$ are $-2,-1,+1$.
+\end{solution}
+\begin{quiz}
+Why is the spin--orbit energy correction zero for an $S$ wave? \answer an
+$S$ wave has $L=0$, so $\bm L\ket{L=0,m=0}=0$. Consequently
+$\bm L\cdot\bm S$ has zero expectation value, independently of the radial wave.
+\end{quiz}
+
+\begin{problem}{Problem 5 ★★ — Prove a centroid sum rule}
+For fixed total angular momentum $J$, its projection $M_J$ can take the values
+$-J,-J+1,\ldots,J$, giving $2J+1$ states with the same $J$. These are called
+magnetic substates. The centroid of a multiplet is the energy average weighted
+by this number of states. Show that
+$\sum_J(2J+1)\expect{\bm L\cdot\bm S}_J=0$ for fixed $L,S$. Verify it for
+$^3P_J$.
+\end{problem}
+\begin{solution}
+Before coupling $\bm L$ and $\bm S$, the relevant Hilbert space has basis
+$\ket{Lm_L}\otimes\ket{Sm_S}$; this is the tensor-product space
+$\mathcal H_L\otimes\mathcal H_S$. In this basis
+\[
+\bm L\cdot\bm S=L_zS_z+\tfrac12(L_+S_-+L_-S_+).
+\]
+The ladder terms change $m_L$ and $m_S$, so their diagonal matrix elements are
+zero. Summing the remaining diagonal elements gives
+\[
+\sum_{m_L,m_S}m_Lm_S=
+\left(\sum_{m_L=-L}^{L}m_L\right)
+\left(\sum_{m_S=-S}^{S}m_S\right)=0.
+\]
+The trace --- the sum of diagonal matrix elements --- is unchanged by changing
+to the coupled basis $\ket{LSJM}$. In that basis $\bm L\cdot\bm S$ has one
+eigenvalue for each $J$, repeated for its $2J+1$ values of $M$. Therefore its
+trace is exactly $\sum_J(2J+1)\expect{\bm L\cdot\bm S}_J=0$. For $^3P_J$:
+$1(-2)+3(-1)+5(+1)=0$.
+\end{solution}
+\begin{quiz}
+What does a violation of this sum rule in a calculation most directly suggest?
+\answer an incorrect angular coefficient, degeneracy factor $(2J+1)$, or state
+label. The identity contains no radial integral, so changing the radial
+wavefunction cannot repair it.
+\end{quiz}
+
+\begin{problem}{Problem 6 ★★★ — Decide which GI mixings are allowed}
+Using only $J$, parity, charge conjugation, and flavor, decide whether each pair
+can mix: (a) $^1P_1$--$^3P_1$ in $c\bar q$; (b) the same pair in $c\bar c$;
+(c) $^3S_1$--$^3D_1$; (d) $n\bar n$--$s\bar s$ pseudoscalars.
+\end{problem}
+\begin{solution}
+(a) Yes: equal $J^P$ and no good $C$; unequal masses allow antisymmetric
+spin--orbit coupling. (b) No in a $C$-invariant Hamiltonian: $C$ differs, and
+the antisymmetric mass factor vanishes. (c) Yes: tensor forces preserve
+$J,S$ and parity while allowing $\Delta L=2$. (d) Yes: the quantum numbers
+match and gluon annihilation couples self-conjugate flavor channels.
+\end{solution}
+\begin{quiz}
+The phrase ``same $J$'' is necessary but not sufficient for mixing. Name two
+more tests. \answer matching exact discrete symmetries and a nonzero matrix
+element for the proposed interaction.
+\end{quiz}
+
+\begin{paperbridge}
+\small
+GI Eq. (4) contains $\bm S_1\cdot\bm S_2$ and its tensor partner. Eq. (14)
+diagonalizes in $\ket{jm;ls}$ sectors, with $\bm S=\bm S_1+\bm S_2$ and
+$\bm J=\bm L+\bm S$. The paragraph after Eq. (14) identifies the same-$J$
+tensor and antisymmetric spin--orbit mixings; Figs. 3--11 use
+$n^{2S+1}L_J$ labels.
+\end{paperbridge}
+\end{document}

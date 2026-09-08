@@ -1,0 +1,119 @@
+\documentclass[11pt]{article}
+\newcommand{\SheetCode}{Theory 08}
+\input{../course-common.tex}
+\begin{document}
+\sheettitle{Sheet 8: From states to observables}{Short-distance quantities, radiative overlaps, and strong decays}{Prerequisite: Sheets 1--7. \difficulty{★★--★★★} \quad \timebox{2--3 hours}}
+
+\begin{goals}
+Relate wavefunctions to decay widths; derive phase-space scaling and overlap
+selection rules; understand why masses do not validate wavefunctions; analyze
+how mixing propagates coherently into amplitudes.
+\end{goals}
+\begin{reading}
+Selected reading in Landau--Lifshitz, \emph{Quantum Mechanics: Non-Relativistic
+Theory}: Ch. VI, ``Perturbation Theory,'' for transition probabilities, and
+Ch. XIV, ``Addition of Angular Momenta,'' for angular selection rules. This is
+optional background; the sheet is not built as a commentary on the book.
+\end{reading}
+
+
+\begin{problem}{Problem 1 ★ — Derive two-body momentum and threshold scaling}
+For $A\to B+C$, derive
+$k=\sqrt{[M_A^2-(M_B+M_C)^2][M_A^2-(M_B-M_C)^2]}/(2M_A)$.
+If the final relative partial wave is $\ell$, show why
+$\Gamma\propto k^{2\ell+1}$ near threshold.
+\end{problem}
+\begin{solution}
+In the parent rest frame, energy conservation and on-shell conditions give the
+K\"all\'en-function expression above. A partial-wave amplitude behaves as
+$k^\ell$ at small $k$, while two-body phase space supplies one more power of
+$k$, hence $\Gamma\propto k^{2\ell+1}$.
+\end{solution}
+\begin{quiz}
+Why can a few-MeV mass error cause a large width error near threshold? \answer
+the available momentum is small and enters with a positive odd power.
+\end{quiz}
+
+\begin{problem}{Problem 2 ★★ — Derive an electric-dipole radial rule}
+For the E1 operator $\bm r$, use parity and angular momentum to show
+$\Delta L=\pm1$ and no spin flip at leading order. Express the radial factor in
+terms of reduced waves.
+\end{problem}
+\begin{solution}
+$\bm r$ is a rank-1 odd-parity tensor, giving the triangle rule
+$|L-L'|\le1$ and opposite orbital parity; thus $\Delta L=\pm1$. It does not act
+on spin, so $\Delta S=0$. The radial matrix element is
+$\int_0^\infty u_f(r)\,r\,u_i(r)\dd r$.
+\end{solution}
+\begin{quiz}
+Can two solvers agree on masses but disagree on an E1 rate? \answer yes;
+eigenvalues constrain the Hamiltonian globally, while the rate tests a weighted
+wavefunction overlap.
+\end{quiz}
+
+\begin{problem}{Problem 3 ★★ — Explain origin sensitivity}
+For a normalized $S$ wave show $|\Psi(0)|^2=|R(0)|^2/(4\pi)$ and relate
+$R(0)$ to $u'(0)$. Why is using $u(h)/h$ only first-order safe without further
+analysis?
+\end{problem}
+\begin{solution}
+$Y_{00}=1/\sqrt{4\pi}$ and regularity gives $u(r)=R(0)r+O(r^2)$, so
+$R(0)=u'(0)$. If values are known only at radii separated by $h$, then
+$u(h)/h=R(0)+O(h)$ in general. One must study the limit as $h$ decreases, or
+evaluate the derivative directly in a basis representation, before treating it
+as an accurate value of $R(0)$.
+\end{solution}
+\begin{quiz}
+Which is usually more demanding numerically: a mass or $|\Psi(0)|^2$? \answer
+the origin density, because it depends on local derivative information.
+\end{quiz}
+
+\begin{problem}{Problem 4 ★★ — Propagate mixing into a decay amplitude}
+If $\ket i=\cos\theta\ket a+\sin\theta\ket b$, derive the decay width to a fixed
+final channel in terms of amplitudes $\mathcal M_a,\mathcal M_b$. Identify the
+interference term.
+\end{problem}
+\begin{solution}
+$\mathcal M_i=\cos\theta\mathcal M_a+\sin\theta\mathcal M_b$, hence
+\[
+|\mathcal M_i|^2=\cos^2\theta|\mathcal M_a|^2+
+\sin^2\theta|\mathcal M_b|^2+2\sin\theta\cos\theta
+\operatorname{Re}(\mathcal M_a^*\mathcal M_b).
+\]
+Adding component widths would omit the last term.
+\end{solution}
+\begin{quiz}
+Why does a basis-phase choice not change the interference physically? \answer
+the corresponding component coefficient and matrix element change sign
+together.
+\end{quiz}
+
+\begin{problem}{Problem 5 ★★★ — Separate spin algebra from wave distortion}
+Suppose two annihilation widths have
+$\Gamma_0/\Gamma_2=(15/4)\,|D_0/D_2|^2$, where $15/4$ is the short-distance
+spin-color factor and $D_J$ is a number obtained by applying a specified linear
+integral or derivative to the entire wavefunction. What conclusion follows if
+the ratio differs from $15/4$? Design two controlled comparisons.
+\end{problem}
+\begin{solution}
+The deviation need not mean wrong spin algebra; it measures $J$-dependent wave
+distortion when $D_0\ne D_2$. First evaluate both widths with a common central
+wave, which should isolate $15/4$. Then use separately solved $J$ waves while
+holding the short-distance coefficients fixed; the change isolates the radial
+effect. This two-step comparison separates spin algebra from radial-wave effects
+and is more informative than fitting one overall constant.
+\end{solution}
+\begin{quiz}
+What does a decay calculation validate that a spectrum fit cannot? \answer wave
+normalization, local/overlap structure, mixing phases, and operator selection
+rules.
+\end{quiz}
+
+\begin{paperbridge}
+GI Sec. IV tests the calculated states through their couplings: Sec. IV A treats
+strong decays, Secs. IV B--C treat electromagnetic annihilation and photon
+emission, and Sec. IV D collects further couplings. The principal numerical
+results appear in Tables IV--VII. These observables depend on the same masses,
+wavefunctions, and mixed-state components constructed in Secs. II--III.
+\end{paperbridge}
+\end{document}

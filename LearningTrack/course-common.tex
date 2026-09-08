@@ -1,0 +1,52 @@
+\usepackage[margin=25mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\DeclareUnicodeCharacter{2605}{$\star$}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage[most]{tcolorbox}
+\definecolor{agiBlue}{HTML}{173B57}
+\definecolor{agiGold}{HTML}{B7791F}
+\definecolor{agiLight}{HTML}{EFF6FA}
+\definecolor{agiGreen}{HTML}{184D3B}
+\hypersetup{colorlinks=true,linkcolor=agiBlue,urlcolor=agiBlue}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlength{\headheight}{14pt}
+\setlist{nosep,leftmargin=*}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textsc{Agentic Godfrey--Isgur}}
+\fancyhead[R]{\SheetCode}
+\fancyfoot[C]{\thepage}
+\newcommand{\dd}{\,\mathrm d}
+\newcommand{\ket}[1]{\lvert #1\rangle}
+\newcommand{\bra}[1]{\langle #1\rvert}
+\newcommand{\braket}[2]{\langle #1\mid #2\rangle}
+\newcommand{\expect}[1]{\left\langle #1\right\rangle}
+\newcommand{\op}[1]{\widehat{#1}}
+\newcommand{\GeV}{\,\mathrm{GeV}}
+\newcommand{\R}{\mathbb{R}}
+\newtcolorbox{goals}{colback=agiLight,colframe=agiBlue,title=Learning outcomes}
+\newtcolorbox{reading}{colback=white,colframe=agiGold,title=Book reference,
+  after skip=5mm}
+\newtcolorbox{paperbridge}{colback=agiGreen!7,colframe=agiGreen,
+  colbacktitle=agiGreen,coltitle=white,title=Connection to the GI paper}
+\newtcolorbox{problem}[1]{colback=white,colframe=agiBlue,title={#1},
+  before skip=3.5mm,after skip=1mm}
+\newtcolorbox{solution}{colback=black!2,colframe=black!45,title=Solution}
+\newtcolorbox{quiz}{colback=white,colframe=agiGold,title=Post-solution concept check}
+\newtcolorbox{checkpoint}{colback=white,colframe=agiGold,title=Interpretation checkpoint}
+\newcommand{\sheettitle}[3]{%
+  \begin{center}
+  {\Large\bfseries #1}\par
+  \vspace{0.2em}{\color{agiBlue}#2}\par
+  \vspace{0.4em}\small #3
+  \end{center}\vspace{0.5em}}
+\newcommand{\difficulty}[1]{\textbf{Difficulty:} #1}
+\newcommand{\timebox}[1]{\textbf{Suggested time:} #1}
+\newcommand{\answer}{\par\smallskip\color{black!50}\textbf{Answer:} }

@@ -1,0 +1,152 @@
+\documentclass[11pt]{article}
+\newcommand{\SheetCode}{Theory 07}
+\input{../course-common.tex}
+\begin{document}
+\sheettitle{Sheet 7: When spectroscopic labels stop being states}{Two-level mixing, open flavor, and isoscalar annihilation}{Prerequisite: Sheets 1--6. \difficulty{★★--★★★} \quad \timebox{2--3 hours}}
+
+\begin{goals}
+Diagonalize and interpret a $2\times2$ mass matrix; track phase-invariant
+observables; identify antisymmetric spin--orbit and tensor mixing; build an
+isoscalar flavor block; understand why mixed states need component waves.
+\end{goals}
+\begin{reading}
+Selected reading in Landau--Lifshitz, \emph{Quantum Mechanics: Non-Relativistic
+Theory}: Ch. VI, ``Perturbation Theory,'' Ch. XII, ``The Theory of Symmetry,''
+and Ch. XIV, ``Addition of Angular Momenta.'' These are selected references;
+the sheet develops the mixing problem in its own order.
+\end{reading}
+
+
+Here \emph{open flavor} means that the quark and antiquark have different
+flavors, so charge conjugation does not return the same meson. A \emph{basis
+phase} is the arbitrary choice of multiplying any basis ket by $-1$ (or, more
+generally, by a complex phase); observables cannot depend on that choice.
+
+\begin{problem}{Problem 1 ★ — Solve the universal mixing matrix}
+Diagonalize
+$M=\begin{pmatrix}M_a&V\\V&M_b\end{pmatrix}$. Give the eigenvalues and a
+mixing-angle convention with $\ket-=\cos\theta\ket a-\sin\theta\ket b$.
+\end{problem}
+\begin{solution}
+\[
+M_\pm=\frac{M_a+M_b}{2}\pm
+\sqrt{\left(\frac{M_a-M_b}{2}\right)^2+V^2},\qquad
+\tan2\theta=\frac{2V}{M_b-M_a}.
+\]
+The sign of $\theta$ depends on basis phases; eigenvalues and squared component
+magnitudes do not.
+\end{solution}
+\begin{quiz}
+If $\ket b\to-\ket b$, what measurable quantity changes? \answer none; $V$ and
+$\theta$ change sign together, while masses and probabilities remain fixed.
+\end{quiz}
+
+\begin{problem}{Problem 2 ★★ — Prove level repulsion}
+Show that for $V\ne0$, $M_-<\min(M_a,M_b)$ and
+$M_+>\max(M_a,M_b)$. Obtain the weak-mixing shift for $|V|\ll|M_b-M_a|$.
+\end{problem}
+\begin{solution}
+The square root exceeds $|M_a-M_b|/2$, proving both inequalities. If
+$M_a<M_b$, expansion gives
+$M_-=M_a-V^2/(M_b-M_a)+O(V^4)$ and
+$M_+=M_b+V^2/(M_b-M_a)+O(V^4)$.
+\end{solution}
+\begin{quiz}
+Why can a small off-diagonal interaction cause large mixing? \answer the angle
+depends on the ratio $2V/(M_b-M_a)$; near degeneracy the denominator is small.
+\end{quiz}
+
+\begin{problem}{Problem 3 ★★ — Locate antisymmetric spin--orbit mixing}
+Write
+$\bm S_1\cdot\bm L/m_1^2+\bm S_2\cdot\bm L/m_2^2$ as symmetric and
+antisymmetric combinations. Show which coefficient vanishes for equal masses.
+\end{problem}
+\begin{solution}
+\[
+\frac12\left(\frac1{m_1^2}+\frac1{m_2^2}\right)
+(\bm S_1+\bm S_2)\cdot\bm L+
+\frac12\left(\frac1{m_1^2}-\frac1{m_2^2}\right)
+(\bm S_1-\bm S_2)\cdot\bm L.
+\]
+The antisymmetric coefficient vanishes at $m_1=m_2$. Its spin operator connects
+$^1L_L$ and $^3L_L$ in unequal-mass mesons.
+\end{solution}
+\begin{quiz}
+Why is open flavor the natural laboratory for this mixing? \answer unequal
+constituent masses activate the antisymmetric coefficient and charge
+conjugation is not a prohibiting quantum number.
+\end{quiz}
+
+\begin{problem}{Problem 4 ★★ — Build the isoscalar flavor basis}
+Define $\ket n=(\ket{u\bar u}+\ket{d\bar d})/\sqrt2$ and $\ket s=\ket{s\bar s}$.
+If a flavor-blind annihilation amplitude is $A$ per light-flavor pair, compute
+the matrix of $H_A$ in the $(n,s)$ basis, ignoring mass and wavefunction factors.
+\end{problem}
+\begin{solution}
+Every elementary flavor transition has amplitude $A$. Coherent sums give
+\[
+H_A=A\begin{pmatrix}2&\sqrt2\\\sqrt2&1\end{pmatrix}.
+\]
+Its eigenvalues are $0$ and $3A$: one flavor combination cancels and the singlet
+combination adds coherently. Real GI elements include channel-dependent masses,
+$\alpha_s$, and origin-smeared waves.
+\end{solution}
+\begin{quiz}
+Why can annihilation shift one isoscalar strongly while leaving an orthogonal
+combination nearly untouched? \answer amplitudes interfere coherently in flavor
+space.
+\end{quiz}
+
+\begin{problem}{Problem 5 ★★★ — Check the GI annihilation dimensions}
+For
+$A_{ji}\propto A_0[\alpha_s(M_j^2)\alpha_s(M_i^2)]^{n/2}
+S_L(\Psi_j)S_L(\Psi_i)/(m_im_j)$, suppose
+$[S_L]=E^{L+3/2}$. Here $S_L(\Psi)$ is a linear operation that turns the whole
+wavefunction into one number by weighting its short-distance momentum content.
+Determine the dimension required for $A_0$ so that
+$A_{ji}$ is an energy. Explain why the near-origin wave is decisive.
+\end{problem}
+\begin{solution}
+The two $S_L$ factors contribute $E^{2L+3}$ and the masses contribute $E^{-2}$,
+so $A_0$ must have dimension $E^{-2L}$ to leave $E^1$. The origin-smeared
+functional selects short-distance and derivative information: two states with
+similar masses but different nodes or $L$ can have very different annihilation
+strengths.
+\end{solution}
+\begin{quiz}
+Why is it especially risky here to represent the wave only at widely separated
+radii? \answer eigenvalues depend on the wave over the whole radial range, but
+the annihilation quantity gives exceptional weight to the small region near the
+origin and therefore magnifies local errors there.
+\end{quiz}
+
+\begin{problem}{Problem 6 ★★★ — Reconstruct a mixed observable}
+Let $\ket\Psi=c_a\ket{a,\psi_a}+c_b\ket{b,\psi_b}$ and let $O$ be diagonal in
+the discrete labels. Derive $\expect O$. Why is assigning one ``representative
+wave'' to $\ket\Psi$ generally wrong?
+\end{problem}
+\begin{solution}
+If $O$ has no cross-label element,
+$\expect O=|c_a|^2\bra{\psi_a}O_a\ket{\psi_a}
++|c_b|^2\bra{\psi_b}O_b\ket{\psi_b}$. With allowed cross terms, coherent
+$c_a^*c_b$ contributions must also be retained. A single wave discards the
+label-dependent radial functions and cannot reproduce both cases. The physical
+object is the list of coefficients paired with each component's radial wave in
+the representation in which that wave was calculated.
+\end{solution}
+\begin{quiz}
+What data must survive a mixing stage? \answer eigenvalues, normalized mixing
+coefficients, basis-state identities, and access to each component's radial
+wave. Keeping only a mass and one chosen wave would discard information needed
+for later observables.
+\end{quiz}
+
+\begin{paperbridge}
+The paragraph following GI Eq. (14) defines the second-stage tensor
+$^3L_J\leftrightarrow{}^3L'_J$ and unequal-mass antisymmetric spin--orbit
+$^3L_J\leftrightarrow{}^1L_J$ mass matrices. Eqs. (15)--(17) define the
+isoscalar annihilation matrix and its short-distance wavefunction factor;
+Eqs. (18a)--(18b) give the special pseudoscalar alternatives. Physical
+isoscalar compositions are tabulated in Table III.
+\end{paperbridge}
+\end{document}

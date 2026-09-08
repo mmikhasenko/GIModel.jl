@@ -1,0 +1,137 @@
+\documentclass[11pt]{article}
+\newcommand{\SheetCode}{Theory 09}
+\input{../course-common.tex}
+\begin{document}
+\sheettitle{Sheet 9: Reconstruct the GI computation}{A paper-order capstone and audit}{Prerequisite: Sheets 1--8. \difficulty{★★★} \quad \timebox{3--4 hours}}
+
+\begin{goals}
+Assemble the entire calculation in dependency order; distinguish physics from
+representation; design convergence and invariant tests; diagnose disagreements;
+explain what it means to reproduce a published spectrum without retuning.
+\end{goals}
+\begin{reading}
+For a selective review in Landau--Lifshitz, \emph{Quantum Mechanics:
+Non-Relativistic Theory}, use Chs. I--VI for operators, the Schr\"odinger
+equation, angular momentum, central fields, and perturbation theory; add
+Chs. VIII and XIV for spin and angular-momentum coupling. This is a reference
+map, not a request to reread or follow the complete book.
+\end{reading}
+
+
+\begin{problem}{Problem 1 ★★★ — Draw the complete dependency graph}
+Starting from $(m_q,b,c,a_k,\gamma_k,\sigma_0,s,\epsilon_i)$ and a requested
+$n^{2S+1}L_J$ list, order these operations: central smearing, running coupling,
+fixed-channel diagonalization, momentum sandwiches, spectroscopic mixing,
+flavor annihilation, decay quantities, and reference comparison. Justify every
+arrow. A dependency graph is a diagram in which an arrow $A\to B$ means that
+$A$ must be known before $B$ can be constructed.
+\end{problem}
+\begin{solution}
+Parameters define $\alpha_s$, mass-dependent $\sigma$, smeared kernels, and
+momentum factors. Together with kinematics and angular coefficients they define
+each fixed-$(L,S,J)$ Hamiltonian. Diagonalization produces masses and radial
+waves in the representation used by each numerical method. Those waves define
+off-diagonal tensor/antisymmetric spin--orbit blocks;
+their diagonalization produces spectroscopic components. Self-conjugate
+channels then acquire flavor-annihilation blocks. Physical component waves feed
+decay quantities. Only after this ordered physics calculation should state names and
+published rows enter the comparison layer. Reversing an arrow either uses a
+wave before it exists or contaminates the model with reference data.
+\end{solution}
+\begin{quiz}
+Where is the boundary between prediction and reproduction audit? \answer the
+model ends at physical masses/waves/observables; digitized paper rows and
+residuals belong to a separate comparison layer.
+\end{quiz}
+
+\begin{problem}{Problem 2 ★★★ — Prove a representation contract}
+Let $U$ be a unitary map from an HO coefficient representation to another
+complete representation. Show how $\ket\psi$, $H$, and $O$ transform and prove
+that eigenvalues and expectations are invariant.
+\end{problem}
+\begin{solution}
+$\ket{\psi'}=U\ket\psi$, $H'=UHU^\dagger$, and $O'=UOU^\dagger$. Then
+$H'\ket{\psi'}=EU\ket\psi=E\ket{\psi'}$ and
+$\bra{\psi'}O'\ket{\psi'}=\bra\psi O\ket\psi$. Stored arrays need not match;
+the invariant operations are norms, overlaps, expectations, and spectra.
+\end{solution}
+\begin{quiz}
+What must a new numerical method for the radial equation provide before it can
+replace an existing method? \answer the same physical operations needed later
+--- norms, overlaps, expectation values, and momentum-space operations --- not
+the internal array layout used by one existing method.
+\end{quiz}
+
+\begin{problem}{Problem 3 ★★★ — Design a layered validation suite}
+Give at least one test for each layer: analytic radial interaction, angular
+algebra, operator assembly, eigenvalue problem, mixing, and final paper
+comparison. A residual is the difference between a calculated and published
+number. State why one final root-mean-square residual is insufficient.
+\end{problem}
+\begin{solution}
+Examples: normalize the Gaussian and check analytic $G'$; test spin centroids;
+verify $BVB$ Hermiticity and that normalizing the same vector in two equivalent
+ways does not change its expectation; demand convergence as the basis is enlarged
+or the radial spacing is reduced, and demand HO--FD agreement; test equal-mass antisymmetric mixing is zero
+and $2\times2$ trace/determinant invariance; finally report residuals by flavor
+and state. A final scalar score can hide compensating errors and cannot localize
+which conceptual layer failed.
+\end{solution}
+\begin{quiz}
+Which test most directly detects a stray $4\pi$ in radial normalization?
+\answer an independently normalized three-dimensional kernel combined with a
+known normalized reduced radial wave and a scale-invariance check.
+\end{quiz}
+
+\begin{problem}{Problem 4 ★★★ — Diagnose three disagreements}
+For each symptom propose the first physics or numerical hypothesis to test:
+(a) all central masses move with grid spacing; (b) $^3P_J$ centroid is stable
+but splittings are compressed; (c) isoscalar masses fail while nonmixing sectors
+agree.
+\end{problem}
+\begin{solution}
+(a) Test box size and derivative/kinetic discretization, then compare with the
+HO basis. (b) The spin-independent backbone is likely sound; inspect tensor and
+spin--orbit kernels, ordering factors, and angular conventions. (c) Inspect the
+annihilation block, flavor basis, the specified integral that measures the wave
+near the origin, and reference-row
+assignment. This is a dependency-guided diagnosis, not parameter retuning.
+\end{solution}
+\begin{quiz}
+Why is retuning the first response scientifically weak? \answer it can absorb
+an implementation error and destroys the claim of reproducing published inputs.
+\end{quiz}
+
+\begin{problem}{Problem 5 ★★★ — Oral defense: explain GI in ten sentences}
+Prepare ten sentences, each with one of these verbs: define, reduce, classify,
+smear, relativize, diagonalize, mix, observe, validate, reproduce. Your answer
+must connect every verb to a mathematical object.
+\end{problem}
+\begin{solution}
+One model answer: Define constituent masses and one common parameter set. Reduce
+the rest-frame two-body problem to relative radial and angular sectors. Classify
+states by $n^{2S+1}L_J$ and exact discrete symmetries. Smear singular kernels
+with a normalized mass-dependent Gaussian. Relativize inverse-mass interactions
+with Hermitian functions of $p^2$ on both sides. Diagonalize the complete
+fixed-$(L,S,J)$ Hamiltonian in a converged HO basis (and compare with an FD
+representation). Mix converged channels through tensor and antisymmetric
+spin--orbit blocks, then mix self-conjugate flavors through annihilation.
+Observe masses and decay functionals using the resulting component waves.
+Validate analytic identities, normalization, Hermiticity, convergence, and
+cross-representation invariants. Reproduce the paper only by comparing these
+predictions to independently curated reference data without retuning.
+\end{solution}
+\begin{quiz}
+Final test: which single word prevents the course from becoming a list of
+formulas? \answer dependency. Understanding GI means knowing why each object is
+needed before the next one can be defined.
+\end{quiz}
+
+\begin{paperbridge}
+GI Eq. (14) and its following paragraphs state the three-stage spectrum
+algorithm: fixed-$\ket{jm;ls}$ diagonalization, tensor/antisymmetric spin--orbit
+mass matrices, and isoscalar annihilation. Table II supplies the common model
+parameters; Figs. 3--11 display the predicted sectors; Sec. IV and Tables IV--VII
+test the resulting wavefunctions through couplings and decay observables.
+\end{paperbridge}
+\end{document}

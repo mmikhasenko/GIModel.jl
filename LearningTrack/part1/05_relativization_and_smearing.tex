@@ -1,0 +1,124 @@
+\documentclass[11pt]{article}
+\newcommand{\SheetCode}{Theory 05}
+\input{../course-common.tex}
+\begin{document}
+\sheettitle{Sheet 5: Making singular interactions well-defined}{Gaussian smearing and Hermitian momentum sandwiches}{Prerequisite: Sheets 1--4. \difficulty{★★--★★★} \quad \timebox{3--4 hours}}
+
+\begin{goals}
+Normalize the GI Gaussian; derive its convolution rules; understand the
+mass-dependent resolution scale; prove Hermiticity and positivity of momentum
+sandwiches; distinguish an operator product from a pointwise multiplier.
+\end{goals}
+\begin{reading}
+Selected reading in Landau--Lifshitz, \emph{Quantum Mechanics: Non-Relativistic
+Theory}: Ch. I, ``The Basic Concepts of Quantum Mechanics,'' and Ch. II,
+``Energy and Momentum,'' for operators and momentum representation. This is an
+optional reference selection; the sheet introduces the needed constructions.
+\end{reading}
+
+
+Define
+$\rho_\sigma(\bm r)=\sigma^3\pi^{-3/2}e^{-\sigma^2r^2}$ and
+$\widetilde f(\bm r)=\int\rho_\sigma(\bm r-\bm r')f(\bm r')\dd^3r'$.
+The phrase \emph{momentum sandwich} below is shorthand for the ordered operator
+product $B(p)V(r)B(p)$: the same momentum-dependent factor is placed on both
+sides of a position-dependent interaction.
+
+\begin{problem}{Problem 1 ★★ — Normalize and measure the smearing kernel}
+Prove $\int\rho_\sigma\dd^3r=1$ and compute $\expect{r^2}_\rho$.
+\end{problem}
+\begin{solution}
+The three Cartesian Gaussian integrals give
+$(\sqrt\pi/\sigma)^3$, cancelling the prefactor. Each coordinate has variance
+$1/(2\sigma^2)$, hence $\expect{r^2}=3/(2\sigma^2)$. Thus larger $\sigma$
+means a narrower spatial resolution.
+\end{solution}
+\begin{quiz}
+Does $\sigma\to\infty$ represent stronger or weaker smearing? \answer weaker;
+$\rho_\sigma$ approaches $\delta^3(\bm r)$.
+\end{quiz}
+
+\begin{problem}{Problem 2 ★★ — Smear a Gaussian}
+For $f(r)=e^{-\gamma^2r^2}$, compute $\widetilde f(r)$ and identify the combined
+width.
+\end{problem}
+\begin{solution}
+Completing the square in the convolution gives
+\[
+\widetilde f(r)=\left(\frac{\sigma^2}{\sigma^2+\gamma^2}\right)^{3/2}
+\exp\!\left[-\frac{\sigma^2\gamma^2}{\sigma^2+\gamma^2}r^2\right].
+\]
+If $\tau^{-2}=\sigma^{-2}+\gamma^{-2}$, the exponential is
+$e^{-\tau^2r^2}$.
+\end{solution}
+\begin{quiz}
+Why are inverse squared widths added? \answer convolution adds coordinate-space
+variances, and a Gaussian variance scales as the inverse squared width.
+\end{quiz}
+
+\begin{problem}{Problem 3 ★★ — Check the GI mass-dependent width}
+GI uses
+\[
+\sigma^2=\sigma_0^2\left[\frac12+\frac12
+\left(\frac{4m_1m_2}{(m_1+m_2)^2}\right)^4\right]
++s^2\left(\frac{2m_1m_2}{m_1+m_2}\right)^2.
+\]
+Compute the equal-mass form and the $m_1\gg m_2$ limit. Interpret both.
+\end{problem}
+\begin{solution}
+For $m_1=m_2=m$, the bracket equals one and the reduced combination equals $m$,
+so $\sigma^2=\sigma_0^2+s^2m^2$. For $m_1\gg m_2$, the fourth-power term
+vanishes and $2m_1m_2/(m_1+m_2)\to2m_2$, giving
+$\sigma^2\to\sigma_0^2/2+4s^2m_2^2$. The light constituent controls the
+resolution in a heavy--light system.
+\end{solution}
+\begin{quiz}
+Why is a single universal smearing radius inadequate across all flavor sectors?
+\answer relativistic localization is mass-dependent; light and heavy pairs
+resolve short distances differently.
+\end{quiz}
+
+\begin{problem}{Problem 4 ★★ — Prove a momentum sandwich is Hermitian}
+Let $B=B(p)$ be a real function of the self-adjoint $p^2$, and $V=V(r)$ a real
+multiplication operator. Prove $BVB$ is Hermitian and show
+$\bra\psi BVB\ket\psi=\bra{B\psi}V\ket{B\psi}$.
+\end{problem}
+\begin{solution}
+$B^\dagger=B$ and $V^\dagger=V$, so
+$(BVB)^\dagger=BVB$. Associativity gives the expectation identity. If $V$ is
+positive, the right-hand side is nonnegative, so the sandwich also preserves
+positivity.
+\end{solution}
+\begin{quiz}
+Would $BV$ generally be Hermitian? \answer no; $B(p)$ and $V(r)$ do not commute.
+The two-sided ordering is physical structure, not cosmetic symmetrization.
+\end{quiz}
+
+\begin{problem}{Problem 5 ★★★ — Analyze the GI relativization factor}
+For $E_i(p)=\sqrt{p^2+m_i^2}$, consider
+$B_i(p)=[m_1m_2/(E_1E_2)]^{1/2+\epsilon_i}$ and
+$A(p)=[1+p^2/(E_1E_2)]^{1/2}$. Compute their $p\to0$ and $p\to\infty$ limits
+for positive masses and explain their different roles.
+\end{problem}
+\begin{solution}
+At $p=0$, $B_i=A=1$. At large $p$, $E_1E_2\sim p^2$, so
+$A\to\sqrt2$, whereas
+$B_i\sim(m_1m_2/p^2)^{1/2+\epsilon_i}$. $A$ dresses the central vector
+interaction without suppressing high momentum; $B_i$ relativizes inverse-mass
+spin operators and softens their high-momentum action. The exponent is attached
+to each side of the Hermitian sandwich.
+\end{solution}
+\begin{quiz}
+Why can one not reproduce $BVB$ by multiplying $V(r)$ by an average number?
+\answer $B$ reshapes the state in momentum space before and after $V$; the
+result depends on off-diagonal matrix elements and on the state.
+\end{quiz}
+
+\begin{paperbridge}
+GI Eq. (10), repeated as Appendix-A Eq. (A7), defines the normalized Gaussian;
+(A8)--(A9) define convolution and its mass-dependent width. Eqs. (A12)--(A14)
+give the closed smeared potentials. The prescriptions immediately before
+(A15), and then (A15)--(A16), place the momentum-dependent factors on both sides
+of each radial interaction.
+\end{paperbridge}
+\end{document}

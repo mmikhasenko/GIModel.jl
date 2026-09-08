@@ -1,0 +1,133 @@
+\documentclass[11pt]{article}
+\newcommand{\SheetCode}{Theory 06}
+\input{../course-common.tex}
+\begin{document}
+\sheettitle{Sheet 6: Resolving the multiplets}{Contact, tensor, and spin--orbit structure}{Prerequisite: Sheets 1--5. \difficulty{★★--★★★} \quad \timebox{3--4 hours}}
+
+\begin{goals}
+Connect radial interactions to angular operators; derive contact selection and
+singlet/triplet patterns; use angular sum rules; distinguish vector and scalar
+spin--orbit terms; understand why spin terms may be included directly in a
+fixed-channel diagonalization instead of only to first order.
+\end{goals}
+\begin{reading}
+Selected reading in Landau--Lifshitz, \emph{Quantum Mechanics: Non-Relativistic
+Theory}: Ch. VI, ``Perturbation Theory,'' Ch. VIII, ``Spin,'' and Ch. XIV,
+``Addition of Angular Momenta.'' This is optional background rather than the
+sequence or notation that the sheet is required to follow.
+\end{reading}
+
+
+Throughout this sheet, a \emph{fixed channel} means that $L$, $S$, and $J$ are
+held fixed while the radial Hamiltonian is solved. Mixing between different
+spectroscopic channels is postponed to Sheet 7.
+
+\begin{problem}{Problem 1 ★ — Prove the unsmeared contact selection rule}
+Show that a regular $L>0$ wave has zero expectation of $\delta^3(\bm r)$, while
+an $S$ wave gives $|\Psi(0)|^2$.
+\end{problem}
+\begin{solution}
+$\int|\Psi|^2\delta^3(\bm r)\dd^3r=|\Psi(0)|^2$. Regularity gives
+$R_L\sim r^L$, so the value vanishes for $L>0$ and may be finite for $L=0$.
+Gaussian smearing broadens this exact selection rule into a strongly
+short-distance-weighted expectation.
+\end{solution}
+\begin{quiz}
+Why may a smeared contact term give a small nonzero $P$-wave contribution?
+\answer it samples a finite ball rather than only the point $r=0$.
+\end{quiz}
+
+\begin{problem}{Problem 2 ★ — Derive the hyperfine ratio}
+If $H_c=C\bm S_1\cdot\bm S_2$ and both spin states use the same radial wave,
+compute the singlet and triplet shifts and their spin-weighted centroid.
+\end{problem}
+\begin{solution}
+$\Delta E_{S=0}=-3C/4$ and $\Delta E_{S=1}=C/4$. Weighting by spin
+degeneracies gives $1(-3C/4)+3(C/4)=0$. Radial distortion in a full
+diagonalization can modify the simple ratio.
+\end{solution}
+\begin{quiz}
+If the reported contact shifts do not have exactly ratio $-3$, must the code be
+wrong? \answer not if singlet and triplet Hamiltonians were diagonalized
+separately and acquired different radial waves.
+\end{quiz}
+
+\begin{problem}{Problem 3 ★★ — Separate vector and scalar spin--orbit physics}
+For equal masses, write the most general diagonal form as
+$H_{LS}=C_{LS}(r)\bm L\cdot\bm S$. Explain why a Lorentz-vector Coulomb term and
+a Lorentz-scalar confining term can contribute with opposite signs.
+\end{problem}
+\begin{solution}
+The color-magnetic vector interaction generates a direct spin--orbit coupling,
+whereas scalar confinement contributes through Thomas precession of the
+accelerating rest frame. Their radial derivatives enter with different signs.
+The observed splitting therefore tests both the Lorentz structure and the
+short-distance kernel, not merely one coefficient.
+\end{solution}
+\begin{quiz}
+Can the central spectrum alone determine the Lorentz nature of confinement?
+\answer weakly at best; spin--orbit splittings carry the discriminating
+information.
+\end{quiz}
+
+\begin{problem}{Problem 4 ★★ — Use triplet centroid identities}
+For $^3P_J$, the conventional tensor expectations are
+$t_J=(-4,2,-2/5)$ for $J=(0,1,2)$. Verify
+$\sum_J(2J+1)t_J=0$ and combine this with the Sheet-2 spin--orbit sum rule.
+\end{problem}
+\begin{solution}
+$1(-4)+3(2)+5(-2/5)=0$. Since the spin--orbit weighted sum also vanishes,
+first-order tensor and spin--orbit corrections leave the degeneracy-weighted
+$^3P$ centroid unchanged. This is a useful algebraic check because it does not
+depend on the radial wavefunction.
+\end{solution}
+\begin{quiz}
+What kind of error survives this centroid check? \answer an incorrect radial
+normalization or common multiplicative error in the radial interaction can
+scale all shifts while preserving the angular identity.
+\end{quiz}
+
+\begin{problem}{Problem 5 ★★★ — Show why tensor forces mix $L$ and $L+2$}
+Treat the tensor interaction as the scalar coupling of a rank-2 spatial tensor
+and a rank-2 spin tensor. Use the triangle rule and parity to derive
+$\Delta L=0,\pm2$ for nonzero matrix elements.
+\end{problem}
+\begin{solution}
+A rank-2 spherical harmonic permits $|L-L'|\le2\le L+L'$. Parity conservation
+requires $L$ and $L'$ to have the same parity, eliminating $\Delta L=\pm1$.
+Thus diagonal and $\pm2$ matrix elements remain. For example, $^3S_1$ can mix
+with $^3D_1$.
+\end{solution}
+\begin{quiz}
+Why is the tensor operator zero in a spin singlet? \answer two spins coupled to
+$S=0$ cannot support a rank-2 spin tensor.
+\end{quiz}
+
+\begin{problem}{Problem 6 ★★★ — Compare perturbation and fixed-channel solution}
+Let $H(\lambda)=H_0+\lambda V_s$ in one fixed $(L,S,J)$ channel. Derive the
+first-order shift, then explain what is gained by diagonalizing $H(1)$ before
+forming later mixing blocks.
+\end{problem}
+\begin{solution}
+For a nondegenerate normalized eigenstate of $H_0$,
+$E_n'(0)=\bra nV_s\ket n$. Diagonalizing $H(1)$ includes the effect of $V_s$
+to all orders within the chosen finite basis, lets the radial wave respond to
+contact and fine structure, and makes
+later cross-channel elements use the physically distorted fixed-channel waves.
+It also makes the reported operator contributions expectations in one common
+eigenstate whose sum equals the eigenvalue.
+\end{solution}
+\begin{quiz}
+Why should reported ``central + contact + tensor + spin--orbit'' pieces use the
+same wave? \answer otherwise they do not decompose one Hamiltonian expectation
+and need not add to the stated mass.
+\end{quiz}
+
+\begin{paperbridge}
+GI Eq. (4) contains the contact and tensor hyperfine interactions; Eqs. (5)--(7)
+separate color-magnetic and Thomas-precession spin--orbit terms. Their smeared,
+momentum-dependent forms appear in Appendix-A Eqs. (A15)--(A16). The first
+stage described after Eq. (14) diagonalizes the diagonal pieces within fixed
+$\ket{jm;ls}$ sectors.
+\end{paperbridge}
+\end{document}

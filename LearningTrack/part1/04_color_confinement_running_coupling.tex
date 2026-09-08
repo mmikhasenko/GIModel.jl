@@ -1,0 +1,124 @@
+\documentclass[11pt]{article}
+\newcommand{\SheetCode}{Theory 04}
+\input{../course-common.tex}
+\begin{document}
+\sheettitle{Sheet 4: The spin-independent GI interaction}{Color, confinement, and a running Coulomb term}{Prerequisite: Sheets 1--3. \difficulty{★--★★★} \quad \timebox{2--3 hours}}
+
+\begin{goals}
+Reduce the color interaction in a singlet meson; understand the Cornell-like
+central potential; transform the Gaussian running coupling; analyze its
+short- and long-distance limits; predict qualitative flavor trends.
+\end{goals}
+\begin{reading}
+Selected reading in Landau--Lifshitz, \emph{Quantum Mechanics: Non-Relativistic
+Theory}: Ch. III, ``Schr\"odinger's Equation,'' and Ch. V, ``Motion in a
+Centrally Symmetric Field,'' especially the Coulomb problem. This is a useful
+comparison, not a prerequisite or the structure followed by the sheet.
+\end{reading}
+
+
+For a color-singlet $q\bar q$ pair,
+$\expect{\bm F_1\cdot\bm F_2}=-4/3$. The reduced central form is
+\[
+V(r)=br+c-\frac{4\alpha_s(r)}{3r},\qquad
+\alpha_s(r)=\sum_k a_k\operatorname{erf}(\gamma_k r).
+\]
+
+\begin{problem}{Problem 1 ★ — Recover the singlet potential}
+Starting from
+$-[\tfrac34c+\tfrac34br-\alpha_s(r)/r]\bm F_1\cdot\bm F_2$, insert the
+singlet color factor and simplify.
+\end{problem}
+\begin{solution}
+Multiplication by $-(-4/3)=4/3$ gives
+$c+br-4\alpha_s(r)/(3r)$. The attractive Coulomb sign and rising confinement
+term follow simultaneously from the singlet color projection.
+\end{solution}
+\begin{quiz}
+Which part of the potential prevents an isolated quark pair from separating at
+finite energy? \answer the linearly rising $br$ term.
+\end{quiz}
+
+\begin{problem}{Problem 2 ★★ — Derive the error function}
+Use
+$\int \dd^3q\,(2\pi)^{-3}4\pi e^{-q^2/(4\gamma^2)}e^{i\bm q\cdot\bm r}/q^2$
+to show that a Gaussian-regulated Coulomb kernel is
+$\operatorname{erf}(\gamma r)/r$. You may differentiate the radial integral
+with respect to $r$.
+\end{problem}
+\begin{solution}
+Angular integration reduces the transform to
+$\frac{2}{\pi r}\int_0^\infty e^{-q^2/(4\gamma^2)}\sin(qr)/q\,\dd q$.
+Differentiating its integral with respect to $r$ produces the elementary cosine
+Gaussian integral; integrating back from zero gives
+$(\pi/2)\operatorname{erf}(\gamma r)$, leaving
+$\operatorname{erf}(\gamma r)/r$.
+\end{solution}
+\begin{quiz}
+Why is the coordinate-space answer finite at $r=0$? \answer
+$\operatorname{erf}(x)\sim2x/\sqrt\pi$, cancelling the explicit $1/r$.
+\end{quiz}
+
+\begin{problem}{Problem 3 ★ — Compute both distance limits}
+Find the $r\to0$ and $r\to\infty$ limits of $\alpha_s(r)$ and of the Coulomb
+piece $G(r)=-4\alpha_s(r)/(3r)$.
+\end{problem}
+\begin{solution}
+At small $r$,
+$\alpha_s(r)=(2r/\sqrt\pi)\sum_k a_k\gamma_k+O(r^3)$, so
+$G(0)=-8\sum_k a_k\gamma_k/(3\sqrt\pi)$ is finite. At large $r$,
+$\alpha_s\to\sum_k a_k\equiv\alpha_s^{\rm crit}$ and
+$G\sim-4\alpha_s^{\rm crit}/(3r)$. With GI coefficients $0.25,0.15,0.20$,
+$\alpha_s^{\rm crit}=0.60$.
+\end{solution}
+\begin{quiz}
+Does “freezing” mean the potential becomes constant at large $r$? \answer no;
+the coupling freezes while its Coulomb potential still falls as $1/r$.
+\end{quiz}
+
+\begin{problem}{Problem 4 ★★ — Derive a virial scale}
+For a nonrelativistic trial estimate $E(R)\sim1/(2\mu R^2)+bR-\kappa/R$,
+derive the stationary equation for $R$. Discuss how the size changes as $\mu$
+increases.
+\end{problem}
+\begin{solution}
+$E'(R)=-1/(\mu R^3)+b+\kappa/R^2=0$, or
+$bR^3+\kappa R=1/\mu$. The positive solution decreases with increasing
+$\mu$: heavy quarkonia are more compact and probe shorter-distance physics.
+\end{solution}
+\begin{quiz}
+Why does compactness make heavy quarkonium a clean test of the model? \answer
+the system is more nonrelativistic and less sensitive to long-distance light
+quark dynamics, while still testing the short-distance potential.
+\end{quiz}
+
+\begin{problem}{Problem 5 ★★★ — Differentiate the Coulomb profile used by GI}
+Derive $G'(r)$ for $G=-4\alpha_s(r)/(3r)$ and
+$\alpha_s'=\sum_k(2a_k\gamma_k/\sqrt\pi)e^{-\gamma_k^2r^2}$.
+State why differentiating the analytic profile is preferable to differentiating
+tabulated values.
+\end{problem}
+\begin{solution}
+\[
+G'(r)=\frac{4\alpha_s(r)}{3r^2}-\frac{4\alpha_s'(r)}{3r}.
+\]
+Analytic differentiation preserves the same running-coupling formula and avoids
+small point-to-point numerical errors that derivatives can amplify, especially
+when followed by division by $r$. A finite-difference derivative can then serve
+as an independent check of the analytic result rather than becoming part of the
+definition of the interaction.
+\end{solution}
+\begin{quiz}
+If an analytic derivative and a finite-difference check disagree only very near
+$r=0$, what should be examined first? \answer use the series limit in which the
+apparently singular terms cancel, and then vary the finite-difference step.
+Changing a physical model parameter would not address either numerical issue.
+\end{quiz}
+
+\begin{paperbridge}
+GI Eq. (3) gives the linear-plus-Coulomb confinement interaction and Eq. (9)
+gives the meson color factor $-4/3$. Eqs. (12)--(13) relate the Gaussian sum for
+$\alpha_s(Q^2)$ to the coordinate-space error-function form; the numerical
+coefficients are printed in the caption of Fig. 2.
+\end{paperbridge}
+\end{document}

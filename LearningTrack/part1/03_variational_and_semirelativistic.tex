@@ -1,0 +1,123 @@
+\documentclass[11pt]{article}
+\newcommand{\SheetCode}{Theory 03}
+\input{../course-common.tex}
+\begin{document}
+\sheettitle{Sheet 3: From a Hamiltonian to a matrix}{Variational mechanics, oscillator bases, and $\sqrt{p^2+m^2}$}{Prerequisite: Sheets 1--2. \difficulty{★--★★★} \quad \timebox{3--4 hours}}
+
+\begin{goals}
+Derive Rayleigh--Ritz; understand the harmonic-oscillator (HO) basis as a
+representation rather than a physical assumption; prove variational monotonicity;
+analyze the semirelativistic kinetic energy and the role of a basis scale $\beta$.
+\end{goals}
+\begin{reading}
+Selected reading in Landau--Lifshitz, \emph{Quantum Mechanics: Non-Relativistic
+Theory}: Ch. III, ``Schr\"odinger's Equation,'' for the variational principle,
+and Ch. VI, ``Perturbation Theory.'' These chapters are optional background;
+the sheet develops the required argument directly.
+\end{reading}
+
+
+\begin{problem}{Problem 1 ★ — Derive Rayleigh--Ritz}
+For $\ket\psi=\sum_{i=1}^N c_i\ket{i}$ in an orthonormal basis, impose
+$\braket\psi\psi=1$ and derive the stationary equation for
+$\expect H$.
+\end{problem}
+\begin{solution}
+Stationarity of $c^\dagger Hc-E(c^\dagger c-1)$ with respect to $c_i^*$ gives
+$Hc=Ec$. The matrix $H_{ij}=\bra iH\ket j$ is the Hamiltonian restricted, or
+projected, to the span of the chosen $N$ basis functions. Diagonalizing it
+therefore solves the constrained variational problem in that finite subspace.
+\end{solution}
+\begin{quiz}
+Does matrix diagonalization approximate the algebra or the Hilbert space?
+\answer the finite subspace approximates the Hilbert space; diagonalization
+solves that projected problem exactly up to arithmetic error.
+\end{quiz}
+
+\begin{problem}{Problem 2 ★★ — Prove monotone upper bounds}
+Let $V_N\subset V_{N+1}$. Prove that the lowest variational energy (also called
+the lowest Ritz value) obeys
+$E_0^{(N+1)}\le E_0^{(N)}$ and $E_0^{(N)}\ge E_0$.
+\end{problem}
+\begin{solution}
+The minimum of the Rayleigh quotient over a larger set cannot increase, giving
+the first inequality. The exact ground energy is the minimum over the full
+domain, which contains $V_N$, giving the second. Corresponding upper bounds for
+excited states follow when the minimization is restricted to states orthogonal
+to the already determined lower states.
+\end{solution}
+\begin{quiz}
+Why are two successive nearly equal energies evidence, but not a proof, of
+convergence? \answer the result may be insensitive to the last change in $N$
+while still depending on an untested basis scale $\beta$, or an excited level
+may converge more slowly. More than one independent numerical control must be
+varied.
+\end{quiz}
+
+\begin{problem}{Problem 3 ★ — Expand the relativistic kinetic energy}
+Expand $T(p)=\sqrt{p^2+m_1^2}+\sqrt{p^2+m_2^2}$ through $p^4$. Identify the
+nonrelativistic reduced-mass term and state the expansion parameter.
+\end{problem}
+\begin{solution}
+\[
+T=m_1+m_2+\frac{p^2}{2}\left(\frac1{m_1}+\frac1{m_2}\right)
+-\frac{p^4}{8}\left(\frac1{m_1^3}+\frac1{m_2^3}\right)+O(p^6/m^5).
+\]
+Since $1/\mu=1/m_1+1/m_2$, the quadratic term is $p^2/(2\mu)$. The expansion
+requires typical $p^2/m_i^2\ll1$, which is least reliable for light quarks.
+\end{solution}
+\begin{quiz}
+Why not truncate at $p^4$ in a model intended to span pion to upsilon? \answer
+there is no uniformly small light-quark expansion parameter.
+\end{quiz}
+
+\begin{problem}{Problem 4 ★★ — Use a Gaussian trial state}
+For the normalized three-dimensional Gaussian
+$\psi_\beta=(\beta^3/\pi^{3/2})^{1/2}e^{-\beta^2r^2/2}$, compute
+$\expect{r}$, $\expect{1/r}$, and $\expect{p^2}$.
+\end{problem}
+\begin{solution}
+Radial Gaussian integrals give
+\[
+\expect r=\frac{2}{\sqrt\pi\,\beta},\qquad
+\expect{1/r}=\frac{2\beta}{\sqrt\pi},\qquad
+\expect{p^2}=\frac{3\beta^2}{2}.
+\]
+For $V=br-\kappa/r$, increasing $\beta$ lowers the Coulomb contribution but
+raises the kinetic energy and reduces the confinement energy.
+\end{solution}
+\begin{quiz}
+What physical length does $\beta^{-1}$ encode? \answer the trial state's radial
+size; optimizing $\beta$ adapts the representation to the bound state.
+\end{quiz}
+
+\begin{problem}{Problem 5 ★★★ — Explain the order of the calculation in the paper}
+Suppose $H(\beta,N)$ is the GI matrix for one fixed choice of $(L,S,J)$ in an $N$-function HO
+basis. Design a pen-and-paper convergence logic using $N$, $N+\Delta N$, and
+$\beta$. Why must mixing between different $(L,S,J)$ choices be applied only
+after these separately calculated states converge?
+\end{problem}
+\begin{solution}
+For each $N$, minimize the target variational energy over a chosen interval of
+$\beta$; enlarge
+$N$ and repeat until two successive changes are below tolerance and the optimum
+does not occur at an endpoint of that interval. Retain enough converged levels for every
+later mixing block. Mixing before convergence entangles truncation error with a
+physical off-diagonal coupling: changing $N$ then changes both the basis states
+and the matrix being interpreted.
+\end{solution}
+\begin{quiz}
+If HO energies agree with those from a finite-difference method, which represents
+$u(r)$ by values at selected radii, but their stored arrays look different, is
+that a contradiction? \answer no. Coefficients in basis functions and values at
+radii are different representations; norms, matrix elements, and eigenvalues
+are the quantities to compare.
+\end{quiz}
+
+\begin{paperbridge}
+GI Eq. (14) collects the relativized kinetic, confinement, hyperfine, and
+spin--orbit operators. The paragraph following it states that this Hamiltonian
+is directly diagonalized in large harmonic-oscillator bases, separately in
+$\ket{jm;ls}$ sectors, and that the basis is expanded until convergence.
+\end{paperbridge}
+\end{document}
