@@ -29,9 +29,10 @@ The repository has three first-class deliverables:
 - `test/runtests.jl` gates the pure numerics; `GIPaper/test/runtests.jl` gates
   the reference comparison.
 - `scripts/verify_project.sh` runs the current full gate (both packages).
-- `GIPaper/scripts/data_checks.py` is the only Python data/check entry point:
+- `GIPaper/test/data_validation.jl` owns package-level CSV, TOML, and
+  provenance invariants and runs as part of `Pkg.test()`.
+- `GIPaper/scripts/data_checks.py` remains a data-maintenance utility:
   - `python3 GIPaper/scripts/data_checks.py promote-clean`
-  - `python3 GIPaper/scripts/data_checks.py validate`
   - `python3 GIPaper/scripts/data_checks.py score-annihilation`
 - `GIPaper/scripts/run_all_spectrum_checks.jl` regenerates sector residual
   reports and the compact scorecard.
@@ -121,7 +122,6 @@ Raw provenance stays under `GIPaper/data/raw/` and `paper/vision_ocr/`.
 ## Common Commands
 
 ```bash
-python3 GIPaper/scripts/data_checks.py validate
 julia --project=. -e 'using Pkg; Pkg.test()'
 julia --project=GIPaper -e 'using Pkg; Pkg.test()'
 julia GIPaper/scripts/run_all_spectrum_checks.jl

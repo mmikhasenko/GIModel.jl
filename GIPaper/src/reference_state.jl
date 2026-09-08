@@ -35,7 +35,7 @@ FineStructureMultiplet(state::ReferenceState) =
     load_reference_spectrum(path::AbstractString) -> Vector{ReferenceState}
 
 Read a GI-style reference spectrum CSV. Required columns match
-`scripts/data_checks.py` validation of the files under `GIPaper/data/`.
+the data-invariant tests under `GIPaper/test/`.
 
 See [`ReferenceState`](@ref); use [`reference_spectrum_path`](@ref) for the bundled catalogs.
 """

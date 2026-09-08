@@ -26,7 +26,7 @@ Regenerate and validate:
 
 ```bash
 python3 scripts/data_checks.py promote-clean
-python3 scripts/data_checks.py validate
+julia --project=. -e 'using Pkg; Pkg.test()'
 ```
 
 The compact progress metric for the next isoscalar-annihilation implementation

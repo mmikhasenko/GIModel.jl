@@ -6,7 +6,7 @@
 # directly comparable curves. The calculation itself does not use that mesh.
 
 using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."))
+Pkg.activate(@__DIR__)
 
 using CairoMakie
 using LaTeXStrings

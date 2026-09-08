@@ -15,7 +15,7 @@
 # `SectorComputation` data, and reference residuals are evaluated last.
 
 using Pkg
-Pkg.activate(dirname(@__DIR__))
+Pkg.activate(joinpath(dirname(@__DIR__), "scripts"))
 
 using CairoMakie
 using LinearAlgebra

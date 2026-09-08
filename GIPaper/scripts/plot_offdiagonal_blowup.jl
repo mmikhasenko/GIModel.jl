@@ -8,7 +8,7 @@
 # input norms restores agreement.
 
 using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."))
+Pkg.activate(@__DIR__)
 
 using CairoMakie
 using LaTeXStrings

@@ -15,9 +15,9 @@ using Printf
 const ROOT = dirname(dirname(dirname(abspath(@__FILE__))))   # scripts -> GIPaper -> repo
 const MANIFEST_DIR = joinpath(ROOT, "docs", "paper_manifest")
 const REPORT = joinpath(ROOT, "GIPaper", "docs", "residual_reports", "manifest_check.md")
-const TEST_FILES = [
-    joinpath(ROOT, "test", "runtests.jl"),
-    joinpath(ROOT, "GIPaper", "test", "runtests.jl"),
+const TEST_DIRS = [
+    joinpath(ROOT, "test"),
+    joinpath(ROOT, "GIPaper", "test"),
 ]
 
 const STATUSES = Set(["reproduced", "partial", "implemented", "folded", "context", "missing", "todo"])
@@ -52,8 +52,12 @@ end
 function main()
     units = load_units()
     ids = Set(u["id"] for u in units)
-    runtests = join(
-        (read(path, String) for path in TEST_FILES if isfile(path)),
+    test_sources = join(
+        (
+            read(joinpath(dir, file), String)
+            for dir in TEST_DIRS if isdir(dir)
+            for file in sort(readdir(dir)) if endswith(file, ".jl")
+        ),
         "\n",
     )
     # cache file contents for symbol checks
@@ -84,9 +88,9 @@ function main()
         end
         # tests[]: name must occur in runtests.jl
         for t in get(u, "tests", String[])
-            occursin(String(t), runtests) || push!(
+            occursin(String(t), test_sources) || push!(
                 problems,
-                (id, "test `$t` not found in core or GIPaper test/runtests.jl"),
+                (id, "test `$t` not found under core or GIPaper test/"),
             )
         end
         # report / anchor: file must exist (if given)

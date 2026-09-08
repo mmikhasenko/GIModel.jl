@@ -29,11 +29,11 @@ label = "Table II"
 page = 5
 statement = "Model parameters of soft-QCD spectroscopy: quark masses, b, c, sigma_0, s, the four epsilon relativistic factors and the running-coupling constants."
 status = "reproduced"
-code = ["data/parameters.provisional.toml", "GIPaper/scripts/data_checks.py:validate_table_ii"]
+code = ["data/parameters.provisional.toml", "GIPaper/test/data_validation.jl:Table II agrees"]
 tests = ["parameter loading"]
 anchor = "paper/vision_ocr/page_images/page-005.png"
 parent = "sec-II"
-notes = "Reproduced as audited input (tier A): the paper's own constants, loaded into data/parameters.provisional.toml and sync-checked by data_checks.py; the `parameter loading` testset asserts b, quark masses and the epsilon factors. Not refit."
+notes = "Reproduced as audited input (tier A): the paper's own constants, loaded into data/parameters.provisional.toml and sync-checked by the Julia data-validation tests; the `parameter loading` testset asserts b, quark masses and the epsilon factors. Not refit."
 
 # --- Sec. III: isoscalar mixings -------------------------------------------
 

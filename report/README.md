@@ -27,11 +27,12 @@ git-ignored, the PDF is tracked.)
 The curated figures under `figures/` are copies of generated output:
 
 - Sector ladder plots (`charmonium.png`, `isovector.png`, …):
-  `julia GIPaper/scripts/plot_all_sector_spectra.jl`, output in
+  `julia --project=GIPaper/scripts GIPaper/scripts/plot_all_sector_spectra.jl`, output in
   `GIPaper/scripts/spectrum_plots/`.
 - Wavefunction/basis figures (`wavefn_*.png`):
-  `julia GIPaper/scripts/plot_basis_wavefunctions.jl` and
-  `julia GIPaper/scripts/plot_offdiagonal_blowup.jl`, same output directory.
+  `julia --project=GIPaper/scripts GIPaper/scripts/plot_basis_wavefunctions.jl` and
+  `julia --project=GIPaper/scripts GIPaper/scripts/plot_offdiagonal_blowup.jl`,
+  same output directory.
 
 Copy refreshed plots into `figures/` deliberately — the report should only
 change when the model or the comparison meaningfully changes.

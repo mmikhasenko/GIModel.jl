@@ -28,7 +28,7 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
   - Paper anchor: nonrelativistic orientation around Eqs. (2)-(3), PDF pages
     2-3.
   - Parameters: `data/parameters.provisional.toml`, copied from Table II
-    (`data/table_ii_parameters.csv`). `scripts/data_checks.py validate` checks
+    (`data/table_ii_parameters.csv`). `test/data_validation.jl` checks
     they still agree on mapped entries. Table II `relativistic_factors`
     $\epsilon$ values are loaded into `GIParameters`; the active
     contact and fine-structure paths use GI-style Hermitian momentum-factor
@@ -55,7 +55,7 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     $$
     implemented as `GIModel.dV_coul_central_dr` in
     `src/spin_fine_structure.jl` and regression-tested against a
-    finite-difference derivative in `test/runtests.jl`.
+    finite-difference derivative in `test/spin_kernels.jl`.
 
 - `src/GIModel.jl`: smeared S-wave contact hyperfine shift.
   - Paper anchor: color hyperfine term around Eq. (4), PDF page 2, and
@@ -112,7 +112,8 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
   a diagnostic comparator below the closed-form modes.
   - Code toggle: `GIParameters.appendix_a_smearing` gates `potential_diagonal` →
     `smeared_central_values`.
-  - Regression test: `test/runtests.jl` checks that `smear_3d_radial` preserves a
+  - Regression test: `test/central_potentials.jl` checks that
+    `smear_3d_radial` preserves a
     constant function once the mesh is extended by $8/\sigma$ (the same tail
     coverage used in `smeared_central_values`), so any stray $4\pi$ or kernel
     prefactor drift becomes a loud failure.
@@ -207,7 +208,8 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     `I_vector_12`, `I_scalar_11`, `I_scalar_22`, and `I_tk` together with the
     assembled contributions. Radial expectation values use the shared
     `RadialWave` normalization contract.
-  - Regression tests in `test/runtests.jl`: triplet tensor/L·S angular sum rules
+  - Regression tests in `test/fine_structure.jl` and
+    `test/spin_kernels.jl`: triplet tensor/L·S angular sum rules
     and Coulomb $d\alpha_s/dr$ consistency; the OGE tensor kernel
     $K(r)=(1/r)\,dG/dr-d^2G/dr^2$ is also checked against finite-difference
     derivatives of $G(r)=-4\alpha_s(r)/(3r)$; `fine_structure_split` checks that
@@ -269,7 +271,7 @@ masses and that detailed smearing is “relegated to Appendix A.”
   dispatch on both native wave representations with no fitted bridge factor.
 
 **Reference row lock-in:** Table II inputs are checked against
-`data/table_ii_parameters.csv` via `scripts/data_checks.py validate`. Reference
+`data/table_ii_parameters.csv` via `test/data_validation.jl`. Reference
 spectrum rows are checked for schema by the same command.
 Formula-audit checkpoint: Table II `epsilon_so_scalar` was rechecked against
 `paper/vision_ocr/page_images/page-005.png`; the paper value is

@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
-"""Repository data promotion, validation, and progress scorecards.
+"""Repository data promotion and progress scorecards.
 
-This is the one Python data/check entry point. Physics calculations and report
-generation should stay in Julia unless they are pure CSV/provenance bookkeeping.
+Package data validation lives in the Julia tests. This script is limited to
+write-oriented CSV promotion and report scorecard maintenance.
 """
 
 import argparse
 import csv
 import re
 import sys
-import tomllib
-from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,39 +16,6 @@ DATA = ROOT / "data"
 CLEAN = DATA / "clean"
 DOCS = ROOT / "docs"
 REPORTS = DOCS / "residual_reports"
-# The solver-parameter TOML is GIModel configuration, not paper data; it lives
-# in the root package's data/ directory one level up. The scanned paper (and
-# its OCR provenance files) also stays at the repository root.
-REPO_ROOT = ROOT.parents[0]
-MODEL_PARAMETERS_TOML = REPO_ROOT / "data" / "parameters.provisional.toml"
-
-
-def provenance_exists(relative: str) -> bool:
-    """Provenance paths are data/... (GIPaper) or paper/... (repository root)."""
-    return (ROOT / relative).exists() or (REPO_ROOT / relative).exists()
-
-SEED_REQUIRED = {
-    "sector",
-    "state_label",
-    "assignment",
-    "mass_MeV",
-    "source_status",
-    "source_short",
-    "source_url",
-}
-
-REFERENCE_REQUIRED = {
-    "sector",
-    "quark_content",
-    "composition_raw",
-    "n",
-    "multiplicity",
-    "L",
-    "J",
-    "mass_GeV",
-    "confidence",
-}
-
 MASS_FIELDS = [
     "clean_id",
     "source",
@@ -96,22 +61,6 @@ MIXING_FIELDS = [
     "notes",
 ]
 
-TABLE_II_MAP = {
-    "m_ud_avg": (("masses", "m_ud_avg_MeV"), 1.0),
-    "m_s": (("masses", "m_s_MeV"), 1.0),
-    "m_c": (("masses", "m_c_MeV"), 1.0),
-    "m_b": (("masses", "m_b_MeV"), 1.0),
-    "b": (("potential", "b_GeV2"), 1.0),
-    "Lambda": (("potential", "Lambda_MeV"), 1.0),
-    "c": (("potential", "c_MeV"), 1.0),
-    "sigma0": (("relativistic_smearing", "sigma0_GeV"), 1.0),
-    "s": (("relativistic_smearing", "s"), 1.0),
-    "epsilon_c": (("relativistic_factors", "epsilon_c"), 1.0),
-    "epsilon_t": (("relativistic_factors", "epsilon_t"), 1.0),
-    "epsilon_so_vector": (("relativistic_factors", "epsilon_so_vector"), 1.0),
-    "epsilon_so_scalar": (("relativistic_factors", "epsilon_so_scalar"), 1.0),
-}
-
 TABLE_III_PSEUDOSCALAR_ROWS = [
     ("1 S0", "eta(548)", "P1", 370, 2, [("1 ns", +0.67), ("1 ss", -0.73), ("1 cc", +0.001), ("1 bb", +2e-4), ("2 ns", +0.11), ("2 ss", +0.042), ("2 cc", -5e-4)]),
     ("1 S0", "eta(548)", "P2", 340, 3, [("1 ns", +0.68), ("1 ss", -0.73), ("1 cc", -0.005), ("1 bb", +3e-4), ("2 ns", +0.09), ("2 ss", +0.051), ("2 cc", +0.002)]),
@@ -143,12 +92,6 @@ def read_csv(path: Path) -> list[dict[str, str]]:
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8") if path.exists() else ""
-
-
-def fail(lines: list[str]) -> int:
-    for line in lines:
-        print(line, file=sys.stderr)
-    return 1
 
 
 def spin_from_multiplicity(value: str) -> str:
@@ -261,127 +204,6 @@ def promote_clean(_args: argparse.Namespace) -> int:
     return 0
 
 
-def validate_seed() -> int:
-    path = DATA / "seed" / "godfrey_isgur_seed_masses.csv"
-    if not path.exists():
-        return fail([f"missing seed table: {path}"])
-    with path.open(newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        missing = SEED_REQUIRED.difference(reader.fieldnames or [])
-        rows = list(reader)
-    if missing:
-        return fail(["seed missing required columns: " + ", ".join(sorted(missing))])
-    errors = []
-    keys = Counter()
-    for index, row in enumerate(rows, start=2):
-        for column in ("sector", "assignment", "source_status"):
-            if not row.get(column, "").strip():
-                errors.append(f"seed row {index}: missing {column}")
-        try:
-            float(row.get("mass_MeV", ""))
-        except ValueError:
-            errors.append(f"seed row {index}: mass_MeV is not numeric")
-        keys[(row.get("sector", ""), row.get("state_label", ""), row.get("assignment", ""), row.get("mass_MeV", ""))] += 1
-    duplicates = {key: count for key, count in keys.items() if count > 1}
-    for key, count in sorted(duplicates.items()):
-        errors.append(f"seed duplicate x{count}: {key}")
-    if errors:
-        return fail(errors)
-    print(f"seed: OK ({len(rows)} rows)")
-    return 0
-
-
-def validate_table_ii() -> int:
-    rows = {r["parameter_key"]: float(r["value"]) for r in read_csv(DATA / "table_ii_parameters.csv")}
-    with MODEL_PARAMETERS_TOML.open("rb") as f:
-        toml = tomllib.load(f)
-    bad = []
-    for key, (path, scale) in TABLE_II_MAP.items():
-        if key not in rows:
-            bad.append(f"Table II missing CSV key: {key}")
-            continue
-        value = toml
-        for part in path:
-            value = value[part]
-        csv_value = rows[key] * scale
-        if abs(csv_value - float(value)) > 1e-9 * max(1.0, abs(float(value))):
-            bad.append(f"{key}: CSV {rows[key]!r} maps to {csv_value}, TOML {path} is {value!r}")
-    if bad:
-        return fail(bad)
-    print("Table II/TOML: OK")
-    return 0
-
-
-def validate_references() -> int:
-    files = sorted(DATA.glob("reference_spectrum_*.csv"))
-    if not files:
-        return fail(["no reference_spectrum_*.csv under data/"])
-    bad = []
-    for path in files:
-        with path.open(newline="", encoding="utf-8") as f:
-            header = next(csv.reader(f), None)
-        if not header:
-            bad.append(f"{path.name}: empty file")
-            continue
-        missing = sorted(REFERENCE_REQUIRED - {column.strip() for column in header})
-        if missing:
-            bad.append(f"{path.name}: missing columns {missing}")
-    if bad:
-        return fail(bad)
-    print(f"reference spectra: OK ({len(files)} files)")
-    return 0
-
-
-def validate_clean() -> int:
-    bad = []
-    mass_rows = read_csv(CLEAN / "masses.csv")
-    if not mass_rows:
-        bad.append("missing or empty data/clean/masses.csv")
-    seen = set()
-    for index, row in enumerate(mass_rows, start=2):
-        cid = row.get("clean_id", "")
-        if not cid or cid in seen:
-            bad.append(f"masses row {index}: missing or duplicate clean_id {cid!r}")
-        seen.add(cid)
-        try:
-            if float(row.get("mass_model_MeV", "")) <= 0:
-                bad.append(f"masses row {index}: non-positive mass_model_MeV")
-        except ValueError:
-            bad.append(f"masses row {index}: invalid mass_model_MeV")
-        if not provenance_exists(row.get("provenance_file", "")):
-            bad.append(f"masses row {index}: missing provenance file")
-        if row.get("confidence") not in {"high", "medium", "low"}:
-            bad.append(f"masses row {index}: unexpected confidence {row.get('confidence')!r}")
-
-    mixing_rows = read_csv(CLEAN / "mixings.csv")
-    seen = set()
-    for index, row in enumerate(mixing_rows, start=2):
-        cid = row.get("clean_id", "")
-        if not cid or cid in seen:
-            bad.append(f"mixings row {index}: missing or duplicate clean_id {cid!r}")
-        seen.add(cid)
-        try:
-            float(row.get("amplitude", ""))
-        except ValueError:
-            bad.append(f"mixings row {index}: invalid amplitude")
-        if not provenance_exists(row.get("provenance_file", "")):
-            bad.append(f"mixings row {index}: missing provenance file")
-        if row.get("confidence") not in {"high", "medium", "low"}:
-            bad.append(f"mixings row {index}: unexpected confidence {row.get('confidence')!r}")
-    if bad:
-        return fail(bad)
-    print(f"clean data: OK ({len(mass_rows)} mass rows, {len(mixing_rows)} mixing rows)")
-    return 0
-
-
-def validate_all(_args: argparse.Namespace) -> int:
-    for check in (validate_seed, validate_table_ii, validate_references, validate_clean):
-        rc = check()
-        if rc != 0:
-            return rc
-    return 0
-
-
 def annihilation_score(_args: argparse.Namespace) -> int:
     formula_items = ("Eq. (16)", "Eq. (17)", "Eq. (18a)", "Eq. (18b)", "Table III")
     formula_text = read_text(DOCS / "formula_map.md")
@@ -406,7 +228,10 @@ def annihilation_score(_args: argparse.Namespace) -> int:
         clean_points += 10
 
     source = read_text(ROOT / "src" / "comparison.jl")
-    tests = read_text(ROOT / "test" / "runtests.jl")
+    tests = "\n".join(
+        read_text(path)
+        for path in sorted((ROOT / "test").glob("*.jl"))
+    )
     modes = {
         ":none": ("scheme in (:none", "plain = compare_reference("),
         ":calibrated_p1": (":calibrated_p1", "isoscalar_pseudoscalar_annihilation = :calibrated_p1"),
@@ -498,7 +323,6 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("promote-clean").set_defaults(func=promote_clean)
-    sub.add_parser("validate").set_defaults(func=validate_all)
     sub.add_parser("score-annihilation").set_defaults(func=annihilation_score)
     args = parser.parse_args()
     return args.func(args)

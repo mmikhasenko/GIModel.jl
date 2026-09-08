@@ -5,8 +5,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-python3 GIPaper/scripts/data_checks.py validate
 # FiniteDifferences lives in the test target, so run the suites through Pkg.test.
+# GIPaper's Julia test suite owns the CSV, TOML, and provenance invariants.
 julia --project=. -e 'using Pkg; Pkg.test()'
 julia --project=GIPaper -e 'using Pkg; Pkg.test()'
 julia GIPaper/scripts/audit_ho_convergence.jl # PA-12: adaptive native-HO certificate
@@ -29,7 +29,7 @@ julia GIPaper/scripts/audit_nonmixing_contact.jl
 julia GIPaper/scripts/audit_mixing_angles.jl
 julia GIPaper/scripts/audit_table_vi_photon_decays.jl
 julia GIPaper/scripts/audit_realistic_factors.jl
-julia --project=GIPaper GIPaper/docs/mixing_studies.jl
+julia --project=GIPaper/scripts GIPaper/docs/mixing_studies.jl
 julia GIPaper/scripts/analyze_heavy_quarkonium.jl
 julia GIPaper/scripts/run_all_spectrum_checks.jl
 # Scores by READING two reports -- table_iii_mixing_audit.md and

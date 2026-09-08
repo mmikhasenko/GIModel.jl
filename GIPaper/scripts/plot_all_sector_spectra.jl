@@ -3,7 +3,7 @@
 # after the currently assigned same-J antisymmetric spin-orbit mixing.
 
 using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."))
+Pkg.activate(@__DIR__)
 
 using CairoMakie
 using DataFrames
