@@ -16,12 +16,12 @@ The repository has four first-class deliverables:
   masses), runs `compare_reference`, applies the Table III annihilation
   prescriptions, and writes residual reports.
 - **Report** (`report/`) — the code-free, high-level account:
-  [gi_reproduction.qmd](report/gi_reproduction.qmd) explains the package as an
-  inspectable computational and teaching resource, with Pluto exploration,
-  reproduction evidence, scientific visualization, and extension directions.
-  An appendix traces the agent-assisted FD-to-HO development through git history.
-  The rendered PDF is tracked; see [report/README.md](report/README.md) for the
-  build and evidence policy.
+  [gi_reproduction.qmd](report/gi_reproduction.qmd) is a first-person account of
+  the reproduction — what the paper asks you to compute, the FD-then-HO route
+  the project took, the corrections that taught the physics, what the evidence
+  currently rests on, and what the work left behind (package, learning track,
+  notebooks). The rendered PDF is tracked; see
+  [report/README.md](report/README.md) for the build and evidence policy.
 - **Learning track** (`LearningTrack/`) — **AGI: Agentic Godfrey--Isgur**, a
   nine-sheet pen-and-paper course from elementary radial quantum mechanics to
   the complete paper-order spectrum algorithm, plus a question-led bridge to a

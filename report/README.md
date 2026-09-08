@@ -1,16 +1,18 @@
 # GIModel.jl report
 
 `gi_reproduction.qmd` is the source of the project report,
-**GIModel.jl: An Inspectable Quark Model for Computation and Learning**.
-The report explains the value of the software and its companion learning
-material: inspectable numerical answers, language-model-assisted exploration,
-Pluto and live documentation, flavor-sector visualizations, open-source reuse,
-and future physics and differentiation work. The original paper and
-`LearningTrack/` supply the detailed theory.
+**Recomputing Godfrey--Isgur: An Excursion into a 1985 Quark Model**.
+It is a first-person account of the reproduction rather than a description of
+a finished tool: what the paper asks you to compute, the FD-then-HO route the
+project actually took, the four corrections (normalization and phase, a
+converged-but-wrong approximation, the limits of convergence, and a scorecard
+reporting the wrong run) that taught the physics, what working with coding
+agents was like, what the reproduction currently rests on, and what it left
+behind — the package, the learning track, and the notebooks.
 
-The development appendix follows the FD-to-native-HO route through verifiable
-git commits, including normalization, phase, staging, and verification failures.
-It can also serve as the narrative basis for a companion website story.
+The original paper and `LearningTrack/` supply the detailed theory; the report
+does not repeat them. The development narrative is anchored to verifiable git
+commits and can serve as the basis for a companion website story.
 
 ## Building
 

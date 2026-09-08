@@ -1,24 +1,26 @@
 ---
-title: "GIModel.jl: An Inspectable Quark Model for Computation and Learning"
+title: "Recomputing Godfrey--Isgur: An Excursion into a 1985 Quark Model"
 author:
   - name: "GIModel reproduction project"
 date: 2026-09-08
 abstract: |
-  GIModel.jl makes the Godfrey--Isgur relativized quark model available as an
-  inspectable Julia computation. This report describes the software, its
-  reproduction evidence, and the learning material released alongside it.
-  The original 1985 paper supplies the physics; a companion theory course and
-  Pluto notebooks let readers work through that physics, change inputs, and
-  follow a result to its operators, wavefunctions, and numerical convergence.
-  The package provides a computational foundation for questions about meson
-  masses, mixing, and decays, including questions posed through a language
-  model interface. The same numerical objects support interactive flavor
-  comparisons, scientific visualizations, and future extensions of the model.
-  A separate comparison package records the provenance and residuals of the
-  reproduction, including unresolved photon-decay coverage. An appendix traces
-  the agent-assisted development from a finite-difference reference calculation
-  back to the paper's harmonic-oscillator method, documenting the failures and
-  corrections that made the underlying physics clearer.
+  Forty years after Godfrey and Isgur published their relativized quark model
+  [Phys. Rev. D **32**, 189 (1985)], it is still the default $q\bar q$ baseline
+  --- and its numbers still cannot be regenerated from the paper alone. I set
+  out to recompute them, and this report is an account of that attempt rather
+  than a description of a finished tool. It follows the route I actually took:
+  a finite-difference solver as a first foothold, then the long way back to the
+  paper's own harmonic-oscillator method and its three-stage order of
+  diagonalization and mixing. Four corrections along the way --- about
+  normalization and phase, about a converged approximation that was
+  nevertheless the wrong calculation, about what convergence does and does not
+  certify, and about verification infrastructure that reported the wrong run
+  --- taught me more physics than the successful steps did. Much of the work
+  was carried out with coding agents, and the false starts are part of the
+  story. What the excursion left behind is a Julia package whose intermediate
+  quantities can be inspected, a comparison package that keeps the provenance
+  and the still-open residuals, and a course and set of notebooks for anyone
+  who wants to walk the same road.
 format:
   pdf:
     documentclass: article
@@ -38,369 +40,427 @@ format:
 bibliography: references.bib
 ---
 
-# A computational reference for hadron physics
+# Why I went back to 1985
 
-Quantum mechanics provides a concrete foundation for learning hadron physics:
-Hamiltonians produce spectra, wavefunctions determine matrix elements, and
-mixing changes both the identities of states and their observable transitions.
-The relativized quark model of Godfrey and Isgur [@godfrey1985] brings these
-ideas together across light and heavy mesons. Working through it connects
-familiar quantum-mechanical operations to an extensive phenomenological
-calculation.
+The relativized quark model of Godfrey and Isgur [@godfrey1985] --- hereafter
+GI --- describes light and heavy mesons, "from the pion to the upsilon," within
+a single soft-QCD Hamiltonian. One fixed set of parameters produces the masses,
+and afterwards the couplings, of essentially the whole meson landscape. Four
+decades later it is still the baseline against which new states are judged.
 
-GIModel.jl makes that calculation available for reuse and inspection. A reader
-can ask for a meson spectrum, examine a particular state, resolve its mixed
-components, and follow the calculation down to the radial operators. The
-scientific contribution of this project is the recovery and organization of
-that executable knowledge: equations, numerical conventions, reference data,
-and checks that can be used again by someone other than their implementer.
+What drew me in was the gap between that status and what one can actually do
+with the paper. The relativistic smearing, the momentum-dependent operator
+factors, and the isoscalar annihilation machinery are specified
+semiquantitatively, spread across the main text and Appendix A, and the spectra
+themselves appear as figures rather than tables. To use the model you must
+first rebuild it, and everyone who has rebuilt it has done so privately. I
+wanted to know whether the published numbers really do follow from the
+published ingredients, with no fitting of my own --- and I wanted the answer to
+be inspectable afterwards, by me and by anyone else.
 
-This report serves as a reference for citing GIModel.jl and understanding what
-it supplies. The original paper remains the reference for the model itself.
-The accompanying theory sheets and computational notebooks provide the detailed
-learning route. Here we explain why the software is useful, how its answers can
-be inspected, what supports the reproduction, and what becomes possible when
-the technical ingredients are openly available.
+So this is a trip report. It follows the order in which things happened: what
+the paper asks you to compute (@sec-model), the route I took through it
+and why it was the wrong way round (@sec-route), the four mistakes that
+taught me the most (@sec-corrections), what it was like to do this with
+coding agents (@sec-agents), what the reproduction currently rests on and
+where it is still incomplete (@sec-evidence), and what the excursion left
+behind for other people (@sec-leftbehind). Throughout, the 1985 paper is
+the authority; my code is only a claim about it.
 
-There are four complementary deliverables. **GIModel** owns the physics
-computation. **GIPaper** owns the comparison with the original paper, including
-digitized inputs and reference assignments. **The learning track** supplies
-problems, worked solutions, and computational exploration. **This report**
-connects those resources and records their scope. Together they fill a practical
-gap between a published model and a reusable tool in the open-source research
-ecosystem. The value of filling that gap does not depend on a claim to be the
-first quark-model program: it lies in making this particular calculation
-available with its assumptions and evidence attached.
+I make no claim to be the first person to program this model. The point of
+doing it in the open is narrower and, I think, more useful: this particular
+calculation now exists with its assumptions, its conventions, and its evidence
+attached to it.
 
-# From a question to a numerical answer {#sec-inspection}
+# What the paper asks you to compute {#sec-model}
 
-## Masses, mixing, and decay
+## The Hamiltonian
 
-A useful physics interface starts with questions. What contributes to a meson
-mass? Why do two states with the same quantum numbers mix? Why can a small
-change in mixing produce a large change in a decay amplitude? GIModel supplies
-objects with which these questions can be made precise.
-
-In the model, a rest-frame mass is an eigenvalue of the Hamiltonian, whose
-kinetic contribution is
+GI start from a rest-frame equation with a relativistic kinetic term,
 $$
-H_0=\sqrt{p^2+m_1^2}+\sqrt{p^2+m_2^2}.
+H\,|\Psi\rangle = (H_0 + V)\,|\Psi\rangle = E\,|\Psi\rangle ,
+$$ {#eq-schrodinger}
 $$
-Confinement and spin-dependent interactions determine the rest of the
-operator. The solver produces both eigenvalues and wavefunctions. When the
-allowed configurations mix, a physical state takes the form
+H_0 = \sqrt{p^2 + m_1^2} + \sqrt{p^2 + m_2^2},
+$$ {#eq-kinetic}
+with $V=V(\mathbf{p},\mathbf{r})$ momentum dependent and
+$\mathbf{p}=\mathbf{p}_1=-\mathbf{p}_2$. In the nonrelativistic limit $V$
+reduces to the familiar sum of confinement, hyperfine, and spin--orbit terms.
+The spin-independent piece combines a linear Lorentz-scalar term with a
+Coulomb-type one-gluon exchange,
+$$
+H^{\text{conf}}_{ij}
+  = -\Big[\tfrac34 c + \tfrac34 b r - \frac{\alpha_s(r)}{r}\Big]\,
+    \mathbf{F}_i\!\cdot\!\mathbf{F}_j ,
+$$ {#eq-conf}
+with $\langle \mathbf{F}_i\!\cdot\!\mathbf{F}_j\rangle = -4/3$ in a meson; the
+color hyperfine interaction supplies the contact and tensor pieces,
+$$
+H^{\text{hyp}}_{ij} = -\frac{\alpha_s(r)}{m_i m_j}
+  \Big[\tfrac{8\pi}{3}\,\mathbf{S}_i\!\cdot\!\mathbf{S}_j\,\delta^3(\mathbf{r})
+  + \frac{1}{r^3}\,S_{ij}\Big]\mathbf{F}_i\!\cdot\!\mathbf{F}_j ,
+$$ {#eq-hyp}
+and the spin--orbit interaction splits into a color-magnetic and a
+Thomas-precession part. A separate gluon-annihilation term $H_A$ contributes
+only in self-conjugate isoscalar channels.
+
+As GI themselves stress, @eq-hyp and its spin--orbit companions are more
+singular than $r^{-2}$ and are illegal operators in @eq-schrodinger as written.
+The resolution is Appendix A, and Appendix A is where the reproduction work
+actually lives.
+
+## Relativization: smearing and momentum factors
+
+Two things happen there. First, the relative coordinate is *smeared* over
+distances of order the inverse quark masses,
+$$
+\rho_{ij}(\mathbf{r}'-\mathbf{r})
+  = \frac{\sigma_{ij}^3}{\pi^{3/2}}\,
+    e^{-\sigma_{ij}^2(\mathbf{r}'-\mathbf{r})^2},
+$$ {#eq-smear}
+with a mass-dependent width $\sigma_{ij}(\sigma_0,s)$, which tames the
+short-distance singularities and makes the operators legal. Second, the
+coefficients acquire a dependence on the quark momenta: mass factors $m^{-1}$
+are promoted to operator factors built from $E_i=(p^2+m_i^2)^{1/2}$, so that
+the light-quark hyperfine term saturates to a finite $m\to0$ limit controlled
+by $\langle p^{-1}\rangle$ instead of diverging.
+
+Concretely, the central Coulomb and confinement terms become their smeared
+forms $\widetilde G(r)$ and $\widetilde S(r)$, and the Coulomb operator is
+dressed with a Hermitian momentum sandwich,
+$$
+G' = A(p)\,\widetilde G\,A(p),
+\qquad A(p) = \Big(1 + \tfrac{p^2}{E_1 E_2}\Big)^{1/2},
+$$ {#eq-sandwich}
+with the same construction, at the side exponents $\tfrac12+\epsilon_i$ of
+Table II, applied to the contact, tensor, and spin--orbit kernels. Those
+kernels are themselves built from derivatives of the *smeared* central
+functions. Getting the ordering of these operations right, and keeping it right
+in two different numerical representations, turned out to be most of the
+project.
+
+The strong coupling is a frozen sum of Gaussians,
+$$
+\alpha_s(Q^2) = 0.25\,e^{-Q^2} + 0.15\,e^{-Q^2/10} + 0.20\,e^{-Q^2/1000},
+$$ {#eq-alphaq}
+with $Q$ in GeV and $\alpha_s^{\text{crit}}=0.60$, which becomes a
+coordinate-space error-function profile convenient for convolving with
+@eq-smear. In self-conjugate isoscalars, $q\bar q$ annihilates through gluons
+($n=2$ for $C=+$, $n=3$ for $C=-$), and the channel-coupling element
+$$
+\begin{aligned}
+A(^{2S+1}L_J)_{ji} = {}& 4\pi(2L{+}1)\,A(^{2S+1}L_J) \\
+  &\times \Big[\frac{\alpha_s(M_j^2)\alpha_s(M_i^2)}{\pi^2}\Big]^{n/2}
+  \frac{S_L(\Psi_j)S_L(\Psi_i)}{m_i m_j}
+\end{aligned}
+$$ {#eq-ann16}
+depends on the wavefunction near the origin through $S_L(\Psi_i)$. That
+dependence is what later made the isoscalars the sharpest test of whether I had
+the wavefunctions right, not merely the energies.
+
+## The inputs I allowed myself
+
+The parameters are GI Table II, taken verbatim (Table~\ref{tab:params}). These
+constants, the $\alpha_s$ form above, and the paper's reference masses are the
+only inputs; nothing in the model is fitted here.
+
+```{=latex}
+\begin{table}[t]
+\centering
+\caption{GI Table II parameters, used verbatim. The tensor exponent is the
+paper's $\epsilon_f$ (code \texttt{epsilon\_t}).}
+\label{tab:params}
+\begin{tabular}{llr}
+\toprule
+Quantity & Symbol & Value \\
+\midrule
+Light quark mass & $\tfrac12(m_u+m_d)$ & $220$ MeV \\
+Strange mass & $m_s$ & $419$ MeV \\
+Charm mass & $m_c$ & $1628$ MeV \\
+Bottom mass & $m_b$ & $4977$ MeV \\
+String tension & $b$ & $0.18$ GeV$^2$ \\
+Constant & $c$ & $-253$ MeV \\
+Frozen coupling & $\alpha_s^{\text{crit}}$ & $0.60$ \\
+QCD scale & $\Lambda$ & $200$ MeV \\
+Smearing width & $\sigma_0$ & $1.80$ GeV \\
+Smearing exponent & $s$ & $1.55$ \\
+Contact factor & $\epsilon_c$ & $-0.168$ \\
+Tensor factor & $\epsilon_f$ & $+0.025$ \\
+Vector spin--orbit & $\epsilon_{\text{so}(V)}$ & $-0.035$ \\
+Scalar spin--orbit & $\epsilon_{\text{so}(S)}$ & $+0.055$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+```
+
+GI quote an expected accuracy of $25$ MeV for light-quark mesons and $10$ MeV
+for heavy-quark systems, dominated by neglected coupled-channel shifts and by
+the schematic relativization. That is the standard the reproduction has to be
+measured against --- and it is worth saying early that a solver tolerance and a
+physical accuracy are different things, a distinction I had to keep
+re-learning.
+
+# The route I took, and why it was backwards {#sec-route}
+
+In 1985 the harmonic-oscillator (HO) basis was not a stylistic choice. It was
+the practical route through an operator that depends on both position and
+momentum: oscillator functions have tractable representations in both spaces,
+and Appendix A inserts intermediate states to assemble products of the
+corresponding matrix elements. The paper's procedure has three stages. The
+relativized Hamiltonian is diagonalized in a large HO basis within fixed
+$|jm;ls\rangle$ sectors, the basis being enlarged until convergence. The
+smaller mass matrices generated by the off-diagonal tensor
+($^3L_J\!\leftrightarrow\!{}^3L'_J$) and antisymmetric spin--orbit
+($^3L_J\!\leftrightarrow\!{}^1L_J$, unequal masses only) couplings are then
+diagonalized in the basis of those eigenvectors. Finally, self-conjugate
+isoscalars acquire the annihilation matrix.
+
+I did not start there. A finite-difference (FD) radial calculation was the
+easier foothold: grid values, explicit operator matrices, and contribution
+plots gave me something I could look at directly, term by term, when nothing
+yet worked. That was the right first move for a first implementation, and the
+wrong final answer. Once the FD spectrum stood up, its independence became the
+lever for going back to native HO matrix elements, and then to the paper's own
+order of diagonalization and mixing. The sequence was FD to HO, with repeated
+comparison at every step --- a lesson about how *this* project went, not a
+general ranking of the two methods.
+
+The intermediate stage was the most instructive, because it looked finished
+when it was not. Representing a wave in an HO expansion does not by itself
+reproduce the paper's algorithm. Native operator assembly, full fixed-sector
+diagonalization, and the later mixing stages all still had to be recovered
+individually. The native HO path now evaluates position- and
+momentum-dependent factors in their own representations, following Appendix A,
+optimizes the oscillator scale, and enlarges the basis until every requested
+energy passes a stated convergence test --- currently $0.1$ MeV over two
+consecutive refinements, supplemented by wave-overlap diagnostics and
+wave-sensitive audits. FD survives as an independent comparator, which is a
+better fate than being the headline.
+
+# Four corrections that taught me physics {#sec-corrections}
+
+The useful part of the trip was not the code that worked. It was the code that
+worked *and was wrong*, and what it took to notice.
+
+**Normalization and relative phase.** A diagonal Rayleigh quotient is unchanged
+when its input vector is rescaled; a bare off-diagonal overlap is not. So
+comparing sampled FD waves with reconstructed HO waves demanded a common
+physical normalization, and without it perfectly matching diagonal results
+happily coexisted with badly wrong mixing matrix elements. The fix is recorded
+in commit `a987862`. The HO phase-convention correction in `9ff437b` is the
+same lesson from the other side: an individual eigenvector has an arbitrary
+phase, but every operator and every mixed-state composition must transform
+consistently with whatever phase you chose. Both are statements about physics
+that I met as implementation failures.
+
+**A converged approximation can still be the wrong calculation.** A
+nonperturbative solve that was unavailable in one path had been quietly falling
+back to a first-order shift. Commit `eef789b` made that case fail loudly
+instead. The later fixed-sector work (`b9d3474`) put the full diagonal spin
+interactions into the Hamiltonian *before* solving it, rather than adding them
+afterwards. Recovering the masses was not enough: the spin-distorted
+wavefunctions have to reach the decay and annihilation observables too, which
+is exactly where a first-order shortcut stops being invisible. The completion
+in `78a3d76` also removed extra spin-strength bridge factors once the literal
+Appendix-A coefficients were correct.
+
+**Convergence certifies less than it appears to.** Commit `8655d68` removed the
+mesh from the HO Appendix-A assembly, and `39ee9c8` made adaptive basis
+refinement a production requirement rather than a diagnostic. But energy
+convergence had to be complemented by tests of origin-sensitive functionals and
+of the final mixed-state observables --- an energy can be stable to $0.1$ MeV
+while $S_L(\Psi)$ in @eq-ann16 is still moving. The independent FD
+certification in `bdd65d8` gave a second numerical route with its own spacing
+and domain checks, but agreement between two routes only became evidence about
+the physics once I could say precisely which representations and which
+approximations each of them was making.
+
+**Verification infrastructure can hide the mistake.** Commit `959fdb0`
+corrected a scorecard that was faithfully reporting the *previous* verification
+run, and `2fd3fd7` restored FD/HO audits that had drifted outside the gate.
+This is not a clerical detail. A correct-looking report that does not describe
+the code you are inspecting is worse than no report, and keeping the reference
+comparison and its generation path explicit is part of the physics, not
+housekeeping around it.
+
+# Doing this with agents {#sec-agents}
+
+Much of the work was carried out with coding agents, and the git history
+records the whole shape of it: extraction from the paper, implementation,
+autonomous iterations, physics audits, repairs, and eventually teaching
+material. The paper, the numerical checks, and my own reading supplied the
+criteria for accepting any of it.
+
+The honest summary is that the failure modes above are the story. Plausible
+code, passing local tests, and a reassuring residual could all coexist with a
+missing physical operation. What made the difference was the corrective loop:
+a discrepancy raised a question about normalization, or operator staging, or
+provenance; the question sent me back to the paper or to an independent
+calculation; the answer changed both the code and my explanation of it. That
+loop is also why the mistakes are worth writing down --- each one is a small
+lesson in quantum mechanics that happens to be reachable through a diff.
+
+These are episodes from one repository, not a controlled measurement of agent
+productivity or reliability. The commit identifiers here are navigation
+anchors: the changes and their audits are the evidence, not the commit titles.
+
+# What the reproduction rests on, and where it stops {#sec-evidence}
+
+GIPaper keeps a manifest of paper units with links to code, tests, reference
+sources, and residual reports --- the detailed record of what has actually been
+computed and compared. Reference data keep their origin, whether a printed
+table or a digitized figure. Parameter provenance is tracked with the same
+care, because taking the paper's inputs, repeating a fit the paper performed,
+and calibrating a diagnostic control against reference targets are three
+different operations, and only the first two are predictions. The reports label
+which is which so that a control cannot quietly become evidence.
+
+One compact example of the current state: the photon audit gives
+$\mu/\mu_N=+0.688$ for $\rho\to\pi\gamma$ against the printed $+0.69$, and
+$-1.200$ for $K^{*0}\to K^0\gamma$ against $-1.20$. Those are values from the
+checked-in audit of September 7, 2026, not a fresh calculation made for this
+manuscript. The $\rho$ row is also the row GI used to fit a relativization
+exponent, so its agreement tests the reconstructed pipeline rather than
+supplying an independent prediction --- exactly the kind of distinction the
+provenance labels exist to preserve. Other transitions probe different flavor
+weights, wavefunctions, and cancellations, and are the more interesting test.
+
+The aim is full-depth reproduction, and the repository audit is candid that it
+is not there yet: complete accounting of the Table VI photon-decay rows and the
+characterization of their residuals are still open, and some mixing- and
+cancellation-sensitive quantities retain visible discrepancies. So this report
+does not claim exact agreement for every printed number, nor whole-paper
+coverage. The native three-stage spectrum implementation and the independent FD
+comparator are done and documented separately from that remaining work; the
+boundary should move as the audits close, and the audit files, not this report,
+are where it is authoritative.
+
+# What the excursion left behind {#sec-leftbehind}
+
+## A calculation you can take apart
+
+The thing I most wanted at the start was the thing that did not exist: a
+version of this calculation whose intermediate quantities you can look at. In
+the model a rest-frame mass is an eigenvalue of the Hamiltonian, whose kinetic
+part is @eq-kinetic and whose remainder is the confinement and spin-dependent
+structure of @sec-model. When configurations mix, a physical state is
 $$
 |\Psi\rangle=\sum_a c_a|\psi_a\rangle,
 $$
-with signed coefficients and explicit flavor content. A transition then
-involves a coherent sum,
+with signed coefficients and explicit flavor content, and a transition is a
+coherent sum,
 $$
 \langle\Psi_f|O|\Psi_i\rangle
  =\sum_{a,b}c_{f,a}^{*}c_{i,b}
    \langle\psi_{f,a}|O|\psi_{i,b}\rangle.
 $$
-This expression explains why a mixing probability alone cannot predict a decay:
-relative phases can produce enhancement or cancellation. A width additionally
-requires the specified decay operator, normalization, and kinematics; it is
-not determined by the mass spectrum alone.
+Writing it out is the quickest way to see why a mixing *probability* cannot
+predict a decay: the relative phases can enhance or cancel. A width needs the
+decay operator, the normalization, and the kinematics as well; the mass
+spectrum alone does not determine it.
 
-The package exposes the stages needed to investigate such an answer. A spectrum
-contains identifiable states; their physical components lead to solver-native
-waves; wave operations lead to radial matrix elements. The comparison layer
-then relates the result to a printed observable. The distinction between an
-input, a computed quantity, and a reference value remains visible throughout.
+The package exposes those stages in that order. A spectrum contains
+identifiable states; a state resolves into physical components; components lead
+to solver-native waves; waves lead to radial matrix elements; the comparison
+layer relates the result to a printed number. What stays visible throughout is
+which quantity is an input, which is computed, and which is a reference value
+--- the three things I most often confused with each other while getting here.
 
-## A language model interface grounded in computation
+This also makes conversational use of the model reasonable: a language model
+can turn a physics question into a package calculation, explain the objects
+that come back, and point at the methods involved, while the numbers come from
+executing the code and carry their parameters, labels, solver settings, and
+convergence information with them. That is an intended use of the existing
+interface, not a claim that a validated conversational product exists.
 
-This organization supports a conversational way of using the model. A language
-model can translate a physics question into a package calculation, help explain
-the returned objects, and guide the reader to the methods involved. For example,
-"why does this mixing suppress the transition?" can lead to the individual
-signed contributions to an amplitude and a repeat calculation with a controlled
-change in the mixing or Hamiltonian.
+## A course, and notebooks
 
-Reliability comes from that inspectable calculation. A useful numerical answer
-records the chosen model parameters, state labels, solver settings, and
-convergence information, then makes the intermediate quantities accessible.
-The language model provides navigation and explanation; the numerical evidence
-comes from executing the package. This is an intended use of the existing
-computational interface, rather than a claim that an independently validated
-conversational product has already been released.
+Somewhere along the way the reproduction turned into teaching material,
+because the questions I had to answer for the code were the questions a
+student has anyway. The theory course is nine sheets: radial quantum mechanics,
+angular momentum and meson quantum numbers, variational and semirelativistic
+methods, confinement and the running coupling, relativization and smearing,
+spin fine structure, mixing, decay observables, and the complete spectrum
+algorithm. Every problem has a worked solution and a short concept check. A
+computational-discovery sheet starts the bridge to numerical work; the full
+hands-on course is still ahead.
 
-The broader teaching ambition includes discussing mesons and baryons in the
-same quantum-mechanical language. The implemented GIModel calculation described
-here is for mesons. A quantitative baryon tool would require its own
-three-body dynamics, state construction, and validation. The present package
-provides a worked example of how to make such a discussion computationally
-accountable.
+Each piece has its own job. The paper gives the original model and its
+reasoning. The course slows the derivations down and makes you do them. The
+notebooks make the assumptions adjustable and the consequences immediate. This
+report is the map, and deliberately does not repeat the course.
 
-# Learning by working through the model {#sec-learning}
+Pluto suits the last of those: executable cells, reactive dependencies,
+mathematical prose, controls, and results that redraw when you change a mass or
+a solver setting. Live documentation and linked docstrings make a notebook an
+entry point into the package rather than a demonstration beside it, and the
+documentation graph links the public operations explicitly, with a static link
+audit checking that the path from any explanation to the next numerical
+question actually exists. The adaptive HO notebook turns the convergence
+question of @sec-route into the lesson: it follows the oscillator scale
+and the basis refinements, shows the energies settling, and asks the reader why
+a curve that looks flat still needs a criterion --- and why energy convergence
+does not certify every wave-sensitive observable.
 
-## Theory and computation as companion materials
+## Seeing the model move
 
-The learning material is intended to train physicists who can work through a
-model in detail, connecting a paper reference to an actual calculation. The
-current theory course contains nine sheets, progressing through radial quantum
-mechanics, angular momentum and meson quantum numbers, variational and
-semirelativistic methods, confinement and running coupling, relativization and
-smearing, spin fine structure, mixing, decay observables, and the complete
-spectrum algorithm. Problems have worked solutions and short concept checks.
-A computational-discovery sheet begins the bridge to numerical work; the
-extended hands-on course is a development direction.
+One consequence of an executable model surprised me by how much it explains.
+The heavy-quark notebook varies a constituent heavy-quark mass continuously
+while the shared interaction parameters stay fixed, which connects the model's
+$D$ and $B$ sectors, or its $D_s$ and $B_s$ sectors, or --- varying both masses
+--- charmonium and bottomonium. Subtracting the constituent rest masses
+separates the change in binding and excitation structure from the plain rise in
+total mass, and hyperfine splittings, level ordering, and the response of the
+light degrees of freedom become things you watch rather than tabulate.
 
-This division gives each resource a clear role. The paper presents the original
-physical model and its reasoning. The theory course slows down the derivations
-and supplies exercises. The notebooks make assumptions adjustable and the
-consequences visible. The report explains the resource as a whole without
-repeating the full theory course.
+Two honest caveats belong with that picture. The heavy masses are external
+parameters of a constituent model with a shared phenomenological interaction;
+the interpolation is a family of model calculations, not a physical decay of a
+bottom meson into a charmed one. And the same access to wavefunctions invites
+structure pictures --- radial densities, nodes, characteristic radii, angular
+distributions --- which are only interpretable if they say what they display:
+for a normalized reduced radial wave $|u(r)|^2\,dr$ is a radial probability,
+while the three-dimensional density carries the angular factor too, and mixed
+states need their coherent composition and the right spin or flavor sums. The
+ingredients for a curated meson-structure animation are all there; the
+animation itself is not yet.
 
-## Pluto and live documentation
+# Where I would go next {#sec-outlook}
 
-Pluto provides a useful set of teaching primitives: executable cells, reactive
-dependencies, mathematical prose, controls, and immediate displays of results.
-A student can change a mass or numerical setting, observe the dependent output,
-and investigate the method responsible. Live documentation and linked
-docstrings make this an entry point into the package rather than an isolated
-demonstration. The intended reading path is short: identify a meson, compute a
-spectrum, select a state, inspect its components, and examine the relevant wave
-or matrix element.
+The obvious continuations are physics rather than software. Screened
+interactions [@li2009] and explicit coupled-channel treatments
+[@barnes2008; @ortega2010] are the two directions in which the GI baseline has
+mostly been extended, and each changes the model and needs its own validation.
+Closer to hand, the paper's quark-emission operator could be applied directly
+to the calculated physical wavefunctions instead of the single-oscillator-scale
+approximation used for its numerical strong-decay tables --- which would expose
+the role of radial nodes, state-dependent scales, and mixing in those
+amplitudes. That is the test I most want to run, because it uses the
+wavefunctions rather than only the eigenvalues, and the wavefunctions are what
+this whole excursion was really about.
 
-The documentation graph explicitly links these public operations. A static
-link audit checks their connectivity; it establishes a navigable source-level
-structure, while the notebook remains the place where a reader experiences
-that structure. Discoverability is part of the teaching design: an explanation
-should lead naturally to the next numerical question.
-
-The adaptive harmonic-oscillator notebook makes convergence itself a lesson.
-It follows the oscillator scale and basis refinements, displays the changes in
-energies, and finishes with a comprehension quiz. Students can see why an
-apparently stable curve needs a numerical criterion and why energy convergence
-alone does not establish every wave-sensitive observable. The computation
-therefore teaches both the model and the standards needed to trust its output.
-
-# Reproduction as inspectable evidence {#sec-reproduction}
-
-## Recovering the calculation in depth
-
-The reproduction program reaches through the spectrum to mixing, strong
-decays, photon transitions, and annihilation observables, together with the
-appendix machinery behind them. Its purpose is to recover the paper at the
-level of numerical operations and conventions. A matching mass is one check;
-recovering the wavefunction and using it consistently in another observable is
-a stronger one.
-
-The paper's spectrum procedure uses a harmonic-oscillator (HO) basis. The
-current native implementation first diagonalizes the full relativized
-Hamiltonian within fixed angular-momentum and spin sectors. It then forms the
-allowed tensor and antisymmetric spin--orbit mixing blocks from those
-solutions. Self-conjugate isoscalar channels receive the annihilation and
-flavor-mixing stage. Observables consume the resulting physical composition.
-A separate finite-difference (FD) implementation supplies an independent
-numerical comparator.
-
-The HO calculation evaluates position- and momentum-dependent factors in their
-native representations, following Appendix A. The oscillator scale is optimized
-and the basis enlarged until every requested energy passes the stated
-convergence test. The checked convergence report uses a criterion of $0.1$ MeV
-on two consecutive basis refinements; wave-overlap diagnostics and
-wave-sensitive audits supply additional evidence. This numerical tolerance is
-a solver criterion, not an estimate of the physical accuracy of the model.
-
-## Provenance and remaining discrepancies
-
-GIPaper keeps a manifest of paper units with links to code, tests, reference
-sources, and residual reports. This is the detailed record of what has been
-computed and compared. Reference data retain their origin in printed tables or
-digitized figures. Parameter provenance also matters: taking the paper's inputs,
-repeating a fit performed in the paper, and calibrating a diagnostic control to
-reference targets are different operations. Reports label these choices so that
-a control cannot silently become evidence for an unfitted prediction.
-
-As one compact example, the photon audit reports
-$\mu/\mu_N=+0.688$ for $\rho\to\pi\gamma$, compared with the printed $+0.69$,
-and $-1.200$ for $K^{*0}\to K^0\gamma$, compared with $-1.20$.
-These are values from the checked-in September 7, 2026 audit, not a fresh
-calculation for this manuscript. The $\rho$ row was used by the original paper
-to fit a relativization exponent, so its agreement checks the reconstructed
-pipeline rather than supplying an independent prediction. Other transitions
-probe different flavor weights, wavefunctions, and cancellations.
-
-The release aim is full-depth reproduction of the original results. The
-current repository audit still identifies complete accounting of Table VI
-photon-decay rows and characterization of its remaining residuals as unfinished.
-Some mixing and cancellation-sensitive quantities also retain visible
-discrepancies. Accordingly, the present report does not claim exact agreement
-for every printed number or completed whole-paper coverage. Those boundaries
-belong beside the reproduction evidence and should be updated when the
-corresponding audit closes. The native three-stage spectrum implementation and
-the independent FD comparator are already documented separately from that
-remaining task.
-
-# Visualizing the physics {#sec-visualization}
-
-## Connecting flavor sectors
-
-The heavy-quark notebook demonstrates a particularly useful consequence of an
-executable model. The constituent heavy-quark mass can be varied continuously
-while the shared interaction parameters remain fixed. With one light or strange
-partner, this connects the model's $D$ and $B$ sectors or its $D_s$ and $B_s$
-sectors. Varying both constituent masses connects charmonium and bottomonium.
-The existing notebook provides these three choices, live spectrum views, and
-optional recorded sweeps.
-
-Subtracting the constituent rest masses helps separate the change in binding
-and excitation structure from the rise in total mass. The reader can follow
-hyperfine splittings, level ordering, and the response of the light degrees of
-freedom as the heavy mass changes. Heavy masses act here as external parameters
-of a constituent model with a shared phenomenological interaction. This is a
-useful way to explore the model; it does not assert that its constituents are
-literally outside the QCD vacuum. The interpolation is also a family of model
-calculations, not a physical decay from a bottom meson to a charmed meson.
-
-## Meson structure and animations
-
-The same access to wavefunctions supports a further teaching direction:
-visualizing meson structure. Radial probability densities, nodes, characteristic
-radii, angular distributions, and mixed-state components can be displayed
-alongside the spectrum. An animation could follow how these quantities change
-with constituent mass or an interaction parameter, recomputing the state at
-each step.
-
-Such a visualization should identify what it displays. For a normalized reduced
-radial wave, $|u(r)|^2\,dr$ is a radial probability, whereas the
-three-dimensional density includes the radial and angular factors. Mixed states
-require their coherent composition and the appropriate spin or flavor sums.
-These distinctions make a scientifically interpretable structure picture
-possible. They also supply exercises: a student can connect the number of nodes
-to a radial excitation or relate short-distance structure to an annihilation
-matrix element. The technical ingredients are available; a curated meson
-structure animation remains a proposed addition.
-
-# A foundation for further work {#sec-outlook}
-
-An open implementation lets new work start from a checked calculation.
-Researchers can reuse the state construction, matrix elements, wave operations,
-and convergence machinery, while the comparison package preserves a baseline
-against which a change can be understood. Teaching notebooks and scientific
-visualizations are uses of the same computational objects, so improvements in
-the core can propagate to both.
-
-Post-GI developments provide natural physics directions. Examples include
-screened interactions [@li2009] and explicit coupled-channel treatments
-[@barnes2008; @ortega2010]. Each changes the physical model and requires its own
-validation. Another concrete extension is to apply the paper's quark-emission
-operator directly to the calculated physical wavefunctions, going beyond the
-single-oscillator-scale approximation used for its numerical strong-decay
-tables. This would expose the role of radial nodes, state-dependent scales,
-and mixing in those amplitudes.
-
-Julia also makes parameter-sensitive computation a promising direction.
-For an isolated normalized eigenstate, the Hellmann--Feynman relation provides
-an explicit starting point,
+Julia makes one more direction tempting. For an isolated normalized eigenstate,
 $$
 \frac{\partial E_n}{\partial\lambda}
  =\left\langle\psi_n\left|
- \frac{\partial H}{\partial\lambda}\right|\psi_n\right\rangle.
+ \frac{\partial H}{\partial\lambda}\right|\psi_n\right\rangle
 $$
-Such derivatives could support sensitivity studies and fitting. The repository
-already contains preparation of numerical types and FD and fixed-scale HO
-derivative probes. End-to-end automatic differentiation is future work:
-adaptive basis selection, crossings, and derivatives of mixed eigenvectors need
-careful treatment. The opportunity rests on a transparent Julia implementation,
-with the derivative claim subject to checks just as the original computation is.
+is an explicit starting point for sensitivity studies and fitting. The
+repository already contains the numerical-type preparation and FD and
+fixed-scale HO derivative probes. End-to-end automatic differentiation is
+future work, and not trivially so: adaptive basis selection, level crossings,
+and derivatives of mixed eigenvectors all need care. Whatever comes out of it
+will need the same checks the original computation did.
 
-The lasting purpose of the release is to let readers do physics with the
-model: ask a question, obtain a numerical answer, inspect its origin, and change
-the calculation knowingly. The course, notebooks, and documentation make that
-process accessible to a new generation of physicists.
+If there is a moral to the trip, it is the one from @sec-corrections: the
+model became clear to me at exactly the points where my code was confidently
+wrong. That is the experience I would like the course and the notebooks to
+make available to someone else --- ask a question, get a number, take the
+number apart, and find out what you had assumed.
 
 ```{=latex}
 \appendix
 ```
-
-# Development as a record of learning {#sec-history}
-
-## From a finite-difference foothold back to 1985
-
-The development took a useful historical detour. In 1985 the HO basis provided
-the paper's practical route through an operator that depends on both position
-and momentum. Oscillator functions have tractable representations in both
-spaces; Appendix A inserts intermediate states to assemble products of the
-corresponding matrix elements. The numerical representation was part of what
-made that calculation workable.
-
-For this project, an FD radial calculation was the easier initial foothold.
-Grid values, operator matrices, and contribution plots gave a direct way to
-inspect a first reference implementation. Once it worked, the independent
-result supported the return to native HO matrix elements and then to the
-paper's complete order of diagonalization and mixing. The sequence was thus
-FD to HO, with repeated comparisons along the way. This is a lesson from this
-project's development, rather than a general ranking of the two methods.
-
-The early comparison also concealed an important distinction: representing a
-wave in an HO expansion does not by itself reproduce the paper's algorithm.
-Native operator assembly, full fixed-sector diagonalization, and the later
-mixing stages all had to be recovered. The eventual result retained FD as an
-independent comparator and made the paper's HO route self-contained.
-
-## Corrections that taught physics
-
-**Normalization and relative phases.** A diagonal Rayleigh quotient is unchanged
-when its input vector is rescaled; a bare off-diagonal overlap is not. Comparing
-sampled FD waves and reconstructed HO waves therefore required a common physical
-normalization. Otherwise seemingly matching diagonal results could coexist with
-bad mixing matrix elements. The normalization work is recorded in commit
-`a987862`. The HO phase-convention correction in `9ff437b` illustrates a related
-point: an individual eigenvector has an arbitrary phase, but every operator and
-mixed-state composition must transform consistently with it. These are physical
-consistency lessons revealed by implementation failures.
-
-**A converged approximation can still be the wrong calculation.** An unavailable
-nonperturbative solve had previously fallen back to a first-order shift.
-Commit `eef789b` made that case fail explicitly. The later fixed-sector work
-(`b9d3474`) put the full diagonal spin interactions into the Hamiltonian before
-solving it. Recovering masses alone was insufficient: spin-distorted
-wavefunctions had to reach decay and annihilation observables as well. The
-completion in `78a3d76` also removed extra spin-strength bridge factors after
-correcting the literal Appendix-A coefficients.
-
-**Native matrices and observable convergence.** Commit `8655d68` removed the
-mesh from the HO Appendix-A assembly. The adaptive convergence work in
-`39ee9c8` then made basis refinement an explicit production requirement.
-Convergence of energies still had to be complemented by tests of origin-sensitive
-functionals and final mixed-state observables. The independent FD certification
-in `bdd65d8` supplied a second numerical route with its own spacing and domain
-checks. Agreement became evidence about the calculation only after the
-representations and approximations were identified.
-
-**Verification infrastructure can hide a mistake.** Commit `959fdb0` corrected
-a scorecard that reported the previous verification run; `2fd3fd7` restored
-FD/HO audits that had fallen outside the gate. Such failures matter scientifically:
-a correct-looking report may not describe the code being inspected. Keeping the
-reference comparison and its generation path explicit is part of reproducibility.
-
-## Agent-assisted coding and the evidence trail
-
-The git history records extraction, implementation, autonomous iterations,
-physics audits, repairs, and teaching material. Agents helped carry out this
-work, while the source paper, numerical checks, and human review supplied the
-criteria for accepting it. The useful story includes the false starts: plausible
-code, successful local tests, or a reassuring residual could leave a missing
-physical operation undiscovered.
-
-The examples above show why the corrective loop mattered. A discrepancy prompted
-a question about normalization, operator staging, or provenance; that question
-led back to the paper or an independent calculation; the answer changed both
-code and explanation. These episodes can teach quantum mechanics alongside
-software practice. They are case studies from one repository, not a controlled
-measurement of agent productivity or reliability.
-
-The commit identifiers here are navigation anchors into that record. Detailed
-changes and their audits are better evidence than a commit title alone. A
-companion website story could pair each episode with its original discrepancy,
-the inspected equation, the fix, and an interactive reconstruction. This appendix
-provides the narrative spine for that story; the report's main argument remains
-the usefulness of the resulting scientific and educational resource.
 
 # Repository reading guide {#sec-resources}
 
@@ -408,7 +468,7 @@ the usefulness of the resulting scientific and educational resource.
 \begingroup\raggedright
 ```
 
-The following paths locate the supporting material within the release.
+Where the supporting material lives.
 
 - **Learning:** \path{LearningTrack/README.md} and \path{examples/README.md} introduce the
   theory sheets and computational notebooks.
@@ -418,11 +478,12 @@ The following paths locate the supporting material within the release.
   the per-unit inventory. \path{docs/reproduction_audit.md} records the cross-cutting
   interpretation and remaining scope.
 - **Numerical evidence:** \path{GIPaper/docs/residual_reports/} contains the HO
-  convergence, FD comparator, spectrum, mixing, and decay audits. The numerical
-  example in this report comes from \path{table_vi_photon_decays.md} there.
+  convergence, FD comparator, spectrum, mixing, and decay audits. The photon
+  numbers quoted in @sec-evidence come from \path{table_vi_photon_decays.md}
+  there.
 - **Development:** \path{docs/original_1985_algorithm_audit.md},
   \path{docs/incident_followup_audit.md}, and the git history document the recovery of
-  the paper's algorithm and the associated corrections.
+  the paper's algorithm and the corrections of @sec-corrections.
 - **Differentiation:** \path{diff_support/implementation_status.md} distinguishes
   completed preparation and probes from proposed derivative capabilities.
 
