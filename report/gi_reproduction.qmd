@@ -84,47 +84,56 @@ authority and the code is a claim about it.
 ## The model Hamiltonian
 
 GI start from a rest-frame equation with a relativistic kinetic term,
-$$
+```{=latex}
+\begin{equation}\label{eq:schrodinger}
 H\,|\Psi\rangle = (H_0 + V)\,|\Psi\rangle = E\,|\Psi\rangle ,
-$$ {#eq-schrodinger}
-$$
+\end{equation}
+\begin{equation}\label{eq:kinetic}
 H_0 = \sqrt{p^2 + m_1^2} + \sqrt{p^2 + m_2^2},
-$$ {#eq-kinetic}
+\end{equation}
+```
 with $V=V(\mathbf{p},\mathbf{r})$ momentum dependent and
 $\mathbf{p}=\mathbf{p}_1=-\mathbf{p}_2$. In the nonrelativistic limit $V$
 reduces to the familiar sum of confinement, hyperfine, and spin--orbit terms.
 The spin-independent piece combines a linear Lorentz-scalar term with a
 Coulomb-type one-gluon exchange,
-$$
+```{=latex}
+\begin{equation}\label{eq:conf}
 H^{\text{conf}}_{ij}
   = -\Big[\tfrac34 c + \tfrac34 b r - \frac{\alpha_s(r)}{r}\Big]\,
     \mathbf{F}_i\!\cdot\!\mathbf{F}_j ,
-$$ {#eq-conf}
+\end{equation}
+```
 with $\langle \mathbf{F}_i\!\cdot\!\mathbf{F}_j\rangle = -4/3$ in a meson; the
 color hyperfine interaction supplies the contact and tensor pieces,
-$$
+```{=latex}
+\begin{equation}\label{eq:hyp}
 H^{\text{hyp}}_{ij} = -\frac{\alpha_s(r)}{m_i m_j}
   \Big[\tfrac{8\pi}{3}\,\mathbf{S}_i\!\cdot\!\mathbf{S}_j\,\delta^3(\mathbf{r})
   + \frac{1}{r^3}\,S_{ij}\Big]\mathbf{F}_i\!\cdot\!\mathbf{F}_j ,
-$$ {#eq-hyp}
-and the spin--orbit interaction splits into a color-magnetic and a
-Thomas-precession part. A separate gluon-annihilation term $H_A$ contributes
+\end{equation}
+```
+with $S_{ij}$ the usual tensor operator; the spin--orbit interaction splits
+into a color-magnetic and a Thomas-precession part. A separate gluon-annihilation term $H_A$ contributes
 only in self-conjugate isoscalar channels.
 
-As GI themselves stress, @eq-hyp and its spin--orbit companions are more
-singular than $r^{-2}$ and are illegal operators in @eq-schrodinger as written.
-The resolution is Appendix A, and Appendix A is where the reproduction work
+As GI themselves stress, `Eq.~\eqref{eq:hyp}`{=latex} and its spin--orbit companions
+are more singular than $r^{-2}$ and are illegal operators in
+`Eq.~\eqref{eq:schrodinger}`{=latex} as written.
+The resolution is the paper's Appendix A, which is where the reproduction work
 actually lives.
 
 ## Relativization: smearing and momentum factors
 
 Two things happen there. First, the relative coordinate is *smeared* over
 distances of order the inverse quark masses,
-$$
+```{=latex}
+\begin{equation}\label{eq:smear}
 \rho_{ij}(\mathbf{r}'-\mathbf{r})
   = \frac{\sigma_{ij}^3}{\pi^{3/2}}\,
     e^{-\sigma_{ij}^2(\mathbf{r}'-\mathbf{r})^2},
-$$ {#eq-smear}
+\end{equation}
+```
 with a mass-dependent width $\sigma_{ij}(\sigma_0,s)$, which tames the
 short-distance singularities and makes the operators legal. Second, the
 coefficients acquire a dependence on the quark momenta: mass factors $m^{-1}$
@@ -135,10 +144,12 @@ by $\langle p^{-1}\rangle$ instead of diverging.
 Concretely, the central Coulomb and confinement terms become their smeared
 forms $\widetilde G(r)$ and $\widetilde S(r)$, and the Coulomb operator is
 dressed with a Hermitian momentum sandwich,
-$$
+```{=latex}
+\begin{equation}\label{eq:sandwich}
 G' = A(p)\,\widetilde G\,A(p),
 \qquad A(p) = \Big(1 + \tfrac{p^2}{E_1 E_2}\Big)^{1/2},
-$$ {#eq-sandwich}
+\end{equation}
+```
 with the same construction, at the side exponents $\tfrac12+\epsilon_i$ of
 Table II, applied to the contact, tensor, and spin--orbit kernels. Those
 kernels are themselves built from derivatives of the *smeared* central
@@ -147,21 +158,25 @@ in two different numerical representations, turned out to be most of the
 project.
 
 The strong coupling is a frozen sum of Gaussians,
-$$
+```{=latex}
+\begin{equation}\label{eq:alphaq}
 \alpha_s(Q^2) = 0.25\,e^{-Q^2} + 0.15\,e^{-Q^2/10} + 0.20\,e^{-Q^2/1000},
-$$ {#eq-alphaq}
+\end{equation}
+```
 with $Q$ in GeV and $\alpha_s^{\text{crit}}=0.60$, which becomes a
 coordinate-space error-function profile convenient for convolving with
-@eq-smear. In self-conjugate isoscalars, $q\bar q$ annihilates through gluons
+`Eq.~\eqref{eq:smear}`{=latex}. In self-conjugate isoscalars, $q\bar q$ annihilates through gluons
 ($n=2$ for $C=+$, $n=3$ for $C=-$), and the channel-coupling element
-$$
-\begin{aligned}
-A(^{2S+1}L_J)_{ji} = {}& 4\pi(2L{+}1)\,A(^{2S+1}L_J) \\
+```{=latex}
+\begin{align}\label{eq:ann16}
+A(^{2S+1}L_J)_{ji} = {}& 4\pi(2L{+}1)\,A(^{2S+1}L_J) \nonumber \\
   &\times \Big[\frac{\alpha_s(M_j^2)\alpha_s(M_i^2)}{\pi^2}\Big]^{n/2}
   \frac{S_L(\Psi_j)S_L(\Psi_i)}{m_i m_j}
-\end{aligned}
-$$ {#eq-ann16}
-depends on the wavefunction near the origin through $S_L(\Psi_i)$. That
+\end{align}
+```
+carries a strength $A(^{2S+1}L_J)$ fixed per channel, the channel masses $M_j$
+in the coupling, and a dependence on the wavefunction near the origin through
+$S_L(\Psi_i)$. That
 dependence makes the isoscalars the sharpest test of whether the wavefunctions
 are right, not merely the energies.
 
@@ -178,12 +193,13 @@ generated by the off-diagonal tensor
 ($^3L_J\!\leftrightarrow\!{}^3L'_J$) and antisymmetric spin--orbit
 ($^3L_J\!\leftrightarrow\!{}^1L_J$, unequal masses only) couplings are then
 diagonalized in the basis of those eigenvectors. Finally, self-conjugate
-isoscalars acquire the annihilation matrix of @eq-ann16.
+isoscalars acquire the annihilation matrix of `Eq.~\eqref{eq:ann16}`{=latex}.
 
 ## Inputs
 
-The parameters are GI Table II, taken verbatim (Table~\ref{tab:params}). These
-constants, the $\alpha_s$ form of @eq-alphaq, and the paper's reference masses
+The parameters are GI Table II, taken verbatim (`Table~\ref{tab:params}`{=latex}). These
+constants, the $\alpha_s$ form of `Eq.~\eqref{eq:alphaq}`{=latex}, and the paper's
+reference masses
 are the only inputs; nothing is fitted here.
 
 ```{=latex}
@@ -230,7 +246,8 @@ $n\,^{2S+1}L_J$ multiplets, and `compute_spectrum` returns a `Spectrum` whose
 states carry their contribution breakdowns and the provenance of every mixing
 transformation applied to them. GIPaper owns the digitized reference data, maps
 reference rows to mesons without fallback masses, runs the comparison, applies
-the Table III annihilation prescriptions, and writes the residual reports.
+the paper's Table III prescriptions for the isoscalar channels, and writes the
+residual reports.
 Nothing from the paper leaks into the calculation, so a residual can never be
 manufactured by the layer that reports it.
 
@@ -303,7 +320,7 @@ mesh from the HO Appendix-A assembly, and `39ee9c8` made adaptive basis
 refinement a production requirement rather than a diagnostic. Energy
 convergence still had to be complemented by tests of origin-sensitive
 functionals and of the final mixed-state observables: an energy can be stable
-to $0.1$ MeV while $S_L(\Psi)$ in @eq-ann16 is still moving. The independent FD
+to $0.1$ MeV while $S_L(\Psi)$ in `Eq.~\eqref{eq:ann16}`{=latex} is still moving. The independent FD
 certification in `bdd65d8` supplied a second numerical route with its own
 spacing and domain checks, but agreement between two routes became evidence
 about the physics only once each route's representations and approximations
@@ -344,8 +361,9 @@ a diagnostic control against reference targets are three different operations,
 and only the first two are predictions. The reports label which is which, so a
 control cannot quietly become evidence.
 
-One compact example of the present state: the photon audit gives
-$\mu/\mu_N=+0.688$ for $\rho\to\pi\gamma$ against the printed $+0.69$, and
+One compact example of the present state: the photon audit gives a transition
+magnetic moment, in nuclear magnetons, of $\mu/\mu_N=+0.688$ for
+$\rho\to\pi\gamma$ against the printed $+0.69$, and
 $-1.200$ for $K^{*0}\to K^0\gamma$ against $-1.20$, from the checked-in audit
 of September 7, 2026. The $\rho$ row is also the row GI used to fit a
 relativization exponent, so its agreement tests the reconstructed pipeline
@@ -363,20 +381,44 @@ boundary is authoritative.
 
 ## From a question to a number
 
-The point of the architecture is that an answer can be taken apart. In the
+```{=latex}
+\begin{figure*}[t]
+\centering
+% Replace the box with:
+% \includegraphics[width=\textwidth]{figures/pipeline.png}
+\fbox{\begin{minipage}[c][3.1cm][c]{0.97\textwidth}\centering\itshape\small
+reserved --- pipeline diagram: meson and level selection, radial solve,
+fine-structure and mixing stages, physical states, observables and comparison
+\end{minipage}}
+\caption{From a meson to a spectrum and a decay. Flavors and the requested
+$n\,^{2S+1}L_J$ multiplets enter on the left; the radial solver returns channel
+solutions and waves; the fine-structure, mixing, and annihilation stages
+assemble physical states with explicit composition; observables and the
+comparison layer close the chain. Each arrow is an inspectable intermediate.}
+\label{fig:pipeline}
+\end{figure*}
+```
+
+The point of the architecture is that an answer can be taken apart, stage by
+stage (`Fig.~\ref{fig:pipeline}`{=latex}). In the
 model a rest-frame mass is an eigenvalue of the Hamiltonian, whose kinetic part
-is @eq-kinetic and whose remainder is the structure of @sec-computation. When
+is `Eq.~\eqref{eq:kinetic}`{=latex} and whose remainder is the structure of
+@sec-computation. When
 configurations mix, a physical state is
-$$
+```{=latex}
+\begin{equation}\label{eq:mixed}
 |\Psi\rangle=\sum_a c_a|\psi_a\rangle,
-$$
+\end{equation}
+```
 with signed coefficients and explicit flavor content, and a transition is a
 coherent sum,
-$$
+```{=latex}
+\begin{equation}\label{eq:coherent}
 \langle\Psi_f|O|\Psi_i\rangle
  =\sum_{a,b}c_{f,a}^{*}c_{i,b}
    \langle\psi_{f,a}|O|\psi_{i,b}\rangle.
-$$
+\end{equation}
+```
 Writing it out is the quickest way to see why a mixing *probability* cannot
 predict a decay: the relative phases can enhance or cancel. A width needs the
 decay operator, the normalization, and the kinematics as well.
@@ -406,7 +448,8 @@ Each piece has its own job. The paper gives the original model and its
 reasoning. The course slows the derivations down and makes you do them. The
 notebooks make the assumptions adjustable and the consequences immediate.
 
-Pluto suits the last of those: executable cells, reactive dependencies,
+Pluto, Julia's reactive notebook environment, suits the last of those:
+executable cells, dependencies that re-run on change,
 mathematical prose, controls, and results that redraw when a mass or a solver
 setting changes. Live documentation and linked docstrings make a notebook an
 entry point into the package rather than a demonstration beside it, and the
@@ -419,6 +462,25 @@ flat still needs a criterion --- and why energy convergence does not certify
 every wave-sensitive observable.
 
 ## Exploring the model
+
+
+```{=latex}
+\begin{figure*}[t]
+\centering
+% Replace the box with:
+% \includegraphics[width=\textwidth]{figures/meson_structure.png}
+\fbox{\begin{minipage}[c][3.4cm][c]{0.97\textwidth}\centering\itshape\small
+reserved --- meson internal structure: three-dimensional densities
+$|R_{nL}(r)Y_{Lm}(\theta,\phi)|^2$ for a radial and an orbital series
+\end{minipage}}
+\caption{Internal structure of the computed states. Three-dimensional
+densities $|R_{nL}(r)\,Y_{Lm}(\theta,\phi)|^2$ built from the solver's own
+radial waves: a radial series showing the growth of nodes, and an orbital
+series showing the angular shape. The same solutions that produce the masses
+produce these pictures.}
+\label{fig:structure}
+\end{figure*}
+```
 
 The heavy-quark notebook varies a constituent heavy-quark mass continuously
 while the shared interaction parameters stay fixed, which connects the model's
@@ -433,10 +495,13 @@ between flavors.
 The same access to wavefunctions supports structure pictures: radial densities,
 nodes, characteristic radii, angular distributions, and the components of a
 mixed state. These are interpretable as long as they say what they display ---
-for a normalized reduced radial wave $|u(r)|^2\,dr$ is a radial probability,
-while the three-dimensional density carries the angular factor as well. The
-ingredients for a curated meson-structure animation are in place; the animation
-itself is not yet.
+for the normalized reduced radial wave $u(r)=rR(r)$, $|u(r)|^2\,dr$ is a
+radial probability, while the three-dimensional density
+$|R_{nL}(r)\,Y_{Lm}(\theta,\phi)|^2$ carries the angular factor as well. The
+ingredients for a curated meson-structure animation are in place as well; the
+animation itself is not yet. `Fig.~\ref{fig:structure}`{=latex} is where those pictures
+belong.
+
 
 # Conclusion and outlook {#sec-conclusion}
 
@@ -451,20 +516,23 @@ The natural continuations are physics rather than software. Screened
 interactions [@li2009] and explicit coupled-channel treatments
 [@barnes2008; @ortega2010] are the directions in which the GI baseline has
 mostly been extended, and each changes the model and needs its own validation.
-Closer to hand, the paper's quark-emission operator can be applied directly to
-the calculated physical wavefunctions instead of the single-oscillator-scale
-approximation used for its numerical strong-decay tables, which would expose
+Closer to hand, the quark-emission operator behind the paper's strong-decay
+analysis can be applied directly to the calculated physical wavefunctions,
+instead of the single-oscillator-scale approximation used for its numerical
+tables, which would expose
 the role of radial nodes, state-dependent scales, and mixing in those
 amplitudes. That is the test I most want to run, because it uses the
 wavefunctions rather than only the eigenvalues.
 
 Julia makes one further direction tempting. For an isolated normalized
-eigenstate,
-$$
+eigenstate, the Hellmann--Feynman relation
+```{=latex}
+\begin{equation}\label{eq:hellmann}
 \frac{\partial E_n}{\partial\lambda}
  =\left\langle\psi_n\left|
  \frac{\partial H}{\partial\lambda}\right|\psi_n\right\rangle
-$$
+\end{equation}
+```
 is an explicit starting point for sensitivity studies and fitting, and the
 repository already contains the numerical-type preparation and FD and
 fixed-scale HO derivative probes. End-to-end automatic differentiation is
