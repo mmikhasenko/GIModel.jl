@@ -49,12 +49,12 @@ label = "Fig. 3"
 page = 6
 statement = "Isovector meson spectrum [-u dbar, sqrt(1/2)(uu-dd), d ubar]: predicted masses and dominant compositions vs experiment across all J^PC."
 status = "reproduced"
-code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/isovector.png"]
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "GIPaper/scripts/spectrum_plots/isovector.png"]
 report = "GIPaper/docs/residual_reports/isovector_residuals.md"
 metric = "mean abs residual ~14.5 MeV"
 anchor = "paper/vision_ocr/page_images/page-006.png"
 parent = "sec-III"
-notes = "Our reproduction is report/figures/isovector.png. 1-- and 0++ sectors need the Sec. V A / V D caveats (0++ is the KKbar-bound-state discussion, Fig. 16)."
+notes = "Our reproduction plot is GIPaper/scripts/spectrum_plots/isovector.png. 1-- and 0++ sectors need the Sec. V A / V D caveats (0++ is the KKbar-bound-state discussion, Fig. 16)."
 
 [[unit]]
 id = "fig-4"
@@ -63,12 +63,12 @@ label = "Fig. 4"
 page = 7
 statement = "Strange meson spectrum (u sbar, d sbar): predicted masses and compositions vs experiment."
 status = "reproduced"
-code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/strange.png"]
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "GIPaper/scripts/spectrum_plots/strange.png"]
 report = "GIPaper/docs/residual_reports/strange_residuals.md"
 metric = "mean abs residual ~10.8 MeV"
 anchor = "paper/vision_ocr/page_images/page-007.png"
 parent = "sec-III"
-notes = "Reproduction report/figures/strange.png. Same-J K1 (1P) mixing angle is the residual sensitivity (mixing_angles.md)."
+notes = "Reproduction plot GIPaper/scripts/spectrum_plots/strange.png. Same-J K1 (1P) mixing angle is the residual sensitivity (mixing_angles.md)."
 
 [[unit]]
 id = "fig-5"
@@ -77,12 +77,12 @@ label = "Fig. 5"
 page = 8
 statement = "Light isoscalar meson spectrum (dominantly uu/dd/ss mixtures); state assignments given in Table III."
 status = "reproduced"
-code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/isoscalar.png"]
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "GIPaper/scripts/spectrum_plots/isoscalar.png"]
 report = "GIPaper/docs/residual_reports/isoscalar_residuals.md"
 metric = "mean abs residual ~11.5 MeV"
 anchor = "paper/vision_ocr/page_images/page-008.png"
 parent = "sec-III"
-notes = "Reproduction report/figures/isoscalar.png. Isoscalar mixing (omega/phi, f2/f2') audited in table_iii_mixing_audit.md. 0-+ isoscalars carry the Sec. V A caveat."
+notes = "Reproduction plot GIPaper/scripts/spectrum_plots/isoscalar.png. Isoscalar mixing (omega/phi, f2/f2') audited in table_iii_mixing_audit.md. 0-+ isoscalars carry the Sec. V A caveat."
 
 [[unit]]
 id = "fig-6"
@@ -91,12 +91,12 @@ label = "Fig. 6"
 page = 8
 statement = "Charmonium (c cbar) spectrum: predicted masses and compositions vs experiment."
 status = "reproduced"
-code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/charmonium.png"]
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "GIPaper/scripts/spectrum_plots/charmonium.png"]
 report = "GIPaper/docs/residual_reports/charmonium_residuals.md"
 metric = "mean abs residual ~6.0 MeV"
 anchor = "paper/vision_ocr/page_images/page-008.png"
 parent = "sec-III"
-notes = "Reproduction report/figures/charmonium.png. Shares page-008 with Fig. 5. No charmonium strong-decay section in Table V (psi below open-flavor threshold)."
+notes = "Reproduction plot GIPaper/scripts/spectrum_plots/charmonium.png. Shares page-008 with Fig. 5. No charmonium strong-decay section in Table V (psi below open-flavor threshold)."
 
 [[unit]]
 id = "fig-7"
@@ -105,12 +105,12 @@ label = "Fig. 7"
 page = 9
 statement = "Charmed and charm-strange meson spectra (c dbar, c ubar, c sbar) with 1P/1D same-J mixing angles."
 status = "reproduced"
-code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/charmed.png"]
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "GIPaper/scripts/spectrum_plots/charmed.png"]
 report = "GIPaper/docs/residual_reports/charmed_residuals.md"
 metric = "mean abs residual ~12.4 MeV"
 anchor = "paper/vision_ocr/page_images/page-009.png"
 parent = "sec-III"
-notes = "Reproduction report/figures/charmed.png. Paper angles theta_1P^cu=-41, theta_1D^cu=-39, theta_1P^cs=-44, theta_1D^cs=-39 (mixing_angles.md)."
+notes = "Reproduction plot GIPaper/scripts/spectrum_plots/charmed.png. Paper angles theta_1P^cu=-41, theta_1D^cu=-39, theta_1P^cs=-44, theta_1D^cs=-39 (mixing_angles.md)."
 
 [[unit]]
 id = "fig-8"
@@ -119,12 +119,12 @@ label = "Fig. 8"
 page = 9
 statement = "Bottomonium (b bbar) spectrum: predicted masses vs experiment."
 status = "reproduced"
-code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/bottomonium.png"]
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "GIPaper/scripts/spectrum_plots/bottomonium.png"]
 report = "GIPaper/docs/residual_reports/bottomonium_residuals.md"
 metric = "mean abs residual ~4.3 MeV (best sector)"
 anchor = "paper/vision_ocr/page_images/page-009.png"
 parent = "sec-III"
-notes = "Reproduction report/figures/bottomonium.png. Shares page-009 with Fig. 7."
+notes = "Reproduction plot GIPaper/scripts/spectrum_plots/bottomonium.png. Shares page-009 with Fig. 7."
 
 [[unit]]
 id = "fig-9"
@@ -133,12 +133,12 @@ label = "Fig. 9"
 page = 10
 statement = "b-flavored meson spectra (b qbar, b sbar, b cbar) with 1P mixing angles."
 status = "reproduced"
-code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "report/figures/bottom_light.png"]
+code = ["GIPaper/scripts/plot_all_sector_spectra.jl", "GIPaper/scripts/spectrum_plots/bottom_light.png"]
 report = "GIPaper/docs/residual_reports/b_flavored_residuals.md"
 metric = "mean abs residual ~5.2 MeV"
 anchor = "paper/vision_ocr/page_images/page-010.png"
 parent = "sec-III"
-notes = "Our reproduction is report/figures/bottom_light.png (the b qbar + b sbar + b cbar sectors). Paper angles theta_1P^bq=-43, theta_1P^bs=-45, theta_1P^bc=-53."
+notes = "Our reproduction plot is GIPaper/scripts/spectrum_plots/bottom_light.png (the b qbar + b sbar + b cbar sectors). Paper angles theta_1P^bq=-43, theta_1P^bs=-45, theta_1P^bc=-53."
 
 [[unit]]
 id = "fig-10"

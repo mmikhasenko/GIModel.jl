@@ -15,12 +15,15 @@ The repository has four first-class deliverables:
   data, maps reference CSV rows to mesons (`reference_meson`, no fallback
   masses), runs `compare_reference`, applies the Table III annihilation
   prescriptions, and writes residual reports.
-- **Report** (`report/`) — the code-free, high-level account:
-  [gi_reproduction.qmd](report/gi_reproduction.qmd) is the project report:
-  computation and architecture, implementation (the FD-then-HO route and the
-  corrections that taught the physics), usage, and outlook. The rendered PDF
-  is tracked; see [report/README.md](report/README.md) for the build and
-  evidence policy.
+- **Report** (separate repository) — the code-free, high-level account,
+  *Recomputing the Godfrey--Isgur Relativized Quark Model*. It is a RevTeX
+  (PRD) paper kept in its own Overleaf repository, not in this tree:
+  motivation, computation and architecture, implementation (the FD-then-HO
+  route and the corrections that taught the physics), usage, four decades of
+  post-1985 developments, and outlook. Clone it beside this repo with
+  `git clone https://git@git.overleaf.com/6aa00b740749f422ca1291fe report-overleaf`
+  (git-ignored here). Its `archive/` holds the previous Quarto edition, the one
+  with the sector-spectrum and wavefunction plots.
 - **Learning track** (`LearningTrack/`) — **AGI: Agentic Godfrey--Isgur**, a
   nine-sheet pen-and-paper course from elementary radial quantum mechanics to
   the complete paper-order spectrum algorithm, plus a question-led bridge to a

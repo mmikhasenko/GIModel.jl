@@ -31,3 +31,7 @@ docs/*.html
 
 # Regenerable sector plots; curated copies are tracked under report/figures/.
 GIPaper/scripts/spectrum_plots/
+
+# The report lives in its own Overleaf repository; clone it here with
+#   git clone https://git@git.overleaf.com/6aa00b740749f422ca1291fe report-overleaf
+report-overleaf/
