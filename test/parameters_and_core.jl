@@ -236,6 +236,17 @@ end
     @test reduced_mass(ConstituentMasses(2.0, 2.0)) ≈ 1.0
 end
 
+@testset "public package metadata and orbital labels" begin
+    @test isfile(default_parameters_path())
+    @test load_parameters(default_parameters_path()) isa GIParameters
+    @test orbital_angular_momentum("S") == 0
+    @test orbital_angular_momentum("G") == 4
+    @test orbital_label(0) == "S"
+    @test orbital_label(4) == "G"
+    @test_throws ArgumentError orbital_angular_momentum("H")
+    @test_throws ArgumentError orbital_label(5)
+end
+
 # Rewrite the active `central` method in the parameters TOML and reload.
 function load_params_with_central(dir, central_name)
     p = joinpath(dir, "p.toml")

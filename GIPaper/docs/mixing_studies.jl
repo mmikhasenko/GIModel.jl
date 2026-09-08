@@ -107,7 +107,8 @@ function isoscalar_solution(params, mq, rows; ngrid = 180, rmax = 18.0)
     )
     ordered = sort(rows; by = row -> (row.n, row.reference_GeV))
     s_wave = radial_wave(s_solution, 1)
-    s_levels = GIModel.contact_hyperfine_nonperturbative_levels(params, sm, "S", 1, s_wave.r, 2)
+    s_contact = contact_hyperfine_nonperturbative_states(params, sm, "S", 1, s_wave.r, 2)
+    s_levels = isnothing(s_contact) ? Float64[] : s_contact.eigenvalues_GeV
     diag = [
         ordered[1].isoscalar_annihilation_unmixed_GeV,
         s_levels[1],
@@ -292,7 +293,7 @@ end
 
 function main()
     mkpath(OUTDIR)
-    params, mq = load_parameters_and_quark_masses(joinpath(dirname(root), "data", "parameters.provisional.toml"))
+    params, mq = load_parameters_and_quark_masses(default_parameters_path())
 
     charmed_rows = sector_rows(params, mq, "reference_spectrum_charmed.csv"; aso = true, tensor = false)
     aso_pair = group_first_pair(charmed_rows, :same_j_mixing_scheme, "antisymmetric_spin_orbit")

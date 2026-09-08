@@ -14,14 +14,14 @@
 # direct test of the wavefunctions, independent of the two-parameter fit.
 
 using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."))
+Pkg.activate(@__DIR__)
 
 using Printf
 using GIModel
 
 root = dirname(@__DIR__)
 const REPORT = joinpath(root, "docs", "residual_reports", "realistic_factors.md")
-const PARAMS_PATH = joinpath(dirname(root), "data", "parameters.provisional.toml")
+const PARAMS_PATH = default_parameters_path()
 
 # Paper's quoted realistic factors (parenthetical column of Table V), by decay
 # orbital L and parent nonet. The type-A ratios cluster by L (they involve the
@@ -108,10 +108,7 @@ function main()
     #   <S|p|M*> ∝ ∫ p^3 Φ_0(p) Φ_1^{M*}(p) dp .
     pmax, npx = 30.0, 2001
     pgrid = collect(range(0.0, pmax; length = npx))
-    mom(w, L) = begin
-        phi = [GIModel._momentum_radial_wave(w, p, L) for p in pgrid]
-        phi ./ sqrt(trapz(pgrid, pgrid .^ 2 .* phi .^ 2))   # ∫ p² Φ² dp = 1
-    end
+    mom(w, L) = momentum_wave(w, L; pmax, npoints = npx).phi
     phi_pi = mom(w_pi, 0)
     phi_rho = mom(w_rho, 0)
     p2(phi) = trapz(pgrid, pgrid .^ 4 .* phi .^ 2)

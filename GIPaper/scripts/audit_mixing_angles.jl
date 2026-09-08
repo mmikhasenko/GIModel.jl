@@ -19,7 +19,7 @@
 # spectrum_state(...).mixings (mechanism "antisymmetric_spin_orbit").
 
 using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."))
+Pkg.activate(@__DIR__)
 
 using Dates
 using Printf
@@ -28,7 +28,7 @@ root = dirname(@__DIR__)
 using GIModel
 using GIPaper: quark_for   # paper flavor label -> quark object
 
-params_path = joinpath(dirname(root), "data", "parameters.provisional.toml")
+params_path = default_parameters_path()
 params, mq = load_parameters_and_quark_masses(params_path)
 
 const L_OF = Dict("P" => 1, "D" => 2, "F" => 3, "G" => 4)

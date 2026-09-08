@@ -21,7 +21,7 @@ promotion to clean data.
 Rebuild the comparison plot with:
 
 ```bash
-python3 scripts/plot_figure3_digitization.py
+python3 extraction/plot_figure3_digitization.py
 rsvg-convert data/raw/digitized_figures/fig03_isovector_mesons/figure_03_replot.svg \
   -o data/raw/digitized_figures/fig03_isovector_mesons/figure_03_replot.png
 ```

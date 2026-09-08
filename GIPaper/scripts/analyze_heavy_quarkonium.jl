@@ -1,7 +1,7 @@
 #!/usr/bin/env julia
 
 using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."))
+Pkg.activate(@__DIR__)
 
 using Printf
 
@@ -11,7 +11,7 @@ using GIPaper
 
 # Heavy-heavy diagnostics: reference rows → compare_reference per spectrum file.
 
-params_path = joinpath(dirname(root), "data", "parameters.provisional.toml")
+params_path = default_parameters_path()
 params, mq = load_parameters_and_quark_masses(params_path)
 report_path = joinpath(root, "docs", "residual_reports", "heavy_quarkonium_diagnostics.md")
 mkpath(dirname(report_path))

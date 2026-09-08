@@ -16,8 +16,12 @@ end
 
 function _same_j_singlet_triplet_prone(row)
     Ls = _row_L(row)
-    haskey(L_SYMBOLS, Ls) || return false
-    Lval = L_SYMBOLS[Ls]
+    Lval = try
+        orbital_angular_momentum(Ls)
+    catch error
+        error isa ArgumentError || rethrow()
+        return false
+    end
     return Lval > 0 && getproperty(row, :J) == Lval && getproperty(row, :multiplicity) in (1, 3)
 end
 

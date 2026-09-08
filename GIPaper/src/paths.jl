@@ -20,6 +20,5 @@ function reference_spectrum_path(sector::AbstractString)
     return path
 end
 
-"""Path of the model parameter TOML (`data/parameters.provisional.toml` of the GIModel package root)."""
-model_parameters_path() =
-    normpath(joinpath(@__DIR__, "..", "..", "data", "parameters.provisional.toml"))
+"""Path to the parameter file supplied by the installed GIModel package."""
+model_parameters_path() = GIModel.default_parameters_path()

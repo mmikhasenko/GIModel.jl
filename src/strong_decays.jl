@@ -41,7 +41,7 @@
 #   StrongDecayModel, decay_momentum, reduced_decay_amplitude, spatial_overlap,
 #   strong_decay_amplitude, calibrate_strong_decay_model,
 #   DecayChannel, StrongDecayAmplitude, decay_amplitude, matrix_element,
-#   decay_width, MesonMasses, mass, load_table_v
+#   decay_width, MesonMasses, mass
 
 """
     StrongDecayModel(A, S0, beta_GeV)
@@ -224,11 +224,11 @@ end
     DecayChannel(parent, daughter1, daughter2, coefficient, class, qbar_power;
                  label="", section="")
 
-A named Table V decay row. `parent`/`daughter1`/`daughter2` are meson names
+A named strong-decay channel. `parent`/`daughter1`/`daughter2` are meson names
 resolved to masses by a [`MesonMasses`](@ref); `coefficient` is the signed
-flavor-spin factor `c` [PAPER], `class` the reduced-amplitude class, `qbar_power`
-the orbital power `L`. Built by [`load_table_v`](@ref) from the canonical CSV or
-by hand.
+flavor-spin factor `c`, `class` the reduced-amplitude class, and `qbar_power`
+the orbital power `L`. Paper-specific row loaders live in the comparison layer;
+channels can always be constructed directly.
 
 `heavy_fraction` is `r = m_Q/(m_Q + m_q)`, the constituent-mass ratio driving the
 form factor (see [`spatial_overlap`](@ref)). It defaults to `0.5` (equal masses,
@@ -379,50 +379,6 @@ function decay_amplitude(
     q = decay_momentum(meson_mass(masses, ch.parent),
         meson_mass(masses, ch.daughter1), meson_mass(masses, ch.daughter2))
     return decay_amplitude(model, ch, q; convention)
-end
-
-# =============================================================================
-# Canonical Table V loader
-# =============================================================================
-
-# Map the canonical CSV `amp_class` strings to reduced-amplitude class symbols.
-const _CLASS_SYMBOL = Dict(
-    "A" => :A, "Aprime" => :Aprime, "Adoubleprime" => :Adoubleprime, "A0" => :A0,
-    "S" => :S, "D" => :D, "P" => :P, "Ac" => :A_c, "Sc" => :S_c,
-)
-
-"""
-    load_table_v(rows; heavy_fraction_for = _ -> nothing) -> Vector{DecayChannel}
-
-Turn parsed canonical `table_v_strong_decays.csv` rows into `DecayChannel`s.
-Accepts any row iterator (e.g. `CSV.File(path)`) so `src/` takes no CSV
-dependency. Rows with a non-amplitude class (`mixing_only`, `unlisted`) are
-skipped. Each row needs the columns `parent`, `daughter1`, `daughter2`,
-`coefficient`, `amp_class`, `qbar_power`, `decay`, `section`.
-
-`heavy_fraction_for(row)` supplies each row's `r = m_Q/(m_Q + m_q)`. The CSV has
-no quark-content column, so this cannot be inferred here — and because the table
-contains unequal-mass (`Ac`/`Sc`) rows, **the default resolver deliberately fails
-on them** rather than silently applying the light `r = 1/2` form factor. Callers
-loading the full table must pass one, e.g.
-
-    load_table_v(CSV.File(path);
-                 heavy_fraction_for = r -> occursin("charmed", String(r.section)) ?
-                                           m_c / (m_c + m_q) : 0.5)
-"""
-function load_table_v(rows; heavy_fraction_for = _ -> nothing)
-    channels = DecayChannel[]
-    for row in rows
-        class_str = String(row.amp_class)
-        haskey(_CLASS_SYMBOL, class_str) || continue  # skip mixing_only / unlisted
-        push!(channels, DecayChannel(
-            String(row.parent), String(row.daughter1), String(row.daughter2),
-            Float64(row.coefficient), _CLASS_SYMBOL[class_str], Int(row.qbar_power);
-            label = String(row.decay), section = String(row.section),
-            heavy_fraction = heavy_fraction_for(row),
-        ))
-    end
-    return channels
 end
 
 # --- Display -----------------------------------------------------------------

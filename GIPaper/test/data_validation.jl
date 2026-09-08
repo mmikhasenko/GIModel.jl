@@ -65,7 +65,7 @@ end
     rows = csv_rows(joinpath(GIPAPER_ROOT, "data", "table_ii_parameters.csv"))
     table_values = Dict(cell(row, "parameter_key") => parse(Float64, cell(row, "value"))
                         for row in rows)
-    model = TOML.parsefile(joinpath(REPOSITORY_ROOT, "data", "parameters.provisional.toml"))
+    model = TOML.parsefile(default_parameters_path())
     mappings = (
         "m_ud_avg" => ("masses", "m_ud_avg_MeV"),
         "m_s" => ("masses", "m_s_MeV"),

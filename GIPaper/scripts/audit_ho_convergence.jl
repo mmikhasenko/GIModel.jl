@@ -1,13 +1,13 @@
 #!/usr/bin/env julia
 
 using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."); io = devnull)
+Pkg.activate(@__DIR__; io = devnull)
 
 using GIModel
 using Printf
 
 const ROOT = dirname(@__DIR__)
-const PARAMS_PATH = joinpath(dirname(ROOT), "data", "parameters.provisional.toml")
+const PARAMS_PATH = default_parameters_path()
 const REPORT = joinpath(ROOT, "docs", "residual_reports", "ho_convergence.md")
 
 function main()

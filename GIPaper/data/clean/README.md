@@ -25,7 +25,7 @@ pseudoscalar rows are promoted.
 Regenerate and validate:
 
 ```bash
-python3 scripts/data_checks.py promote-clean
+python3 extraction/data_checks.py promote-clean
 julia --project=. -e 'using Pkg; Pkg.test()'
 ```
 

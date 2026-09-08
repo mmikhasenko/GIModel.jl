@@ -2,7 +2,7 @@
 
 julia_version = "1.11.6"
 manifest_format = "2.0"
-project_hash = "d577a641ce1a712bce62d9647b35561aea79eba5"
+project_hash = "7785aa168452f5399f795f5db4e4bbd99bf6bba5"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -503,7 +503,7 @@ uuid = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
 version = "0.2.0"
 
 [[deps.GIPaper]]
-deps = ["CSV", "Dates", "GIModel", "LinearAlgebra", "Printf", "TOML"]
+deps = ["CSV", "GIModel", "LinearAlgebra", "Printf"]
 path = ".."
 uuid = "49ec1c8d-b0ea-4dff-ad2d-05293f1534fc"
 version = "0.1.0"

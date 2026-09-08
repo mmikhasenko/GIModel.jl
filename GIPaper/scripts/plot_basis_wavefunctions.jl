@@ -62,7 +62,7 @@ end
 beta is chosen to minimize the highest requested level, so larger `nlevels`
 degrades the low-level HO representation while FD is unaffected."""
 function basis_waves(params, masses, L_label, level; nlevels = 6)
-    Lval = GIModel.L_SYMBOLS[L_label]
+    Lval = orbital_angular_momentum(L_label)
     nl = max(nlevels, level)
     fd_solution = channel_solution(
         params, masses, Lval; solver = FiniteDifferenceSolver(), nlevels = nl)
@@ -88,7 +88,7 @@ mkpath(OUTDIR)
 # --- Figure 1: representation. Ground-state cc 1^3S_1: FD as mesh samples,
 # HO as a smooth finite-basis curve. Both approximate the same function. ----
 let
-    w = basis_waves(GIModel.load_parameters(joinpath(dirname(root), "data", "parameters.provisional.toml")),
+    w = basis_waves(load_parameters(default_parameters_path()),
         M_CC, "S", 1)
     fig = Figure(size = (760, 520))
     ax = Axis(fig[1, 1];
@@ -111,7 +111,7 @@ end
 
 # --- Figure 2: (a) cc S-wave radial excitations; (b) an HO breakdown case. ---
 let
-    params = GIModel.load_parameters(joinpath(dirname(root), "data", "parameters.provisional.toml"))
+    params = load_parameters(default_parameters_path())
     fig = Figure(size = (1180, 480))
 
     axa = Axis(fig[1, 1];

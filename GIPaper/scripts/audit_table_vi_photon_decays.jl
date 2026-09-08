@@ -19,7 +19,7 @@
 # ρ→πγ therefore doubles as the normalization check of this whole pipeline.
 
 using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."))
+Pkg.activate(@__DIR__)
 
 using Dates
 using Printf
@@ -29,7 +29,7 @@ root = dirname(@__DIR__)
 using GIModel
 const G = GIModel
 
-params_path = joinpath(dirname(root), "data", "parameters.provisional.toml")
+params_path = default_parameters_path()
 params, mq = load_parameters_and_quark_masses(params_path)
 
 const NGRID = 450

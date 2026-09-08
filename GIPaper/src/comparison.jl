@@ -4,7 +4,6 @@
 #
 # Public API (exported from GIPaper.jl): compare_reference
 
-const L_SYMBOLS = GIModel.L_SYMBOLS
 const COMPARISON_ANNIHILATION_SCHEMES = (
     :none,
     :calibrated_p1,
@@ -167,14 +166,14 @@ function _assign_tensor_rows!(
     pairs_by_key = Dict{Tuple{Int,Int},Vector{Int}}()
     for i in group_rows
         isnothing(_mixing_of(states[i], "tensor_mixing")) && continue
-        L = L_SYMBOLS[rows[i].L]
+        L = orbital_angular_momentum(rows[i].L)
         partner_level = L == rows[i].J - 1 ? rows[i].n - 1 : rows[i].n
         push!(get!(pairs_by_key, (rows[i].J, partner_level), Int[]), i)
     end
     for indices in values(pairs_by_key)
         length(indices) == 2 || continue
-        ilow = findfirst(i -> L_SYMBOLS[rows[i].L] == rows[i].J - 1, indices)
-        ihigh = findfirst(i -> L_SYMBOLS[rows[i].L] == rows[i].J + 1, indices)
+        ilow = findfirst(i -> orbital_angular_momentum(rows[i].L) == rows[i].J - 1, indices)
+        ihigh = findfirst(i -> orbital_angular_momentum(rows[i].L) == rows[i].J + 1, indices)
         (isnothing(ilow) || isnothing(ihigh)) && continue
         i1 = indices[ilow]
         i2 = indices[ihigh]

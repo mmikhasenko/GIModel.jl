@@ -21,5 +21,5 @@ Current folders:
 - `fig08_bottomonia/`: Fig. 8 labels and clean replot.
 - `fig09_b_flavored_mesons/`: Fig. 9 panel labels and clean replot.
 
-Use `python3 scripts/plot_spectrum_digitizations.py` to regenerate the Fig.
+Use `python3 extraction/plot_spectrum_digitizations.py` to regenerate the Fig.
 4-9 SVG/PNG comparison plots from their CSV files.

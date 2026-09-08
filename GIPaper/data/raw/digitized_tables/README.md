@@ -15,7 +15,7 @@ transcriptions.
   (79 rows), **`table_vii_annihilation_em.csv`** (61 rows): canonical,
   from-page-image transcriptions of Tables V/VI/VII. Schema and footnotes are
   documented in **[`README_canonical_tables.md`](README_canonical_tables.md)**.
-  Table V is consumed by `GIModel.load_table_v` and reproduced end-to-end by
+  Table V is consumed by `GIPaper.load_table_v` and reproduced end-to-end by
   `GIPaper/scripts/reproduce_table_v.jl` (160/178 scoreable rows match).
 
 ## Rules
@@ -27,4 +27,3 @@ transcriptions.
   the source page in each row's `page` column; prefer them over any earlier
   provisional extraction.
 - Promote only audited rows to `data/clean/`.
-

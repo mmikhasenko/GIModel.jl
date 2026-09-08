@@ -30,7 +30,7 @@ set_theme!(merge(theme_latexfonts(), Theme(fontsize = 16, Axis = (
     xminortickalign = 1, yminortickalign = 1, topspinevisible = true,
     rightspinevisible = true, xgridvisible = true, ygridvisible = true))))
 
-params = G.load_parameters(joinpath(dirname(root), "data", "parameters.provisional.toml"))
+params = G.load_parameters(G.default_parameters_path())
 ho = OscillatorSolver()
 m = ConstituentMasses(0.220, 0.419)   # strange q-sbar
 

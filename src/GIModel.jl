@@ -13,6 +13,7 @@ using SpecialFunctions: erf, gamma
 
 include("constants.jl")
 
+export orbital_angular_momentum, orbital_label
 export ConstituentMasses, reduced_mass, FineStructureMultiplet
 export RadialWave, MeshWave, OscillatorWave, sample_wave
 export radial_expect, radial_overlap, wave_norm
@@ -35,7 +36,7 @@ export CentralPotentialMethod,
     AppendixAClosedForm,
     AppendixAMomentumSandwich,
     central_potential_method
-export load_parameters
+export load_parameters, default_parameters_path
 include("parameters.jl")
 
 export QuarkMassTable, load_quark_masses, load_parameters_and_quark_masses
@@ -163,8 +164,7 @@ export StrongDecayModel,
     matrix_element,
     decay_width,
     MesonMasses,
-    meson_mass,
-    load_table_v
+    meson_mass
 include("strong_decays.jl")
 
 # =============================================================================
@@ -172,6 +172,7 @@ include("strong_decays.jl")
 # =============================================================================
 
 export wavefunction_origin_smearing,
+    observable_momentum_wave,
     gluonic_annihilation_amplitude,
     gluonic_annihilation_width,
     GLUONIC_CHANNELS,

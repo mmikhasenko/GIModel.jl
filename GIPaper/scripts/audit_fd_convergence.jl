@@ -3,14 +3,14 @@
 # comparator. This is deliberately not part of the 1985 HO acceptance path.
 
 using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."); io = devnull)
+Pkg.activate(@__DIR__; io = devnull)
 
 using GIModel
 using LinearAlgebra
 using Printf
 
 const ROOT = dirname(@__DIR__)
-const PARAMS_PATH = joinpath(dirname(ROOT), "data", "parameters.provisional.toml")
+const PARAMS_PATH = default_parameters_path()
 const REPORT = joinpath(ROOT, "docs", "residual_reports", "fd_comparator_convergence.md")
 
 const NLEVELS = 6
@@ -80,7 +80,7 @@ function fixed_snapshot(flavor, sector, multiplet, ngrid, rmax)
         origin = Dict(
             n => wavefunction_origin_smearing(
                 radial_wave(solution, n), m;
-                L = GIModel.L_SYMBOLS[multiplet.L_label],
+                L = orbital_angular_momentum(multiplet.L_label),
             ) for n in ORIGIN_LEVELS
         )
         return (
@@ -166,7 +166,7 @@ function calibration_rows()
             nlevels = NLEVELS,
         )
         ho_rms = [sqrt(radial_expect(radial_wave(ho, n), r -> r^2)) for n = 1:NLEVELS]
-        L = GIModel.L_SYMBOLS[multiplet.L_label]
+        L = orbital_angular_momentum(multiplet.L_label)
         ho_origin = Dict(
             n => wavefunction_origin_smearing(radial_wave(ho, n), mq[flavor]; L = L) for
             n in ORIGIN_LEVELS
@@ -186,7 +186,8 @@ end
 
 function origin_at_pmax(wave::MeshWave, mass, L, pmax)
     # Keep the production transform's Δp while varying only its upper limit.
-    dp = GIModel.FD_OBSERVABLE_PMAX_GEV / (900 - 1)
+    production_wave = observable_momentum_wave(wave, L; npoints = 900)
+    dp = last(production_wave.p) / (length(production_wave.p) - 1)
     npoints = ceil(Int, pmax / dp) + 1
     momentum = momentum_wave(wave, L; pmax = pmax, npoints = npoints)
     kernel = p -> begin
@@ -202,7 +203,7 @@ function cutoff_rows()
         flavor in ("q", "b") || continue
         snapshot = fixed_snapshot(flavor, sector, multiplet, CERTIFIED_GRID...)
         mass = mq[flavor]
-        L = GIModel.L_SYMBOLS[multiplet.L_label]
+        L = orbital_angular_momentum(multiplet.L_label)
         change_45_60 = 0.0
         change_60_80 = 0.0
         for n in ORIGIN_LEVELS

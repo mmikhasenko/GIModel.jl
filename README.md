@@ -34,13 +34,15 @@ The repository has four first-class deliverables:
 ## Current Map
 
 - `src/GIModel.jl` is the computation package entry point.
-- `GIPaper/src/GIPaper.jl` is the comparison package entry point.
+- `GIPaper/src/GIPaper.jl` is the comparison package entry point; its
+  [README](GIPaper/README.md) defines the package boundary and separate script
+  environment.
 - `test/runtests.jl` gates the pure numerics; `GIPaper/test/runtests.jl` gates
   the reference comparison.
 - `scripts/verify_project.sh` runs the current full gate (both packages).
 - `GIPaper/test/data_validation.jl` owns package-level CSV, TOML, and
   provenance invariants and runs as part of `Pkg.test()`.
-- `GIPaper/scripts/data_checks.py promote-clean` remains the write-oriented
+- `GIPaper/extraction/data_checks.py promote-clean` remains the write-oriented
   data-promotion utility; scorecard generation is Julia-native via
   `GIPaper/scripts/score_annihilation.jl`.
 - `GIPaper/scripts/run_all_spectrum_checks.jl` regenerates sector residual
@@ -87,8 +89,9 @@ The repository has four first-class deliverables:
   `docs/appendix_a_from_paper.md` describe the implementation conventions.
 
 Extraction utilities are intentionally separate from the core gate:
-`GIPaper/scripts/vision_ocr_paper.py`, `GIPaper/scripts/plot_figure3_digitization.py`,
-and `GIPaper/scripts/plot_spectrum_digitizations.py`.
+`GIPaper/extraction/vision_ocr_paper.py`,
+`GIPaper/extraction/plot_figure3_digitization.py`, and
+`GIPaper/extraction/plot_spectrum_digitizations.py`.
 
 Concluded material from the reproduction phase (poster, Table III forensics,
 early research notes) lives under `archive/` — see

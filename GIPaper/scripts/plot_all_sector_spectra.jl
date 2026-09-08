@@ -359,7 +359,7 @@ function compute_all_rows(params, mq)
 end
 
 mkpath(OUTDIR)
-params, mq = load_parameters_and_quark_masses(joinpath(dirname(root), "data", "parameters.provisional.toml"))
+params, mq = load_parameters_and_quark_masses(default_parameters_path())
 plain_rows, mixed_rows_all = compute_all_rows(params, mq)
 
 before_path = joinpath(OUTDIR, "all_sectors_before_mixing.png")

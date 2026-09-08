@@ -37,7 +37,7 @@ function wavefunction_origin_smearing(
         (p / E)^L * mass / E
     end
     return sqrt(2 / π) / sqrt(4π) *
-           momentum_functional(_observable_momentum_wave(radial, L, npoints), kernel)
+           momentum_functional(observable_momentum_wave(radial, L; npoints), kernel)
 end
 
 # The four lowest-order gluonic channels of Table VII(c). Each key maps a decay
@@ -96,14 +96,23 @@ gluonic_annihilation_width(channel::Symbol, S_L::Real, alpha_s::Real, mQ::Real) 
 # at the range certified by FD-COMP. Native HO waves still use their exact
 # infinite-domain representation below.
 const FD_OBSERVABLE_PMAX_GEV = 60.0
-_observable_momentum_wave(w::MeshWave, L::Integer, npoints::Integer) =
+
+"""
+    observable_momentum_wave(wave, L; npoints=900)
+
+Return the normalized momentum-space representation used by GIModel
+observables. For finite-difference waves the transform respects the mesh
+Nyquist limit and the certified 60 GeV integration cutoff; oscillator waves
+retain their exact infinite-domain representation.
+"""
+observable_momentum_wave(w::MeshWave, L::Integer; npoints::Integer = 900) =
     momentum_wave(
         w,
         L;
         pmax = min(π / w.h, FD_OBSERVABLE_PMAX_GEV),
         npoints = max(npoints, 32),
     )
-_observable_momentum_wave(w::RadialWave, L::Integer, npoints::Integer) =
+observable_momentum_wave(w::RadialWave, L::Integer; npoints::Integer = 900) =
     momentum_wave(w, L)
 
 # K[w] = (2π)^(-3/2) ∫d³p (4π)^(-1/2) Φ_L(p) w(p): the Eq. (17) kernel with a
@@ -111,7 +120,7 @@ _observable_momentum_wave(w::RadialWave, L::Integer, npoints::Integer) =
 # weight at L=0). `wave` must already be unit-normalized.
 function _mock_momentum_kernel(wave::RadialWave, L::Integer, w; npoints::Integer = 900)
     return sqrt(2 / π) / sqrt(4π) *
-           momentum_functional(_observable_momentum_wave(wave, L, npoints), w)
+           momentum_functional(observable_momentum_wave(wave, L; npoints), w)
 end
 
 """
@@ -128,7 +137,7 @@ function mock_meson_mass(
     L::Integer = 0,
     npoints::Integer = 900,
 )
-    mw = _observable_momentum_wave(radial, L, npoints)
+    mw = observable_momentum_wave(radial, L; npoints)
     norm = momentum_expect(mw, _ -> 1.0)
     norm > 0 || throw(ArgumentError("mock_meson_mass: vanishing momentum norm"))
     energy = momentum_expect(
@@ -202,7 +211,7 @@ const ALPHA_EM = 1 / 137.036
 
 # raw momentum moment ∫ p² Φ_L(p) w(p) dp over the (unit-normalized) wave
 function _momentum_moment(wave::RadialWave, L::Integer, w; npoints::Integer = 900)
-    return momentum_functional(_observable_momentum_wave(wave, L, npoints), w)
+    return momentum_functional(observable_momentum_wave(wave, L; npoints), w)
 end
 
 """
@@ -252,7 +261,7 @@ end
 
 # <(m/E)^power>_φ = ∫ p² |Φ_0(p)|² (m/E)^power dp over the unit-normalized wave
 function _rel_momentum_average(wave::RadialWave, m::Real, power::Real; npoints::Integer = 900)
-    mw = _observable_momentum_wave(wave, 0, npoints)
+    mw = observable_momentum_wave(wave, 0; npoints)
     nrm = momentum_expect(mw, _ -> 1.0)
     nrm > 0 || throw(ArgumentError("_rel_momentum_average: zero-norm radial wave"))
     value = momentum_expect(mw, p -> (m / sqrt(m^2 + p^2))^power)

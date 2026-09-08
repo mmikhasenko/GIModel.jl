@@ -3,7 +3,7 @@
 # promoted Table III amplitude rows.
 
 using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."))
+Pkg.activate(@__DIR__)
 
 using CSV
 using LinearAlgebra
@@ -56,7 +56,7 @@ function s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
             solver = solver_ho,
             nlevels = 2,
         )
-        levels = GIModel.contact_hyperfine_nonperturbative_levels(
+        contact = contact_hyperfine_nonperturbative_states(
             params,
             masses,
             "S",
@@ -64,31 +64,27 @@ function s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
             radial_wave(fd_solution, 1).r,
             2,
         )
-        isempty(levels) && (levels = fd_solution.eigenvalues_GeV)
+        levels = isnothing(contact) ? fd_solution.eigenvalues_GeV : contact.eigenvalues_GeV
         channels[label] = (mass = mq[mass_key], solution = solution, levels = levels)
     end
 
-    basis = GIModel.PseudoscalarAnnihilationBasisInput[]
-    for label in TARGET_BASIS
+    basis = map(TARGET_BASIS) do label
         n = parse(Int, first(split(label)))
         flavor = last(split(label))
         channel = channels[flavor]
         basis_flavor = flavor == "ns" ? :q : Symbol(first(flavor, 1))
-        push!(
-            basis,
-            pseudoscalar_annihilation_basis_input(
-                BasisState(
-                    n, "S", 1, 0;
-                    label = label,
-                    flavors = (basis_flavor, basis_flavor),
-                ),
-                channel.mass,
-                channel.levels[n],
-                fix_annihilation_phase(radial_wave(channel.solution, n));
-                # TARGET_BASIS is ["1 ns", "1 ss", "1 cc", "1 bb", ...]; only the
-                # nonstrange rows are the coherent (u ubar + d dbar)/sqrt(2) state.
-                isoscalar_coherent = flavor == "ns",
+        pseudoscalar_annihilation_basis_input(
+            BasisState(
+                n, "S", 1, 0;
+                label = label,
+                flavors = (basis_flavor, basis_flavor),
             ),
+            channel.mass,
+            channel.levels[n],
+            fix_annihilation_phase(radial_wave(channel.solution, n));
+            # TARGET_BASIS is ["1 ns", "1 ss", "1 cc", "1 bb", ...]; only the
+            # nonstrange rows are the coherent (u ubar + d dbar)/sqrt(2) state.
+            isoscalar_coherent = flavor == "ns",
         )
     end
     return basis
@@ -223,7 +219,7 @@ function write_model_section(io, title, solution, targets, shifts)
 end
 
 function main()
-    params, mq = load_parameters_and_quark_masses(joinpath(dirname(root), "data", "parameters.provisional.toml"))
+    params, mq = load_parameters_and_quark_masses(default_parameters_path())
     basis = s_wave_basis(params, mq)
     targets, shifts = table_iii_targets()
 

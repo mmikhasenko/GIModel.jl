@@ -4,7 +4,10 @@
 # Public API (exported from GIModel.jl):
 #   GIParameters, ConfinementPotential, RelativisticSmearing, RelativisticFactors,
 #   FineStructure, AnnihilationAmplitudes, CentralPotentialMethod and its
-#   singletons, load_parameters
+#   singletons, load_parameters, default_parameters_path
+
+"""Path to the parameter file shipped with GIModel."""
+default_parameters_path() = normpath(joinpath(@__DIR__, "..", "data", "parameters.provisional.toml"))
 
 # `GIParameters` used to carry a `Basis` type parameter (`FiniteDifferenceBasis` /
 # `HarmonicOscillatorBasis`) that no field ever used: it existed only to dispatch

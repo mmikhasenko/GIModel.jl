@@ -22,6 +22,9 @@ include("reference_meson.jl")
 export GI_PSEUDOSCALAR_FIG5_TARGETS_GEV, table_iii_amplitude
 include("table_iii_annihilation.jl")
 
+export load_table_v
+include("table_v.jl")
+
 export compare_reference
 include("comparison.jl")
 

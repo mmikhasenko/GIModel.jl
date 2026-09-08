@@ -23,14 +23,14 @@
 # mass in the 1985 set) and the remaining subtables (gamma-gamma, charge radii).
 
 using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."); io = devnull)
+Pkg.activate(@__DIR__; io = devnull)
 
 using Printf
 using GIModel
 
 const ROOT = dirname(@__DIR__)                                  # GIPaper/
 const TABLE = joinpath(ROOT, "data", "raw", "digitized_tables", "table_vii_annihilation_em.csv")
-const PARAMS_PATH = joinpath(dirname(ROOT), "data", "parameters.provisional.toml")
+const PARAMS_PATH = default_parameters_path()
 const REPORT = joinpath(ROOT, "docs", "residual_reports", "table_vii_annihilation_em.md")
 
 const NGRID = 1200

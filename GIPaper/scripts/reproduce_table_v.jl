@@ -17,17 +17,17 @@
 # kinematics, exactly as the paper does (no refit).
 
 using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."))
+Pkg.activate(@__DIR__)
 
 using CSV
 using Printf
 using GIModel
-using GIPaper: quark_for   # paper flavor label -> quark object
+using GIPaper: load_table_v, quark_for
 
 const ROOT = dirname(@__DIR__)
 const TABLE = joinpath(ROOT, "data", "raw", "digitized_tables", "table_v_strong_decays.csv")
 const REPORT = joinpath(ROOT, "docs", "residual_reports", "table_v_reproduction.md")
-const PARAMS_PATH = joinpath(dirname(ROOT), "data", "parameters.provisional.toml")
+const PARAMS_PATH = default_parameters_path()
 
 # --- Flavor content from the parent name -------------------------------------
 const NN = Set([
@@ -158,10 +158,6 @@ function parse_amp(text)
     return isnothing(v) ? (nothing, :range) : (v, :number)
 end
 
-# Class-symbol map mirrors src/strong_decays.jl (mixing_only/unlisted skipped).
-const CLASS = Dict("A" => :A, "Aprime" => :Aprime, "Adoubleprime" => :Adoubleprime,
-    "A0" => :A0, "S" => :S, "D" => :D, "P" => :P, "Ac" => :A_c, "Sc" => :S_c)
-
 function main()
     params, mq = load_parameters_and_quark_masses(PARAMS_PATH)
     model_mass = build_mass_resolver(params, mq)
@@ -178,13 +174,12 @@ function main()
 
     rows = NamedTuple[]
     for r in CSV.File(TABLE)
+        loaded = load_table_v((r,); heavy_fraction_for = row -> heavy_fraction_of(String(row.parent)))
+        isempty(loaded) && continue                   # skip mixing_only / unlisted
+        ch = only(loaded)
         class_str = String(r.amp_class)
-        haskey(CLASS, class_str) || continue          # skip mixing_only / unlisted
         section = String(r.section); parent = String(r.parent)
         d1 = String(r.daughter1); d2 = String(r.daughter2)
-        ch = DecayChannel(parent, d1, d2, Float64(r.coefficient), CLASS[class_str],
-            Int(r.qbar_power); label = String(r.decay), section = section,
-            heavy_fraction = heavy_fraction_of(parent))
 
         M, msrc = parent_mass(section, parent)
         m1 = get(DAUGHTER_MASS, d1, NaN); m2 = get(DAUGHTER_MASS, d2, NaN)
@@ -201,7 +196,7 @@ function main()
         # that would reproduce the paper (proves a MISS is a kinematics effect).
         implied = NaN
         if (startswith(status, "MISS") || startswith(status, "near")) &&
-           CLASS[class_str] in STRUCT_INDEP && !isnothing(pv) && !isnan(m1) && !isnan(m2)
+           ch.class in STRUCT_INDEP && !isnothing(pv) && !isnan(m1) && !isnan(m2)
             implied = implied_parent_mass(model, ch, m1, m2, pv)
         end
         push!(rows, (label = String(r.decay), section = section, class = class_str,
@@ -233,7 +228,7 @@ function mixing_pass(model, model_mass)
         triplet = Dict{Tuple{String,String,Int},Any}()
         for r in CSV.File(TABLE)
             String(r.section) == section || continue
-            haskey(CLASS, String(r.amp_class)) || continue
+            isempty(load_table_v((r,); heavy_fraction_for = row -> heavy_fraction_of(String(row.parent)))) && continue
             key = (String(r.daughter1), String(r.daughter2), Int(r.qbar_power))
             String(r.parent) == spec.q1 && (singlet[key] = r)
             String(r.parent) == spec.q2 && (triplet[key] = r)
@@ -243,9 +238,10 @@ function mixing_pass(model, model_mass)
             m1 = get(DAUGHTER_MASS, String(r.daughter1), NaN)
             m2 = get(DAUGHTER_MASS, String(r.daughter2), NaN)
             q = decay_momentum(M, m1, m2)
-            ch = DecayChannel(String(r.parent), String(r.daughter1), String(r.daughter2),
-                Float64(r.coefficient), CLASS[String(r.amp_class)], Int(r.qbar_power);
-                heavy_fraction = heavy_fraction_of(String(r.parent)))
+            ch = only(load_table_v(
+                (r,);
+                heavy_fraction_for = row -> heavy_fraction_of(String(row.parent)),
+            ))
             (decay_amplitude(model, ch, q; convention = :leading).total, q,
              String(r.daughter1), String(r.daughter2))
         end

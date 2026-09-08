@@ -2,7 +2,7 @@
 # Recompute residual reports for all reference_spectrum_*.csv catalogs.
 
 using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."))
+Pkg.activate(@__DIR__)
 
 using Dates
 using Printf

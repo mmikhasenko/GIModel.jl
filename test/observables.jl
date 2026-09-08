@@ -293,7 +293,7 @@ end
     for (key, multiplet, ch, paper) in cases
         sol = fixed_channel_solution(
             params, masses, multiplet; solver = solver_ho, nlevels = 4)
-        L = GIModel.L_SYMBOLS[multiplet.L_label]
+        L = orbital_angular_momentum(multiplet.L_label)
         ratios[key] = amp(ch, sm(radial_wave(sol, 1), L), sol.eigenvalues_GeV[1]) / paper
         @test 0.85 < ratios[key] < 1.15
     end
@@ -320,10 +320,10 @@ end
     r_coarse = collect(range(0.05, 20.0; step = 0.05))
     r_fine = collect(range(0.025, 20.0; step = 0.025))
     trial(r) = MeshWave(r .* exp.(-r), r)
-    coarse_momentum = GIModel._observable_momentum_wave(trial(r_coarse), 0, 900)
-    fine_momentum = GIModel._observable_momentum_wave(trial(r_fine), 0, 900)
-    @test last(coarse_momentum.p) ≈ min(π / 0.05, GIModel.FD_OBSERVABLE_PMAX_GEV)
-    @test last(fine_momentum.p) == GIModel.FD_OBSERVABLE_PMAX_GEV
+    coarse_momentum = observable_momentum_wave(trial(r_coarse), 0; npoints = 900)
+    fine_momentum = observable_momentum_wave(trial(r_fine), 0; npoints = 900)
+    @test last(coarse_momentum.p) ≈ min(π / 0.05, 60.0)
+    @test last(fine_momentum.p) == 60.0
     @test length(coarse_momentum.p) == length(fine_momentum.p) == 900
     for mass in (0.22, 4.977)
         coarse = wavefunction_origin_smearing(trial(r_coarse), mass; L = 0)

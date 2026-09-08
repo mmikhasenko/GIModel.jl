@@ -73,7 +73,7 @@ of `decay_amplitude`), while `:table_iv` keeps the printed polynomial.
 - `src/strong_decays.jl`: the row-oriented API — `DecayChannel`,
   `decay_amplitude` returning the 3-way `StrongDecayAmplitude` decomposition
   (`coefficient`/`reduced`/`spatial_overlap`/`total`), `matrix_element`,
-  `decay_width`, `MesonMasses`, `load_table_v`, the `:leading`/`:table_iv`
+  `decay_width`, `MesonMasses`, the `:leading`/`:table_iv`
   conventions, and the charm footnote-d path. Leading calibration gives
   `A = 1.665`, `S0 = 3.287` (`beta = 0.40 GeV`).
 - `scripts/reproduce_table_v.jl` writes
@@ -81,6 +81,8 @@ of `decay_amplitude`), while `:table_iv` keeps the printed polynomial.
   match** (+6 near, 12 off), 22 convention-deferred. Non-matches are all
   parent-mass or mixing-angle input sensitivity (each MISS inverts to a mass
   within 20-50 MeV of the input), not decay-algebra error.
+- `GIPaper.load_table_v` owns the adapter from the paper's canonical CSV schema
+  to GIModel's reusable `DecayChannel` type.
 
 ### Findings that make Table V reproduce
 

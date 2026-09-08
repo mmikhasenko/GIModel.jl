@@ -11,15 +11,15 @@ using GIPaper
 const GIPAPER_ROOT = dirname(@__DIR__)
 const REPOSITORY_ROOT = dirname(GIPAPER_ROOT)
 
-# Until GIModel drops its legacy comparison exports, some names are exported by
-# both packages; qualify the GIPaper ones explicitly.
 const load_ref = GIPaper.load_reference_spectrum
 
 const params, mq = load_parameters_and_quark_masses(GIPaper.model_parameters_path())
 
 @testset "GIPaper" begin
+    include("package_boundary.jl")
     include("data_validation.jl")
     include("reference_loading.jl")
+    include("table_v.jl")
     include("comparison.jl")
     include("annihilation.jl")
     include("residual_reports.jl")
