@@ -5,6 +5,17 @@
 # Public API (exported from GIPaper.jl): compare_reference
 
 const L_SYMBOLS = GIModel.L_SYMBOLS
+const COMPARISON_ANNIHILATION_SCHEMES = (
+    :none,
+    :calibrated_p1,
+    :p1,
+    :paper_p1,
+    :p2,
+    :paper_p2,
+    :general_s1,
+    :p1_and_s1,
+    :table_iii,
+)
 
 # The base comparison row wants the pre-mixing values, which are exactly the
 # wrapped corrected-stage state (the same-J assignment below re-applies the
@@ -498,7 +509,7 @@ function compare_reference(
     solver = _comparison_solver(solver; ngrid = ngrid, rmax = rmax,
         kinetic = kinetic, eigensolver = eigensolver)
     scheme = isoscalar_pseudoscalar_annihilation
-    scheme in (:none, :calibrated_p1, :p1, :paper_p1, :p2, :paper_p2, :general_s1, :p1_and_s1, :table_iii) ||
+    scheme in COMPARISON_ANNIHILATION_SCHEMES ||
         throw(ArgumentError("unsupported isoscalar annihilation scheme `$scheme`"))
     mixed_assignment in (:reference_order, :model_order) ||
         throw(ArgumentError("unsupported mixed_assignment `$mixed_assignment`"))

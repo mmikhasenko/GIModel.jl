@@ -26,11 +26,28 @@ struct IsoscalarAnnihilation <: MixingMechanism end
 """
     BasisState(n, L_label, multiplicity, J; label="", flavors=nothing)
 
-One spectroscopic/flavor basis state used by a mixing block. `flavors` is
-`nothing` for a representation-independent request and `(flavor1, flavor2)`
-once the request belongs to a solved meson channel. Flavor is explicit state
-identity rather than being inferred from display labels such as `"1 ns"`.
-Radial matrix elements and physical couplings are supplied by the block builder.
+Quantum labels for a requested level or mixing component: radial `n ≥ 1`,
+orbital `L_label` ("S", "P", …), spin `multiplicity = 2S + 1`, and total `J`.
+Multiplicity is `1` for singlets or `3` for triplets; it selects spin interactions
+and mixing partners.
+
+[`spectrum_levels`](@ref) leaves `flavors = nothing` for reuse across mesons.
+Solvers attach `(flavor1, flavor2)` to a copy. This distinguishes nonstrange and
+strange components in [`compute_isoscalar_spectrum`](@ref).
+
+## Example
+
+```julia
+using GIModel
+singlet = BasisState(1, "P", 1, 1)  # 1^1P_1, S = 0
+triplet = BasisState(1, "P", 3, 1)  # 1^3P_1, S = 1
+strange = BasisState(1, "P", 3, 1; flavors=(:s, :s))
+```
+
+## Related
+
+[`compute_spectrum`](@ref), [`spectrum_state`](@ref), [`MixingBlock`](@ref),
+[`physical_components`](@ref).
 """
 struct BasisState
     n::Int

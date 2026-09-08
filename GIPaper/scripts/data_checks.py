@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Repository data promotion and progress scorecards.
+"""Promote audited paper data into the clean CSV schema.
 
 Package data validation lives in the Julia tests. This script is limited to
-write-oriented CSV promotion and report scorecard maintenance.
+write-oriented CSV promotion.
 """
 
 import argparse
@@ -14,8 +14,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 CLEAN = DATA / "clean"
-DOCS = ROOT / "docs"
-REPORTS = DOCS / "residual_reports"
 MASS_FIELDS = [
     "clean_id",
     "source",
@@ -81,17 +79,6 @@ TABLE_III_NONPSEUDOSCALAR_ROWS = [
     ("1 3P2", "f2(1270)", "", 215, 53, [("1 ns", +0.997), ("1 ss", +0.060), ("1 cc", +0.007), ("1 bb", +9e-4)]),
     ("1 3P2", "f2_prime(1515)", "", "", 54, [("1 ns", -0.070), ("1 ss", +0.997), ("1 cc", +0.004), ("1 bb", +4e-4)]),
 ]
-
-
-def read_csv(path: Path) -> list[dict[str, str]]:
-    if not path.exists():
-        return []
-    with path.open(newline="", encoding="utf-8") as f:
-        return list(csv.DictReader(f))
-
-
-def read_text(path: Path) -> str:
-    return path.read_text(encoding="utf-8") if path.exists() else ""
 
 
 def spin_from_multiplicity(value: str) -> str:
@@ -204,126 +191,10 @@ def promote_clean(_args: argparse.Namespace) -> int:
     return 0
 
 
-def annihilation_score(_args: argparse.Namespace) -> int:
-    formula_items = ("Eq. (16)", "Eq. (17)", "Eq. (18a)", "Eq. (18b)", "Table III")
-    formula_text = read_text(DOCS / "formula_map.md")
-    formula_points = sum(
-        4
-        for item in formula_items
-        if any(
-            ("image-audited" in line.lower() or "implemented" in line.lower())
-            for line in formula_text.splitlines()
-            if item in line
-        )
-    )
-
-    masses = read_csv(CLEAN / "masses.csv")
-    clean_points = 10 if len([
-        row for row in masses
-        if row.get("sector") == "isoscalar" and row.get("L") == "S"
-        and row.get("S") == "0" and row.get("J") == "0" and row.get("n") in {"1", "2"}
-    ]) >= 4 else 0
-    mixings = read_csv(CLEAN / "mixings.csv")
-    if {"P1", "P2"} <= {row.get("model") for row in mixings if row.get("confidence") in {"high", "medium"}}:
-        clean_points += 10
-
-    source = read_text(ROOT / "src" / "comparison.jl")
-    tests = "\n".join(
-        read_text(path)
-        for path in sorted((ROOT / "test").glob("*.jl"))
-    )
-    modes = {
-        ":none": ("scheme in (:none", "plain = compare_reference("),
-        ":calibrated_p1": (":calibrated_p1", "isoscalar_pseudoscalar_annihilation = :calibrated_p1"),
-        ":paper_p1": ("PaperP1Annihilation", "isoscalar_pseudoscalar_annihilation = :paper_p1"),
-        ":paper_p2": ("PaperP2Annihilation", "isoscalar_pseudoscalar_annihilation = :paper_p2"),
-    }
-    implementation_points = sum(5 for dispatch, test in modes.values() if dispatch in source and test in tests)
-
-    residuals = []
-    for line in read_text(REPORTS / "isoscalar_residuals.md").splitlines():
-        if not line.startswith("| `"):
-            continue
-        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
-        if len(cells) >= 4 and cells[0].strip("`") in {"1^1S_0", "2^1S_0"}:
-            try:
-                residuals.append(abs(float(cells[3].replace("+", ""))))
-            except ValueError:
-                pass
-        if len(residuals) == 4:
-            break
-    mean_abs = sum(residuals) / len(residuals) if len(residuals) == 4 else None
-    spectral_points = 20 if mean_abs is not None and mean_abs <= 25 else 10 if mean_abs is not None and mean_abs <= 50 else 0
-
-    # Table III eigenvector fidelity from the mixing audit: mean amplitude RMS
-    # per literal model ("Mean vector RMS for `P1`: `0.180`; ...").
-    mixing_rms: dict[str, float] = {}
-    literal_mass_residual: dict[str, float] = {}
-    audit_path = REPORTS / "table_iii_mixing_audit.md"
-    if audit_path.exists():
-        for line in read_text(audit_path).splitlines():
-            m = re.search(r"Mean vector RMS for `(P[12])`: `([0-9.]+)`", line)
-            if m:
-                mixing_rms[m.group(1)] = float(m.group(2))
-            m = re.search(r"Mean abs mass residual for `(P[12])`: `([0-9.]+) MeV`", line)
-            if m:
-                literal_mass_residual[m.group(1)] = float(m.group(2))
-
-    def mixing_points_for(rms: float | None) -> int:
-        if rms is None:
-            return 0
-        if rms <= 0.20:
-            return 20
-        if rms <= 0.35:
-            return 10
-        return 0
-
-    model_rms = {":paper_p1": mixing_rms.get("P1"), ":paper_p2": mixing_rms.get("P2")}
-    model_mass = {":paper_p1": literal_mass_residual.get("P1"), ":paper_p2": literal_mass_residual.get("P2")}
-    if mean_abs is not None:
-        model_mass[":calibrated_p1"] = mean_abs
-
-    def spectral_points_for(residual: float | None) -> int:
-        if residual is None:
-            return 0
-        if residual <= 25:
-            return 20
-        if residual <= 50:
-            return 10
-        return 0
-
-    rows = []
-    for model in modes:
-        model_spectral = spectral_points_for(model_mass.get(model))
-        model_mixing = mixing_points_for(model_rms.get(model))
-        total = formula_points + clean_points + implementation_points + model_spectral + model_mixing
-        rows.append((model, formula_points, clean_points, implementation_points, model_spectral, model_mixing, total))
-
-    REPORTS.mkdir(parents=True, exist_ok=True)
-    with (REPORTS / "annihilation_model_scorecard.md").open("w", encoding="utf-8") as f:
-        f.write("# Annihilation Model Scorecard\n\n")
-        f.write("Generated by `python3 scripts/data_checks.py score-annihilation`.\n\n")
-        f.write("| model | formula points | clean target points | implementation points | spectral points | mixing points | total points | mean abs mass residual MeV | mixing RMS error |\n")
-        f.write("|---|---:|---:|---:|---:|---:|---:|---:|---:|\n")
-        for model, fp, cp, ip, sp, mp, total in rows:
-            residual = model_mass.get(model)
-            mean = f"{residual:.1f}" if residual is not None else "n/a"
-            rms = model_rms.get(model)
-            rms_text = f"{rms:.3f}" if rms is not None else "n/a"
-            f.write(f"| {model} | {fp} | {cp} | {ip} | {sp} | {mp} | {total} | {mean} | {rms_text} |\n")
-        f.write("\n## Missing Points\n\n")
-        f.write("- Mixing points come from the mean Table III amplitude RMS in `table_iii_mixing_audit.md` (20 if <= 0.20, 10 if <= 0.35), evaluated on HO-basis wavefunctions with the Φ(0)>0 annihilation phase convention.\n")
-        f.write("- Spectral points use the same thresholds for every model (20 if mean abs residual <= 25 MeV, 10 if <= 50): the calibrated control is scored against the digitized Fig. 5 labels, the literal modes against the paper-model mass targets in `table_iii_mixing_audit.md`. Literal-mode mass residuals are reported there directly rather than attributed to an obsolete solver discrepancy.\n")
-    print("wrote docs/residual_reports/annihilation_model_scorecard.md")
-    print("top score:", max(row[-1] for row in rows), "/ 100")
-    return 0
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("promote-clean").set_defaults(func=promote_clean)
-    sub.add_parser("score-annihilation").set_defaults(func=annihilation_score)
     args = parser.parse_args()
     return args.func(args)
 

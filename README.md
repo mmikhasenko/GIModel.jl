@@ -4,7 +4,7 @@ Local reproduction of the Godfrey-Isgur relativized quark model for meson
 masses. The original paper at `paper/Godfrey-Isgur-1985.pdf` is the authority;
 OCR Markdown and extracted CSVs are navigation/provenance aids.
 
-The repository has three first-class deliverables:
+The repository has four first-class deliverables:
 
 - **GIModel** (repository root) — pure computation. Mesons are specified by
   quark flavors (`Meson(mq, :c, :b)`), levels to compute by explicit
@@ -16,11 +16,18 @@ The repository has three first-class deliverables:
   masses), runs `compare_reference`, applies the Table III annihilation
   prescriptions, and writes residual reports.
 - **Report** (`report/`) — the code-free, high-level account:
-  [gi_reproduction.qmd](report/gi_reproduction.qmd) walks the physics of the
-  original paper section by section, teaching the quantum-mechanical
-  computations and showcasing the reproducibility sector by sector. The
-  rendered PDF is tracked; see [report/README.md](report/README.md) for the
-  build and figure-regeneration flow.
+  [gi_reproduction.qmd](report/gi_reproduction.qmd) explains the package as an
+  inspectable computational and teaching resource, with Pluto exploration,
+  reproduction evidence, scientific visualization, and extension directions.
+  An appendix traces the agent-assisted FD-to-HO development through git history.
+  The rendered PDF is tracked; see [report/README.md](report/README.md) for the
+  build and evidence policy.
+- **Learning track** (`LearningTrack/`) — **AGI: Agentic Godfrey--Isgur**, a
+  nine-sheet pen-and-paper course from elementary radial quantum mechanics to
+  the complete paper-order spectrum algorithm, plus a question-led bridge to a
+  future hands-on numerical course. Each theory problem includes a worked
+  solution and a post-solution concept check; the LaTeX sources build to ten
+  standalone PDFs with `make`.
 
 ## Current Map
 
@@ -31,9 +38,9 @@ The repository has three first-class deliverables:
 - `scripts/verify_project.sh` runs the current full gate (both packages).
 - `GIPaper/test/data_validation.jl` owns package-level CSV, TOML, and
   provenance invariants and runs as part of `Pkg.test()`.
-- `GIPaper/scripts/data_checks.py` remains a data-maintenance utility:
-  - `python3 GIPaper/scripts/data_checks.py promote-clean`
-  - `python3 GIPaper/scripts/data_checks.py score-annihilation`
+- `GIPaper/scripts/data_checks.py promote-clean` remains the write-oriented
+  data-promotion utility; scorecard generation is Julia-native via
+  `GIPaper/scripts/score_annihilation.jl`.
 - `GIPaper/scripts/run_all_spectrum_checks.jl` regenerates sector residual
   reports and the compact scorecard.
 - `GIPaper/scripts/analyze_heavy_quarkonium.jl` regenerates heavy-quarkonium
@@ -58,6 +65,8 @@ The repository has three first-class deliverables:
   - `examples/chi_c_annihilation_widths.jl`, a script computing `χ_c0`/`χ_c2`
     two-gluon and two-photon widths and splitting their ratio into the `15/4`
     spin algebra times the J-dependent distortion of the wave at the origin.
+- [Discoverability](docs/discoverability.md) describes the help conventions and links
+  to the [public API documentation graph](docs/discoverability_graph.md).
 - `docs/formula_map.md` maps active code paths to paper equations.
 - `docs/original_1985_algorithm_audit.md` compares the paper's three-stage,
   mesh-free HO spectrum algorithm with the completed implementation.

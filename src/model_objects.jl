@@ -9,8 +9,24 @@ Constituent quark masses in GeV for a meson **sector** / spin-independent radial
 Components promote together and preserve the resulting real values exactly.
 Cache normalization belongs to [`RadialChannelKey`](@ref), not to physics input.
 
-This is plain physics input (not a subset of [`GIParameters`](@ref)); masses appear in
-spin-dependent operators, smearing widths, and kinetic factors throughout the package.
+Masses enter spin-dependent operators, smearing widths, and kinetic factors.
+
+## Example
+
+```julia
+using GIModel
+masses = ConstituentMasses(1.628, 4.977)
+reduced_mass(masses)
+Meson(:c, :b, masses)
+```
+
+## Related
+
+[`GIParameters`](@ref) stores interaction parameters and model switches.
+Constituent masses are supplied separately through [`Meson`](@ref), so the
+same interaction parameters can be used for different meson channels.
+[`QuarkMassTable`](@ref) provides masses by flavor; [`reduced_mass`](@ref)
+computes the two-body reduced mass.
 """
 struct ConstituentMasses{T<:Real}
     m1_GeV::T
@@ -65,7 +81,7 @@ for operations and never touch its representation:
 | `radial_overlap(wx, wy, f)` | integral of u_x u_y f(r) dr |
 | `momentum_wave(w, L)` | the momentum-space wave Phi(p) |
 | `momentum_expect(mw, g)` | integral of p^2 |Phi|^2 g(p) dp |
-| `wave_norm(w)` | integral of u^2 dr, guaranteed 1 |
+| [`wave_norm`](@ref)`(w)` | integral of u^2 dr, guaranteed 1 |
 
 Two implementations, in separate files, that never refer to each other:
 
@@ -75,6 +91,13 @@ Two implementations, in separate files, that never refer to each other:
     coefficients). It implements an operation **only** when that operation has a
     closed form; anything not yet derived has no method and fails loudly rather
     than quietly discretizing.
+
+## Related
+
+Obtain a wave with [`radial_wave`](@ref) for an unmixed level or
+[`physical_components`](@ref) for a mixed state. For plotting, a `MeshWave`
+already exposes `.r` (GeV⁻¹) and `.u` (the reduced radial wave); use
+[`sample_wave`](@ref) to sample an `OscillatorWave` on a plotting grid.
 """
 abstract type RadialWave end
 
@@ -172,6 +195,11 @@ end
 
 The physical norm `integral u^2 dr`. Guaranteed to be 1 for any wave produced by
 a solve; exposed so the invariant can be asserted rather than assumed.
+
+## Related
+
+[`RadialWave`](@ref), [`radial_wave`](@ref), [`physical_components`](@ref).
+Use the wave returned for each component, e.g. `wave_norm(component.wave)`.
 """
 wave_norm(w::MeshWave) = sum(abs2, w.u) * w.h
 

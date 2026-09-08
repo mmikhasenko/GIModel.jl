@@ -368,7 +368,17 @@ End-to-end model-level isoscalar calculation: solve both native flavor
 channels through fixed-sector and spectroscopic mixing, then call
 [`add_isoscalar_annihilation`](@ref). No paper reference rows are accepted.
 The default is native HO because this is the paper-algorithm entry point;
-callers may pass another `RadialSolver` explicitly for an independent comparator.
+callers may pass another [`RadialSolver`](@ref) explicitly for an independent comparator.
+
+Returns a [`MixedSpectrum`](@ref) with both [`Meson`](@ref) channels.
+Use [`spectrum_state`](@ref) with a flavor-qualified [`BasisState`](@ref) when
+quantum numbers are shared across channels, and [`physical_components`](@ref)
+to inspect the physical state's flavor and radial composition.
+
+## Related
+
+[`compute_spectrum`](@ref) solves one meson channel; [`MixedState`](@ref)
+describes mass and mixing properties.
 """
 function compute_isoscalar_spectrum(
     params::GIParameters,

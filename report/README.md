@@ -1,17 +1,16 @@
-# Report: A Computational Reproduction of the Godfrey–Isgur Model
+# GIModel.jl report
 
-`gi_reproduction.qmd` is one of the three first-class deliverables of this
-repository, next to the **GIModel** (computation) and **GIPaper** (paper
-comparison) packages. It is the high-level, code-free account of the project:
-it walks the physics of the original paper section by section — the
-relativistic Hamiltonian, the Appendix-A smearing and momentum-dependent
-operator sandwiches, the running coupling, the spin-dependent operators, and
-the isoscalar annihilation machinery — teaching the quantum-mechanical
-computations while demonstrating, sector by sector, that the published spectrum
-is reproducible from the paper's own ingredients.
+`gi_reproduction.qmd` is the source of the project report,
+**GIModel.jl: An Inspectable Quark Model for Computation and Learning**.
+The report explains the value of the software and its companion learning
+material: inspectable numerical answers, language-model-assisted exploration,
+Pluto and live documentation, flavor-sector visualizations, open-source reuse,
+and future physics and differentiation work. The original paper and
+`LearningTrack/` supply the detailed theory.
 
-The rendered `gi_reproduction.pdf` is tracked so readers never need the
-toolchain.
+The development appendix follows the FD-to-native-HO route through verifiable
+git commits, including normalization, phase, staging, and verification failures.
+It can also serve as the narrative basis for a companion website story.
 
 ## Building
 
@@ -19,35 +18,23 @@ toolchain.
 quarto render report/gi_reproduction.qmd
 ```
 
-(Requires Quarto with a LaTeX toolchain; `report/*.tex` build artifacts are
-git-ignored, the PDF is tracked.)
+Requires Quarto and a LaTeX toolchain. The rendered `gi_reproduction.pdf` is
+tracked so readers do not need the toolchain. The `.tex` file is generated.
 
-## Regenerating figures
+## Evidence and scope
 
-The curated figures under `figures/` are copies of generated output:
+The report describes the current native HO spectrum route and independent FD
+comparator. Full-depth paper reproduction is the release objective; the current
+audit still lists complete Table VI photon-decay coverage and residual
+characterization as unfinished. Keep that boundary synchronized with
+`docs/reproduction_audit.md` and `docs/paper_manifest/`.
 
-- Sector ladder plots (`charmonium.png`, `isovector.png`, …):
-  `julia --project=GIPaper/scripts GIPaper/scripts/plot_all_sector_spectra.jl`, output in
-  `GIPaper/scripts/spectrum_plots/`.
-- Wavefunction/basis figures (`wavefn_*.png`):
-  `julia --project=GIPaper/scripts GIPaper/scripts/plot_basis_wavefunctions.jl` and
-  `julia --project=GIPaper/scripts GIPaper/scripts/plot_offdiagonal_blowup.jl`,
-  same output directory.
+Quantitative examples identify their checked-in source audit and snapshot.
+This editorial revision does not regenerate model results. Before changing
+numerical claims, regenerate the relevant audit and inspect its solver settings,
+input provenance, and treatment of calibrated controls. The full computation
+gate is `bash scripts/verify_project.sh`.
 
-Copy refreshed plots into `figures/` deliberately — the report should only
-change when the model or the comparison meaningfully changes.
-
-## Numbers
-
-Every quantitative claim in the report traces to a generated artifact:
-residual tables come from `GIPaper/scripts/run_all_spectrum_checks.jl`
-(reports under `GIPaper/docs/residual_reports/`), diagnostics from the
-`GIPaper/scripts/audit_*.jl` scripts. Run `bash scripts/verify_project.sh`
-to regenerate the full evidence chain before editing report numbers.
-
-## Scope
-
-The current edition covers Secs. II–III of the original paper (model and
-spectroscopy). The coupling analysis of Sec. IV (strong and electromagnetic
-transitions) is the natural second installment as the Table V–VII work
-matures.
+Earlier spectrum and wavefunction images remain in `figures/` as historical
+assets; the revised report does not use those older plots as current evidence.
+The curated teaching demonstrations are under `examples/`.

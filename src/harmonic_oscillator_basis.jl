@@ -325,7 +325,30 @@ _oscillator_coordinate_cutoff(w::OscillatorWave) =
 _oscillator_momentum_cutoff(w::OscillatorWave) =
     _oscillator_tail_rho(w.L, length(w.coefficients)) * w.beta
 
-"""Sample a native oscillator wave on an explicit grid for plotting or export."""
+"""
+    sample_wave(w::OscillatorWave, r) -> MeshWave
+
+Sample an oscillator wave on a uniform radial grid `r` in GeV⁻¹ for plotting
+or export. Supply at least two points and enough radial extent to contain the
+wave. The returned samples are normalized on this finite grid, so this is a
+plotting representation, not an independent convergence check.
+
+## Example
+
+```julia
+using GIModel
+wave = OscillatorWave(0, 0.5, [1.0])
+sampled = sample_wave(wave, range(0.0, 15.0; length=301))
+sampled.r, sampled.u  # plot radius against the reduced radial wave u(r)
+```
+
+A [`MeshWave`](@ref) already has `.r` and `.u`; it needs no sampling step.
+
+## Related
+
+[`RadialWave`](@ref), [`OscillatorWave`](@ref), [`radial_wave`](@ref),
+[`physical_components`](@ref), [`wave_norm`](@ref).
+"""
 function sample_wave(w::OscillatorWave, r::AbstractVector{<:Real})
     samples = [_oscillator_radial_value(w, ri) for ri in r]
     h = r[2] - r[1]

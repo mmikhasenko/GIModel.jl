@@ -30,14 +30,50 @@ end
     Meson(quark_masses, flavor1, flavor2)
     Meson(flavor1, flavor2, constituent_masses)
 
-A ``q_1 \\bar q_2`` meson channel specified by quark flavors. Flavors are
-`:u`, `:d`, `:s`, `:c`, `:b`, or `:q` (the light `u`/`d` average; `:n` is an
-accepted alias). The primary constructor resolves constituent masses from a
-[`QuarkMassTable`](@ref) and throws `ArgumentError` for unknown flavors — there
-is deliberately no silent fallback mass.
+A ``q_1 \\bar q_2`` channel with constituent masses. Flavors are `:u`, `:d`,
+`:s`, `:c`, `:b`, or `:q` (light average; `:n` is an alias).
+The antiquark flavor is unadorned: `:c, :u` means charm–antiup.
 
-The second form takes explicit [`ConstituentMasses`](@ref) for parameter scans.
-The antiquark flavor is stored unadorned (`Meson(mq, :c, :u)` is `c ubar`).
+Supply a [`QuarkMassTable`](@ref) or explicit [`ConstituentMasses`](@ref).
+Unknown or missing table flavors throw `ArgumentError`.
+
+## Example
+
+```julia
+using GIModel
+mq = QuarkMassTable("c" => 1.628, "b" => 4.977)
+meson = Meson(mq, :c, :b)
+```
+
+Read flavors through `meson.flavor1` and `meson.flavor2`; masses through
+`meson.constituent_masses.m1_GeV` and `.m2_GeV`.
+
+```julia
+reduced_mass(meson)  # reduced mass in GeV
+flavor_label(meson)  # channel label, e.g. "cb"
+is_equal_flavor(meson)
+propertynames(meson)
+```
+
+For bound-state masses, supply `params` from [`load_parameters`](@ref):
+
+```julia
+spec = compute_spectrum(params, meson; levels=spectrum_levels(1))
+state = spectrum_state(spec, "1^1P_1")
+state.mass_GeV
+```
+
+## Related
+
+- [`reduced_mass`](@ref): reduced mass in GeV.
+- [`flavor_label`](@ref): channel label.
+- [`is_equal_flavor`](@ref): flavor symmetry.
+- [`load_quark_masses`](@ref): masses from TOML.
+- [`load_parameters`](@ref): interaction parameters.
+- [`spectrum_levels`](@ref): level selection.
+- [`compute_spectrum`](@ref): meson spectrum.
+- [`spectrum_state`](@ref): one computed level.
+- [`physical_components`](@ref): wavefunction components.
 """
 struct Meson{M<:ConstituentMasses}
     flavor1::Symbol
@@ -51,10 +87,25 @@ end
 """
     Meson(q1::AbstractQuark, q2::AbstractQuark)
 
-The ``q_1 \\bar q_2`` meson built from two quark objects: each contributes its
-mass and its [`flavor_symbol`](@ref). Equivalent to the explicit-mass form, so
-`Meson(HeavyQuark{:up}(1.628, :c), HeavyQuark{:up}(1.628, :c))` is the same
-channel as `Meson(mq, :c, :c)`.
+Build a [`Meson`](@ref) from two quarks, using their masses and
+[`flavor_symbol`](@ref). The second quark specifies the antiquark flavor.
+
+## Example
+
+```julia
+using GIModel
+Meson(HeavyQuark{:up}(1.628, :c), HeavyQuark{:up}(1.628, :c))
+```
+
+Inspect `.constituent_masses`, then use [`compute_spectrum`](@ref) with
+interaction parameters to calculate bound-state masses.
+
+## Related
+
+- [`reduced_mass`](@ref): reduced mass in GeV.
+- [`flavor_label`](@ref): channel label.
+- [`is_equal_flavor`](@ref): flavor symmetry.
+- [`load_parameters`](@ref): interaction parameters.
 """
 function Meson(q1::AbstractQuark, q2::AbstractQuark)
     return Meson(
@@ -79,11 +130,39 @@ end
 
 `true` for self-conjugate flavor content (`c cbar`, `q qbar`, …). Gates the
 same-`J` antisymmetric spin-orbit mixing, which vanishes for equal masses.
+Different flavors with manually equal masses still return `false`.
+
+## Related
+
+- [`flavor_label`](@ref): channel label for a [`Meson`](@ref).
+- [`compute_spectrum`](@ref): spectrum with allowed mixing.
 """
 is_equal_flavor(m::Meson) = m.flavor1 == m.flavor2
 
+"""
+    reduced_mass(meson::Meson)
+
+Return `m1 * m2 / (m1 + m2)` in GeV from the [`Meson`](@ref)'s constituent masses.
+This is a two-body input quantity, not the predicted bound-state mass.
+
+## Related
+
+- [`compute_spectrum`](@ref): bound-state masses.
+- [`spectrum_state`](@ref): select a predicted level.
+"""
 reduced_mass(m::Meson) = reduced_mass(m.constituent_masses)
 
+"""
+    flavor_label(meson::Meson) -> String
+
+Return the compact flavor-pair label, e.g. `"cb"` for a charm–antibottom
+[`Meson`](@ref). Read `meson.flavor1` and `meson.flavor2` for individual symbols.
+
+## Related
+
+- [`is_equal_flavor`](@ref): flavor symmetry.
+- [`compute_spectrum`](@ref): levels for this channel.
+"""
 flavor_label(m::Meson) = string(m.flavor1, m.flavor2)
 
 function Base.show(io::IO, ::MIME"text/plain", m::Meson)

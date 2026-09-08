@@ -16,6 +16,16 @@ Enumerate the ``n\\,^{2S+1}L_J`` multiplets for `n in 1:nmax` and each orbital
 letter: the spin singlet (`J = L`) and the spin triplets (`J = 1` for `S` waves,
 `J in L-1:L+1` otherwise). Use as the `levels` argument of [`compute_spectrum`](@ref);
 hand-built [`BasisState`](@ref) vectors work the same way for custom selections.
+Entries have `flavors = nothing`: the same selection can be used for any
+[`Meson`](@ref). Solved states carry explicit channel flavors.
+
+## Example
+
+```julia
+using GIModel
+levels = spectrum_levels(2; L_labels=("S", "P"))
+levels[1].multiplicity, levels[1].flavors
+```
 """
 function spectrum_levels(nmax::Integer; L_labels = ("S", "P", "D"))
     nmax >= 1 || throw(ArgumentError("spectrum_levels: nmax must be ≥ 1, got $nmax"))
@@ -91,6 +101,20 @@ Base.propertynames(::StateMixing) = (
 One ``n\\,^{2S+1}L_J`` level after the spin-independent central solve only:
 the quantum labels and the central eigenvalue `central_GeV`. Element type of
 [`CentralSpectrum`](@ref); no spin-dependent data exists at this stage.
+
+## Next steps
+
+Read `state.central_GeV` for the central eigenvalue and `state.basis` for its
+quantum numbers. With its parent spectrum `spec`, use `radial_wave(spec, state)`
+to obtain the wavefunction. For masses including spin interactions and mixing,
+run [`compute_spectrum`](@ref) with the same parameters and meson.
+
+## Related
+
+- [`central_spectrum`](@ref): central levels.
+- [`spectrum_state`](@ref): select a level.
+- [`radial_wave`](@ref): retrieve its wave.
+- [`wave_norm`](@ref): check normalization.
 """
 struct CentralState
     basis::BasisState
@@ -117,6 +141,22 @@ eigenvalue of a separate central-only solve. Together with the contact,
 vector/Thomas spin-orbit, and tensor contributions it sums to `mass_GeV`.
 The spectroscopic identity reuses [`BasisState`](@ref); no central-state holder
 is embedded in the production state.
+
+## Next steps
+
+Read `state.mass_GeV` for the fixed-sector mass and `state.basis` for the quantum
+numbers. `propertynames(state)` lists the energy contributions, including
+`state.contact_shift_GeV` and `state.tensor_shift_GeV`.
+Use `radial_wave(spec, state)` with the parent spectrum to obtain its radial wave.
+Apply [`add_intra_meson_mixing`](@ref) to the whole [`CorrectedSpectrum`](@ref)
+to obtain a [`MixedSpectrum`](@ref).
+
+## Related
+
+- [`fixed_spectrum`](@ref): fixed-sector levels.
+- [`spectrum_state`](@ref): select a level.
+- [`radial_wave`](@ref): retrieve its wave.
+- [`compute_spectrum`](@ref): solve and mix.
 """
 struct CorrectedState
     basis::BasisState
@@ -146,12 +186,39 @@ Base.propertynames(::CorrectedState) = (
 """
     MixedState
 
-A [`CorrectedState`](@ref) plus the `mixings` applied to it (empty
-for unmixed states) and the final `mass_GeV`. `fine_structure_mass_convention`
-is the mixing-stage view: same-J mixing overrides it to
-`"unequal_mass_same_j_mixed"` while the wrapped `corrected` state keeps the
-pre-mixing convention. Element type of [`MixedSpectrum`](@ref). Properties of
-the wrapped stages forward transparently.
+One level of a [`MixedSpectrum`](@ref), obtained with [`spectrum_state`](@ref)
+or `spec.states[i]`.
+
+- `state.mass_GeV`: final mass.
+- `state.corrected`: pre-mixing [`CorrectedState`](@ref).
+- `state.mixings`: [`StateMixing`](@ref) records; empty for unmixed levels.
+- `state.basis`: assigned quantum numbers and flavors.
+
+Quantum labels and energy contributions are also accessible directly, e.g.
+`state.n`, `state.L`, `state.J`, and `state.contact_shift_GeV`.
+Use `propertynames(state)` for the full list. `fine_structure_mass_convention`
+reflects mixing; `state.corrected` retains the pre-mixing convention.
+
+## Example
+
+Given `spec` from [`compute_spectrum`](@ref), including P levels:
+
+```julia
+state = spectrum_state(spec, "1^1P_1")
+state.mass_GeV
+state.corrected.mass_GeV  # before mixing
+state.mixings
+```
+
+For its wavefunction, use `physical_components(spec, state)`: each component
+has a signed coefficient and a radial wave. `radial_wave(spec, state.corrected)`
+returns only the assigned precursor wave.
+
+## Related
+
+- [`spectrum_state`](@ref): select a level.
+- [`physical_components`](@ref): signed components and waves.
+- [`radial_wave`](@ref): unmixed or precursor wave.
 """
 struct MixedState
     corrected::CorrectedState
@@ -265,7 +332,40 @@ const CentralSpectrum = Spectrum{CentralState}
 """[`Spectrum`](@ref) with spin-dependent shifts attached: `Spectrum{CorrectedState}`."""
 const CorrectedSpectrum = Spectrum{CorrectedState}
 
-"""[`Spectrum`](@ref) with spectroscopic and/or flavor mixing applied: `Spectrum{MixedState}`."""
+"""
+    MixedSpectrum
+
+[`Spectrum`](@ref) with spectroscopic and/or flavor mixing applied:
+`Spectrum{MixedState}`. Obtain one with [`compute_spectrum`](@ref) or
+[`compute_isoscalar_spectrum`](@ref).
+
+## Properties
+
+- `spec.states`: [`MixedState`](@ref) entries in request order.
+- `spec.channels`: the [`Meson`](@ref) channels represented in the spectrum.
+- `spec.computation`: parameters and cached radial solutions; use [`parameters`](@ref).
+
+Mixing belongs to individual states: use `spec.states[i].mixings`, not
+`spec.mixings` or `spec.mixing`. Each entry is a [`StateMixing`](@ref).
+
+## Example
+
+Given `spec` from [`compute_spectrum`](@ref):
+
+```julia
+[(s.label, s.mass_GeV) for s in spec.states]
+state = spectrum_state(spec, first(spec.states).basis)
+state.mixings
+physical_components(spec, state)
+```
+
+## Related
+
+- [`spectrum_state`](@ref): select a level.
+- [`physical_components`](@ref): signed components and waves.
+- [`radial_wave`](@ref): unmixed wave.
+- [`parameters`](@ref): retrieve model parameters.
+"""
 const MixedSpectrum = Spectrum{MixedState}
 
 # Stages that carry a spin-resolved `mass_GeV` per state (annihilation-block inputs).
@@ -504,7 +604,32 @@ end
 
 Run the physical production stages: [`fixed_spectrum`](@ref) →
 [`add_intra_meson_mixing`](@ref). The independent [`central_spectrum`](@ref)
-diagnostic is not evaluated.
+diagnostic is not evaluated. Returns a [`MixedSpectrum`](@ref) containing
+[`MixedState`](@ref) entries, including levels that did not mix.
+
+## Example
+
+```julia
+using GIModel
+path = joinpath(pkgdir(GIModel), "data", "parameters.provisional.toml")
+params, mq = load_parameters_and_quark_masses(path)
+meson = Meson(mq, :c, :b)
+```
+
+Compute the spectrum, then inspect one level:
+
+```julia
+spec = compute_spectrum(params, meson; levels=spectrum_levels(1))
+state = spectrum_state(spec, "1^1P_1")
+state.mass_GeV
+physical_components(spec, state)
+```
+
+## Related
+
+[`load_parameters_and_quark_masses`](@ref), [`Meson`](@ref), [`spectrum_levels`](@ref),
+[`RadialSolver`](@ref), [`SpinTerms`](@ref), [`spectrum_state`](@ref),
+[`physical_components`](@ref).
 """
 function compute_spectrum(
     params::GIParameters,
@@ -678,7 +803,24 @@ Look up one state by quantum numbers at any stage; throws `ArgumentError` when
 absent. The return type is the spectrum's state type.
 
 The string form takes the state's own `label` (`"1^3S_1"`), which is the handle
-every state carries and every report prints.
+every state carries and every report prints. If several flavor channels share
+the quantum numbers or label, use a [`BasisState`](@ref) with explicit `flavors`;
+an ambiguous lookup throws `ArgumentError`.
+
+## Example
+
+Given `spec` from [`compute_spectrum`](@ref):
+
+```julia
+state = spectrum_state(spec, "1^1P_1")
+state.mass_GeV
+physical_components(spec, state)
+```
+
+## Related
+
+[`MixedState`](@ref), [`MixedSpectrum`](@ref), [`radial_wave`](@ref),
+[`physical_components`](@ref).
 """
 function spectrum_state(
     spec::Spectrum,
@@ -748,10 +890,25 @@ annihilation and leptonic widths, two-photon amplitudes, charge radii and the
 radiative transition moments all take a `RadialWave`. The solve is
 already cached on the spectrum, so this is a lookup, not a recomputation.
 
-There is one wave per level, produced by the spectrum's own solver — the same
-wavefunction the eigenvalues came from. A `wave_basis` keyword used to select a
-separately-cached oscillator wave here; that is gone, and the reason it existed
-is recorded at `annihilation_basis_input`.
+For a [`MixedState`](@ref) with nonempty `mixings`, this method throws
+`ArgumentError`: use [`physical_components`](@ref) to obtain all signed
+components. `radial_wave(spec, state.corrected)` retrieves only the assigned
+pre-mixing basis wave, not the physical superposition.
+
+## Example
+
+Given `spec` from [`compute_spectrum`](@ref):
+
+```julia
+state = spectrum_state(spec, "1^1S_0")
+wave = radial_wave(spec, state)  # this level is unmixed in this example
+wave_norm(wave)
+```
+
+## Related
+
+[`RadialWave`](@ref), [`sample_wave`](@ref), [`wave_norm`](@ref),
+[`physical_components`](@ref), [`spectrum_state`](@ref).
 
 Throws `ArgumentError` when the orbital was not in `levels` or when `n` exceeds
 the levels kept per channel.
@@ -775,6 +932,25 @@ Each returned named tuple contains the pure `basis` identity, its signed
 one unit component. Sequential spin and flavor transformations are composed
 from their shared [`StateMixing`](@ref) eigensystems, and paths ending at the
 same native basis state are combined.
+
+## Example
+
+Given `spec` from [`compute_spectrum`](@ref):
+
+```julia
+components = physical_components(spec, "1^1P_1")
+[(c.basis.flavors, c.basis.label, c.coefficient) for c in components]
+[wave_norm(c.wave) for c in components]
+sum(abs2(c.coefficient) for c in components)  # approximately 1
+```
+
+Coefficients are signed amplitudes; squaring them gives component weights.
+Keep their signs when computing interference-sensitive observables.
+
+## Related
+
+[`MixedState`](@ref), [`spectrum_state`](@ref), [`radial_wave`](@ref),
+[`RadialWave`](@ref), [`sample_wave`](@ref), [`physical_state_amplitude`](@ref).
 """
 function physical_components(
     spec::Spectrum,
@@ -966,7 +1142,7 @@ function Base.show(io::IO, ::MIME"text/plain", spec::Spectrum{S}) where {S}
     end
     if S !== CentralState
         nmix = count(s -> !isempty(s.mixings), spec.states)
-        nmix > 0 && print(io, "\n  (", nmix, " levels carry mixing; see `.mixings`)")
+        nmix > 0 && print(io, "\n  (", nmix, " levels carry mixing; see `spec.states[i].mixings`)")
     end
     return nothing
 end

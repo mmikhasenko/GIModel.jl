@@ -290,6 +290,19 @@ This is the **model**, and nothing more: every field is a number the paper
 quotes. How the resulting Schrödinger equation gets solved is a separate choice,
 carried by the [`RadialSolver`](@ref) you pass to
 [`channel_solution`](@ref) or [`compute_spectrum`](@ref).
+
+## Next steps
+
+Inspect groups such as `params.potential` and `params.fine_structure`, or use
+`propertynames(params)` to list them. Supply `params` alongside a [`Meson`](@ref)
+to [`compute_spectrum`](@ref); the meson supplies constituent masses separately.
+The returned [`MixedSpectrum`](@ref) provides `.states` for inspecting results.
+
+## Related
+
+[`load_parameters_and_quark_masses`](@ref) loads both inputs from one file.
+[`spectrum_levels`](@ref) selects which levels to compute;
+[`spectrum_state`](@ref) retrieves a computed level.
 """
 struct GIParameters{
     P<:ConfinementPotential,
@@ -404,6 +417,21 @@ Missing switches default to `false`/paper values. Use
 [`load_parameters_and_quark_masses`](@ref) to also get the `[masses]` table.
 The file describes the model only; pick the radial method with a
 [`RadialSolver`](@ref) at the call site.
+
+## Example
+
+```julia
+using GIModel
+path = joinpath(pkgdir(GIModel), "data", "parameters.provisional.toml")
+params = load_parameters(path)
+meson = Meson(:c, :c, ConstituentMasses(1.628, 1.628))
+```
+
+## Related
+
+[`GIParameters`](@ref), [`Meson`](@ref), [`compute_spectrum`](@ref).
+The bundled path above is independent of the notebook's working directory;
+replace `path` with your own TOML file for a parameter scan.
 """
 function load_parameters(path::AbstractString)
     return gi_parameters_from_raw(TOML.parsefile(path))

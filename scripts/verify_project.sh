@@ -37,6 +37,6 @@ julia GIPaper/scripts/run_all_spectrum_checks.jl
 # run first, which made the scorecard show the PREVIOUS run's numbers: a change
 # surfaced as report drift one gate later, attributed to whatever was in flight
 # then. Keep this line last but one.
-python3 GIPaper/scripts/data_checks.py score-annihilation
+julia GIPaper/scripts/score_annihilation.jl
 julia GIPaper/scripts/check_manifest.jl   # anti-drift gate: manifest links must resolve
 echo "verify_project.sh: all checks passed."
