@@ -2,12 +2,15 @@
 \newcommand{\SheetCode}{Theory 05}
 \input{../course-common.tex}
 \begin{document}
-\sheettitle{Sheet 5: Making singular interactions well-defined}{Gaussian smearing and Hermitian momentum sandwiches}{Prerequisite: Sheets 1--4. \difficulty{★★--★★★} \quad \timebox{3--4 hours}}
+\sheettitle{Sheet 5: Making singular interactions well-defined}{Gaussian smearing and Hermitian momentum sandwiches}{Prerequisite: Sheets 1--4. \difficulty{★★/★★★} \quad \timebox{5--6 hours}}
 
 \begin{goals}
 Normalize the GI Gaussian; derive its convolution rules; understand the
-mass-dependent resolution scale; prove Hermiticity and positivity of momentum
-sandwiches; distinguish an operator product from a pointwise multiplier.
+mass-dependent resolution scale; derive the closed smeared Coulomb and
+confinement potentials from the Gaussian coupling; prove Hermiticity and
+positivity of momentum sandwiches; distinguish an operator product from a
+pointwise multiplier; recognize why every functional form in Appendix A belongs
+to one analytically closed family.
 \end{goals}
 \begin{reading}
 Selected reading in Landau--Lifshitz, \emph{Quantum Mechanics: Non-Relativistic
@@ -56,7 +59,149 @@ Why are inverse squared widths added? \answer convolution adds coordinate-space
 variances, and a Gaussian variance scales as the inverse squared width.
 \end{quiz}
 
-\begin{problem}{Problem 3 ★★ — Check the GI mass-dependent width}
+
+\begin{problem}{Problem 3 ★★★ — From a Gaussian coupling to an $\operatorname{erf}$ potential}
+GI parameterize the running coupling as a sum of three fixed Gaussians,
+$\alpha_s(Q^2)=\sum_k\alpha_k e^{-Q^2/4\gamma_k^2}$ (Eq. 5), and the color
+Coulomb kernel is the Fourier transform of $-\tfrac43\,4\pi\alpha_s(Q^2)/Q^2$.
+(a) Show for a single term that
+\[
+\int\frac{\dd^3Q}{(2\pi)^3}\,e^{i\bm Q\cdot\bm r}\,\frac{4\pi}{Q^2}\,
+e^{-Q^2/4\gamma^2}=\frac{\operatorname{erf}(\gamma r)}{r},
+\]
+so that $G(r)=-4\alpha_s(r)/3r$ with
+$\alpha_s(r)=\sum_k\alpha_k\operatorname{erf}(\gamma_kr)$.
+(b) Now smear $G$ with $\rho_\sigma$ in one line, without evaluating a new
+integral.
+(c) Evaluate $\widetilde G(0)$.
+\end{problem}
+\begin{solution}
+(a) The angular integral gives
+$\int\dd^3Q\,e^{i\bm Q\cdot\bm r}f(Q)=(4\pi/r)\int_0^\infty\dd Q\,Q\sin(Qr)f(Q)$,
+so the left-hand side is
+\[
+\frac{2}{\pi r}\int_0^\infty \dd Q\,e^{-Q^2/4\gamma^2}\frac{\sin(Qr)}{Q}.
+\]
+The remaining integral is the tabulated
+$\int_0^\infty e^{-a^2Q^2}\sin(bQ)Q^{-1}\dd Q=\tfrac\pi2\operatorname{erf}(b/2a)$;
+with $a=1/(2\gamma)$ and $b=r$ it equals $\tfrac\pi2\operatorname{erf}(\gamma r)$,
+giving $\operatorname{erf}(\gamma r)/r$. Setting $\gamma\to\infty$ recovers the
+bare $1/r$, as it must.
+
+(b) Smearing is a convolution, hence multiplication by
+$\widetilde\rho_\sigma(Q)=e^{-Q^2/4\sigma^2}$ in momentum space. The product of
+two Gaussians is a Gaussian:
+$e^{-Q^2/4\gamma_k^2}e^{-Q^2/4\sigma^2}=e^{-Q^2/4\tau_k^2}$ with
+$\tau_k^{-2}=\sigma^{-2}+\gamma_k^{-2}$ --- the same width composition as
+Problem 2. Part (a) then applies term by term:
+\[
+\widetilde G(r)=-\frac43\sum_k\alpha_k\frac{\operatorname{erf}(\tau_kr)}{r},
+\]
+which is Eq. (A12). No integral was done twice.
+
+(c) $\operatorname{erf}(\tau r)/r\to2\tau/\sqrt\pi$, so
+$\widetilde G(0)=-\tfrac{8}{3\sqrt\pi}\sum_k\alpha_k\tau_k$: finite. The
+Coulomb singularity is gone, which is what allows a contact interaction to be
+defined at all in Sheet 6. Compare
+\texttt{smeared\_coulomb\_G\_closed} in
+\texttt{src/smearing\_appendix\_a.jl}.
+\end{solution}
+\begin{quiz}
+What does the model gain by building $\alpha_s$ from three Gaussians instead of
+a one-loop logarithm? \answer two things. Physically, it saturates at low $Q^2$
+with no Landau pole. Computationally --- the property this sheet is exploiting
+--- Gaussians are closed under both Fourier transformation and Gaussian
+convolution, so every smeared Appendix-A potential comes out as an elementary
+$\operatorname{erf}$, leaving only the basis integrals to be done.
+\end{quiz}
+
+\begin{problem}{Problem 4 ★★★ — Smear the linear confinement}
+The angle-integrated form of the convolution for a spherically symmetric $f$ is
+\[
+\widetilde f(R)=\frac{\sigma}{\sqrt\pi R}\int_0^\infty\dd r'\,r'
+\left[e^{-\sigma^2(R-r')^2}-e^{-\sigma^2(R+r')^2}\right]f(r').
+\]
+Apply it to $S(r)=br+c$ and show that, with $z=\sigma R$,
+\[
+\widetilde S(R)=bR\left[\frac{e^{-z^2}}{\sqrt\pi z}
++\left(1+\frac1{2z^2}\right)\operatorname{erf}(z)\right]+c .
+\]
+Check the constant separately, and give $\widetilde S(0)$.
+\end{problem}
+\begin{solution}
+Substituting $u=\sigma r'$ and $Z=\sigma R$ reduces everything to two shifted
+Gaussian moments, each evaluated by completing the shift $t=u\mp Z$ and using
+$\int t e^{-t^2}$ and $\int e^{-t^2}$:
+\[
+J_1=\int_0^\infty\! u\left[e^{-(u-Z)^2}-e^{-(u+Z)^2}\right]\dd u=\sqrt\pi Z,
+\]
+\[
+J_2=\int_0^\infty\! u^2\left[e^{-(u-Z)^2}-e^{-(u+Z)^2}\right]\dd u
+=Ze^{-Z^2}+\sqrt\pi\left(\tfrac12+Z^2\right)\operatorname{erf}(Z).
+\]
+The constant piece is $(c/\sqrt\pi Z)J_1=c$: a constant cannot be changed by a
+normalized smearing, which is a useful check that the kernel above is correctly
+normalized. The linear piece is $(b/\sqrt\pi\sigma Z)J_2$, and using
+$R=Z/\sigma$ to pull out $bR$ gives exactly the stated bracket. This is
+Eq. (A13), implemented as
+\texttt{smeared\_confinement\_S\_closed}.
+
+As $Z\to0$ the two individually singular pieces cancel. Expanding
+$\operatorname{erf}(Z)=\tfrac{2}{\sqrt\pi}(Z-Z^3/3+\dots)$ and
+$e^{-Z^2}=1-Z^2+\dots$, the bracket behaves as $2/(\sqrt\pi Z)+O(Z)$, so
+$\widetilde S(0)=2b/(\sqrt\pi\sigma)+c$. A smeared linear potential has a
+finite, $\sigma$-dependent value at the origin.
+\end{solution}
+\begin{quiz}
+The pointwise $S(r)=br+c$ is perfectly regular at the origin. Why smear it at
+all? \answer smearing here is not a regulator but a physical statement about
+relativistic localization, so the same $\sigma$ must be applied to every
+interaction the quarks feel. The scalar-confinement spin--orbit terms of
+Sheet 6 are built from derivatives of $\widetilde S$, and those differ from
+derivatives of $S$; smearing only where a divergence needs curing would leave
+the operator set internally inconsistent.
+\end{quiz}
+
+\begin{problem}{Problem 5 ★★ — The momentum half, and the one operator that resists}
+(a) Show that the $n=0$, $L=0$ oscillator function
+$u_{00}(r)\propto re^{-\beta^2r^2/2}$ has radial transform
+$\widetilde u_{00}(p)=\sqrt{2/\pi}\int_0^\infty u_{00}(r)\sin(pr)\dd r
+\propto pe^{-p^2/2\beta^2}$, and state the general pattern.
+(b) What does that buy for a sandwich $B(p)V(r)B(p)$?
+(c) $\sqrt{p^2+m^2}$ is a function of $p^2$, but no $\operatorname{erf}$ or
+Gamma function will produce its matrix elements in closed form. Given Sheet 3
+Problem 6, how would you build it anyway, without a single new integral?
+\end{problem}
+\begin{solution}
+(a) $\int_0^\infty re^{-ar^2}\sin(pr)\dd r=\tfrac{\sqrt\pi p}{4a^{3/2}}e^{-p^2/4a}$
+with $a=\beta^2/2$ gives $\widetilde u_{00}\propto pe^{-p^2/2\beta^2}$: the same
+functional form with $\beta\to1/\beta$. In general the three-dimensional
+oscillator basis maps into itself under Fourier transformation, up to a phase
+$(-1)^n i^{-L}$ and the replacement $\beta\to1/\beta$ --- the transform commutes
+with $H_{\rm osc}$, which is symmetric under $r\leftrightarrow p$ at that
+substitution.
+
+(b) Momentum-space matrix elements $\bra{n'}f(p)\ket{n}$ therefore have exactly
+the same structure as the position-space ones, a Laguerre--Laguerre--Gaussian
+integral in one variable. One technique --- in 1985, one table --- serves both
+halves of Eq. (A17), and the sandwich requires no mixed $r$--$p$ integral at
+all: it is a product of three matrices in a single basis.
+
+(c) $p^2$ is the exactly known symmetric tridiagonal matrix of Sheet 3
+Problem 6. Diagonalize it once, $p^2=Q\Lambda Q^{\!\top}$, and set
+$\sqrt{p^2+m^2}=Q\sqrt{\Lambda+m^2}\,Q^{\!\top}$: the square root acts on $N$
+eigenvalues rather than on any integrand. This is the only place in the central
+Hamiltonian where a genuinely numerical step cannot be avoided, and it costs one
+$N\times N$ eigendecomposition. See also C1, Level 3.
+\end{solution}
+\begin{quiz}
+Is applying $\sqrt{\cdot}$ elementwise to the $p^2$ matrix ever the same thing?
+\answer only if $p^2$ were diagonal in that basis, which it is not. A matrix
+function acts on the spectrum, not on the entries; the elementwise result is a
+different operator with no relation to the intended one.
+\end{quiz}
+
+\begin{problem}{Problem 6 ★★ — Check the GI mass-dependent width}
 GI uses
 \[
 \sigma^2=\sigma_0^2\left[\frac12+\frac12
@@ -78,7 +223,7 @@ Why is a single universal smearing radius inadequate across all flavor sectors?
 resolve short distances differently.
 \end{quiz}
 
-\begin{problem}{Problem 4 ★★ — Prove a momentum sandwich is Hermitian}
+\begin{problem}{Problem 7 ★★ — Prove a momentum sandwich is Hermitian}
 Let $B=B(p)$ be a real function of the self-adjoint $p^2$, and $V=V(r)$ a real
 multiplication operator. Prove $BVB$ is Hermitian and show
 $\bra\psi BVB\ket\psi=\bra{B\psi}V\ket{B\psi}$.
@@ -94,7 +239,7 @@ Would $BV$ generally be Hermitian? \answer no; $B(p)$ and $V(r)$ do not commute.
 The two-sided ordering is physical structure, not cosmetic symmetrization.
 \end{quiz}
 
-\begin{problem}{Problem 5 ★★★ — Analyze the GI relativization factor}
+\begin{problem}{Problem 8 ★★★ — Analyze the GI relativization factor}
 For $E_i(p)=\sqrt{p^2+m_i^2}$, consider
 $B_i(p)=[m_1m_2/(E_1E_2)]^{1/2+\epsilon_i}$ and
 $A(p)=[1+p^2/(E_1E_2)]^{1/2}$. Compute their $p\to0$ and $p\to\infty$ limits
@@ -116,9 +261,27 @@ result depends on off-diagonal matrix elements and on the state.
 
 \begin{paperbridge}
 GI Eq. (10), repeated as Appendix-A Eq. (A7), defines the normalized Gaussian;
-(A8)--(A9) define convolution and its mass-dependent width. Eqs. (A12)--(A14)
+(A8)--(A9) define convolution and its mass-dependent width. Eq. (5) is the
+Gaussian parameterization of $\alpha_s(Q^2)$ used in Problem 3, and
+(A10)--(A11) are the pointwise $G$ and $S$ whose smeared partners
+(A12)--(A13) are derived here in Problems 3 and 4. Eqs. (A12)--(A14)
 give the closed smeared potentials. The prescriptions immediately before
 (A15), and then (A15)--(A16), place the momentum-dependent factors on both sides
-of each radial interaction.
+of each radial interaction. Eq. (A17) states that both halves of every matrix
+element are then evaluated in the oscillator basis of Sheet 3, Problem 5.
 \end{paperbridge}
+
+\begin{checkpoint}
+Look back at what this sheet has actually used: a Gaussian smearing kernel, a
+coupling built from Gaussians, potentials that come out as $\operatorname{erf}$
+and $e^{-z^2}$, and an oscillator basis whose Fourier transform is again an
+oscillator basis. None of that is coincidence. A calculation of this size in
+1985 could afford one eigendecomposition per sector, but not thousands of
+two-dimensional numerical integrals, so the model was written in the largest
+family of functions that stays closed under the operations its Hamiltonian
+demands --- convolution, Fourier transformation, and oscillator matrix
+elements. Reading Appendix A as a list of formulas misses the design; it is
+equally a record of which integrals were doable, with $\operatorname{erf}$ and
+$\Gamma$ read off printed tables.
+\end{checkpoint}
 \end{document}

@@ -2,12 +2,14 @@
 \newcommand{\SheetCode}{Theory 03}
 \input{../course-common.tex}
 \begin{document}
-\sheettitle{Sheet 3: From a Hamiltonian to a matrix}{Variational mechanics, oscillator bases, and $\sqrt{p^2+m^2}$}{Prerequisite: Sheets 1--2. \difficulty{★--★★★} \quad \timebox{3--4 hours}}
+\sheettitle{Sheet 3: From a Hamiltonian to a matrix}{Variational mechanics, oscillator bases, and $\sqrt{p^2+m^2}$}{Prerequisite: Sheets 1--2. \difficulty{★/★★★} \quad \timebox{4--5 hours}}
 
 \begin{goals}
 Derive Rayleigh--Ritz; understand the harmonic-oscillator (HO) basis as a
 representation rather than a physical assumption; prove variational monotonicity;
-analyze the semirelativistic kinetic energy and the role of a basis scale $\beta$.
+analyze the semirelativistic kinetic energy and the role of a basis scale $\beta$;
+construct the oscillator radial functions explicitly and obtain their $r^2$ and
+$p^2$ matrix elements by two independent analytic routes.
 \end{goals}
 \begin{reading}
 Selected reading in Landau--Lifshitz, \emph{Quantum Mechanics: Non-Relativistic
@@ -91,9 +93,110 @@ What physical length does $\beta^{-1}$ encode? \answer the trial state's radial
 size; optimizing $\beta$ adapts the representation to the bound state.
 \end{quiz}
 
-\begin{problem}{Problem 5 ★★★ — Explain the order of the calculation in the paper}
+
+\begin{problem}{Problem 5 ★★ — Build and normalize the oscillator basis}
+The reduced radial oscillator functions at fixed $L$ are
+\[
+u_{nL}(r)=N_{nL}\,(\beta r)^{L+1}e^{-(\beta r)^2/2}\,
+L_n^{L+1/2}\!\left((\beta r)^2\right),\qquad n=0,1,2,\dots
+\]
+where $L_n^\alpha$ is an associated Laguerre polynomial. Using only
+\[
+\int_0^\infty x^\alpha e^{-x}L_n^\alpha(x)L_m^\alpha(x)\dd x
+=\frac{\Gamma(n+\alpha+1)}{n!}\,\delta_{nm},
+\]
+fix $N_{nL}$ from $\int_0^\infty u_{nL}u_{mL}\dd r=\delta_{nm}$, and write
+$u_{0L}$ and $u_{1L}$ out explicitly. Which two conventions does normalization
+leave unfixed?
+\end{problem}
+\begin{solution}
+Substitute $x=(\beta r)^2$, so that $\dd r=\dd x/(2\beta\sqrt x)$ and
+$(\beta r)^{2L+2}=x^{L+1}$. With $\alpha=L+\tfrac12$ the measure combines into
+$x^{\alpha}\dd x/(2\beta)$ and
+\[
+\int_0^\infty u_{nL}u_{mL}\dd r
+=\frac{N_{nL}N_{mL}}{2\beta}\int_0^\infty x^{\alpha}e^{-x}
+L_n^\alpha L_m^\alpha\dd x
+=\frac{N_{nL}^2}{2\beta}\frac{\Gamma(n+L+\tfrac32)}{n!}\,\delta_{nm},
+\]
+so orthogonality is inherited from the Laguerre family and
+\[
+N_{nL}=\sqrt{\frac{2\beta\,n!}{\Gamma(n+L+\tfrac32)}}.
+\]
+Since $L_0^\alpha=1$ and $L_1^\alpha(x)=1+\alpha-x$,
+\[
+u_{0L}=\sqrt{\frac{2\beta}{\Gamma(L+\tfrac32)}}\,(\beta r)^{L+1}e^{-x/2},
+\qquad
+u_{1L}=\sqrt{\frac{2\beta}{\Gamma(L+\tfrac52)}}\,(\beta r)^{L+1}e^{-x/2}
+\left(L+\tfrac32-x\right).
+\]
+Normalization fixes $|N_{nL}|$ but not its sign, and it does not record whether
+the polynomial argument is $\beta r$ or $(\beta r)^2$. Both conventions must be
+stated before any analytic matrix element is written down.
+\end{solution}
+\begin{quiz}
+The textbook oscillator carries a mass $\mu$ and a frequency $\omega$, yet
+neither appears above. Where did they go? \answer into the single combination
+$\beta^2=\mu\omega$. Here it is a variational parameter of the representation,
+not a physical frequency of the meson, which is why Problem 7 below may scan it
+freely.
+\end{quiz}
+
+\begin{problem}{Problem 6 ★★★ — Two independent routes to $r^2$ and $p^2$}
+(a) Using the three-term recurrence
+\[
+xL_m^\alpha(x)=(2m+\alpha+1)L_m^\alpha-(m+1)L_{m+1}^\alpha-(m+\alpha)L_{m-1}^\alpha
+\]
+together with the orthogonality relation of Problem 5, compute every matrix element
+$\bra{n}r^2\ket{m}$ in that basis.
+(b) Now obtain $\bra{n}p^2\ket{m}$ with no integral at all, using only the fact
+that $H_{\rm osc}=p^2/(2\mu)+\tfrac12\mu\omega^2r^2$ is diagonal in this basis
+with eigenvalue $(2n+L+\tfrac32)\omega$.
+(c) How many independent numbers does each $N\times N$ matrix contain?
+\end{problem}
+\begin{solution}
+(a) Write $h_n=\Gamma(n+\alpha+1)/n!$, so $N_{nL}^2=2\beta/h_n$, and use
+$r^2=x/\beta^2$. Applying the recurrence to $xL_m^\alpha$ and projecting leaves
+only $n=m$ and $n=m\pm1$. The diagonal term carries $(2m+\alpha+1)h_m$, and the
+raising term carries $-(m+1)h_{m+1}$; with
+$h_{m+1}/h_m=(m+\alpha+1)/(m+1)$ the normalizations collapse to
+\[
+\bra{n}r^2\ket{n}=\frac{2n+L+\tfrac32}{\beta^2},\qquad
+\bra{n+1}r^2\ket{n}=-\frac{\sqrt{(n+1)(n+L+\tfrac32)}}{\beta^2},
+\]
+every other element vanishing. The operator $r^2$ is symmetric tridiagonal.
+
+(b) With $\beta^2=\mu\omega$ the oscillator relation rearranges to
+$p^2=2\mu H_{\rm osc}-\beta^4r^2$. The first term is diagonal with
+$2\beta^2(2n+L+\tfrac32)$, and subtracting $\beta^4$ times the result of (a)
+gives
+\[
+\bra{n}p^2\ket{n}=\beta^2\left(2n+L+\tfrac32\right),\qquad
+\bra{n+1}p^2\ket{n}=+\beta^2\sqrt{(n+1)(n+L+\tfrac32)} .
+\]
+Same magnitudes as $r^2$ up to $\beta^{\pm2}$, opposite off-diagonal sign, and
+not one integral was evaluated.
+
+(c) Each is symmetric tridiagonal: $N$ diagonal plus $N-1$ off-diagonal
+entries, so $2N-1$ numbers rather than $N^2$ integrals. This linear count, not
+raw computing power, is what made a large-basis diagonalization affordable long
+before it was cheap to integrate anything numerically.
+\end{solution}
+\begin{quiz}
+The off-diagonal elements of $r^2$ are negative and those of $p^2$ positive,
+while the diagonals agree up to $\beta^{\pm2}$. Is one of the two a sign error?
+\answer no. $p^2=2\mu H-\beta^4r^2$ subtracts the $r^2$ matrix from a diagonal
+one, which flips precisely the off-diagonal sign. Replacing $u_{nL}\to-u_{nL}$
+for some $n$ flips the corresponding off-diagonals of \emph{both} matrices
+together, so a convention that appears to flip only one of them means an
+analytic formula is being combined with a differently phased basis. Compare
+\texttt{ho\_r2\_matrix} and \texttt{ho\_p2\_matrix} in
+\texttt{src/harmonic\_oscillator\_basis.jl}.
+\end{quiz}
+
+\begin{problem}{Problem 7 ★★★ — Explain the order of the calculation in the paper}
 Suppose $H(\beta,N)$ is the GI matrix for one fixed choice of $(L,S,J)$ in an $N$-function HO
-basis. Design a pen-and-paper convergence logic using $N$, $N+\Delta N$, and
+basis, built from the functions of Problem 5. Design a pen-and-paper convergence logic using $N$, $N+\Delta N$, and
 $\beta$. Why must mixing between different $(L,S,J)$ choices be applied only
 after these separately calculated states converge?
 \end{problem}
@@ -119,5 +222,11 @@ GI Eq. (14) collects the relativized kinetic, confinement, hyperfine, and
 spin--orbit operators. The paragraph following it states that this Hamiltonian
 is directly diagonalized in large harmonic-oscillator bases, separately in
 $\ket{jm;ls}$ sectors, and that the basis is expanded until convergence.
+Eq. (A17) is where Problems 5--6 are actually used: the momentum-dependent
+factors act on exactly known $p^2$ matrix elements while the radial potentials
+are evaluated in the same oscillator basis, with no spatial mesh anywhere. Those
+two problems are the analytic content of
+\texttt{src/harmonic\_oscillator\_basis.jl}; Sheet 5 supplies the potentials
+that go between them.
 \end{paperbridge}
 \end{document}
