@@ -16,12 +16,11 @@ The repository has four first-class deliverables:
   masses), runs `compare_reference`, applies the Table III annihilation
   prescriptions, and writes residual reports.
 - **Report** (`report/`) — the code-free, high-level account:
-  [gi_reproduction.qmd](report/gi_reproduction.qmd) is a first-person account of
-  the reproduction — what the paper asks you to compute, the FD-then-HO route
-  the project took, the corrections that taught the physics, what the evidence
-  currently rests on, and what the work left behind (package, learning track,
-  notebooks). The rendered PDF is tracked; see
-  [report/README.md](report/README.md) for the build and evidence policy.
+  [gi_reproduction.qmd](report/gi_reproduction.qmd) is the project report:
+  computation and architecture, implementation (the FD-then-HO route and the
+  corrections that taught the physics), usage, and outlook. The rendered PDF
+  is tracked; see [report/README.md](report/README.md) for the build and
+  evidence policy.
 - **Learning track** (`LearningTrack/`) — **AGI: Agentic Godfrey--Isgur**, a
   nine-sheet pen-and-paper course from elementary radial quantum mechanics to
   the complete paper-order spectrum algorithm, plus a question-led bridge to a

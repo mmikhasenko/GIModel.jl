@@ -1,14 +1,15 @@
 # GIModel.jl report
 
 `gi_reproduction.qmd` is the source of the project report,
-**Recomputing Godfrey--Isgur: An Excursion into a 1985 Quark Model**.
-It is a first-person account of the reproduction rather than a description of
-a finished tool: what the paper asks you to compute, the FD-then-HO route the
-project actually took, the four corrections (normalization and phase, a
-converged-but-wrong approximation, the limits of convergence, and a scorecard
-reporting the wrong run) that taught the physics, what working with coding
-agents was like, what the reproduction currently rests on, and what it left
-behind — the package, the learning track, and the notebooks.
+**Recomputing the Godfrey--Isgur Relativized Quark Model**. It follows the
+standard shape: introduction and motivation (the model's status, and the
+absence of any open constituent quark-model spectroscopy code), computation
+and architecture (the Hamiltonian, Appendix-A relativization, the paper's
+three-stage algorithm, Table II inputs, and the GIModel/GIPaper and
+model/solver separations), implementation (the FD-then-HO route, the
+corrections it required, agent-assisted development, provenance and current
+status), usage (inspectable answers, the learning track and notebooks,
+exploring the model), and conclusion and outlook.
 
 The original paper and `LearningTrack/` supply the detailed theory; the report
 does not repeat them. The development narrative is anchored to verifiable git
