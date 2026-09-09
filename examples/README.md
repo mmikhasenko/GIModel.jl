@@ -5,7 +5,9 @@ reproduction. Each one is self-contained; the curated examples run against the
 model's public API only — no reaching into internals, no reference data.
 
 The curated examples share one environment (`examples/Project.toml`): GIModel
-(dev-path to the repository root) plus CairoMakie, PlutoUI and LaTeXStrings.
+(dev-path to the repository root) plus CairoMakie, GLMakie, PlutoUI and
+LaTeXStrings. The density support and paper renderer use GLMakie for lit
+geometry CairoMakie cannot render; the other examples draw with CairoMakie.
 The exception is `played_with_model.jl`, the scratch notebook, which wants the
 comparison layer and so activates `GIPaper/` instead. Either way each file
 activates its own environment, so there is no setup step.
@@ -191,6 +193,139 @@ Points worth copying:
   rescales by the coefficient ratio `√3/√(4/5) = √15/2` — same kernel, same
   wave, different front factor. Worth promoting to a real `:P0` kind if χ_c
   γγ rows are ever added to the audit.
+
+## `density_candidates.jl` — saved density states
+
+Precompute the $\rho$, $\psi(2S)$, and $\Upsilon(3S)$ states used by the paper,
+and save their signed radial amplitudes and provenance without coupling the
+calculation to a plotting style:
+
+```bash
+julia examples/density_candidates.jl precompute
+```
+
+The command writes portable TOML caches to `data/density_candidates/`. Each
+cache records the radial grid, coefficient-weighted signed amplitudes grouped
+by `(L,S)`, channel weights, model mass, rms separation, angular-normalization
+and isotropy checks, solver settings, parameter contents and hash, dependency
+manifest hash, Julia version, and hashes of the model sources. There is no
+generation timestamp, so rerunning an unchanged calculation produces identical
+files and leaves the repository clean.
+
+The $\rho$ uses the model's common light-quark constituent mass. The three
+states are predominantly $1^3S_1$, $2^3S_1$, and $3^3S_1$; their allowed
+$D$-wave mixing channels are included before export. The cache stores numerical
+wave-function data rather than Julia serialization, so the paper renderer can
+load it without solving the spectra again.
+
+The paper-specific layout, palette, cutaway, and caption live in the separate
+report repository under `report/sources/`. See `report/README.md` for the exact
+figure-production command.
+
+## `density_3d.jl` — what a meson looks like
+
+A script that draws the quark-antiquark **separation density** as a Monte-Carlo
+point cloud, one dot per draw from `|psi(r)|^2`, in the style of the dot-cloud
+pictures of atomic orbitals.
+
+```bash
+julia examples/density_3d.jl
+```
+
+**What it is not.** `r` is the separation of the quark and the antiquark, not a
+position in the lab, and the cloud is not a charge distribution.
+
+**The one decision that makes the figure.** Fix `mJ`. Summing over `mJ` gives
+`sum_m |Y_Lm|^2 = (2L+1)/4pi`, an exact sphere for every state in the spectrum —
+so an `mJ`-averaged picture of a meson is a ball, always. At fixed `mJ` the
+panels separate: `1^1P_1` puts its lobes along `z` at `mJ = 0` and becomes a
+torus at `mJ = 1`: the *same level* in two different magnetic substates.
+
+**Reading the density, not the radial probability.** The cloud is `|psi|^2`, the
+density per unit volume; `u(r)^2` is the radial probability per unit `r`. They
+look nothing alike — an `r^2`-weighted 3D cloud would hollow out every S-wave at
+the origin. The `1/r^2` in `psi = (u/r) Y_Lm` cancels against the `r^2` of the
+volume element, which is why the radial marginal here is exactly `u(r)^2`.
+
+**Reading the cutaway.** Two vertical half-planes meet on the `z` axis and
+remove a 120° wedge facing the camera, like open doors. The retained samples
+stay at their calculated positions. In the 2S comparison, the opened cloud is
+an exact subset of the full cloud: removing the wedge does not refill or
+resample the retained region. The six-panel figure uses a common camera,
+particle radius, and accepted sample count. Scale bars lie in the image plane
+through the origin; perspective sizes vary with depth.
+
+**Lighting and depth.** GLMakie draws opaque spheres with a short-range point
+light at the camera, a dim fill, and screen-space ambient occlusion. The light
+uses intensity 8 and range `6 × half_width`; the previous intensity 10 and range
+`14 × half_width` saturated the particles. The camera uses a fixed 55°
+perspective view, which makes the spheres large enough to read as texture.
+Rendering uses an invisible OpenGL window and still requires a working graphics
+context.
+
+A headlamp alone does not give the cavity enough contrast: points behind a
+node remain visible through it. The cutaway therefore also applies an
+**illustrative geometric depth tint**, `0.24 + 0.76 exp(-d / 0.16 fm)`, where
+`d` is distance behind the nearest exposed half-plane. This is a rendering cue,
+not a calculated shadow or a density colour scale. It depends only on the cut
+geometry, never on radial node locations or wave-function values. No separate
+slab or background shell is added. Particle concentration carries the
+probability information; brightness helps distinguish the exposed faces from
+the interior. Finite sphere size and occlusion limit quantitative readings
+from the cloud itself.
+
+**Checking the visible node against the calculation.** The 2S figure includes
+the full mixed state's radial marginal `p(r) = sum_(L,S) U_LS(r)^2`, normalized
+per fm. A dashed line marks the interpolated zero of the dominant S-channel
+amplitude. The D-wave admixture can leave a small nonzero probability there,
+so the shaded ring is described as radial depletion. The profile uses the
+solution directly, independently of the Monte-Carlo draw and its shading.
+Parameters are the repository's provisional GI model parameters.
+
+### Composite states
+
+`physical_components` returns the flattened `(n, L, S)` composition of a mixed
+state with signed coefficients, and components that share `(L, S)` and differ
+only in `n` must be **added as amplitudes before squaring** — they carry the same
+angular function, so only their `r`-integral is orthogonal, not their value at
+each `r`. Squaring them separately is a silent factor-level error; the script
+groups by `(L, S)` first.
+
+Interference between different `L` at the same `S` — the `3S1`/`3D1` tensor
+mixing — survives the sum over the unobserved quark spin, because every `L` in
+one spin group carries the same `m_L = mJ - m_s`.
+
+### Two checks that need no reference data
+
+Both are exact identities. The angular integral is evaluated numerically, so
+its residual includes the finite quadrature error:
+
+| check | identity |
+|---|---|
+| `check_angular_normalization` | `2 pi int f(x) dx == p(r)` at every radius, from orthonormality of the `Y_Lm` |
+| `check_mj_sum_isotropy` | the `mJ`-summed density is spherical, since `sum_mJ \|J mJ><J mJ\|` commutes with rotations |
+
+The first constrains the Clebsch-Gordan coefficients only through
+`sum_ms CG^2 = 1`; the second pins down each one individually. The script prints
+both per state (`~1e-7`, the angular quadrature floor, and `~1e-15`) and
+asserts tolerances of `1e-6` and `1e-12`, respectively.
+
+### The API this exercises
+
+```julia
+spec = compute_spectrum(params, ccbar; levels, solver = OscillatorSolver())
+
+for piece in physical_components(spec, "1^3D_1")
+    piece.basis.L_label, piece.basis.multiplicity, piece.coefficient
+    u = sample_wave(piece.wave, rgrid).u     # OscillatorWave -> plotting grid
+end
+```
+
+`sample_wave` is the sanctioned way to put an `OscillatorWave` on a mesh: the
+oscillator solver keeps no spatial grid, and the sampled result is normalized on
+the plotting grid, which is what a density needs. The `MeshWave` branch in
+`u_samples` interpolates instead, so the script gives the same picture under
+either solver.
 
 ## `played_with_model.jl` — the scratch pad
 

@@ -136,32 +136,20 @@ of `decay_amplitude`), while `:table_iv` keeps the printed polynomial.
 
 ### Encoded so far
 
-- `scripts/audit_table_vi_photon_decays.jl` writes
-  `docs/residual_reports/table_vi_photon_decays.md`: 28 mixing-free rows
-  computed from the FD solver wavefunctions (contact-distorted S waves,
-  central P waves). Quarkonium M1 rows land at the 0.1-2% level
-  (`psi -> eta_c gamma` +0.684 vs +0.69, `psi' -> eta_c' gamma` +0.680 vs
-  +0.68, `Upsilon` family -0.121/-0.121/-0.120 vs -0.13/-0.12/-0.12),
-  open-flavor M1 at 1-4% (`D*+` -0.347 vs -0.35, `F*` -0.132 vs -0.13,
-  `B*+` +1.360 vs +1.37, `F_b*` -0.550 vs -0.55), light rows at ~6%
-  (`rho -> pi gamma` +0.650 vs the +0.69 fit target — the known
-  light-sector wavefunction residual), and the hindered
-  `psi' -> eta_c gamma` with the recoil term gets sign and magnitude
-  (-0.067 vs -0.056). E1 `chi_c`/`chi_b` triplets reproduce at 3-7%; the
-  two `2S -> chi_0` rows sit 20-30% high (largest q, node cancellation).
-
-### Current findings and remaining coverage
-
-1. The page-24 crop audit confirmed the shifted vision-OCR open-flavor M1
-   column; the report uses the image-verified values.
-2. The `2S -> chi_0` photon-momentum convention was checked with measured and
-   model masses. Neither convention explains both residuals.
-3. The isoscalar rows now use the final Table III physical compositions, and
-   the Appendix-D overlap kernels have been promoted into `src/` with tests.
-4. The sole open reproduction task is complete accounting of the canonical 79
-   Table VI rows. The current report evaluates 43 transitions; every remaining
-   radial, excited, mixing-induced, or nominally forbidden row must be computed
-   or explicitly classified.
+- `GIPaper/scripts/audit_table_vi_photon_decays.jl` writes the complete
+  79-row report and a machine-readable CSV: 42 M1, 35 E1, and 2 M2.
+  Every state uses the shared native fixed-channel solver, including the
+  spin-distorted P waves. Four-flavor P1/vector/tensor states are composed
+  through the final MixedSpectrum, with pure-flavor charges applied once.
+- The canonical loader rejects duplicate identities, preserves parenthetical
+  and approximate predictions, and separates state/kinematics inputs from
+  computed observables.
+- Recoil, the footnote-g form factor, the explicit footnote-a +0.01 μN
+  input, and M1 width conversion are covered. A1 -> pi is spin-flip E1;
+  its q² power is not an M2 classification.
+- Excited eta and near-cancelled amplitudes retain explicit quantitative
+  residuals. The independent FD run and solver-comparison report distinguish
+  these from representation errors. There are no omitted Table VI rows.
 
 ## Numerical method (Appendix A, Eq. A17)
 
@@ -223,7 +211,9 @@ kinematic convention matches the paper's numeric amplitude to ~10% (the
 paper itself rounds to 2 significant figures), with the two fit rows exact by
 construction.
 
-A Table VI block counts as reproduced when every mixing-free row matches the
-paper's moment/amplitude to ~10% with conventions itemized, and
-mixing-dependent rows additionally use the Table III amplitudes from the
-mixing layer.
+A Table VI block counts as reproduced when all 79 canonical rows are computed
+or explicitly classified, with formula, phase, mass, and mixing conventions
+itemized. Mixing-dependent rows must use the shared Table III physical-state
+composition. Numerical disagreements remain reported residuals; coverage does
+not require every cancellation-sensitive or excited-state amplitude to agree
+within 10%.

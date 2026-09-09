@@ -1,9 +1,9 @@
 # Original 1985 Spectrum Algorithm Integration Audit
 
-Status: audited baseline plus implementation update, 2026-08-07.
+Status: audited baseline plus implementation update, 2026-09-09.
 
-The sole remaining reproduction task is tracked in
-[`work_plan.md`](work_plan.md).
+The implementation sequence recorded in [`work_plan.md`](work_plan.md) is
+complete, including the final Table VI radiative-decay coverage.
 
 ## Executive verdict
 

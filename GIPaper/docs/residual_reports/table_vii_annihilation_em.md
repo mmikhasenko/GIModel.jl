@@ -143,18 +143,18 @@ sum over the final state's signed `[1nn, 1ss, 2nn, 2ss]` native components
 from `compute_isoscalar_spectrum` / `physical_components` (Sec. V A),
 using the physical mock-meson
 `M_P`. Ideal mixing cannot be used here: it inverts the `η<η'` ordering.
-Median |model|/|paper| = 0.78; signs agree on 2/4.
+Median |model|/|paper| = 0.78; signs agree on 4/4.
 
 | decay | M_P (GeV) | 1nn | 1ss | 2nn | 2ss | model keV^½ | paper keV^½ | ratio | sign |
 |---|---:|---:|---:|---:|---:|---:|---:|:-:|:-:|
 | `eta -> gamma gamma` | 0.548 | +0.62 | -0.77 | +0.11 | +0.04 | +0.437 | +0.500 | 0.87 | ✓ |
 | `eta' -> gamma gamma` | 0.958 | +0.57 | +0.55 | +0.59 | +0.15 | +1.020 | +1.300 | 0.78 | ✓ |
-| `eta_r -> gamma gamma` | 1.295 | +0.25 | +0.16 | -0.59 | +0.75 | +1.829 | -2.700 | 0.68 | ✗ |
-| `eta'_r -> gamma gamma` | 1.440 | +0.47 | +0.27 | -0.54 | -0.64 | +3.882 | -2.200 | 1.76 | ✗ |
+| `eta_r -> gamma gamma` | 1.295 | -0.25 | -0.16 | +0.59 | -0.75 | -1.829 | -2.700 | 0.68 | ✓ |
+| `eta'_r -> gamma gamma` | 1.440 | -0.47 | -0.27 | +0.54 | +0.64 | -3.882 | -2.200 | 1.76 | ✓ |
 
 The `η<η'` γγ ordering — backwards under ideal mixing — is reproduced.
-The two ground-state signs agree, while both radial-excitation signs do not;
-the ~30–50% ground-state magnitude spread reflects the model's
+Mixed-state signs use positive overlap with the assigned unmixed precursor;
+the remaining magnitude spread reflects the model's
 sensitivity to the P1 mixing amplitudes and the light-pseudoscalar masses.
 The hypothetical t-tbar `eta_t` is not modelled.
 
@@ -232,8 +232,8 @@ The paper tabulates constants rather than these derived widths.
 - **The pion is no longer a mass pathology.** The literal smeared-contact
   Laplacian gives 0.149 GeV and `f_π` at 0.98 of the paper value.
 - **Signs reproduce under one convention** (outermost antinode positive)
-  for gluonic, leptonic, and clean-flavor two-photon rows. The two radial
-  isoscalar-pseudoscalar signs remain an explicit P1 discrepancy.
+  for gluonic, leptonic, and clean-flavor two-photon rows. Mixed-state
+  phases are fixed in the shared annihilation solution, before any observable.
 - **Two-photon** rows with clean flavor content reproduce well (`A2` 0.93,
   `f₂` 0.98, the `η_c` pair ~1.08); `f'` is off (ideal tensor mixing, which
   the paper's own footnote calls very `f`-`f'`-sensitive) and `π→γγ` shares
@@ -241,7 +241,7 @@ The paper tabulates constants rather than these derived widths.
 - Isoscalar-mixing corrections (folded into the paper's numbers) are part of
   the `ω`/`φ` leptonic residual. The strongly-mixed isoscalar pseudoscalar
   `γγ` rows are reproduced via the final P1-composed states: the ground-state
-  ordering and signs agree, while both radial signs and some magnitudes do not.
+  ordering agrees; the table above records every sign and magnitude residual.
 - **Charge radii** are excellent: the `K⁺` and `K⁰` rows in the table
   are genuine predictions (only `f` is fit, on the
   `π⁺`), reproducing both the magnitude and the negative `K⁰` sign from the

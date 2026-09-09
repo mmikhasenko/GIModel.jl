@@ -83,12 +83,13 @@ The remaining direct `.vectors` access in `audit_table_iii_mixings.jl` compares
 the low-level `MixingResult` itself with the paper's printed eigenvectors; it is
 not an observable consumer and does not construct a second physical state.
 
-## Repository scheduling and follow-up
+## Repository scheduling and follow-up at the time of this audit
 
 The surviving responsibilities are intentionally separated:
 
-- `docs/work_plan.md` is the sole remaining executable plan and contains only
-  completion of the Table VI photon-decay audit.
+- `docs/work_plan.md` was the sole executable plan and contained only
+  completion of the Table VI photon-decay audit. That work is now complete;
+  the file records its closure and verification.
 - `docs/code_architecture.md` records the settled public contract and extension
   rules; regression tests pin the numerical invariants that must not recur.
 - `docs/original_1985_algorithm_audit.md` records the completed paper-vs-code
@@ -139,4 +140,6 @@ bridge parameters, and final flavor-mixed observables consume the one shared
 The original spectrum-algorithm queue and its optional FD-COMP infrastructure
 follow-up are therefore closed. FD is a numerically certified independent
 comparator, explicitly outside the native-HO paper path. The separate whole-
-paper manifest still tracks the partial Eq. (19) and Table VI decay units.
+paper manifest tracked partial Eq. (19) and Table VI decay units at the time of
+this audit. The current manifest supersedes that historical status and records
+complete 79-row Table VI coverage.

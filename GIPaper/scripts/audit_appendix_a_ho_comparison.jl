@@ -234,7 +234,7 @@ open(report_path, "w") do io
     )
     println(
         io,
-        "- This completes the current Appendix-A central comparison stage: the remaining work is not another central-potential transcription, but HO-order validation of the now-assigned spin/mixing blocks and broader Table-III flavor/radial mixing.",
+        "- The Appendix-A central comparison, HO-order spin/mixing validation, and Table-III flavor/radial integration are complete. Current unit status is derived from the paper manifest.",
     )
 end
 

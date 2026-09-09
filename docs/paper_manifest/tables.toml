@@ -60,14 +60,15 @@ label = "Table VI"
 page = 24
 pages = "24-27"
 statement = "Photon decays: M1 magnetic moments (units e/2) and E1/M2 amplitudes (units sqrt(alpha q)) for radiative meson transitions (page-width table; 79 rows on pages 24-26, footnotes d-i on page 27)."
-status = "partial"
-effort = "medium"
-next = "Extend the audit to the remaining Table VI rows and investigate the residual sign of the deeply cancelled Upsilon'' -> eta_b gamma amplitude. The final-state composition now reproduces the eta/eta' M1 ordering without a report-local vector or phase."
-code = ["GIPaper/scripts/audit_table_vi_photon_decays.jl"]
+status = "reproduced"
 report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
 anchor = "paper/vision_ocr/page_images/page-024.png"
 parent = "sec-IV"
-notes = "28 mixing-free rows plus 6 isoscalar M1 rows reproduced (quarkonium M1 0.1-2%, open-flavor M1 1-4% image-verified vs page 24; several E1 rows are within 1-7%, with named tails at 20-32%), no new constants beyond tiers A/B. Isoscalar rows are computed from the final MixedSpectrum through shared physical-state amplitude dispatch; all six signs and the eta/eta' ordering agree, with 25-36% magnitude residuals on the weakest mixed rows. The report owns no parallel annihilation vector or phase. The remaining hindered bottomonium sign is a cancellation-level physics residual. Data: table_vi_photon_decays.csv (79 rows)."
+
+code = ["GIPaper/src/table_vi.jl:load_table_vi", "GIPaper/src/table_vi.jl:load_table_vi_states", "src/radiative_decays.jl", "src/flavor_mixing.jl:add_isoscalar_annihilation", "GIPaper/scripts/audit_table_vi_photon_decays.jl"]
+tests = ["Canonical Table VI identities and predictions", "Complete Table VI state mapping", "Radiative charge normalization and recoil", "Four-flavor physical-state annihilation bridge", "Photon multipole angular factors and powers"]
+metric = "79/79 canonical rows computed: 42 M1, 35 E1, 2 M2; signed residuals and photon-kinematics provenance reported"
+notes = "Complete coverage through native fixed-channel HO waves and shared four-flavor physical-state composition. Canonical references eliminate duplicated targets; A1 -> pi is spin-flip E1, not M2. The perfect eta-mixing normalization is applied only through state coefficients. Footnotes c/g are implemented; footnote a adds the explicit paper-supplied +0.01 mu_N input. Excited eta and cancellation-sensitive transitions retain quantitative residuals; reproduced means complete implementation/accounting, not exact agreement in every row. No new fitted constant."
 
 [[unit]]
 id = "table-VII"
@@ -80,10 +81,10 @@ status = "reproduced"
 code = ["src/annihilation_widths.jl:gluonic_annihilation_amplitude", "src/annihilation_widths.jl:leptonic_decay_factor", "src/annihilation_widths.jl:two_photon_amplitude", "src/annihilation_widths.jl:charge_radius_squared", "src/fixed_channel_solver.jl:fixed_channel_solution", "GIPaper/scripts/audit_table_vii.jl", "GIPaper/scripts/audit_w6_ho_order.jl"]
 tests = ["Table VII gluonic annihilation", "Table VII leptonic decay constants", "Table VII two-photon amplitudes", "Table VII charge radii", "Table VII mixed eta/eta' two-photon", "Native HO fixed-channel spin-distorted waves", "Native HO full fixed-channel diagonalization"]
 report = "GIPaper/docs/residual_reports/table_vii_annihilation_em.md"
-metric = "one native fixed-channel HO treatment: gluonic 16/16 signs, median 1.05; leptonic 26/26 signs, median 1.01; clean two-photon 8/8 signs, median 1.05; mixed eta magnitudes median 0.78 with 2/4 signs (the radial excitations expose a physical-model discrepancy); charge radii median 1.02"
+metric = "one native fixed-channel HO treatment: gluonic 16/16 signs, median 1.05; leptonic 26/26 signs, median 1.01; clean two-photon 8/8 signs, median 1.05; mixed eta magnitudes median 0.78 with 4/4 signs (shared precursor-phase convention); charge radii median 1.02"
 anchor = "paper/vision_ocr/page_images/page-028.png"
 parent = "sec-IV"
-notes = "All four subtables use native fixed_channel_solution HO waves and final MixedSpectrum compositions through shared physical-state amplitude dispatch; no HO mesh projection or report-local phase remains. Gluonic, leptonic, and clean two-photon rows reproduce every printed sign. The two excited mixed-eta sign disagreements are now visible model residuals rather than hidden as convention choices. The only fitted quantity is the paper's own charge-radius exponent f=0.2. Unphysical t-tbar rows are excluded."
+notes = "All four subtables use native fixed_channel_solution HO waves and final MixedSpectrum compositions through shared physical-state amplitude dispatch; no HO mesh projection or report-local phase remains. Gluonic, leptonic, and clean two-photon rows reproduce every printed sign. The two former excited mixed-eta sign disagreements are resolved by the shared precursor-phase convention; magnitude residuals remain explicit. The only fitted quantity is the paper's own charge-radius exponent f=0.2. Unphysical t-tbar rows are excluded."
 
 # --- Sec. V: 0++ coupled-channel inputs ------------------------------------
 

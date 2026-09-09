@@ -25,4 +25,5 @@ include("testutils.jl")
     include("fixed_channel_solvers.jl")
     include("spectrum.jl")
     include("observables.jl")
+    include("radiative_decays.jl")
 end

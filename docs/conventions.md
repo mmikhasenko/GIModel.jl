@@ -85,3 +85,23 @@ Implemented in the production spectrum path:
 resolver in `GIPaper/src/reference_meson.jl` maps supported content and sector
 labels to a core `Meson`; unknown or ambiguous content fails loudly rather than
 choosing the first token pair.
+
+## Radiative amplitudes and mixed-state phases
+
+Table VI uses pure-flavor charge coefficients before composing physical states.
+For normalized nonstrange states the M1 coefficient is 1/3 for equal isospin
+and 1 for opposite isospin; ss, cc, and bb coefficients are -2/3, 4/3, and
+-2/3. The eta/eta-prime flavor coefficients enter through
+`physical_components`, so the formula column's perfect-mixing 1/sqrt(2)
+must not be multiplied in again.
+
+Annihilation eigenstates retain positive overlap with the precursor assigned
+by ascending unmixed mass, the same assignment used by Spectrum. This phase
+is chosen in the shared annihilation solution, before any observable is
+evaluated. A negative tiny nn admixture therefore does not reverse an
+otherwise positive heavy-quark state. Radial-wave phases remain the existing
+native-wave conventions.
+
+M1 moments are in nuclear magnetons. `m1_radiative_width` returns GeV;
+E1 and spin-flip photon amplitudes are in MeV^(1/2). Spin-flip P2 -> S0 is M2,
+whereas P1 -> S0 is E1 even though both formulas contain q²/m.

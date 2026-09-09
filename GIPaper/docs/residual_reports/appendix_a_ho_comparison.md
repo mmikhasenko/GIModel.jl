@@ -147,4 +147,4 @@ This report compares the same spin-independent Appendix-A central operator in tw
 
 - The finite-HO realization agrees with the FD realization at the sub-MeV level across the audited central channels. This validates the active Appendix-A central operator independently of the coordinate-basis implementation.
 - The largest remaining FD/HO central difference is about 1 MeV, so present residuals should not be attributed to the spin-independent Appendix-A central basis choice.
-- This completes the current Appendix-A central comparison stage: the remaining work is not another central-potential transcription, but HO-order validation of the now-assigned spin/mixing blocks and broader Table-III flavor/radial mixing.
+- The Appendix-A central comparison, HO-order spin/mixing validation, and Table-III flavor/radial integration are complete. Current unit status is derived from the paper manifest.

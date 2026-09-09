@@ -400,3 +400,84 @@ function compute_isoscalar_spectrum(
         amplitudes = amplitudes,
     )
 end
+
+"""
+    add_isoscalar_annihilation(params, spectra;
+        pseudoscalar=nothing, pseudoscalar_basis=BasisState[], amplitudes=Dict())
+
+Combine any number of distinct self-conjugate flavor spectra. An explicit
+flavor-qualified `pseudoscalar_basis` selects the radial/flavor entries of a
+literal P1 or P2 block (including heavy components). General Eq. (16) blocks
+mix the available flavors separately at each radial level (or only those in
+`annihilation_radial_levels`, when supplied) for the requested
+`(L, multiplicity, J)` amplitudes. All compositions and native waves belong
+to the returned spectrum; inputs are not modified.
+"""
+function add_isoscalar_annihilation(
+    params::GIParameters,
+    spectra::AbstractVector{<:MixedSpectrum};
+    pseudoscalar::Union{Nothing,PaperP1Annihilation,PaperP2Annihilation} = nothing,
+    pseudoscalar_basis::AbstractVector{BasisState} = BasisState[],
+    amplitudes = Dict{Tuple{String,Int,Int},Float64}(),
+    annihilation_radial_levels = nothing,
+)
+    isempty(spectra) && throw(ArgumentError("need at least one flavor spectrum"))
+    channels = [_single_channel(spec) for spec in spectra]
+    all(is_equal_flavor, channels) ||
+        throw(ArgumentError("annihilation requires self-conjugate flavors"))
+    tags = _annihilation_flavor_tag.(channels)
+    length(unique(tags)) == length(tags) ||
+        throw(ArgumentError("duplicate isoscalar flavor channels"))
+    all(parameters(spec) == params for spec in spectra) ||
+        throw(ArgumentError("flavor spectra must use identical parameters"))
+    solver = first(spectra).computation.solver
+    all(spec.computation.solver == solver for spec in spectra) ||
+        throw(ArgumentError("flavor spectra must use identical solver settings"))
+    cache = copy(first(spectra).computation.channel_cache)
+    for spec in spectra[2:end], (key, solution) in spec.computation.channel_cache
+        haskey(cache, key) && cache[key] !== solution &&
+            throw(ArgumentError("conflicting native radial solutions"))
+        cache[key] = solution
+    end
+    combined = Spectrum(channels, vcat([spec.states for spec in spectra]...),
+        SectorComputation(params, solver, cache))
+    if isnothing(pseudoscalar)
+        isempty(pseudoscalar_basis) ||
+            throw(ArgumentError("pseudoscalar_basis requires a model"))
+    else
+        isempty(pseudoscalar_basis) &&
+            throw(ArgumentError("explicit pseudoscalar_basis is required"))
+        inputs = map(pseudoscalar_basis) do level
+            (level.L_label, level.multiplicity, level.J) == ("S", 1, 0) ||
+                throw(ArgumentError("pseudoscalar basis must contain only ^1S_0"))
+            i = findfirst(m -> (m.flavor1, m.flavor2) == level.flavors, channels)
+            isnothing(i) && throw(ArgumentError("unknown basis flavor $(level.flavors)"))
+            annihilation_basis_input(spectra[i], level)
+        end
+        result = isoscalar_pseudoscalar_annihilation_solution(
+            pseudoscalar, params, inputs)
+        _apply_annihilation_result!(combined, result)
+    end
+    for raw_key in sort!(collect(keys(amplitudes)); by = string)
+        key = _annihilation_channel_key(raw_key)
+        levels = sort!(unique([
+            state.n for spec in spectra for state in spec.states
+            if (state.L, state.multiplicity, state.J) == key
+        ]))
+        isnothing(annihilation_radial_levels) ||
+            filter!(n -> n in annihilation_radial_levels, levels)
+        isempty(levels) && throw(ArgumentError("no states for annihilation channel $key"))
+        for n in levels
+            level = BasisState(n, key...)
+            eligible = filter(spectra) do spec
+                any(s -> (s.n, s.L, s.multiplicity, s.J) == (n, key...), spec.states)
+            end
+            inputs = [annihilation_basis_input(spec, level) for spec in eligible]
+            result = isoscalar_general_annihilation_solution(params, inputs;
+                amplitude_A = amplitudes[raw_key], L = L_SYMBOLS[key[1]],
+                multiplicity = key[2], J = key[3])
+            _apply_annihilation_result!(combined, result)
+        end
+    end
+    return combined
+end

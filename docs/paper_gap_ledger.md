@@ -1,7 +1,7 @@
-# Paper Gap Ledger
+# Paper Coverage Ledger
 
-This is the concise physics-facing list of what is still missing relative to
-the 1985 Godfrey–Isgur calculation. The sole remaining task lives in
+This is the concise physics-facing record of coverage relative to the 1985
+Godfrey–Isgur calculation. Table VI now has complete 79-row coverage, recorded in
 [`work_plan.md`](work_plan.md); equation/table status lives in
 `paper_manifest/*.toml`. This file does not duplicate that plan.
 
@@ -56,8 +56,8 @@ serve fixed-sector and later antisymmetric/tensor mixing elements.
 The native-HO convergence gate passes six radial levels in q/s/c/b `1S0` and
 `3P2` sectors without quadrature warnings. The end-to-end Table-VII gate keeps
 all 16 gluonic signs with median magnitude ratio 1.05, all 26 leptonic signs,
-and all 8 clean two-photon signs. The two excited isoscalar-pseudoscalar signs
-remain a visible model discrepancy, not an implementation fallback.
+and all 8 clean two-photon signs. Excited isoscalar-pseudoscalar magnitude residuals
+remain visible model discrepancies, not implementation fallbacks.
 
 ### FD-COMP — independent FD convergence report (complete)
 
@@ -80,11 +80,11 @@ PA-18 or a dependency of the original 1985 algorithm.
 
 ## Outside the spectrum-algorithm queue
 
-The paper manifest still marks Table VI partial: the remaining rows must be
-computed or explicitly classified, including the cancellation-sensitive
-`Upsilon'' -> eta_b gamma` sign. This blocks a literal “whole paper reproduced”
-claim, but it is not a missing stage in the HO meson-spectrum algorithm.
-
+Table VI is complete as an implementation/accounting audit: all 79 rows use
+native fixed-channel waves and canonical targets. Excited eta and deeply
+cancelled transitions retain explicit numerical residuals. The old
+`Upsilon'' -> eta_b gamma` sign discrepancy was an encoding error;
+the printed -0.004 agrees with the calculation.
 Applying Eq. (19) directly to the calculated physical wavefunctions would go
 beyond the paper's numerical SU(6)/single-beta SHO treatment. It is recorded in
 the README as a possible improvement, not as a reproduction gap.

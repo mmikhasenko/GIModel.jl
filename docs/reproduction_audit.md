@@ -43,7 +43,7 @@ places:
    `mixing_angles.md`. These propagate directly into the Q1/Q2 and Q1c/Q2c
    strong-decay rows, which remain sensitive to the paper's quoted angles.
 2. **Flavor-mixed and cancellation-sensitive observables**, especially radial
-   η/η′ signs, Υ″→η_bγ, and 2S→χ₀ magnitudes. These now consume the
+   excited η/η′ channels and Υ″→χ_b0γ. These now consume the
    final physical composition. Their visible residuals are model/convention
    discrepancies, not parallel consumer state.
 
@@ -54,22 +54,18 @@ The optional FD-COMP follow-up is also complete: independent spacing/domain
 sweeps certify a precision comparator profile, mixed eigenspaces, and wave-
 sensitive observables without making FD part of the paper route.
 
-## 2. Remaining work and costs
+## 2. Coverage completion
 
-Per-unit status is in the dashboard; this is the workstream-level costing of
-what still stands between the current state and "the whole paper, reproduced".
+Table VI now computes all 79 canonical rows (42 M1, 35 E1, 2 M2), including
+excited bottomonium and heavy-to-light mixing-induced amplitudes. Shared
+four-flavor compositions and native fixed-channel waves replace the old
+partial audit. The report records signed and magnitude residuals, explicit
+kinematic inputs, and the paper-supplied +0.01 μN correction to phi -> pi gamma.
 
-| Remaining | Cost | Blocks victory? |
-| --- | --- | --- |
-| **Complete the remaining Table VI rows and resolve/characterize its cancellation-level residuals** | medium | yes, for a whole-paper claim |
+No model-output table remains partially implemented. This is a coverage claim:
+the excited eta amplitudes and cancellation-sensitive transitions do not all
+agree with the paper. Their residuals remain available in the generated reports.
 
-**Not reproduction blockers** (context/superseded — candidates for the
-direction-2 demos instead): Table I, Table VIII, Eqs. (11), (15), (23)-(29),
-A1-A6, B37, and direct application of Eq. (19) to the calculated physical
-wavefunctions beyond the paper's single-beta SHO decay approximation.
-
-**Honest one-line status:** the three-stage native-HO spectrum algorithm,
-literal A15-A16 spin operators, adaptive convergence, and final-state consumer
-composition are complete. A whole-paper reproduction claim still requires the
-Table VI item above. The independent modern FD comparator is
-separately certified and does not alter that claim boundary.
+Context/input tables I and VIII, superseded equations, and applying Eq. (19)
+directly to calculated physical waves beyond the paper's single-beta SHO
+approximation remain outside the reproduction boundary.

@@ -1,43 +1,42 @@
-# Remaining Work Plan
+# Table VI completion record
 
-This is the repository's only work plan. Per-equation and per-table status lives
-in `docs/paper_manifest/*.toml`; completed implementation history belongs in the
-audits and Git history, not in parallel plans.
+The radiative-decay implementation now covers all **79 canonical rows**:
+42 M1, 35 E1, and 2 M2. The source of unit status is
+`docs/paper_manifest/*.toml`; numerical results are in
+`GIPaper/docs/residual_reports/table_vi_photon_decays.md` and its CSV companion.
 
-The native-HO spectrum algorithm, physical-state composition, observable wave
-interface, and independent FD comparator are complete. One paper-reproduction
-unit remains.
+Completed work:
 
-## Table VI — complete the photon-decay audit
+1. Canonical identity mapping, unique-row validation, and explicit state/mass inputs.
+2. Excited bottomonium E1 and hindered M1 transitions, including 3S -> 2S.
+3. Excited eta/eta-prime and mixing-induced channels, through the final
+   four-flavor MixedSpectrum rather than report-local vectors.
+4. Shared native fixed-channel HO treatment, including spin-distorted P waves;
+   an independent FD run uses the same observable pipeline.
+5. Pure-flavor charge normalization, shared precursor-based phase conventions,
+   recoil/form-factor prescriptions, and M1 width conversion.
+6. Encoding corrections: the neighboring bottomonium target, the A2 mass
+   outside the square root, and the spin-flip E1 classification of A1 -> pi.
 
-The canonical transcription contains 79 rows in
-`GIPaper/data/raw/digitized_tables/table_vi_photon_decays.csv`. The generated
-report currently evaluates 43 transitions. Complete the remaining radial,
-excited-state, mixing-induced, and nominally forbidden entries using the
-existing Appendix-D overlap and physical-state interfaces.
+The paper's +0.01 μN pi0-eta contribution is retained as an explicitly labelled
+external input. No parameter is fitted to the new rows.
 
-The implementation should:
+Completion means all rows are computed and their conventions and residuals
+reported. It does not mean exact numerical reproduction of the excited eta
+channels or every cancellation-sensitive transition. Further study of those
+residuals is physics follow-up, not missing photon-decay coverage.
 
-1. drive row coverage from the canonical CSV rather than extend another
-   hand-maintained subset;
-2. evaluate every applicable M1, E1, and M2 row, including signed mixed-state
-   amplitudes through the shared physical-state composition;
-3. classify rows that cannot be computed from information printed in the paper
-   with an explicit reason instead of silently omitting them;
-4. resolve or quantitatively characterize cancellation-sensitive residuals,
-   especially `Upsilon'' -> eta_b gamma`, without fitting a new constant; and
-5. regenerate the report, mark Table VI complete in the manifest, and pass the
-   full project verification gate.
+Run `julia GIPaper/scripts/audit_table_vi_photon_decays.jl` for the HO audit,
+or set `GI_TABLE_VI_SOLVER=fd` for its independent comparator.
 
-Acceptance is complete accounting: all 79 canonical rows must be computed or
-explicitly classified, with formula, phase, mass, and mixing conventions stated.
+## Verification
 
-## Completion boundary
+`scripts/verify_project.sh` passed on 2026-09-09, including 1,145 GIModel tests,
+2,505 GIPaper tests, the native-HO and independent-FD convergence gates,
+all reproduction audits, and the 103-unit manifest/link check.
 
-Directly applying the Eq. (19) quark-emission operator to the calculated model
-wavefunctions is a useful extension beyond the 1985 paper's numerical
-single-beta SHO treatment. It is therefore listed in the README as a possible
-future improvement, not as unfinished reproduction work.
-
-When Table VI is closed, this file can be removed; ongoing unit status will
-remain available from the manifest and generated dashboard.
+The complete Table VI FD cross-check has median differences from HO of
+0.099% (M1), 0.049% (E1), and 0.092% (M2). The detailed comparison is in
+`GIPaper/docs/residual_reports/table_vi_solver_comparison.md`.
+The shared phase correction also resolves the former Table VII excited-eta
+two-photon sign discrepancies (now 4/4 signs), without changing magnitudes.

@@ -123,3 +123,31 @@ Columns: `page,journal_pg,subtable,decay,quantity,formula,predicted,experiment,f
 - **d** Reference 25.
 - **e** Reference 26.
 - **f** Reference 27.
+
+### Table VI canonical mapping audit (2026-09-09)
+
+`GIPaper.load_table_vi()` preserves the printed prediction and exposes its
+numeric value separately from parenthetical and approximate qualifiers.
+Transition identities are `(multipole, parent, daughter)`; the audit resolves
+explicit canonical decay labels, never CSV row positions. Duplicate identities
+or labels are rejected. Formula strings remain documentary transcriptions.
+
+Page 25 confirms that `Upsilon'' -> eta_b gamma` has predicted moment
+`-0.004`; `+0.007` belongs to `Upsilon'' -> eta'_b gamma`. The CSV already
+encoded these correctly; the audit's duplicated target was wrong and has been
+removed. The same page confirms the A2 -> pi gamma denominator is
+`sqrt(60) m_u`, correcting the CSV's former `sqrt(60 m_u)`.
+
+### Full Table VI coverage
+
+The 79 rows comprise 42 M1, 35 E1 and 2 M2 transitions. The former M2 tag on
+A1 -> pi gamma was an interpretation error: 1 -> 0 angular momentum requires
+a dipole photon, and the parity change selects E1. Its spin-flip expression
+still contains q²/m; this power alone does not classify the multipole.
+`GIPaper/data/table_vi_states.csv` records the explicit spectroscopic identities
+and kinematic mass sources used by the complete audit. Missing masses belong
+only to M1 moments that do not need a photon momentum.
+
+Footnote a's +0.01 μN contribution to phi -> pi gamma is a supplied paper input
+(page 26), explicitly separated in the machine-readable result. Parenthesized
+predictions retain the paper's order-of-magnitude interpretation.

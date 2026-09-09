@@ -20,7 +20,7 @@ const TEST_DIRS = [
     joinpath(ROOT, "GIPaper", "test"),
 ]
 
-const STATUSES = Set(["reproduced", "partial", "implemented", "folded", "context", "missing", "todo"])
+const STATUSES = Set(["reproduced", "partial", "implemented", "folded", "context", "missing", "todo", "derived"])
 const KINDS = Set(["equation", "table", "figure", "section", "input", "fit"])
 const EFFORTS = Set(["small", "medium", "large", "research"])
 # statuses that count as open work (surfaced in the derived "Remaining work" list)

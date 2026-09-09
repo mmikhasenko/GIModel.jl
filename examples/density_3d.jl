@@ -13,33 +13,38 @@
 #   (2) sum over the unobserved quark spin m_s, at fixed mJ. Summing over mJ
 #       instead would give sum_m |Y_Lm|^2 = (2L+1)/4pi -- a sphere for every
 #       state in the spectrum, which is why mJ is an argument here.
-#   (3) exact radial marginal p(r) = sum_c c_c^2 u_c(r)^2 (orthonormality of the
-#       Y_Lm kills every cross term), so r is drawn by CDF inversion and only
-#       cos(theta) needs rejection. phi is uniform: all L in one spin group
-#       share m_L = mJ - m_s, hence one common exp(i m_L phi).
+#   (3) exact radial marginal p(r) = sum_{L,S} U_LS(r)^2, where U_LS is the
+#       coefficient-weighted sum of the u(r) that mixing put into that channel.
+#       So r is drawn by CDF inversion and only cos(theta) needs rejection; phi
+#       is uniform, since all L in one spin group share m_L = mJ - m_s and
+#       therefore one common exp(i m_L phi).
 #
 # Interference between different L at the same S -- the 3S1/3D1 tensor mixing --
 # survives step (2) and is visible as a mJ-dependent distortion of the cloud.
 #
-# The angular machinery is checked against the radial marginal at run time
-# (`check_angular_normalization`): 2 pi int f(x) dx must reproduce
-# sum_c c_c^2 u_c(r)^2 at every radius, which is a joint test of the
-# Clebsch-Gordan and spherical-harmonic conventions used here.
+# Two run-time checks, both exact identities rather than reference numbers:
+#   `check_angular_normalization`  2 pi int f(x) dx == p(r) at every radius,
+#                                  from orthonormality of the Y_Lm
+#   `check_mj_sum_isotropy`        summing the density over mJ must give a
+#                                  sphere, which pins each Clebsch-Gordan
+#                                  coefficient individually
 #
 # Run:  julia examples/density_3d.jl
 # Writes: figures/density_cloud_panels.png, figures/density_cloud_2S.png
 # =============================================================================
 
 using Pkg
-Pkg.activate(@__DIR__; io = devnull)     # examples/Project.toml — GIModel + CairoMakie
+Pkg.activate(@__DIR__; io = devnull)     # examples/Project.toml — GIModel + GLMakie
 Pkg.instantiate(; io = devnull)
 
 using Printf
 using Random
 using GIModel
-using CairoMakie
+using GLMakie
+using LinearAlgebra: normalize
 
-CairoMakie.activate!(type = "png", px_per_unit = 2)
+# Real spheres with lighting and ambient occlusion, so `ssao` on the screen too.
+GLMakie.activate!(visible = false, ssao = true, fxaa = true, px_per_unit = 2)
 
 const PARAMS_PATH = joinpath(dirname(@__DIR__), "data", "parameters.provisional.toml")
 const HBARC_FM = 0.19733                 # r[fm] = HBARC_FM * r[GeV^-1]
@@ -226,21 +231,38 @@ function check_angular_normalization(channels, J, mJ, weights; nx = 2001)
     return worst
 end
 
+"""
+    check_mj_sum_isotropy(channels, J; nx = 401)
+
+Sum the density over all `mJ` and demand it come out spherical. `sum_mJ |J mJ><J mJ|`
+commutes with rotations, so this holds for any state of definite `J`, including
+an `L`-superposition -- and unlike [`check_angular_normalization`](@ref), which
+only constrains the Clebsch-Gordan coefficients through `sum_ms CG^2 = 1`, it
+pins down each coefficient individually. Returns the peak-to-peak spread of the
+summed profile, relative to its mean.
+"""
+function check_mj_sum_isotropy(channels, J; nx = 401)
+    k = argmax(radial_weights(channels))
+    profile = [sum(angular_profile(channels, k, J, mJ, x) for mJ = (-J):J)
+               for x in range(-1, 1; length = nx)]
+    return (maximum(profile) - minimum(profile)) / (sum(profile) / nx)
+end
+
 # -----------------------------------------------------------------------------
 # Sampling
 # -----------------------------------------------------------------------------
 
 """
-    sample_cloud(channels, J, mJ, rgrid, npoints; cutaway, rng)
+    sample_cloud(channels, J, mJ, rgrid, npoints; keep, rng)
 
-Draw `npoints` positions from `|psi|^2` in fm. `r` comes from the exact radial
-marginal by CDF inversion; `cos(theta)` by rejection against a per-radius
-envelope; `phi` is uniform. `cutaway` removes the quadrant facing the camera
-(`x < 0, y < 0` at [`AZIMUTH`](@ref)) so the radial nodes inside are visible.
+Draw `npoints` accepted positions from `|psi|^2` in fm. `r` comes from the exact
+radial marginal by CDF inversion, `cos(theta)` by rejection against a per-radius
+envelope, `phi` uniform. `keep(x, y, z)` selects the region to render — see
+[`whole_cloud`](@ref) and [`open_doors`](@ref).
 """
 function sample_cloud(channels::Vector{CloudChannel}, J::Int, mJ::Int,
                       rgrid::AbstractVector{<:Real}, npoints::Int;
-                      cutaway::Bool = true, rng = Random.default_rng())
+                      keep = whole_cloud, rng = Random.default_rng())
     cdf = cumsum(radial_weights(channels))
     cdf ./= cdf[end]
 
@@ -263,7 +285,7 @@ function sample_cloud(channels::Vector{CloudChannel}, J::Int, mJ::Int,
         ϕ = 2pi * rand(rng)
         sinθ = sqrt(max(0.0, 1 - cosθ^2))
         x, y, z = r * sinθ * cos(ϕ), r * sinθ * sin(ϕ), r * cosθ
-        cutaway && x < 0 && y < 0 && continue   # the quadrant facing the camera
+        keep(x, y, z) || continue
         push!(px, x); push!(py, y); push!(pz, z)
     end
     return px, py, pz
@@ -273,54 +295,120 @@ end
 # Rendering
 # -----------------------------------------------------------------------------
 
-const AZIMUTH = 1.18pi
-const ELEVATION = 0.22pi
-const CLOUD_COLOR = RGBAf(0.80, 0.85, 0.06, 0.50)   # the "picture of an atom" yellow-green
+const AZIMUTH = 1.25pi
+const ELEVATION = 0.13pi            # near the side: polar structure reads best
+const EYE_DISTANCE = 2.05           # in units of the cloud's half-extent
 
-"""Painter's algorithm: CairoMakie draws in array order, so sort back to front."""
-function depth_sorted(px, py, pz)
-    view = (cos(ELEVATION) * cos(AZIMUTH), cos(ELEVATION) * sin(AZIMUTH), sin(ELEVATION))
-    order = sortperm([view[1] * x + view[2] * y + view[3] * z
-                      for (x, y, z) in zip(px, py, pz)])
-    return px[order], py[order], pz[order]
+const BACKGROUND = RGBf(1.0, 1.0, 1.0)
+const CLOUD_COLOR = RGBf(0.85, 0.90, 0.10)
+
+
+# Remove a camera-facing wedge to expose two radial faces. Interior particles
+# remain present; a geometric depth tint separates them from the exposed faces.
+# This tint is an illustrative depth cue, not a value of the wave function.
+const DOOR_HALF_ANGLE = deg2rad(60)     # a 120-degree opening facing the camera
+
+"""Keep every sample: the cloud as the object it is."""
+whole_cloud(x, y, z) = true
+
+"""
+    open_doors(x, y, z)
+
+Drop the wedge within [`DOOR_HALF_ANGLE`](@ref) of the camera's azimuth. Both cut
+planes contain the z axis, so this is one wedge hinged on the vertical and opened
+toward the viewer.
+"""
+function open_doors(x, y, z)
+    Δ = mod(atan(y, x) - AZIMUTH + pi, 2pi) - pi
+    return abs(Δ) > DOOR_HALF_ANGLE
 end
 
 """
-    cloud_axis(slot, title, half_width)
+    headlamp(eye, half_width)
 
-A bare `Axis3`: no box, no ticks, no grid. Every panel gets the same limits, so
-the clouds are directly comparable in size, and the only scale cue is the bar
-drawn by [`scale_bar!`](@ref).
+A point light at the camera, a dim fill, and ambient illumination. The short
+range preserves depth falloff without saturating the yellow-green particles.
+Sphere lighting and SSAO supply local texture; `cutaway_colors` supplies the
+larger-scale cavity depth cue. These lights do not cast physical volume shadows.
 """
-function cloud_axis(slot, title, half_width)
-    ax = Axis3(slot; aspect = :data, title = title, titlesize = 15, titlegap = 2,
-               azimuth = AZIMUTH, elevation = ELEVATION, perspectiveness = 0.30,
-               viewmode = :fitzoom, protrusions = 0)
-    limits!(ax, -half_width, half_width, -half_width, half_width,
-            -half_width, half_width)
-    hidedecorations!(ax)
-    hidespines!(ax)
-    return ax
+function headlamp(eye, half_width)
+    fill = normalize(-eye + Vec3f(0.45, -0.25, -0.35))
+    return [
+        AmbientLight(RGBf(0.10, 0.10, 0.12)),
+        PointLight(RGBf(8.0, 7.68, 6.72), eye, 6.0 * half_width),
+        DirectionalLight(RGBf(0.22, 0.22, 0.20), fill),
+    ]
 end
 
-"""Draw a `length_fm` bar along x at the bottom-front corner of the box."""
-function scale_bar!(ax, half_width; length_fm = 0.5)
-    x0, y0, z0 = -0.9half_width, 0.9half_width, -0.95half_width
-    lines!(ax, [Point3f(x0, y0, z0), Point3f(x0 + length_fm, y0, z0)];
-           color = :gray30, linewidth = 2.5)
-    text!(ax, [Point3f(x0 + length_fm / 2, y0, z0)]; text = ["$(length_fm) fm"],
-          color = :gray30, fontsize = 12, align = (:center, :top), offset = (0, -4))
-    return ax
+"""
+    cloud_scene(slot, half_width)
+
+A bare `LScene` looking at the origin. The eye distance is tied to `half_width`,
+so passing the same `half_width` to every panel puts them all on one scale.
+"""
+function cloud_scene(slot, half_width)
+    # Camera settings are explicit so adding plots cannot reframe each panel.
+    distance = EYE_DISTANCE * half_width
+    eye = Vec3f(distance * cos(ELEVATION) * cos(AZIMUTH),
+                distance * cos(ELEVATION) * sin(AZIMUTH),
+                distance * sin(ELEVATION))
+    ls = LScene(slot; show_axis = false,
+                scenekw = (lights = headlamp(eye, half_width),
+                           backgroundcolor = BACKGROUND, clear = true,
+                           ssao = Makie.SSAO(radius = 0.18f0, bias = 0.003f0,
+                                             blur = 3)))
+    cam3d!(ls.scene; center = false, projectiontype = Makie.Perspective, fov = 55)
+    update_cam!(ls.scene, eye, Vec3f(0, 0, 0), Vec3f(0, 0, 1))
+    return ls
 end
 
-function draw_cloud!(ax, px, py, pz; markersize)
-    sx, sy, sz = depth_sorted(px, py, pz)
-    scatter!(ax, sx, sy, sz; markersize = markersize, color = CLOUD_COLOR,
-             strokewidth = 0)
-    return ax
+"""
+    cutaway_colors(px, py; depth_scale = 0.16, shadow_floor = 0.24)
+
+Illustrative depth tint, based only on distance behind the nearest exposed
+half-plane (in fm). The half-plane ends at the z axis: points whose perpendicular
+projection lies beyond that edge use distance to the axis. Brightness decays
+smoothly from 1 at the cut to `shadow_floor` in the interior. No radial node locations or
+wave-function values enter this shading, and no particles are moved or removed.
+"""
+function cutaway_colors(px, py; depth_scale = 0.16, shadow_floor = 0.24,
+                        base_color = CLOUD_COLOR)
+    0 <= shadow_floor <= 1 || throw(ArgumentError("shadow_floor must be in [0, 1]"))
+    depth_scale > 0 || throw(ArgumentError("depth_scale must be positive"))
+    return map(px, py) do x, y
+        Δ = abs(mod(atan(y, x) - AZIMUTH + pi, 2pi) - pi)
+        depth = hypot(x, y) * sin(clamp(Δ - DOOR_HALF_ANGLE, 0, pi / 2))
+        brightness = shadow_floor + (1 - shadow_floor) * exp(-depth / depth_scale)
+        RGBf(brightness * base_color.r, brightness * base_color.g,
+             brightness * base_color.b)
+    end
 end
 
-"""Half-box that contains `quantile`-fraction of the cloud, rounded up for ticks."""
+"""Draw the samples as lit spheres of radius `radius` fm. Opaque: the depth
+buffer resolves occlusion, so no painter's-algorithm sorting is needed."""
+function draw_cloud!(ls, px, py, pz; radius, color = CLOUD_COLOR)
+    meshscatter!(ls, px, py, pz; markersize = radius, color = color,
+                 shading = true, ssao = true,
+                 diffuse = Vec3f(0.90), specular = Vec3f(0.55), shininess = 96.0f0)
+    return ls
+end
+
+"""Draw a `length_fm` bar below the cloud; the only scale cue in a bare scene."""
+function scale_bar!(ls, half_width; length_fm = 0.5, fontsize = 15)
+    # In the image plane through r = 0, so the bar is horizontal and its length
+    # is not foreshortened. Perspective scale is referenced to that plane.
+    right = Vec3f(-sin(AZIMUTH), cos(AZIMUTH), 0)
+    up = Vec3f(-sin(ELEVATION) * cos(AZIMUTH),
+               -sin(ELEVATION) * sin(AZIMUTH), cos(ELEVATION))
+    start = -0.65half_width * right - 0.94half_width * up
+    stop = start + length_fm * right
+    lines!(ls, [Point3f(start), Point3f(stop)]; color = :gray25, linewidth = 3)
+    text!(ls, [Point3f((start + stop) / 2)]; text = ["$(length_fm) fm"],
+          color = :gray25, fontsize = fontsize, align = (:center, :top), offset = (0, -6))
+    return ls
+end
+
+"""Half-box that contains `quantile`-fraction of the cloud."""
 function cloud_extent(px, py, pz; quantile = 0.99)
     radii = sort(sqrt.(px .^ 2 .+ py .^ 2 .+ pz .^ 2))
     r = radii[clamp(ceil(Int, quantile * length(radii)), 1, length(radii))]
@@ -331,77 +419,154 @@ end
 # Charmonium clouds
 # -----------------------------------------------------------------------------
 
-params, quark_masses = load_parameters_and_quark_masses(PARAMS_PATH)
-ccbar = Meson(quark_masses, :c, :c)
-levels = spectrum_levels(2; L_labels = ("S", "P", "D"))
-spec = compute_spectrum(params, ccbar; levels = levels, solver = OscillatorSolver())
+display_label(label) = replace(label, "^1" => "¹", "^3" => "³", "_0" => "₀",
+                               "_1" => "₁", "_2" => "₂", "_3" => "₃")
 
-rgrid = range(0.0, RMAX_INV_GEV; length = NRADIAL)
-rng = Random.MersenneTwister(20260908)
+function density_demo()
+    params, quark_masses = load_parameters_and_quark_masses(PARAMS_PATH)
+    ccbar = Meson(quark_masses, :c, :c)
+    levels = spectrum_levels(2; L_labels = ("S", "P", "D"))
+    spec = compute_spectrum(params, ccbar; levels = levels, solver = OscillatorSolver())
 
-# label, mJ, what the panel is there to show
-const PANELS = [
-    ("1^3S_1", 0, "L = 0: no angular structure"),
-    ("2^3S_1", 0, "one radial node, opened by the cut"),
-    ("1^1P_1", 0, "|Y_10|^2 dumbbell along z"),
-    ("1^1P_1", 1, "same level, mJ = 1: a torus"),
-    ("1^3P_2", 0, "J = 2 out of L = S = 1: prolate"),
-    ("1^3D_1", 0, "3D1, incl. its 3S1 tensor admixture"),
-]
+    rgrid = range(0.0, RMAX_INV_GEV; length = NRADIAL)
+    rng = Random.MersenneTwister(20260908)
 
-const NPOINTS = 60_000
+    # label, mJ, what the panel is there to show
+    PANELS = [
+        ("1^3S_1", 0, "Ground state · compact core"),
+        ("2^3S_1", 0, "Radial excitation · inner core and outer shell"),
+        ("1^1P_1", 0, "Polar lobes · |Y₁₀|²"),
+        ("1^1P_1", 1, "Equatorial torus · |Y₁₁|²"),
+        ("1^3P_2", 0, "Spin-coupled P wave · prolate"),
+        ("1^3D_1", 0, "D wave · includes S-wave tensor mixing"),
+    ]
 
-println("Charmonium density clouds  (m_c = $(round(quark_masses["c"]; digits = 3)) GeV)\n")
-@printf("%-9s %-4s %8s %10s %10s   %s\n",
-        "state", "mJ", "M [GeV]", "r_rms [fm]", "ang.check", "channel weights")
+    NPOINTS = 90_000
+    # Ball size against point count is the whole readability trade-off: big enough
+    # that the light gives each sample a highlight, sparse enough that the gaps let
+    # you see the shells behind. Solid coverage hides everything but the silhouette.
+    SPHERE_RADIUS = 0.010         # fm
 
-clouds = Vector{Any}(undef, length(PANELS))
-for (i, (label, mJ, _)) in pairs(PANELS)
-    J, channels = cloud_state(spec, label, rgrid)
-    weights = radial_weights(channels)
-    residual = check_angular_normalization(channels, J, mJ, weights)
-    clouds[i] = sample_cloud(channels, J, mJ, rgrid, NPOINTS; rng = rng)
+    println("Charmonium density clouds  (m_c = $(round(quark_masses["c"]; digits = 3)) GeV)\n")
+    @printf("%-9s %-4s %8s %10s %10s %10s   %s\n",
+            "state", "mJ", "M [GeV]", "r_rms [fm]", "norm.chk", "isotropy", "channel weights")
 
-    h = step(rgrid)
-    rrms = sqrt(sum(weights .* collect(rgrid) .^ 2) / sum(weights)) * HBARC_FM
-    breakdown = join([@sprintf("%.4f %s%d", channel_weight(c, h),
-                               GIModel.L_LABELS[c.L], 2c.S + 1)
-                      for c in channels], "  ")
-    @printf("%-9s %-4d %8.3f %10.3f %10.1e   %s\n",
-            label, mJ, spectrum_state(spec, label).mass_GeV, rrms, residual, breakdown)
-end
+    clouds = Vector{Any}(undef, length(PANELS))
+    for (i, (label, mJ, _)) in pairs(PANELS)
+        J, channels = cloud_state(spec, label, rgrid)
+        weights = radial_weights(channels)
+        residual = check_angular_normalization(channels, J, mJ, weights)
+        isotropy = check_mj_sum_isotropy(channels, J)
+        @assert residual < 1e-6 "Angular normalization failed for $label"
+        @assert isotropy < 1e-12 "mJ-sum isotropy failed for $label"
+        clouds[i] = sample_cloud(channels, J, mJ, rgrid, NPOINTS;
+                                 keep = open_doors, rng = rng)
 
-# One box for all six panels, so the 1S/2S size difference is the real one.
-const HALF = maximum(cloud_extent(cloud...) for cloud in clouds)
+        h = step(rgrid)
+        rrms = sqrt(sum(weights .* collect(rgrid) .^ 2) / sum(weights)) * HBARC_FM
+        breakdown = join([@sprintf("%.4f %s%d", channel_weight(c, h),
+                                   GIModel.L_LABELS[c.L], 2c.S + 1)
+                          for c in channels], "  ")
+        @printf("%-9s %-4d %8.3f %10.3f %10.1e %10.1e   %s\n",
+                label, mJ, spectrum_state(spec, label).mass_GeV, rrms, residual, isotropy,
+                breakdown)
+    end
 
-fig = Figure(size = (1500, 1020), backgroundcolor = :white)
-for (i, (label, mJ, caption)) in pairs(PANELS)
-    row, col = fldmod1(i, 3)
-    ax = cloud_axis(fig[row, col], "$label,  mJ = $mJ\n$caption", HALF)
-    draw_cloud!(ax, clouds[i]...; markersize = 2.6)
-    scale_bar!(ax, HALF)
-end
-Label(fig[0, 1:3],
-      "Charmonium: quark-antiquark separation density |psi(r)|^2, one dot per sample" *
-      "  —  common scale, x > 0 & y > 0 quadrant cut away";
-      fontsize = 19, padding = (0, 0, 4, 0))
-rowgap!(fig.layout, 4)
+    # One eye distance for all six panels, so the 1S/2S size difference is the real one.
+    HALF = maximum(cloud_extent(cloud...) for cloud in clouds)
 
-figdir = joinpath(@__DIR__, "figures")
-mkpath(figdir)
-panels_path = joinpath(figdir, "density_cloud_panels.png")
-save(panels_path, fig)
+    fig = Figure(size = (1500, 1120), backgroundcolor = BACKGROUND)
+    for (i, (label, mJ, caption)) in pairs(PANELS)
+        row, col = fldmod1(i, 3)
+        ls = cloud_scene(fig[row, col], HALF)
+        draw_cloud!(ls, clouds[i]...; radius = SPHERE_RADIUS,
+                    color = cutaway_colors(clouds[i][1], clouds[i][2]))
+        scale_bar!(ls, HALF)
+        Label(fig[row, col, Top()], "$(display_label(label))   ·   mⱼ = $mJ\n$caption";
+              fontsize = 16, font = :bold, padding = (0, 0, 2, 0), justification = :center)
+    end
+    Label(fig[0, 1:3], "CHARMONIUM  /  Separation probability density";
+          fontsize = 25, font = :bold, padding = (0, 0, 0, 14))
+    Label(fig[3, 1:3],
+          "120° cutaway  ·  Common camera and scale  ·  Particle concentration represents |ψ(r)|²\n" *
+          "Brightness indicates depth behind the cut faces; it is not a density colour scale.";
+          fontsize = 15, color = :gray35, padding = (0, 0, 8, 8))
+    rowgap!(fig.layout, 1, 26)
 
-# A single large 2^3S_1: the radial node is the point of the cutaway.
-J_hero, channels_hero = cloud_state(spec, "2^3S_1", rgrid)
-px, py, pz = sample_cloud(channels_hero, J_hero, 0, rgrid, 160_000; rng = rng)
-half_hero = cloud_extent(px, py, pz)
-hero = Figure(size = (950, 950), backgroundcolor = :white)
-ax = cloud_axis(hero[1, 1], "charmonium 2^3S_1  (psi(2S)),  mJ = 0", half_hero)
-draw_cloud!(ax, px, py, pz; markersize = 2.8)
-scale_bar!(ax, half_hero)
-hero_path = joinpath(figdir, "density_cloud_2S.png")
-save(hero_path, hero)
+    figdir = joinpath(@__DIR__, "figures")
+    mkpath(figdir)
+    panels_path = joinpath(figdir, "density_cloud_panels.png")
+    save(panels_path, fig)
 
-println("\nwrote $(relpath(panels_path, dirname(@__DIR__)))")
-println("wrote $(relpath(hero_path, dirname(@__DIR__)))")
+    # The cutaway is an exact subset of the full draw, preserving particle density.
+    J_hero, channels_hero = cloud_state(spec, "2^3S_1", rgrid)
+    shut = sample_cloud(channels_hero, J_hero, 0, rgrid, 180_000; rng = rng)
+    keep_hero = open_doors.(shut...)
+    opened = map(v -> v[keep_hero], shut)
+    half_hero = cloud_extent(shut...)
+
+    hero = Figure(size = (1700, 1080), backgroundcolor = BACKGROUND)
+    for (col, (points, caption, cut)) in pairs([
+            (shut, "01   Full probability cloud", false),
+            (opened, "02   Cutaway · radial depletion", true)])
+        ls = cloud_scene(hero[1, col], half_hero)
+        colors = cut ? cutaway_colors(points[1], points[2]) : CLOUD_COLOR
+        draw_cloud!(ls, points...; radius = SPHERE_RADIUS, color = colors)
+        scale_bar!(ls, half_hero)
+        Label(hero[1, col, Top()], caption; fontsize = 19, font = :bold,
+              padding = (0, 0, 6, 0))
+    end
+    Label(hero[0, 1:2], "Inside charmonium 2³S₁  ·  ψ(2S)  ·  mⱼ = 0";
+          fontsize = 28, font = :bold, padding = (0, 0, 0, 14))
+
+    # A quantitative companion to the shaded view. This is the full mixed state's
+    # radial marginal, normalized per fm, not a histogram of the displayed cutaway.
+    weights_hero = radial_weights(channels_hero)
+    r_fm = collect(rgrid) .* HBARC_FM
+    probability = weights_hero ./ (sum(weights_hero) * step(rgrid) * HBARC_FM)
+    S_channel = only(filter(c -> c.L == 0, channels_hero))
+    node_index = findfirst(k -> S_channel.U[k] * S_channel.U[k+1] < 0,
+                           2:(length(rgrid)-1))
+    # `findfirst` above returns the index within the range, whose first value is 2.
+    node_index === nothing && error("Expected a radial node in the 2S channel")
+    k_node = node_index + 1
+    node_fm = (r_fm[k_node] * abs(S_channel.U[k_node+1]) +
+               r_fm[k_node+1] * abs(S_channel.U[k_node])) /
+              (abs(S_channel.U[k_node]) + abs(S_channel.U[k_node+1]))
+    profile = Axis(hero[2, 1]; xlabel = "Separation r [fm]",
+                   ylabel = "p(r) [fm⁻¹]", backgroundcolor = BACKGROUND,
+                   xgridvisible = false, ygridcolor = (:gray60, 0.15),
+                   xlabelsize = 17, ylabelsize = 17, xticklabelsize = 14, yticklabelsize = 14)
+    band!(profile, r_fm, zeros(length(r_fm)), probability; color = (CLOUD_COLOR, 0.22))
+    lines!(profile, r_fm, probability; color = RGBf(0.37, 0.43, 0.04), linewidth = 3)
+    vlines!(profile, [node_fm]; color = :gray35, linestyle = :dash, linewidth = 1.5)
+    xlims!(profile, 0, half_hero)
+    ylims!(profile, 0, 1.08maximum(probability))
+    hidespines!(profile, :t, :r)
+    Label(hero[2, 2],
+          "THE CALCULATED RADIAL STRUCTURE\n\n" *
+          @sprintf("S-wave node at r ≈ %.3f fm\n", node_fm) *
+          "The curve includes the tensor-mixed channels.\n" *
+          "p(r) = r² ∫ |ψ(r)|² dΩ;  ∫ p(r) dr = 1.\n\n" *
+          "The cutaway keeps the same sampled positions.\n" *
+          "Particle concentration shows probability density;\n" *
+          "brightness is an illustrative cue for depth.";
+          fontsize = 17, color = :gray25, justification = :left, halign = :center,
+          tellwidth = false)
+    colsize!(hero.layout, 1, Relative(0.5))
+    colsize!(hero.layout, 2, Relative(0.5))
+    rowsize!(hero.layout, 2, Fixed(220))
+    rowgap!(hero.layout, 1, 24)
+    Label(hero[3, 1:2], "Quark–antiquark relative coordinate  ·  GI model with provisional parameters  ·  120° wedge removed";
+          fontsize = 15, color = :gray40, padding = (0, 0, 6, 10))
+    hero_path = joinpath(figdir, "density_cloud_2S.png")
+    save(hero_path, hero)
+    @printf("\n2S S-channel node: %.6f fm; radial probability integral: %.12f\n",
+            node_fm, sum(probability) * step(rgrid) * HBARC_FM)
+
+    println("\nwrote $(relpath(panels_path, dirname(@__DIR__)))")
+    println("wrote $(relpath(hero_path, dirname(@__DIR__)))")
+
+end # density_demo
+
+abspath(PROGRAM_FILE) == abspath(@__FILE__) && density_demo()

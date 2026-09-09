@@ -99,11 +99,17 @@ function _rank_one_annihilation_weights(
     return weights
 end
 
-function _phase_fix_columns!(vectors::AbstractMatrix{<:Real}; anchor::Integer = 1)
-    for col in axes(vectors, 2)
-        if vectors[anchor, col] < 0
-            vectors[:, col] .*= -1
-        end
+# Use the same ascending-unmixed-mass assignment as Spectrum. Each physical
+# state keeps a positive overlap with its assigned precursor. Anchoring every
+# state to the first nn entry instead reverses a heavy state whose tiny nn
+# admixture is negative, and reverses all its transition amplitudes.
+function _phase_fix_state_columns!(vectors::AbstractMatrix{<:Real}, diagonal)
+    anchors = sortperm(diagonal)
+    length(anchors) == size(vectors, 2) || throw(ArgumentError("phase basis size mismatch"))
+    for (col, anchor) in enumerate(anchors)
+        # A zero overlap cannot define a phase; use the largest component.
+        index = iszero(vectors[anchor, col]) ? argmax(abs.(vectors[:, col])) : anchor
+        vectors[index, col] < 0 && (vectors[:, col] .*= -1)
     end
     return vectors
 end
@@ -290,7 +296,7 @@ function isoscalar_pseudoscalar_annihilation_solution(
     annihilation = couplings * transpose(couplings)
     matrix = Matrix(Diagonal(diag)) + annihilation
     fact = eigen(Symmetric(matrix))
-    vectors = _phase_fix_columns!(Matrix(fact.vectors))
+    vectors = _phase_fix_state_columns!(Matrix(fact.vectors), diag)
     basis_states = isnothing(basis) ? [
         BasisState(1, "S", 1, 0; label = "1 n nbar", flavors = (:q, :q)),
         BasisState(1, "S", 1, 0; label = "1 s sbar", flavors = (:s, :s)),
@@ -357,7 +363,8 @@ function isoscalar_general_annihilation_solution(
                          factors[j] * factors[i] / (mj * mi)
     end
     fact = eigen(Symmetric(matrix))
-    vectors = _phase_fix_columns!(Matrix(fact.vectors))
+    vectors = _phase_fix_state_columns!(
+        Matrix(fact.vectors), [state.diagonal_GeV for state in basis])
     basis_states = _basis_states_from_inputs(basis)
     channel = @sprintf("^%d%s_%d", multiplicity, L_LABELS[L], J)
     block = MixingBlock(
@@ -412,7 +419,8 @@ function isoscalar_pseudoscalar_annihilation_solution(
 )
     matrix = _paper_annihilation_matrix(model, params, basis)
     fact = eigen(Symmetric(matrix))
-    vectors = _phase_fix_columns!(Matrix(fact.vectors))
+    vectors = _phase_fix_state_columns!(
+        Matrix(fact.vectors), [state.diagonal_GeV for state in basis])
     block = MixingBlock(
         "isoscalar ^1S_0 annihilation",
         _basis_states_from_inputs(basis),
@@ -460,7 +468,7 @@ function isoscalar_pseudoscalar_annihilation_solution(
         vectors[:, level] .= fact.vectors[:, level]
         matrices[level] = matrix
     end
-    _phase_fix_columns!(vectors)
+    _phase_fix_state_columns!(vectors, [state.diagonal_GeV for state in basis])
     block = MixingBlock(
         "isoscalar ^1S_0 annihilation",
         _basis_states_from_inputs(basis),

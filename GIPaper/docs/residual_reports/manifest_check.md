@@ -17,17 +17,15 @@ None — every reference resolves.
 | Appendix A — Relativistic smearing & operator ordering | 17 | 3 | 0 | 8 | 0 | 6 | 0 | implemented |
 | Appendix B — Flavor/spin operators & SHO wavefunctions | 8 | 0 | 0 | 3 | 4 | 1 | 0 | implemented |
 | Appendix C — Helicity to partial-wave decay amplitudes | 3 | 0 | 0 | 1 | 1 | 1 | 0 | implemented |
-| Appendix D — Mock-meson electromagnetic matrix elements | 8 | 3 | 0 | 3 | 2 | 0 | 0 | implemented |
+| Appendix D — Mock-meson electromagnetic matrix elements | 8 | 3 | 0 | 4 | 1 | 0 | 0 | implemented |
 | Sec. I — Introduction | 0 | 0 | 0 | 0 | 0 | 0 | 0 | todo |
 | Sec. II — The model | 21 | 2 | 0 | 12 | 3 | 4 | 0 | implemented |
 | Sec. III — Meson spectroscopy | 14 | 8 | 0 | 4 | 0 | 2 | 0 | implemented |
-| Sec. IV — Meson decays | 14 | 8 | 1 | 1 | 0 | 4 | 0 | partial |
+| Sec. IV — Meson decays | 14 | 9 | 0 | 1 | 0 | 4 | 0 | implemented |
 | Sec. V — Discussion | 9 | 0 | 0 | 0 | 4 | 5 | 0 | folded |
 
 ## Remaining work
 
 Projected from every `missing`/`partial`/`todo` unit — not a separate list, so it cannot drift from the statuses above.
 
-| unit | section | status | effort | next step |
-|---|---|:-:|:-:|---|
-| Table VI | Sec. IV — Meson decays | partial | medium | Extend the audit to the remaining Table VI rows and investigate the residual sign of the deeply cancelled Upsilon'' -> eta_b gamma amplitude. The final-state composition now reproduces the eta/eta' M1 ordering without a report-local vector or phase. |
+None — every unit is reproduced/implemented/folded/context.
