@@ -22,9 +22,7 @@ The graph measures source links, not Pluto rendering or example correctness.
 Regenerate the graph from the repository root:
 
 ```sh
-python3 scripts/audit_doc_links.py --baseline e3c9e86
+python3 scripts/audit_doc_links.py
 ```
 
-The baseline is the revision before the discoverability pass. Choose another
-revision for a later comparison; omitting `--baseline` compares against `HEAD`.
 Run edited examples and check live help when changing documentation syntax.
