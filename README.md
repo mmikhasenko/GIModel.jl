@@ -77,8 +77,8 @@ The repository has four first-class deliverables:
 - `docs/incident_followup_audit.md` records the forensic review of the abandoned
   migration, the additional stale infrastructure found, and what was repaired or
   deliberately left as history.
-- `docs/work_plan.md` is the single remaining work plan. It tracks only closure
-  of the Table VI photon-decay audit and can be removed when that unit is done.
+- `docs/work_plan.md` records closure of the Table VI photon-decay work: all
+  79 canonical rows are computed, with quantitative residuals retained.
 - `diff_support/` contains the pre-implementation audit, equations, numerical
   probes, backend research, and risk register for possible parameter
   differentiation.

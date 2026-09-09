@@ -125,8 +125,8 @@ function main()
     # are "done by other means / not-applicable" and don't drag a section down;
     # a section with only those rolls up to folded (or context if purely
     # discussion), never to a green "reproduced".
-    function derived(statuses)
-        isempty(statuses) && return "todo"
+    function derived(statuses, declared)
+        isempty(statuses) && return declared == "derived" ? "todo" : declared
         core = filter(s -> s in ("reproduced", "implemented", "partial", "missing", "todo"), statuses)
         isempty(core) && return all(==("context"), statuses) ? "context" : "folded"
         all(s -> s in ("missing", "todo"), core) && return "todo"
@@ -165,7 +165,8 @@ function main()
             println(io, @sprintf("| %s | %d | %d | %d | %d | %d | %d | %d | %s |",
                 sec["label"], length(ss), cnt(ss, "reproduced"), cnt(ss, "partial"),
                 cnt(ss, "implemented"), cnt(ss, "folded"), cnt(ss, "context"),
-                cnt(ss, "todo") + cnt(ss, "missing"), derived(ss)))
+                cnt(ss, "todo") + cnt(ss, "missing"),
+                derived(ss, get(sec, "status", "todo"))))
         end
 
         # --- derived "Remaining work" list (projection of open statuses) -----

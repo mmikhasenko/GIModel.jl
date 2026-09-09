@@ -14,7 +14,7 @@ kind = "section"
 label = "Sec. I — Introduction"
 page = 1
 statement = "Motivation and overview of the relativized quark model."
-status = "derived"
+status = "context"
 parent = ""
 
 [[unit]]

@@ -18,7 +18,7 @@ None — every reference resolves.
 | Appendix B — Flavor/spin operators & SHO wavefunctions | 8 | 0 | 0 | 3 | 4 | 1 | 0 | implemented |
 | Appendix C — Helicity to partial-wave decay amplitudes | 3 | 0 | 0 | 1 | 1 | 1 | 0 | implemented |
 | Appendix D — Mock-meson electromagnetic matrix elements | 8 | 3 | 0 | 4 | 1 | 0 | 0 | implemented |
-| Sec. I — Introduction | 0 | 0 | 0 | 0 | 0 | 0 | 0 | todo |
+| Sec. I — Introduction | 0 | 0 | 0 | 0 | 0 | 0 | 0 | context |
 | Sec. II — The model | 21 | 2 | 0 | 12 | 3 | 4 | 0 | implemented |
 | Sec. III — Meson spectroscopy | 14 | 8 | 0 | 4 | 0 | 2 | 0 | implemented |
 | Sec. IV — Meson decays | 14 | 9 | 0 | 1 | 0 | 4 | 0 | implemented |
