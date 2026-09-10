@@ -5,8 +5,9 @@
 # Autonomous loop logs can become large and are regenerated locally.
 docs/autonomous_runs/
 
-# Generated page images can be large; regenerate from the PDF when needed.
-paper/pages/*.png
+# The paper source archive and executable remix are independent repositories.
+/paper/
+/docs/paper-remix/
 
 # Local environments and caches
 .venv/
@@ -17,13 +18,6 @@ __pycache__/
 /tmp/
 /examples/figures/density_cloud_*.png
 /examples/figures/density_candidates/
-paper/vision_ocr/godfrey_isgur_1985_vision_ocr_files/
-
-paper/vision_ocr/godfrey_isgur_1985_vision_ocr.tex
-paper/vision_ocr/tag-display-math.lua
-paper/vision_ocr/godfrey_isgur_1985_vision_ocr.aux
-paper/vision_ocr/godfrey_isgur_1985_vision_ocr.html
-
 # Quarto build artifacts in docs/ (the .qmd sources are tracked; render locally).
 docs/*_files/
 docs/*.html
