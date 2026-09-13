@@ -27,6 +27,9 @@ Pkg.activate(@__DIR__; io = devnull)
 
 using Printf
 using GIModel
+using GIPaper: experimental_mass
+
+kinematic_mass(label) = something(experimental_mass("VII", label), NaN)
 
 const ROOT = dirname(@__DIR__)                                  # GIPaper/
 const TABLE = joinpath(ROOT, "data", "raw", "digitized_tables", "table_vii_annihilation_em.csv")
@@ -172,9 +175,9 @@ function run_gluonic(params, solver_ho, mq, paper)
             )
         end
         wave = reporting_wave(radial_wave(fam, row.n))
-        M = fam.eigenvalues_GeV[row.n]
+        M = kinematic_mass(row.decay)
         S = wavefunction_origin_smearing(wave, mQ; L = row.L, npoints = NPTS)
-        αs = GIModel.alpha_s_q(M)
+        αs = isfinite(M) ? GIModel.alpha_s_q(M) : NaN
         model = gluonic_annihilation_amplitude(row.channel, S, αs, mQ) * sqrt(1000)
         pap = get(paper, row.decay, NaN)
         ratio = isnan(pap) || pap == 0 ? NaN : abs(model) / abs(pap)
@@ -255,11 +258,11 @@ function run_leptonic(params, solver_ho, mq, paper)
         else # :Pp_A1
             get!(() -> central_family(params, solver_ho, m1, m2, 1), ccache, (m1, m2, 1))
         end
-        M = fam.eigenvalues_GeV[row.n]
+        M = kinematic_mass(row.decay)
         wave = reporting_wave(radial_wave(fam, row.n))
         L = GIModel.LEPTONIC_FACTOR_KINDS[row.kind][1]
         Mt = mock_meson_mass(wave, m1, m2; L = L, npoints = NPTS)
-        factor = leptonic_decay_factor(row.kind, wave, m1, m2, M; npoints = NPTS)
+        factor = isfinite(M) ? leptonic_decay_factor(row.kind, wave, m1, m2, M; npoints = NPTS) : NaN
         model = row.coeff * factor
         pap = get(paper, row.decay, NaN)
         ratio = isnan(pap) || pap == 0 ? NaN : abs(model) / abs(pap)
@@ -314,9 +317,9 @@ function run_two_photon(params, solver_ho, mq, paper)
         fam = row.kind === :P ?
               get!(() -> swave_family(params, solver_ho, m1, m2, 1), scache, (m1, m2)) :
               get!(() -> central_family(params, solver_ho, m1, m2, 1; nlevels = max(row.n, 1)), ccache, (m1, m2))
-        M = fam.eigenvalues_GeV[row.n]
+        M = kinematic_mass(row.decay)
         wave = reporting_wave(radial_wave(fam, row.n))
-        A = two_photon_amplitude(row.kind, wave, m1, M, row.q_eff; npoints = NPTS)   # GeV^½
+        A = isfinite(M) ? two_photon_amplitude(row.kind, wave, m1, M, row.q_eff; npoints = NPTS) : NaN   # GeV^½
         pv, punit = get(paper, row.decay, (NaN, :keV))
         pg = isnan(pv) ? NaN : to_gev(pv, punit)
         ratio = isnan(pg) || pg == 0 ? NaN : abs(A) / abs(pg)
@@ -336,11 +339,11 @@ end
 # prescription). The physical mock-meson mass M_P is used in (M/M̃)^(3/2) — GI's
 # mock-meson prescription — because the model underpredicts the light-
 # pseudoscalar masses and the (M/M̃)^(3/2) factor is acutely mass-sensitive.
-const GG_MIXED = [   # (CSV label, physical-state mass order, physical M_P GeV)
-    ("eta -> gamma gamma",     1, 0.548),
-    ("eta' -> gamma gamma",    2, 0.958),
-    ("eta_r -> gamma gamma",   3, 1.295),   # ~ eta(1295)
-    ("eta'_r -> gamma gamma",  4, 1.440),   # ~ iota(1440)
+const GG_MIXED = [   # (CSV label, model state in ascending eigenvalue order)
+    ("eta -> gamma gamma",     1),
+    ("eta' -> gamma gamma",    2),
+    ("eta_r -> gamma gamma",   3),   # ~ eta(1295)
+    ("eta'_r -> gamma gamma",  4),   # ~ iota(1440)
 ]
 
 function run_two_photon_mixed(params, solver_ho, mq, paper)
@@ -367,7 +370,8 @@ function run_two_photon_mixed(params, solver_ho, mq, paper)
     )
 
     results = NamedTuple[]
-    for (label, col, Mphys) in GG_MIXED
+    for (label, col) in GG_MIXED
+        Mphys = kinematic_mass(label)
         state = states[col]
         components = physical_components(final, state)
         A = physical_state_amplitude(final, state) do component
@@ -375,16 +379,18 @@ function run_two_photon_mixed(params, solver_ho, mq, paper)
             m, charge = flavors == (:q, :q) ? (mu, Qnn) :
                         flavors == (:s, :s) ? (ms, Qss) :
                         error("unexpected pseudoscalar flavor component $flavors")
-            two_photon_amplitude(
+            isfinite(Mphys) ? two_photon_amplitude(
                 :P, component.wave, m, Mphys, charge; npoints = NPTS,
-            )
+            ) : NaN
         end
         model = from_gev(A, :keV)
         pv, _ = get(paper, label, (NaN, :keV))
         ratio = isnan(pv) || pv == 0 ? NaN : abs(model) / abs(pv)
         sign_ok = !isnan(pv) && pv != 0 && sign(model) == sign(pv)
-        push!(results, (label = label, M = Mphys,
-                        mix = [component.coefficient for component in components],
+        push!(results, (label = label, M = Mphys, M_model = state.mass_GeV,
+                        mix = [sum(c.coefficient for c in components if c.basis.n == n &&
+                            c.basis.flavors == (f, f); init=0.0) for (n, f) in
+                            ((1, :q), (1, :s), (2, :q), (2, :s))],
                         model = model, paper = pv, ratio = ratio, sign_ok = sign_ok))
     end
     return results
@@ -467,18 +473,18 @@ function main()
 
     # Eqs. (D7)-(D9): widths from the decay constants. Formula validation +
     # model-f D8 dilepton predictions (see report section).
-    wpi_exp = leptonic_pseudoscalar_width(0.1307 / 0.13957, 0.13957, 0.10566)
+    wpi_exp = leptonic_pseudoscalar_width(0.1307 / kinematic_mass("pi -> mu nu"), kinematic_mass("pi -> mu nu"), experimental_mass("D7", "mu"))
     wpi_pdg = 6.582119e-25 / 2.6033e-8
-    fpsi_exp = sqrt(5.55e-6 / ((4π / 3) * GIModel.ALPHA_EM^2 * 3.0969))
+    fpsi_exp = sqrt(5.55e-6 / ((4π / 3) * GIModel.ALPHA_EM^2 * kinematic_mass("psi -> e+ e-")))
     lep_by = Dict(r.label => r for r in lep)
     wid = NamedTuple[]
-    for (label, Mphys, pdg, note) in
-        [("rho -> e+ e-", 0.7754, 7.04e-6, ""),
-         ("psi -> e+ e-", 3.0969, 5.55e-6, "QCD (1−16α_s/3π) not in D8"),
-         ("psi' -> e+ e-", 3.6861, 2.34e-6, ""),
-         ("Upsilon -> e+ e-", 9.4603, 1.34e-6, "")]
+    for (label, pdg, note) in
+        [("rho -> e+ e-", 7.04e-6, ""),
+         ("psi -> e+ e-", 5.55e-6, "QCD (1−16α_s/3π) not in D8"),
+         ("psi' -> e+ e-", 2.34e-6, ""),
+         ("Upsilon -> e+ e-", 1.34e-6, "")]
         f = abs(lep_by[label].model)
-        w = dilepton_vector_width(f, Mphys)
+        w = dilepton_vector_width(f, kinematic_mass(label))
         push!(wid, (label = label, f = f, width = w, pdg = pdg, ratio = w / pdg, note = note))
     end
 
@@ -495,12 +501,14 @@ function main()
 
     open(REPORT, "w") do io
         println(io, "# Table VII Audit — Annihilation Amplitudes")
+        println(io, "\nAll kinematic M and M_P values use the pinned PDG 2026 experimental registry. M̃ and S_L remain wavefunction integrals. NaN denotes an unavailable experimental assignment; no GI/model mass fallback is used. Width-reference measurements below are legacy comparisons, not updated PDG 2026 width inputs.")
         println(io)
         println(io, numerics_provenance(OscillatorSolver(nbasis = INITIAL_NBASIS)))
         println(io)
-        println(io, "Generated by `julia GIPaper/scripts/audit_table_vii.jl`. All four subtables")
-        println(io, "— gluonic (c), leptonic (a), two-photon (b), charge radii (d) — reproduced")
-        println(io, "from the model wavefunctions. The only fitted quantity anywhere is the")
+        println(io, "Generated by `julia GIPaper/scripts/audit_table_vii.jl`. All 61 canonical")
+        println(io, "rows in the four subtables are accounted for: 57 are computed from the")
+        println(io, "model wavefunctions and four hypothetical toponium rows are explicitly unavailable.")
+        println(io, "The only fitted quantity anywhere is the")
         println(io, "charge-radius smearing exponent `f = 0.2` (the paper's own π⁺ fit); every")
         println(io, "other amplitude is parameter-free.")
         println(io)
@@ -558,9 +566,9 @@ function main()
         println(io, "```")
         println(io)
         println(io, "`coefficient` is the printed quark-charge/flavor factor of the formula")
-        println(io, "column (e.g. `2√3` for `f_π`, `(16/3)^(1/2)` for `f_ψ`); `M` is the model")
-        println(io, "meson mass of the same solve (hyperfine-distinct for the S-waves, central")
-        println(io, "for `³P₁`/`³D₁`); `M̃` is the mock mass `<E₁+E₂>` over the same wave")
+        println(io, "column (e.g. `2√3` for `f_π`, `(16/3)^(1/2)` for `f_ψ`); `M` is the")
+        println(io, "experimental PDG 2026 mass from the shared registry;")
+        println(io, "`M̃` is the model mock mass `<E₁+E₂>` over the same wave")
         println(io, "(`mock_meson_mass`). The tabulated amplitude is dimensionless (the weak")
         println(io, "rows are `f_P/M_P`: the experiment column shows `f_π/M_π = 0.95`).")
         println(io)
@@ -621,11 +629,11 @@ function main()
         println(io, @sprintf("Median |model|/|paper| = %.2f; signs agree on %d/%d.",
             ggmmed, count(r -> r.sign_ok, ggm), length(ggmratios)))
         println(io)
-        println(io, "| decay | M_P (GeV) | 1nn | 1ss | 2nn | 2ss | model keV^½ | paper keV^½ | ratio | sign |")
-        println(io, "|---|---:|---:|---:|---:|---:|---:|---:|:-:|:-:|")
+        println(io, "| decay | M_P (GeV) | M model (GeV) | 1nn | 1ss | 2nn | 2ss | model keV^½ | paper keV^½ | ratio | sign |")
+        println(io, "|---|---:|---:|---:|---:|---:|---:|---:|---:|:-:|:-:|")
         for r in ggm
-            println(io, @sprintf("| `%s` | %.3f | %+0.2f | %+0.2f | %+0.2f | %+0.2f | %+0.3f | %+0.3f | %s | %s |",
-                r.label, r.M, r.mix[1], r.mix[2], r.mix[3], r.mix[4], r.model, r.paper,
+            println(io, @sprintf("| `%s` | %.3f | %.6f | %+0.6f | %+0.6f | %+0.6f | %+0.6f | %+0.3f | %+0.3f | %s | %s |",
+                r.label, r.M, r.M_model, r.mix[1], r.mix[2], r.mix[3], r.mix[4], r.model, r.paper,
                 isnan(r.ratio) ? "—" : @sprintf("%.2f", r.ratio),
                 r.sign_ok ? "✓" : "✗"))
         end
@@ -664,6 +672,21 @@ function main()
         end
         println(io)
 
+        println(io, "## Hypothetical top-flavor rows")
+        println(io)
+        println(io, "These four printed Table VII predictions cannot be recomputed because Table II")
+        println(io, "contains no top constituent mass and the active GI parameter set therefore has no")
+        println(io, "toponium wavefunction. Substituting the current quark pole mass would define a new")
+        println(io, "model rather than reproduce the 1985 calculation.")
+        println(io)
+        println(io, "| decay | paper value | unit | local result | reason |")
+        println(io, "|---|---:|---|---:|---|")
+        println(io, "| `zeta -> e+ e-` | +0.01 | dimensionless | — | no Table II top constituent mass |")
+        println(io, "| `eta_t -> gamma gamma` | +1.5 | keV^½ | — | no toponium wavefunction |")
+        println(io, "| `eta_t -> 2g` | +1.1 | MeV^½ | — | no toponium wavefunction |")
+        println(io, "| `zeta -> 3g` | +0.10 | MeV^½ | — | no toponium wavefunction |")
+        println(io)
+
         println(io, "## Decay widths (Eqs. D7-D9)")
         println(io)
         println(io, "```")
@@ -682,7 +705,7 @@ function main()
         @printf(io, "| D7 `π→μν` | f_π/M_π = 0.936 (exp) | %.3e GeV | %.3e GeV | +4%% is the Cabibbo cos²θ_C the reduced G² omits |\n",
             wpi_exp, wpi_pdg)
         @printf(io, "| D8 `ψ→ee` | f_ψ = %.4f (exp) | %.3e GeV | 5.55e-06 GeV | round-trip |\n",
-            fpsi_exp, dilepton_vector_width(fpsi_exp, 3.0969))
+            fpsi_exp, dilepton_vector_width(fpsi_exp, kinematic_mass("psi -> e+ e-")))
         println(io)
         println(io, "Applied to the **model's own** constants (physical masses; the paper's")
         println(io, "reduced `G²`/`α²` carry no CKM or QCD radiative factor), the D8 dilepton")
@@ -695,45 +718,11 @@ function main()
                 w.label, w.f, w.width, w.pdg, w.ratio, w.note)
         end
         println(io)
-        println(io, "The leading-order D8 over-predicts, most for charm (`ρ` 0.99, `Υ` 1.21,")
-        println(io, "`ψ'` 1.46, `ψ` 1.84): the ratios track the omitted QCD `(1 − 16α_s/3π)`")
-        println(io, "radiative correction, which shrinks with α_s from charm to bottom and would")
-        println(io, "bring each toward 1 — not a wavefunction miss (`f_ψ` itself is 1.01x the")
-        println(io, "paper). The corrected A15 contact kernel puts the model pion at 0.149 GeV,")
-        println(io, "so `π→μν` is open and its Table-VII constant is 0.98 of the paper value.")
-        println(io, "The paper tabulates constants rather than these derived widths.")
-        println(io)
-        println(io, "## Reading")
-        println(io)
-        println(io, "- **Zero-parameter reproduction.** No constant is fit in either slice:")
-        println(io, "  amplitudes follow from the solved wavefunctions, the constituent masses,")
-        println(io, "  and (for gluonic) `α_s(M)`.")
-        println(io, "- **One wave treatment across all four subtables** (W6): the paper-order")
-        println(io, "  finite-HO-basis full diagonalization of `H_central + V_spin`. This gives")
-        println(io, "  the gluonic rows their spin-dependent origin distortion — the singlet-low/")
-        println(io, "  triplet-high and ³P₀-low/³P₂-high structure of the spin-independent")
-        println(io, "  central waves collapses, and every row lands in `[0.88, 1.17]` (median")
-        println(io, "  1.05) — while keeping the light `¹S₀` pseudoscalars resummed (a")
-        println(io, "  first-order-PT treatment would over-raise the pion mass and halve `f_π`).")
-        println(io, "- **Heavy quarkonia are near-exact** in both slices (`f_ψ` and the `Υ`")
-        println(io, "  tower within ~10%, gluonic bottomonium within a few percent).")
-        println(io, "- **The pion is no longer a mass pathology.** The literal smeared-contact")
-        println(io, "  Laplacian gives 0.149 GeV and `f_π` at 0.98 of the paper value.")
-        println(io, "- **Signs reproduce under one convention** (outermost antinode positive)")
-        println(io, "  for gluonic, leptonic, and clean-flavor two-photon rows. Mixed-state")
-        println(io, "  phases are fixed in the shared annihilation solution, before any observable.")
-        println(io, "- **Two-photon** rows with clean flavor content reproduce well (`A2` 0.93,")
-        println(io, "  `f₂` 0.98, the `η_c` pair ~1.08); `f'` is off (ideal tensor mixing, which")
-        println(io, "  the paper's own footnote calls very `f`-`f'`-sensitive) and `π→γγ` shares")
-        println(io, "  the `f_π` meson-mass sensitivity (here through `(M/M̃)^{3/2}`).")
-        println(io, "- Isoscalar-mixing corrections (folded into the paper's numbers) are part of")
-        println(io, "  the `ω`/`φ` leptonic residual. The strongly-mixed isoscalar pseudoscalar")
-        println(io, "  `γγ` rows are reproduced via the final P1-composed states: the ground-state")
-        println(io, "  ordering agrees; the table above records every sign and magnitude residual.")
-        println(io, "- **Charge radii** are excellent: the `K⁺` and `K⁰` rows in the table")
-        println(io, "  are genuine predictions (only `f` is fit, on the")
-        println(io, "  `π⁺`), reproducing both the magnitude and the negative `K⁰` sign from the")
-        println(io, "  charge-weighted quark radii.")
+        println(io, "The paper tabulates decay constants; D8 widths are derived here using the same PDG mass as the corresponding constant. Radiative corrections are not included.")
+        println(io, "\n## Reading")
+        println(io, "The comparison tests GI wavefunctions and operators at modern experimental kinematics. Differences may reflect both numerical reproduction and changed mass inputs. Model eigenvalues belong to the separate spectrum comparison.")
+        println(io, "Experimental state correspondences and unavailable inputs are listed in the shared mass registry. No mass is selected to improve agreement.")
+
     end
 
     @printf("wrote %s\n", REPORT)

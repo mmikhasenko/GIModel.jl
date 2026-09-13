@@ -18,6 +18,7 @@ const REPORT = joinpath(ROOT, "GIPaper", "docs", "residual_reports", "manifest_c
 const TEST_DIRS = [
     joinpath(ROOT, "test"),
     joinpath(ROOT, "GIPaper", "test"),
+    joinpath(ROOT, "docs", "paper-remix", "computations"),
 ]
 
 const STATUSES = Set(["reproduced", "partial", "implemented", "folded", "context", "missing", "todo", "derived"])

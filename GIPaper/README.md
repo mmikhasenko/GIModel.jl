@@ -38,3 +38,17 @@ printed prediction qualifiers. `load_table_vi_states()` supplies explicit
 spectroscopic assignments and kinematic mass provenance. The audit writes one
 computed result per canonical row; no reference number is duplicated in its
 transition implementation.
+
+## Ownership and single-source rules
+
+- `GIModel/src/` owns reusable numerical physics. It must not import paper rows,
+  historical assignments, residual thresholds, or publication prose.
+- `GIPaper/data/` owns reference values and external-input provenance.
+- `GIPaper/src/` owns reusable adapters from those references to `GIModel` APIs.
+- `GIPaper/scripts/` owns comparison policy, residual classification, and the
+  detailed diagnosis attached to deviations.
+- `GIPaper/docs/residual_reports/` is generated output and is the authoritative
+  numerical audit record. Hand-written ledgers link to it instead of copying
+  row counts or per-row diagnoses.
+- Consumer publications may snapshot these reports and summarize their meaning,
+  but must not implement an independent comparison path.

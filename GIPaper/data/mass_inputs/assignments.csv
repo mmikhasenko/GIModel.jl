@@ -1,0 +1,173 @@
+context,label,key,note
+V,A1,a1,
+V,A2,a2,
+V,A3,pi2,
+V,B,b1,
+V,D,D_avg,
+V,D0,D0,
+V,D1285,f1,
+V,Dplus,D+,
+V,Dstar,Dstar_avg,
+V,Dstar0,Dstar0,
+V,Dstarplus,Dstar+,
+V,E1420,f1prime,
+V,H,h1,
+V,Hprime,h1prime,
+V,K,K_avg,
+V,Kprime,,No unambiguous experimental counterpart assigned to this GI state.
+V,Kstar,Kstar_avg,
+V,Kstar2,K2_avg,
+V,Kstar3,K3,
+V,Kstar4,K4,
+V,KstarD,Kstar1680,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+V,KstarS,Kstar1410,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+V,Kstar_c,D2,
+V,Q1,K1_1270,
+V,Q1_1D2,K2_1770,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+V,Q1c,,D1 broad/narrow assignment to this GI mixing convention needs validation.
+V,Q2,K1_1400,
+V,Q2_1D2,K2_1820,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+V,Q2c,,D1 broad/narrow assignment to this GI mixing convention needs validation.
+V,Sstar,,No unambiguous experimental counterpart assigned to this GI state.
+V,delta,,Scalar qq assignment is ambiguous.
+V,delta2,,Effective quasi-two-body mass is not an experimental particle mass.
+V,eps,,Scalar qq assignment and broad lineshape require an explicit prescription.
+V,epsprime,,Scalar ss assignment is ambiguous.
+V,eta,eta,
+V,eta_r,eta1295,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+V,etaprime,eta_prime,
+V,etaprime_r,,Historical eta(1440) / ss radial assignment is ambiguous between modern eta(1405) and eta(1475).
+V,f,f2,
+V,fprime,f2prime,
+V,g,rho3,
+V,h,f4,
+V,hprime,,No unambiguous experimental counterpart assigned to this GI state.
+V,kappa,,Historical scalar/effective daughter assignment is ambiguous.
+V,kappa_c,,No unambiguous experimental counterpart assigned to this GI state.
+V,omega,omega,
+V,omega2,,No unambiguous experimental counterpart assigned to this GI state.
+V,omega3,omega3,
+V,omegaD,omega1650,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+V,omegaS,omega1420,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+V,omega_1D2,eta2,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+V,phi,phi,
+V,phi2,,No unambiguous experimental counterpart assigned to this GI state.
+V,phi3,phi3,
+V,phiD,,No unique experimental identification of the GI 1D ss vector.
+V,phiS,phi1680,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+V,phi_1D2,eta2prime,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+V,pi,pi_avg,
+V,pi0,pi0,
+V,piplus,pi+,
+V,piprime,pi1300,
+V,rho,rho0,
+V,rho2,,No unambiguous experimental counterpart assigned to this GI state.
+V,rhoD,rho1700,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+V,rhoS,rho1450,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+VI,rho,rho0,
+VI,pi,pi_avg,
+VI,pi0,pi0,
+VI,A2,a2,
+VI,A1,a1,
+VI,B,b1,
+VI,eta,eta,
+VI,etaprime,eta_prime,
+VI,eta_r,eta1295,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+VI,etaprime_r,,Historical eta(1440) / ss radial assignment is ambiguous between modern eta(1405) and eta(1475).
+VI,omega,omega,
+VI,phi,phi,
+VI,f,f2,
+VI,fprime,f2prime,
+VI,psi,psi,
+VI,Upsilon,Upsilon,
+VI,eta_c,eta_c,
+VI,etaprime_c,eta_c2,
+VI,psiprime,psi2,
+VI,eta_b,eta_b,
+VI,etaprime_b,eta_b2,
+VI,etadoubleprime_b,,No established eta_b(3S) mass.
+VI,Upsilonprime,Upsilon2,
+VI,Upsilondoubleprime,Upsilon3,
+VI,chi_0c,chi_c0,
+VI,chi_1c,chi_c1,
+VI,chi_2c,chi_c2,
+VI,chi_0b,chi_b0,
+VI,chi_1b,chi_b1,
+VI,chi_2b,chi_b2,
+VI,chiprime_0b,chi_b02,
+VI,chiprime_1b,chi_b12,
+VI,chiprime_2b,chi_b22,
+VI,Kstarplus,Kstar+,
+VI,Kplus,K+,
+VI,Kstar0,Kstar0,
+VI,K0,K0,
+VI,Dstarplus,Dstar+,
+VI,Dplus,D+,
+VI,Dstar0,Dstar0,
+VI,D0,D0,
+VI,Fstar,Dsstar,
+VI,F,Ds,
+VI,Bstarminus,Bstar,PDG combined B* mass used for both charges.
+VI,Bminus,B+,
+VI,Bstar0,Bstar,PDG combined B* mass used for both charges.
+VI,B0,B0,
+VI,Fbstar,Bsstar,
+VI,Fb,Bs,
+VI,Kstar2_1420,K2+,
+VI,K,K+,
+VII,1^1S_0(bc) -> mu nu,Bc,
+VII,1^3D_1(bb) -> e+ e-,,No unambiguous experimental counterpart assigned to this GI state.
+VII,A2 -> gamma gamma,a2,
+VII,B -> mu nu,B+,
+VII,D -> mu nu,D+,
+VII,F -> mu nu,Ds,
+VII,K -> mu nu,K+,
+VII,Upsilon -> 3g,Upsilon,
+VII,Upsilon -> e+ e-,Upsilon,
+VII,Upsilon' -> 3g,Upsilon2,
+VII,Upsilon' -> e+ e-,Upsilon2,
+VII,Upsilon'' -> 3g,Upsilon3,
+VII,Upsilon'' -> e+ e-,Upsilon3,
+VII,Upsilon''' -> 3g,Upsilon4,
+VII,Upsilon''' -> e+ e-,Upsilon4,
+VII,chi'_0b -> 2g,chi_b02,
+VII,chi'_2b -> 2g,chi_b22,
+VII,chi_0b -> 2g,chi_b0,
+VII,chi_0c -> 2g,chi_c0,
+VII,chi_2b -> 2g,chi_b2,
+VII,chi_2c -> 2g,chi_c2,
+VII,eta -> gamma gamma,eta,
+VII,eta' -> gamma gamma,eta_prime,
+VII,eta'_b -> 2g,eta_b2,
+VII,eta'_c -> 2g,eta_c2,
+VII,eta'_c -> gamma gamma,eta_c2,
+VII,eta'_r -> gamma gamma,,Historical eta(1440) / ss radial assignment is ambiguous between modern eta(1405) and eta(1475).
+VII,eta_b -> 2g,eta_b,
+VII,eta_b -> gamma gamma,eta_b,
+VII,eta_c -> 2g,eta_c,
+VII,eta_c -> gamma gamma,eta_c,
+VII,eta_r -> gamma gamma,eta1295,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+VII,f -> gamma gamma,f2,
+VII,f' -> gamma gamma,f2prime,
+VII,omega -> e+ e-,omega,
+VII,omegaD -> e+ e-,omega1650,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+VII,omegaS -> e+ e-,omega1420,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+VII,phi -> e+ e-,phi,
+VII,phiD -> e+ e-,,No unique experimental identification of the GI 1D ss vector.
+VII,phiS -> e+ e-,phi1680,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+VII,pi -> gamma gamma,pi0,
+VII,pi -> mu nu,pi+,
+VII,pi' -> gamma gamma,pi1300,
+VII,psi -> 3g,psi,
+VII,psi -> e+ e-,psi,
+VII,psi' -> 3g,psi2,
+VII,psi' -> e+ e-,psi2,
+VII,psi'' -> e+ e-,psi3770,
+VII,psi''' -> e+ e-,psi4040,
+VII,rho -> e+ e-,rho0,
+VII,rhoD -> e+ e-,rho1700,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+VII,rhoS -> e+ e-,rho1450,"Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+VII,tau -> A1 nu,a1,
+VII,tau -> K*(892) nu,Kstar+,
+D7,mu,mu,
+V:1^3F_4,delta,a4,The F-wave delta label denotes a4; the scalar delta in the cryptoexotic section is distinct.

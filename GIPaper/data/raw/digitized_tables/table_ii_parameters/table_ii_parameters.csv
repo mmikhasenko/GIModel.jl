@@ -4,6 +4,7 @@ Godfrey-Isgur 1985,5,Table II,masses,m_s,"m_s",419,MeV,pdftotext_layout_manual,m
 Godfrey-Isgur 1985,5,Table II,masses,m_c,"m_c",1628,MeV,pdftotext_layout_manual,medium,"OCR row clear."
 Godfrey-Isgur 1985,5,Table II,masses,m_b,"m_b",4977,MeV,pdftotext_layout_manual,medium,"OCR shows 'mb — 4977 Mev'; normalized to m_b = 4977 MeV."
 Godfrey-Isgur 1985,5,Table II,potential,b,"b",0.18,GeV^2,pdftotext_layout_manual,medium,"OCR shows QeV2; normalized to GeV^2."
+Godfrey-Isgur 1985,5,Table II,potential,alpha_s_critical,"alpha_s^critical",0.60,dimensionless,vision_ocr_page_image_audit,high,"Verified against paper/vision_ocr/page_images/page-005.png; equals the Q=0 sum of the three Fig. 2 Gaussian coefficients."
 Godfrey-Isgur 1985,5,Table II,potential,Lambda,"A / Lambda",200,MeV,pdftotext_layout_manual,low,"OCR label ambiguous; likely QCD Lambda/running-coupling parameter. Verify symbol on PDF."
 Godfrey-Isgur 1985,5,Table II,potential,c,"c",-253,MeV,pdftotext_layout_manual,medium,"Constant offset."
 Godfrey-Isgur 1985,5,Table II,relativistic_smearing,sigma0,"sigma_0 / oo",1.80,GeV,pdftotext_layout_manual,low,"OCR shows 'oo'; likely sigma_0. Verify symbol on PDF."

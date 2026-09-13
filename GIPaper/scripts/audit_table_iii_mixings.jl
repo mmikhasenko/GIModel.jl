@@ -37,57 +37,15 @@ const MASS_TARGETS_GEV = Dict(
     ),
 )
 
-function s_wave_basis(params, mq; ngrid = 220, rmax = 22.0)
-    # Annihilation wavefunctions use the HO basis (paper-consistent
-    # wavefunction-at-origin scale); diagonal masses use the FD contact levels.
-    solver_ho = OscillatorSolver()
-    channels = Dict{String,Any}()
-    for (label, mass_key) in [("ns", "q"), ("ss", "s"), ("cc", "c"), ("bb", "b")]
-        masses = ConstituentMasses(mq[mass_key], mq[mass_key])
-        fd_solution = channel_solution(
-            params, masses, 0;
-            nlevels = 2,
-            solver = FiniteDifferenceSolver(ngrid = ngrid, rmax = rmax, kinetic = :relativistic),
-        )
-        solution = channel_solution(
-            params,
-            masses,
-            0;
-            solver = solver_ho,
-            nlevels = 2,
-        )
-        contact = contact_hyperfine_nonperturbative_states(
-            params,
-            masses,
-            "S",
-            1,
-            radial_wave(fd_solution, 1).r,
-            2,
-        )
-        levels = isnothing(contact) ? fd_solution.eigenvalues_GeV : contact.eigenvalues_GeV
-        channels[label] = (mass = mq[mass_key], solution = solution, levels = levels)
-    end
-
-    basis = map(TARGET_BASIS) do label
-        n = parse(Int, first(split(label)))
-        flavor = last(split(label))
-        channel = channels[flavor]
-        basis_flavor = flavor == "ns" ? :q : Symbol(first(flavor, 1))
-        pseudoscalar_annihilation_basis_input(
-            BasisState(
-                n, "S", 1, 0;
-                label = label,
-                flavors = (basis_flavor, basis_flavor),
-            ),
-            channel.mass,
-            channel.levels[n],
-            fix_annihilation_phase(radial_wave(channel.solution, n));
-            # TARGET_BASIS is ["1 ns", "1 ss", "1 cc", "1 bb", ...]; only the
-            # nonstrange rows are the coherent (u ubar + d dbar)/sqrt(2) state.
-            isoscalar_coherent = flavor == "ns",
-        )
-    end
-    return basis
+function s_wave_basis(params, mq)
+    levels = [BasisState(n, "S", 1, 0) for n in 1:2]
+    # Use the same native full fixed-channel HO masses and waves as the decay
+    # drivers; do not mix FD diagonal masses with spin-independent HO waves.
+    channels = Dict(flavor => fixed_spectrum(params, Meson(mq, f, f);
+        levels, solver=OscillatorSolver()) for
+        (flavor, f) in (("ns", :q), ("ss", :s), ("cc", :c), ("bb", :b)))
+    return [annihilation_basis_input(channels[last(split(label))],
+        levels[parse(Int, first(split(label)))]) for label in TARGET_BASIS]
 end
 
 function table_iii_targets()
@@ -196,6 +154,17 @@ function write_model_section(io, title, solution, targets, shifts)
         )
     end
     println(io)
+    println(io, "### Complete signed components")
+    println(io)
+    println(io, "| state | " * join(["$b model | $b paper" for b in TARGET_BASIS], " | ") * " |")
+    println(io, "|---|" * repeat("---:|", 2length(TARGET_BASIS)))
+    for (i, key) in enumerate(target_keys)
+        pred = signs[i] .* solution.vectors[:, cols[i]]
+        @assert isapprox(sum(abs2, pred), 1; atol=1e-10)
+        cells = [@sprintf("%+.6g | %+.6g", pred[j], tvecs[i][j]) for j in eachindex(pred)]
+        println(io, "| `$(key[1])` | " * join(cells, " | ") * " |")
+    end
+    println(io)
     println(
         io,
         @sprintf(
@@ -218,6 +187,37 @@ function write_model_section(io, title, solution, targets, shifts)
     println(io)
 end
 
+function write_general_sections(io, params, mq)
+    rows = collect(CSV.File(joinpath(root, "data", "clean", "mixings.csv")))
+    for (group, L, J) in [("1 3S1", "S", 1), ("1 3P2", "P", 2)]
+        level = BasisState(1, L, 3, J)
+        basis = [annihilation_basis_input(fixed_spectrum(params, Meson(mq, f, f);
+            levels=[level], solver=OscillatorSolver()), level) for f in (:q, :s, :c, :b)]
+        solution = isoscalar_general_annihilation_solution(params, basis;
+            amplitude_A=L == "S" ? params.annihilation.s1_A : params.annihilation.a_3p2,
+            L=L == "S" ? 0 : 1, multiplicity=3, J=J)
+        labels = TARGET_BASIS[1:4]
+        selected = filter(r -> r.state_group == group, rows)
+        names = unique(String(r.state_name) for r in selected)
+        targets = [[only(Float64(r.amplitude) for r in selected if r.state_name == name && r.basis == b)
+            for b in labels] for name in names]
+        cols, signs = aligned_columns(solution.vectors, targets)
+        println(io, "### $group — Eq. (16), four flavors")
+        println(io)
+        println(io, "Radial n=2 entries are not part of these original Table III blocks; they are not zero predictions.")
+        println(io)
+        println(io, "| state | mass GeV | " * join(["$b model | $b paper" for b in labels], " | ") * " |")
+        println(io, "|---|---:|" * repeat("---:|", 2length(labels)))
+        for i in eachindex(names)
+            pred = signs[i] .* solution.vectors[:, cols[i]]
+            @assert isapprox(sum(abs2, pred), 1; atol=1e-10)
+            cells = [@sprintf("%+.6g | %+.6g", pred[j], targets[i][j]) for j in eachindex(pred)]
+            println(io, "| `$(names[i])` | $(@sprintf("%.6f", solution.masses[cols[i]])) | " * join(cells, " | ") * " |")
+        end
+        group == "1 3S1" && println(io)
+    end
+end
+
 function main()
     params, mq = load_parameters_and_quark_masses(default_parameters_path())
     basis = s_wave_basis(params, mq)
@@ -230,10 +230,7 @@ function main()
         println(io, "# Table III Mixing Audit")
         println(io)
         println(io, "Generated by `julia GIPaper/scripts/audit_table_iii_mixings.jl`.")
-        println(io, numerics_provenance(
-            FiniteDifferenceSolver(ngrid = 220, rmax = 22.0),
-            OscillatorSolver(),
-        ))
+        println(io, numerics_provenance(OscillatorSolver()))
         println(io)
         println(io, "This audit compares the implemented literal pseudoscalar P1/P2 modes (Eq. 18a,b on HO radial wavefunctions) with the promoted Table III amplitude rows in `data/clean/mixings.csv`. The basis is ordered as:")
         println(io)
@@ -241,13 +238,13 @@ function main()
         println(io)
         println(io, "## Current Conclusion")
         println(io)
-        println(io, "With HO-basis wavefunctions in the Eq. (17) smearing and the GI annihilation phase convention `Φ(0) > 0` (which makes the radially excited `2 ns`/`2 ss` couplings negative), the literal Eq. (18a,b) modes reproduce the Table III sign structure in every pseudoscalar row. The remaining amplitude error is magnitude-level (under-mixed radial components in the eta-prime); mass residuals are reported explicitly below. The headline residual reports keep the calibrated P1 control for mass scoring while these literal modes are tracked here.")
+        println(io, "All diagonal masses and Eq. (17) overlaps use the same native full fixed-channel oscillator wavefunctions. P1/P2 use seven flavor/radial entries; vector and tensor channels use the original four-flavor ground-state blocks. Every signed component is retained below, including small charm and bottom admixtures. State assignment and global signs maximize overlap with the reference vector; no component is adjusted to its paper value.")
         println(io)
         write_model_section(io, "P1", p1, targets, shifts)
         write_model_section(io, "P2", p2, targets, shifts)
         println(io, "## Non-Pseudoscalar Rows")
         println(io)
-        println(io, "The visible `1^3S_1` and `1^3P_2` rows promoted into `data/clean/mixings.csv` are now reproduced by the general Eq. (16) model (`isoscalar_general_annihilation_solution`, `:table_iii` comparison scheme) with `A(^3S_1)=+2.5` (three-gluon bracket) and `A(^3P_2)=-0.8` (two-gluon bracket): omega/phi come out as `(+1.000, -0.029)`/`(+0.029, +1.000)` vs Table III `(+0.999, -0.02)`/`(+0.02, +0.999)`, and f2/f2' as `(+0.997, +0.080)`/`(-0.080, +0.997)` vs `(+0.997, +0.06)`/`(-0.07, +0.997)`. See the isoscalar residual report for the mass-level scoring.")
+        write_general_sections(io, params, mq)
     end
     println("wrote ", REPORT)
 end

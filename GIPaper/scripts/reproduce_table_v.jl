@@ -8,13 +8,8 @@
 # report with an "N matched / M scoreable" headline and classifies every
 # non-match by the specific paper convention it depends on.
 #
-# Mass policy (transparent, printed per row):
-#   - daughters: physical (1984-era) masses;
-#   - parents:   physical where the state is experimentally established,
-#                MODEL masses (compute_spectrum, corrected stage) for the states
-#                GI predicted (2S, 1D, 1F, charmed P-waves, H/H', delta2, ...).
-# Calibration (A, S0) is pinned on the paper's two fit rows at their physical
-# kinematics, exactly as the paper does (no refit).
+# Kinematic masses: pinned PDG experimental inputs only. Unassigned states
+# remain unavailable; wavefunctions and decay operators retain the GI prescription.
 
 using Pkg
 Pkg.activate(@__DIR__)
@@ -22,7 +17,7 @@ Pkg.activate(@__DIR__)
 using CSV
 using Printf
 using GIModel
-using GIPaper: load_table_v, quark_for
+using GIPaper: load_table_v, quark_for, experimental_mass, historical_mass
 
 const ROOT = dirname(@__DIR__)
 const TABLE = joinpath(ROOT, "data", "raw", "digitized_tables", "table_v_strong_decays.csv")
@@ -91,60 +86,44 @@ function parent_level(section, parent)
     error("unknown level for section `$section`, parent `$parent`")
 end
 
-# --- Physical parent masses (GeV) for established states; others -> model. ----
-const EXP_PARENT_MASS = Dict(
-    "rho" => 0.769, "phi" => 1.0195, "Kstar" => 0.8921,                 # 1^3S_1
-    "A2" => 1.318, "f" => 1.273, "fprime" => 1.525, "Kstar2" => 1.4256, # 1^3P_2
-    "A1" => 1.230, "D1285" => 1.283, "E1420" => 1.42, "B" => 1.231,     # 1P (a1(1260))
-    "Dstarplus" => 2.010, "Dstar0" => 2.007,                            # 1^3S_1 charmed
-)
+# All charge conventions and unavailable assignments live in the shared registry.
+const DAUGHTER_MASS = Dict(label => something(experimental_mass("V", label), NaN)
+    for label in unique(String(r.daughter1) for r in CSV.File(TABLE) if !ismissing(r.daughter1)))
+for r in CSV.File(TABLE)
+    ismissing(r.daughter2) && continue
+    label = String(r.daughter2)
+    DAUGHTER_MASS[label] = something(experimental_mass("V", label), NaN)
+end
+kinematic_mass(label) = something(experimental_mass("V", label), NaN)
+modern_momentum(M,m1,m2) = all(isfinite,(M,m1,m2)) ? decay_momentum(M,m1,m2) : NaN
 
-# --- Daughter masses (GeV): physical, plus effective quasi-two-body masses. ---
-const DAUGHTER_MASS = Dict(
-    "pi" => 0.138, "pi0" => 0.135, "piplus" => 0.1396,
-    "K" => 0.4957, "eta" => 0.5488, "etaprime" => 0.9575,
-    "rho" => 0.769, "omega" => 0.7826, "phi" => 1.0195, "Kstar" => 0.8921,
-    "B" => 1.231, "D" => 1.867, "D0" => 1.865, "Dplus" => 1.869, "Dstar" => 2.008,
-    "delta2" => 0.98, "eps" => 1.00, "kappa" => 0.98,                   # quasi-two-body
-)
+function historical_q(parent,d1,d2)
+    masses = [historical_mass("V",label) for label in (parent,d1,d2)]
+    any(isnothing,masses) && return NaN
+    return 1000decay_momentum(masses...)
+end
+
 const QUASI_TWO_BODY = Set(["delta2", "eps", "kappa"])
 
 # Same-J mixing sections: the printed Q1/Q2 formulas are the PURE singlet/triplet
 # amplitudes (footnotes b, c); the numeric column is for the physical mixed
-# states. Each entry: (paper angle deg, singlet parent, triplet parent, physical
-# masses or `nothing` -> model, flavor sector, singlet level, triplet level).
+# states. Each entry: (paper angle deg, singlet parent, triplet parent,
+# flavor sector, singlet level, triplet level).
 struct MixSpec
     theta::Float64
     q1::String; q2::String
-    m1::Union{Nothing,Float64}; m2::Union{Nothing,Float64}
     flavor::Tuple{Symbol,Symbol}
     lvl1::Tuple{Int,String,Int,Int}; lvl2::Tuple{Int,String,Int,Int}
 end
 const MIX = Dict(
     # theta_1P ~ +34 deg (Fig. 4); K1(1270)/K1(1400) physical masses.
-    "1P_1 strange" => MixSpec(34.0, "Q1", "Q2", 1.273, 1.402, (:q, :s), (1, "P", 1, 1), (1, "P", 3, 1)),
-    # theta_1D ~ +33 deg (mixing_angles.md); model masses for the 1D2 doublet.
-    "1^3D_2 1^1D_2 strange" => MixSpec(33.0, "Q1_1D2", "Q2_1D2", nothing, nothing, (:q, :s), (1, "D", 1, 2), (1, "D", 3, 2)),
-    # charm 1P ~ -41 deg (Table VIII analog); model masses.
-    "1P_1 charmed" => MixSpec(-41.0, "Q1c", "Q2c", nothing, nothing, (:c, :d), (1, "P", 1, 1), (1, "P", 3, 1)),
+    "1P_1 strange" => MixSpec(34.0, "Q1", "Q2", (:q, :s), (1, "P", 1, 1), (1, "P", 3, 1)),
+    # theta_1D ~ +33 deg; explicit experimental assignments in the registry.
+    "1^3D_2 1^1D_2 strange" => MixSpec(33.0, "Q1_1D2", "Q2_1D2", (:q, :s), (1, "D", 1, 2), (1, "D", 3, 2)),
+    # charm 1P ~ -41 deg; unresolved experimental correspondence is deferred.
+    "1P_1 charmed" => MixSpec(-41.0, "Q1c", "Q2c", (:c, :d), (1, "P", 1, 1), (1, "P", 3, 1)),
 )
 const MIXING_SECTIONS = Set(keys(MIX))
-
-# --- Model mass resolver (one solve per flavor sector, cached) ----------------
-function build_mass_resolver(params, mq)
-    cache = Dict{Tuple{Symbol,Symbol},Any}()
-    levels = spectrum_levels(2; L_labels = ("S", "P", "D", "F"))
-    function sector(f1, f2)
-        get!(cache, (f1, f2)) do
-            fixed_spectrum(
-                params,
-                Meson(quark_for(mq, f1), quark_for(mq, f2));
-                levels = levels,
-            )
-        end
-    end
-    (f1, f2, n, L, mult, J) -> spectrum_state(sector(f1, f2), n, L, mult, J).mass_GeV
-end
 
 # Parse the paper's amp_MeV string -> (value, kind).
 function parse_amp(text)
@@ -160,22 +139,39 @@ end
 
 function main()
     params, mq = load_parameters_and_quark_masses(PARAMS_PATH)
-    model_mass = build_mass_resolver(params, mq)
-    q_rho = decay_momentum(0.769, 0.138, 0.138)
-    q_B = decay_momentum(1.231, 0.7826, 0.138)
+    q_rho = modern_momentum(kinematic_mass("rho"), kinematic_mass("pi"), kinematic_mass("pi"))
+    q_B = modern_momentum(kinematic_mass("B"), kinematic_mass("omega"), kinematic_mass("pi"))
     model = calibrate_strong_decay_model(q_rho, q_B; convention = :leading)
 
-    function parent_mass(section, parent)
-        haskey(EXP_PARENT_MASS, parent) && return (EXP_PARENT_MASS[parent], "exp")
-        f1, f2 = parent_flavor(parent)
-        n, L, mult, J = parent_level(section, parent)
-        return (model_mass(f1, f2, n, L, mult, J), "model")
-    end
+    parent_mass(section, parent) = (parent == "delta" && section == "1^3F_4" ?
+        something(experimental_mass("V:1^3F_4", parent), NaN) : kinematic_mass(parent), "PDG 2026")
 
     rows = NamedTuple[]
     for r in CSV.File(TABLE)
         loaded = load_table_v((r,); heavy_fraction_for = row -> heavy_fraction_of(String(row.parent)))
-        isempty(loaded) && continue                   # skip mixing_only / unlisted
+        if isempty(loaded)
+            # `mixing_only` and Sec.-V-D context rows are part of the canonical
+            # 220-row table even though they do not define a pure-state decay
+            # operator.  They must remain visible in a coverage audit rather
+            # than silently disappearing from the report.
+            section = String(r.section); parent = String(r.parent)
+            d1 = String(r.daughter1); d2 = String(r.daughter2)
+            M, msrc = parent_mass(section, parent)
+            m1 = get(DAUGHTER_MASS, d1, NaN); m2 = get(DAUGHTER_MASS, d2, NaN)
+            q = modern_momentum(M, m1, m2)
+            pv, kind = parse_amp(r.amp_MeV)
+            class_str = String(r.amp_class)
+            status = class_str == "mixing_only" ?
+                "convention: mixing-only row requires physical isoscalar composition" :
+                "no paper value"
+            push!(rows, (label = String(r.decay), section = section, class = class_str,
+                q_MeV = 1000q, q_historical_MeV = historical_q(parent,d1,d2),
+                msrc = msrc, M_GeV = M, implied_M = NaN, computed = NaN,
+                paper_text = strip(String(r.amp_MeV)), paper = pv, kind = kind,
+                ratio = missing, status = status,
+                notes = ismissing(r.notes) ? "" : String(r.notes)))
+            continue
+        end
         ch = only(loaded)
         class_str = String(r.amp_class)
         section = String(r.section); parent = String(r.parent)
@@ -183,8 +179,8 @@ function main()
 
         M, msrc = parent_mass(section, parent)
         m1 = get(DAUGHTER_MASS, d1, NaN); m2 = get(DAUGHTER_MASS, d2, NaN)
-        q = decay_momentum(M, m1, m2)
-        a = decay_amplitude(model, ch, q; convention = :leading)
+        q = modern_momentum(M, m1, m2)
+        a = isfinite(q) ? decay_amplitude(model, ch, q; convention = :leading) : (total=NaN,)
 
         pv, kind = parse_amp(r.amp_MeV)
         conf = ismissing(r.confidence) ? "" : String(r.confidence)
@@ -200,7 +196,7 @@ function main()
             implied = implied_parent_mass(model, ch, m1, m2, pv)
         end
         push!(rows, (label = String(r.decay), section = section, class = class_str,
-            q_MeV = 1000q, msrc = msrc, M_GeV = M, implied_M = implied,
+            q_MeV = 1000q, q_historical_MeV = historical_q(parent,d1,d2), msrc = msrc, M_GeV = M, implied_M = implied,
             computed = a.total, paper_text = strip(String(r.amp_MeV)),
             paper = pv, kind = kind, ratio = ratio, status = status, notes = notes))
     end
@@ -208,7 +204,7 @@ function main()
     # Score the same-J mixing sections via the singlet/triplet rotation, in
     # place of the deferred placeholders from the main loop.
     filter!(r -> !(r.section in MIXING_SECTIONS), rows)
-    append!(rows, mixing_pass(model, model_mass))
+    append!(rows, mixing_pass(model))
 
     write_report(model, rows, q_rho, q_B)
     summarize(model, rows)
@@ -219,11 +215,11 @@ end
 #   A(Q2) = -sin(t) A_singlet + cos(t) A_triplet   (at the Q2 mass)
 # The singlet/triplet configuration amplitudes reuse each row's own coefficient,
 # class and qbar power (footnotes b, c), evaluated at the physical parent's q.
-function mixing_pass(model, model_mass)
+function mixing_pass(model)
     out = NamedTuple[]
     for (section, spec) in MIX
-        M1 = isnothing(spec.m1) ? model_mass(spec.flavor..., spec.lvl1...) : spec.m1
-        M2 = isnothing(spec.m2) ? model_mass(spec.flavor..., spec.lvl2...) : spec.m2
+        M1 = kinematic_mass(spec.q1)
+        M2 = kinematic_mass(spec.q2)
         singlet = Dict{Tuple{String,String,Int},Any}()
         triplet = Dict{Tuple{String,String,Int},Any}()
         for r in CSV.File(TABLE)
@@ -237,12 +233,12 @@ function mixing_pass(model, model_mass)
         cfg_amp(r, M) = begin
             m1 = get(DAUGHTER_MASS, String(r.daughter1), NaN)
             m2 = get(DAUGHTER_MASS, String(r.daughter2), NaN)
-            q = decay_momentum(M, m1, m2)
+            q = modern_momentum(M, m1, m2)
             ch = only(load_table_v(
                 (r,);
                 heavy_fraction_for = row -> heavy_fraction_of(String(row.parent)),
             ))
-            (decay_amplitude(model, ch, q; convention = :leading).total, q,
+            (isfinite(q) ? decay_amplitude(model, ch, q; convention = :leading).total : NaN, q,
              String(r.daughter1), String(r.daughter2))
         end
         t = spec.theta
@@ -257,10 +253,10 @@ function mixing_pass(model, model_mass)
                 amp = isQ1 ? cosd(t) * as + sind(t) * at : -sind(t) * as + cosd(t) * at
                 d1, d2 = String(r.daughter1), String(r.daughter2)
                 pv, kind = parse_amp(r.amp_MeV)
-                q = decay_momentum(M, get(DAUGHTER_MASS, d1, NaN), get(DAUGHTER_MASS, d2, NaN))
+                q = modern_momentum(M, get(DAUGHTER_MASS, d1, NaN), get(DAUGHTER_MASS, d2, NaN))
                 status, ratio = classify_mix(amp, q, pv, kind, d1, d2)
                 push!(out, (label = String(r.decay), section = section,
-                    class = "mix($(round(Int,t)))", q_MeV = 1000q, msrc = "mix",
+                    class = "mix($(round(Int,t)))", q_MeV = 1000q, q_historical_MeV = historical_q(parent,d1,d2), msrc = "PDG 2026",
                     M_GeV = M, implied_M = NaN, computed = amp,
                     paper_text = strip(String(r.amp_MeV)), paper = pv, kind = kind,
                     ratio = ratio, status = status, notes = ""))
@@ -271,6 +267,7 @@ function mixing_pass(model, model_mass)
 end
 
 function classify_mix(amp, q, pv, kind, d1, d2)
+    isfinite(q) || return ("convention: experimental mass unavailable", missing)
     kind == :below && return ("convention: below threshold (paper integrates lineshape)", missing)
     kind == :range && return ("convention: mixing-dependent range", missing)
     kind == :blank && return ("no paper value", missing)
@@ -290,6 +287,7 @@ end
 
 # Return (status::String, ratio::Union{Missing,Float64}).
 function classify(computed, q, pv, kind, section, d1, d2, conf, notes)
+    isfinite(q) || return ("convention: experimental mass unavailable", missing)
     kind == :below && return ("convention: below threshold (paper integrates lineshape)", missing)
     kind == :range && return ("convention: mixing-dependent range", missing)
     kind == :blank && return ("no paper value", missing)
@@ -323,10 +321,43 @@ end
 # mass M (coefficient, A, qbar^L, form factor). Invert it: scan M for the value
 # that reproduces the paper's number, to show a MISS is a parent-mass effect.
 const STRUCT_INDEP = Set([:A, :A0, :Aprime, :Adoubleprime, :A_c])
+
+# Physics interpretation belongs beside the authoritative residual calculation,
+# not in downstream publications. Keys include the section because historical
+# labels such as `K*` are reused for several multiplets.
+const MISS_DIAGNOSES = Dict(
+    ("1^3P_1 nonstrange", "E -> [(K pi)_K* Kbar]_D") =>
+        "D-wave threshold sensitivity; the paper amplitude requires a larger parent mass.",
+    ("1^1P_1 nonstrange", "H -> [rho pi]_D") =>
+        "The q² factor makes the result sensitive to the historical parent-mass assignment.",
+    ("1^1P_1 nonstrange", "H' -> [(K pi)_K* Kbar]_D") =>
+        "Near-threshold q² suppression; the modern parent assignment gives too little phase space.",
+    ("1^1D_2 nonstrange", "phi -> [K* Kbar]_F") =>
+        "The q³ F-wave factor amplifies the parent-mass difference.",
+    ("2^3S_1", "rhoS -> (K pi)_K* Kbar") =>
+        "A small radial-transition amplitude is dominated by node cancellation and the modern state assignment.",
+    ("2^3S_1", "omegaS -> omega eta") =>
+        "Radial-node cancellation magnifies the changed breakup momentum.",
+    ("2^3S_1", "K*S -> K eta") =>
+        "The 2S overlap lies near a node and is sensitive to the modern parent and daughter masses.",
+    ("2^3S_1", "K*S -> rho K") =>
+        "The 2S overlap lies near a node and is sensitive to the modern parent and daughter masses.",
+    ("2^3S_1", "K*S -> omega K") =>
+        "The same node-sensitive spatial overlap as rho K appears with a different flavor coefficient.",
+    ("2^3S_1", "K*S -> K* pi") =>
+        "The 2S overlap and changed breakup momentum jointly shift the amplitude.",
+    ("1^3F_4", "K* -> rho K") =>
+        "The structure-independent amplitude is reproduced by a higher parent mass than the modern assignment.",
+    ("1P_1 strange", "Q1 -> [(K pi)_K* pi]_D") =>
+        "Cancellation between rotated singlet/triplet amplitudes is compounded by the changed breakup momentum.",
+    ("1P_1 strange", "Q2 -> [(pi pi)_rho K]_S") =>
+        "The same-J rotation produces a cancellation-sensitive amplitude; historical and modern momenta also differ.",
+)
+
 function implied_parent_mass(model, ch, m1, m2, pv)
     best_M, best_err = NaN, Inf
     for M in 0.9:0.001:2.6
-        q = decay_momentum(M, m1, m2)
+        q = modern_momentum(M, m1, m2)
         q <= 0 && continue
         amp = decay_amplitude(model, ch, q; convention = :leading).total
         err = abs(amp - pv)
@@ -362,59 +393,55 @@ function write_report(model, rows, q_rho, q_B)
     open(REPORT, "w") do io
         println(io, "# Table V Strong-Decay Reproduction")
         println(io)
-        println(io, "Generated by `julia GIPaper/scripts/reproduce_table_v.jl`. One row per")
-        println(io, "canonical `table_v_strong_decays.csv` amplitude row, computed with the")
+        println(io, "Generated by `julia GIPaper/scripts/reproduce_table_v.jl`. Every")
+        println(io, "canonical `table_v_strong_decays.csv` amplitude row is accounted for. Rows with")
+        println(io, "a pure-state operator are computed with the")
         println(io, "row-oriented `decay_amplitude` API. Each amplitude factorizes as")
         println(io, "`c * X(qbar) * spatial_overlap` (matrix element x numerical overlap); see")
         println(io, "`docs/observable_ledger.md` for the [PAPER]/[DERIVED] provenance of each factor.")
         println(io)
         println(io, @sprintf("- `A = %.3f` from `rho -> pi pi = +12.4` (q = %.0f MeV)", model.A, 1000q_rho))
         println(io, @sprintf("- `S0 = %.3f` from `B -> [omega pi]_S = -11` (q = %.0f MeV), **leading-S0** convention", model.S0, 1000q_B))
-        println(io, "- `beta = 0.40 GeV`; masses: physical daughters, physical established")
-        println(io, "  parents, model masses for GI-predicted parents (`msrc` column).")
-        println(io)
-        println(io, @sprintf("## Headline: %d / %d scoreable rows matched (+ %d near, %d off), %d convention-deferred",
-            matched, length(scoreable), near, miss, conv))
-        println(io)
-        println(io, "match = within 10% (15% for mixing), or |abs|<=0.3 for |paper|<=1.")
-        println(io)
-        println(io, "**Key conventions / findings that make Table V reproduce:**")
-        println(io)
-        println(io, "1. **Leading-S0 convention.** The structure-dependent (S/D/P) numeric column")
-        println(io, "   uses the leading constant `S0 = 3 h beta` (dropping the `-k A qbar^2`")
-        println(io, "   polynomial of Table IV); this fixes `S0 ~ 3.29` and reproduces the D/P")
-        println(io, "   rows to ~1% (e.g. `rho -> [omega pi]_P` -7.82 vs -7.8).")
-        println(io, "2. **`K*2 -> K pi` sqrt(3) resolved.** The old provisional coefficient")
-        println(io, "   `+(3/20)^1/2` was a digitization error; the page-image canonical value is")
-        println(io, "   `+(1/20)^1/2` (sqrt(3) smaller), giving +7.60 vs paper +7.7. Not a physics")
-        println(io, "   anomaly -- a transcription bug the canonical re-digitization fixed.")
-        println(io, "3. **Same-J mixing rotation.** The Q1/Q2 (and Q1c/Q2c) rows are the physical")
-        println(io, "   mixed states: rotating the pure singlet/triplet formulas by the paper's")
-        println(io, "   angle (1P ~ +34 deg, 1D ~ +33 deg, charm ~ -41 deg) reproduces the")
-        println(io, "   footnote-j near-cancellations in sign and magnitude (`Q1->[K*pi]_S` -0.34")
-        println(io, "   vs -0.3; `Q2->[K*pi]_S` +17.4 vs +16).")
-        println(io, "4. **Residual MISSes are parent-mass sensitivity, not algebra.** Every")
-        println(io, "   structure-independent MISS inverts to a parent mass within 20-50 MeV of")
-        println(io, "   the input (D-waves' `qbar^2` amplifies it ~2x over their matched S-wave")
-        println(io, "   partners); the paper's numbers imply the GI-predicted masses")
-        println(io, "   (`a1, H ~ 1.22 GeV`). See the `[M used -> paper implies]` note per row.")
-        println(io)
+        println(io, "- Kinematics use the shared PDG 2026 mass registry, including stated charge averages.")
+        println(io, "- NaN means a required experimental assignment is unavailable; no GI/model mass fallback is used.")
+        println(io, "- The paper's two amplitude calibration anchors are retained and evaluated at modern kinematics.")
+        println(io, "- Fixed beta and mixing angles retain the GI operator prescription. Broad effective daughters are deferred.")
+        println(io, "\n## Comparison")
+        println(io, "Differences from GI include updated experimental kinematics as well as the overlap/operator calculation.")
         secs = unique(r.section for r in rows)
         for sec in secs
             secrows = [r for r in rows if r.section == sec]
             println(io, "## `", sec, "`")
             println(io)
-            println(io, "| decay | class | q MeV | src | computed | paper | ratio | status |")
-            println(io, "|---|---|---:|:-:|---:|---:|---:|---|")
+            println(io, "| decay | class | q MeV | q reference MeV | src | computed | paper | ratio | status |")
+            println(io, "|---|---|---:|---:|:-:|---:|---:|---:|---|")
             for r in secrows
                 ratio_text = ismissing(r.ratio) ? "" : @sprintf("%.2f", r.ratio)
                 st = r.status
                 isnan(r.implied_M) || (st *= @sprintf(" [implies M=%.3f]", r.implied_M))
-                println(io, @sprintf("| `%s` | %s | %.0f | %s | %+.2f | %s | %s | %s |",
-                    r.label, r.class, r.q_MeV, r.msrc, r.computed, r.paper_text, ratio_text, st))
+                println(io, @sprintf("| `%s` | %s | %.0f | %s | %s | %+.2f | %s | %s | %s |",
+                    r.label, r.class, r.q_MeV, isnan(r.q_historical_MeV) ? "—" : @sprintf("%.0f",r.q_historical_MeV), r.msrc, r.computed, r.paper_text, ratio_text, st))
             end
             println(io)
         end
+        println(io, "## Investigated misses")
+        println(io)
+        println(io, "This is the canonical interpretation ledger for explicit tolerance misses; downstream publications link to this section rather than maintaining a second diagnosis table.")
+        println(io)
+        println(io, "| decay | computed / paper | kinematic evidence | diagnosis |")
+        println(io, "|---|---:|---|---|")
+        for r in rows
+            startswith(r.status, "MISS") || continue
+            evidence = isnan(r.implied_M) ?
+                @sprintf("q = %.0f MeV", r.q_MeV) :
+                @sprintf("M used %.3f GeV; paper value implies %.3f GeV", r.M_GeV, r.implied_M)
+            diagnosis = get(MISS_DIAGNOSES, (r.section, r.label),
+                "Residual is retained without a unique attribution.")
+            println(io, @sprintf("| `%s` | %+.2f / %s | %s | %s |",
+                r.label, r.computed, r.paper_text, evidence, diagnosis))
+        end
+        @assert count(r -> startswith(r.status, "MISS"), rows) == length(MISS_DIAGNOSES)
+        println(io)
     end
     println("wrote ", REPORT)
 end

@@ -44,9 +44,11 @@ end
     for row in rows
         p, d = states[row.id[2]], states[row.id[3]]
         if first(row.id) != :M1 || any(f in split(row.footnotes, ",") for f in ("c", "g"))
-            @test !isnothing(p.mass_GeV)
-            @test !isnothing(d.mass_GeV)
-            @test p.mass_GeV > d.mass_GeV
+            if !isnothing(p.mass_GeV) && !isnothing(d.mass_GeV)
+                @test p.mass_GeV > d.mass_GeV
+            else
+                @test p.mass_source == "unavailable" || d.mass_source == "unavailable"
+            end
         end
     end
 end

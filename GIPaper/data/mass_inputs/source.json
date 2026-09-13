@@ -1,0 +1,8 @@
+{
+  "edition": "2026",
+  "database_url": "https://pdg.lbl.gov/2026/api/pdg-2026.0.sqlite",
+  "sha256": "40dc2587d9ae912d26fafb6b41f300f341d2a1f4bd620ff5b5f03827c39453fe",
+  "retrieved": "2026-09-11",
+  "license": "CC BY 4.0",
+  "citation": "F. Takahashi <i>et al.</i> (Particle Data Group), Int. J. Mod. Phys. A 41, 2630011 (2026)"
+}

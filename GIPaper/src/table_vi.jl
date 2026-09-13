@@ -36,7 +36,8 @@ end
     load_table_vi_states()
 
 Canonical spectroscopic identities and explicit photon-kinematics inputs for
-Table VI. Missing masses mean the tabulated moment needs no photon momentum.
+Table VI. Kinematics use the pinned PDG registry. Missing masses mean an
+experimental assignment is unavailable; historical inputs are archival only.
 The `mixed` flag selects a composed isoscalar state; other entries use their
 native fixed-channel state. Paper state names are labels, not inferred quark
 charges (in particular the historical B*- label is retained).
@@ -50,8 +51,10 @@ function load_table_vi_states(path::AbstractString = joinpath(
             basis = BasisState(parse(Int, row.n), row.L,
                 parse(Int, row.multiplicity), parse(Int, row.J);
                 flavors = (Symbol(row.flavor1), Symbol(row.flavor2))),
-            mass_GeV = ismissing(row.mass_GeV) ? nothing : parse(Float64, row.mass_GeV),
-            mass_source = ismissing(row.mass_source) ? "" : String(row.mass_source),
+            mass_GeV = experimental_mass("VI", String(row.id)),
+            historical_mass_GeV = historical_mass("VI", String(row.id)),
+            mass_source = mass_input("VI", String(row.id)).status,
+            historical_mass_source = ismissing(row.mass_source) ? "" : String(row.mass_source),
             mixed = parse(Bool, row.mixed),
         )
     end

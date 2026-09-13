@@ -173,9 +173,10 @@ Running the whole table is one script:
 julia GIPaper/scripts/reproduce_table_v.jl
 ```
 
-which writes `GIPaper/docs/residual_reports/table_v_reproduction.md`. The headline
-is **160 / 178 scoreable rows match**, and the interesting part is *why the rest
-don't* — each is an input sensitivity, not a decay-algebra error:
+which writes `GIPaper/docs/residual_reports/table_v_reproduction.md`. That
+generated report is the single source for current coverage totals and per-row
+diagnoses. It keeps each non-match visible because mass choice, mixing,
+thresholds, and operator limitations do not produce one universal explanation:
 
 - **Same-$J$ mixing.** The $Q_1/Q_2$ ($K_1(1270)/K_1(1400)$) rows are physical
   *mixed* states; rotating the pure singlet/triplet formulas by the paper's angle

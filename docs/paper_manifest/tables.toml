@@ -17,10 +17,12 @@ kind = "table"
 label = "Table I"
 page = 1
 statement = "Motivational estimates of the importance of confinement in heavy QQbar systems (quark mass, typical alpha_s, a_0, 2S-1S confinement fraction)."
-status = "context"
+status = "reproduced"
 anchor = "paper/vision_ocr/page_images/page-001.png"
 parent = "sec-II"
-notes = "Discussion-layer table with nothing to compute from the model; digitized for completeness at GIPaper/data/raw/digitized_tables/table_i_confinement/. Candidate for a TIL demo, not a reproduction target."
+code = ["docs/paper-remix/computations/table-i.jl", "docs/paper-remix/computed/table-i.tsv"]
+tests = ["Requested numerical quantities"]
+notes = "The Bohr radii are reproduced directly. The percentage column is reconstructed by solving the stated nonrelativistic Coulomb-plus-linear Hamiltonian with the Table II slope and evaluating Delta<br>/Delta E. GI did not publish its separation convention, so the local values are explicitly compared with, rather than claimed identical to, their rounded estimates."
 
 [[unit]]
 id = "table-II"
@@ -49,7 +51,7 @@ tests = ["PA-16 final isoscalar spectrum owns flavor annihilation", "table_iii i
 report = "GIPaper/docs/residual_reports/table_iii_mixing_audit.md"
 anchor = "paper/vision_ocr/page_images/page-011.png"
 parent = "sec-III"
-notes = "General Eq. (16) blocks match the omega/phi and f2/f2' eigenvectors; literal P1/P2 pseudoscalar modes reproduce the structure at mean amplitude RMS 0.074/0.023. Their mean absolute mass residuals are 65/29 MeV. Digitized rows are low-confidence OCR (table_iii_isoscalar_mixings/), so amplitude scoring is against the on-page eigenvectors."
+notes = "General Eq. (16) blocks match the omega/phi and f2/f2' eigenvectors; literal P1/P2 pseudoscalar modes reproduce the structure at mean component RMS 0.082/0.015. Their mean absolute mass residuals are 56/11 MeV. Digitized rows are low-confidence OCR (table_iii_isoscalar_mixings/), so amplitude scoring is against the on-page eigenvectors."
 
 # --- Sec. IV: electromagnetic / annihilation tables ------------------------
 
@@ -81,10 +83,10 @@ status = "reproduced"
 code = ["src/annihilation_widths.jl:gluonic_annihilation_amplitude", "src/annihilation_widths.jl:leptonic_decay_factor", "src/annihilation_widths.jl:two_photon_amplitude", "src/annihilation_widths.jl:charge_radius_squared", "src/fixed_channel_solver.jl:fixed_channel_solution", "GIPaper/scripts/audit_table_vii.jl", "GIPaper/scripts/audit_w6_ho_order.jl"]
 tests = ["Table VII gluonic annihilation", "Table VII leptonic decay constants", "Table VII two-photon amplitudes", "Table VII charge radii", "Table VII mixed eta/eta' two-photon", "Native HO fixed-channel spin-distorted waves", "Native HO full fixed-channel diagonalization"]
 report = "GIPaper/docs/residual_reports/table_vii_annihilation_em.md"
-metric = "one native fixed-channel HO treatment: gluonic 16/16 signs, median 1.05; leptonic 26/26 signs, median 1.01; clean two-photon 8/8 signs, median 1.05; mixed eta magnitudes median 0.78 with 4/4 signs (shared precursor-phase convention); charge radii median 1.02"
+metric = "one native fixed-channel HO treatment: gluonic 16/16 signs, median 1.05; leptonic 24/24 scoreable signs, median 1.03 (2 unavailable); clean two-photon 8/8 signs, median 1.06; mixed eta 3/3 scoreable signs, median 0.78 (1 unavailable); charge radii median 1.02; 4 hypothetical top-flavor rows unavailable"
 anchor = "paper/vision_ocr/page_images/page-028.png"
 parent = "sec-IV"
-notes = "All four subtables use native fixed_channel_solution HO waves and final MixedSpectrum compositions through shared physical-state amplitude dispatch; no HO mesh projection or report-local phase remains. Gluonic, leptonic, and clean two-photon rows reproduce every printed sign. The two former excited mixed-eta sign disagreements are resolved by the shared precursor-phase convention; magnitude residuals remain explicit. The only fitted quantity is the paper's own charge-radius exponent f=0.2. Unphysical t-tbar rows are excluded."
+notes = "All four subtables use native fixed_channel_solution HO waves and final MixedSpectrum compositions through shared physical-state amplitude dispatch; no HO mesh projection or report-local phase remains. Gluonic, leptonic, and clean two-photon scoreable rows reproduce every printed sign. The two former excited mixed-eta sign disagreements are resolved by the shared precursor-phase convention; magnitude residuals remain explicit. The only fitted quantity is the paper's own charge-radius exponent f=0.2. The four hypothetical top-flavor rows are preserved in the accounting but unavailable because Table II supplies neither a top mass nor toponium wavefunctions."
 
 # --- Sec. V: 0++ coupled-channel inputs ------------------------------------
 

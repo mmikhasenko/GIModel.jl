@@ -22,6 +22,9 @@ include("reference_meson.jl")
 export GI_PSEUDOSCALAR_FIG5_TARGETS_GEV, table_iii_amplitude
 include("table_iii_annihilation.jl")
 
+export load_mass_inputs, mass_input, experimental_mass, historical_mass
+include("mass_inputs.jl")
+
 export load_table_vi, load_table_vi_states
 include("table_vi.jl")
 

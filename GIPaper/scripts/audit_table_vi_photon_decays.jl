@@ -130,7 +130,9 @@ function evaluate(row)
     multipole, parent, daughter = row.id
     q = kinematics(row)
     footnotes = split(row.footnotes, ",")
-    if multipole == :M1
+    if isnothing(q) && (multipole != :M1 || "c" in footnotes || "g" in footnotes)
+        value, supplementary = NaN, 0.0
+    elseif multipole == :M1
         value = transition(parent, daughter) do p, d
             m1_kernel(p, d, parent, daughter, q; recoil = "c" in footnotes)
         end
@@ -146,11 +148,16 @@ function evaluate(row)
         end
         supplementary = 0.0
     end
-    if "g" in footnotes
+    if "g" in footnotes && !isnothing(q)
         isnothing(q) && error("missing footnote-g kinematics")
         value *= photon_recoil_form_factor(q)
     end
+    p, d = states[parent], states[daughter]
+    historical_q = isnothing(p.historical_mass_GeV) || isnothing(d.historical_mass_GeV) ? nothing :
+        photon_momentum(p.historical_mass_GeV, d.historical_mass_GeV)
     return (reference = row, computed = value, q_GeV = q,
+        q_display_GeV = something(q, NaN), q_historical_GeV = historical_q,
+        q_source = isnothing(q) ? "experimental assignment unavailable" : "PDG 2026",
         supplementary = supplementary)
 end
 
@@ -158,7 +165,9 @@ println("evaluating all canonical rows ..."); flush(stdout)
 results = evaluate.(references)
 @assert length(results) == 79
 @assert Set(r.reference.id for r in results) == Set(r.id for r in references)
-@assert all(isfinite(r.computed) for r in results)
+@assert all(isfinite(r.computed) || isnothing(r.q_GeV) for r in results)
+@assert all(isnothing(r.q_GeV) || r.q_GeV >= 0 for r in results)
+
 @assert all(!iszero(r.computed) || r.reference.approximate for r in results)
 
 output = joinpath(ROOT, "docs", "residual_reports",
@@ -166,11 +175,11 @@ output = joinpath(ROOT, "docs", "residual_reports",
 # Machine-readable regression/coverage artifact: one result per canonical row.
 csvpath = replace(output, ".md" => ".csv")
 open(csvpath, "w") do io
-    println(io, "multipole,parent,daughter,computed,paper,parenthetical,approximate,q_GeV,supplementary_mu")
+    println(io, "multipole,parent,daughter,computed,paper,parenthetical,approximate,q_GeV,supplementary_mu,q_display_GeV,q_source,q_historical_GeV")
     for r in results
         ref = r.reference
         println(io, join((ref.id..., r.computed, ref.predicted,
-            ref.parenthetical, ref.approximate, something(r.q_GeV, ""), r.supplementary), ","))
+            ref.parenthetical, ref.approximate, something(r.q_GeV, ""), r.supplementary, r.q_display_GeV, r.q_source, something(r.q_historical_GeV, "")), ","))
     end
 end
 open(output, "w") do io
@@ -204,23 +213,24 @@ open(output, "w") do io
     """)
     for multipole in (:M1, :E1, :M2)
         block = filter(r -> first(r.reference.id) == multipole, results)
-        exact = filter(r -> !r.reference.parenthetical && !r.reference.approximate &&
+        exact = filter(r -> isfinite(r.computed) && !r.reference.parenthetical && !r.reference.approximate &&
             r.reference.predicted != 0, block)
         signs = count(r -> sign(r.computed) == sign(r.reference.predicted), exact)
         ratios = [abs(r.computed / r.reference.predicted) for r in exact]
         println(io, "\n## ", multipole)
         @printf(io, "\nNon-parenthesized targets: %d/%d signs; median |model/paper| %.3f.\n",
             signs, length(exact), median(ratios))
-        println(io, "\n| Decay | Computed | Paper | q MeV |")
-        println(io, "|---|---:|---:|---:|")
+        println(io, "\n| Decay | Computed | Paper | q MeV | q reference MeV | src |")
+        println(io, "|---|---:|---:|---:|---:|---|")
         for r in block
-            qtext = isnothing(r.q_GeV) ? "—" : @sprintf("%.1f", 1000r.q_GeV)
-            @printf(io, "| %s | %+.6g | %s | %s |\n", r.reference.decay,
-                r.computed, r.reference.predicted_text, qtext)
+            qtext = @sprintf("%.1f", 1000r.q_display_GeV)
+            qref = isnothing(r.q_historical_GeV) ? "—" : @sprintf("%.1f", 1000r.q_historical_GeV)
+            @printf(io, "| %s | %+.6g | %s | %s | %s | %s |\n", r.reference.decay,
+                r.computed, r.reference.predicted_text, qtext, qref, r.q_source)
         end
     end
     println(io, "\n## Largest magnitude residuals")
-    ordinary = filter(r -> !r.reference.parenthetical && r.reference.predicted != 0, results)
+    ordinary = filter(r -> isfinite(r.computed) && !r.reference.parenthetical && r.reference.predicted != 0, results)
     ranked = sort(ordinary; by = r -> abs(abs(r.computed / r.reference.predicted) - 1),
         rev = true)
     for r in ranked[1:min(8, length(ranked))]
@@ -228,12 +238,9 @@ open(output, "w") do io
             abs(r.computed / r.reference.predicted))
     end
     println(io, "\n\n## Kinematics provenance")
-    println(io, "\nInputs are recorded in `GIPaper/data/table_vi_states.csv`.")
-    println(io, "The previous audit's kinematics are retained where available; new 2P bottomonium")
-    println(io, "and eta_b(2S) masses use digitized Fig. 8 model labels. Eta_r assignments")
-    println(io, "use the P1 paper masses. These are explicit external kinematic inputs,")
-    println(io, "not eigenvalues selected to improve agreement. Missing masses affect only")
-    println(io, "M1 rows whose tabulated moments require no photon momentum.")
+    println(io, "\nAll operator and displayed momenta use the same PDG 2026 registry. No model eigenvalue is used for kinematics.")
+    println(io, "Historical reference q values are reconstructed from legacy audit inputs, some of which were GI model estimates; they are not printed GI momenta.")
+    println(io, "Missing experimental assignments leave q and q-dependent amplitudes unavailable. Momentum-independent M1 moments remain calculable.")
     println(io, "\n## Encoding corrections")
     println(io, "\nThe 3S -> 1S bottomonium target is -0.004; +0.007 belongs to 3S -> 2S.")
     println(io, "The A2 -> pi M2 denominator is sqrt(60) m_u, not sqrt(60 m_u).")

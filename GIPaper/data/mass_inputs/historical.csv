@@ -1,0 +1,68 @@
+context,label,mass_GeV,source,classification
+VI,rho,0.776,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,pi,0.138,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,pi0,0.135,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,A2,1.318,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,A1,1.275,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,B,1.231,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,eta,0.548,Table III observed label,legacy audit input; not verified GI experimental mass
+VI,etaprime,0.958,Table III observed label,legacy audit input; not verified GI experimental mass
+VI,eta_r,1.44,Fig. 5 / Table III P1 assignment,legacy audit input; not verified GI experimental mass
+VI,etaprime_r,1.63,Fig. 5 P1 prediction,legacy audit input; not verified GI experimental mass
+VI,omega,0.783,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,phi,1.02,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,f,1.27,Table III observed label,legacy audit input; not verified GI experimental mass
+VI,fprime,1.525,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,psi,3.097,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,Upsilon,9.46,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,eta_c,2.98,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,psiprime,3.686,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,eta_b,9.4,Fig. 8 model label,legacy audit input; not verified GI experimental mass
+VI,etaprime_b,9.98,Fig. 8 model label,legacy audit input; not verified GI experimental mass
+VI,etadoubleprime_b,10.34,Fig. 8 model label,legacy audit input; not verified GI experimental mass
+VI,Upsilonprime,10.023,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,Upsilondoubleprime,10.355,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,chi_0c,3.415,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,chi_1c,3.51,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,chi_2c,3.556,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,chi_0b,9.86,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,chi_1b,9.892,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,chi_2b,9.913,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,chiprime_0b,10.23,Fig. 8 model label,legacy audit input; not verified GI experimental mass
+VI,chiprime_1b,10.25,Fig. 8 model label,legacy audit input; not verified GI experimental mass
+VI,chiprime_2b,10.26,Fig. 8 model label,legacy audit input; not verified GI experimental mass
+VI,Kstar2_1420,1.425,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+VI,K,0.494,existing Table VI audit kinematics,legacy audit input; not verified GI experimental mass
+V,rho,0.769,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,phi,1.0195,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,Kstar,0.8921,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,A2,1.318,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,f,1.273,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,fprime,1.525,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,Kstar2,1.4256,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,A1,1.23,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,D1285,1.283,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,E1420,1.42,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,B,1.231,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,Dstarplus,2.01,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,Dstar0,2.007,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,pi,0.138,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,pi0,0.135,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,piplus,0.1396,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,K,0.4957,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,eta,0.5488,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,etaprime,0.9575,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,omega,0.7826,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,D,1.867,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,D0,1.865,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,Dplus,1.869,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,Dstar,2.008,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,delta2,0.98,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,eps,1.0,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,kappa,0.98,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,Q1,1.273,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+V,Q2,1.402,Previous Table V audit hardcoded mass,legacy audit input; GI experimental provenance not verified
+VII,eta -> gamma gamma,0.548,Previous Table VII mixed two-photon audit,legacy audit input; GI experimental provenance not verified
+VII,eta' -> gamma gamma,0.958,Previous Table VII mixed two-photon audit,legacy audit input; GI experimental provenance not verified
+VII,eta_r -> gamma gamma,1.295,Previous Table VII mixed two-photon audit,legacy audit input; GI experimental provenance not verified
+VII,eta'_r -> gamma gamma,1.44,Previous Table VII mixed two-photon audit,legacy audit input; GI experimental provenance not verified

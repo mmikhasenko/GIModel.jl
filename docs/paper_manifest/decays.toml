@@ -94,10 +94,10 @@ status = "reproduced"
 code = ["src/strong_decays.jl:decay_amplitude", "GIPaper/scripts/reproduce_table_v.jl"]
 tests = ["Row-oriented decay API"]
 report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
-metric = "160/178 scoreable rows match; leading-S0; K*2->Kpi sqrt(3) was a digitization error; h=f4 nn; same-J mixing rotation"
+metric = "220/220 canonical rows accounted for: 107/134 scoreable rows match, 14 near, 13 miss, 82 convention-deferred, 4 context-only"
 anchor = "paper/vision_ocr/page_images/page-014.png"
 parent = "sec-IV"
-notes = "Canonical page-image CSV data/raw/digitized_tables/table_v_strong_decays.csv; loaded via load_table_v. Non-matches are parent-mass / mixing-angle input sensitivity."
+notes = "Canonical page-image CSV data/raw/digitized_tables/table_v_strong_decays.csv; loaded via load_table_v. Pure-state rows are computed when source conventions and masses are reconstructible; experimental-mass, threshold, mixing-only, and context-only rows remain explicitly visible."
 
 # --- Inputs / fit ----------------------------------------------------------
 
@@ -122,7 +122,7 @@ statement = "Two-point fit: A from rho->pipi=+12.4, S0 from B->[omega pi]_S=-11,
 status = "reproduced"
 code = ["src/strong_decays.jl:calibrate_strong_decay_model"]
 tests = ["Table V strong-decay model"]
-metric = "A=1.665, S0=3.287 (leading convention; paper A=1.67, S=3.27)"
+metric = "A=1.644, S0=3.291 (leading convention; paper A=1.67, S=3.27)"
 anchor = "paper/vision_ocr/page_images/page-023.png"
 parent = "sec-IV"
 notes = "Methodologically identical to the paper's own fit; no extra freedom. (Old ledgers listed the stale table_iv S0=3.918.)"
