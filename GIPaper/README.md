@@ -24,6 +24,27 @@ Run a reproduction script directly; plotting audits activate
 julia GIPaper/scripts/reproduce_table_v.jl
 ```
 
+## Ten-sector spectrum plots
+
+Fetch the PDG reference table separately, then render either the complete or
+the column-compressed spectrum:
+
+```sh
+python3 GIPaper/scripts/fetch_pdg_mesons.py
+julia GIPaper/scripts/plot_ten_meson_spectra.jl
+julia GIPaper/scripts/plot_ten_meson_spectra_simplified.jl
+```
+
+Both renderers write PNG and PDF versions under
+`GIPaper/scripts/spectrum_plots/`. The complete plot contains the original
+three $S$, two $P/D$, and leading $F/G$ families. The simplified companion is
+restricted to $1S$--$3S$, $1P$--$2P$, $1D$, and $1F$ with $J\leq4$; it combines
+the allowed $C$ partners for $1^+$ and $2^-$ in every self-conjugate sector.
+The unique $0^{-+}$, $0^{++}$, $1^{--}$, and $2^{++}$ columns retain their
+physical $C$ signs. The $J=3,4$ columns combine parity and charge conjugation
+completely and are labeled by $J$ alone. In every displayed column,
+experimental points above the highest retained calculated level are omitted.
+
 
 The complete radiative-decay audit needs only the GIPaper environment:
 
