@@ -47,7 +47,7 @@ The review and implementation sequence is specified in
   keep `^3P0` behind its later three-route spatial-integral prototype.
 - [ ] Define the complete off-shell helicity vector and derive every allowed
   `M[A → BC; k, L, S] = ⟨BC;k,LS|T|A⟩` by a tested Jacob--Wick projection.
-- [ ] Make `TwoMesonChannel` contain daughters only; derive rather than request
+- [x] Make `TwoMesonChannel` contain daughters only; derive rather than request
   `(L,S)` and identical-particle exchange symmetry.
 - [ ] Factor every pure-basis result into exact algebraic coefficients times a
   shared, wave-keyed basis of spatial integrals.
@@ -60,17 +60,17 @@ The review and implementation sequence is specified in
   silently zeroed.
 - [ ] Evaluate the spatial integrals with the actual initial and daughter GI
   wave functions and combine mixed physical states coherently.
-- [ ] Add a three-state coherent composer for one parent and two daughters. It
+- [x] Add a three-state coherent composer for one parent and two daughters. It
   must conjugate final-state coefficients and retain every component triple in
   the amplitude decomposition.
-- [ ] Use one physical mass per external state for kinematics; never recompute
+- [x] Use one physical mass per external state for kinematics; never recompute
   phase space from individual component masses.
-- [ ] Move identical-daughter normalization and exchange phases from row data
-  into the typed `TwoMesonChannel` construction.
-- [ ] Add phase-invariance and interference tests for mixed initial and final
+- [x] Move identical-daughter normalization and exchange phases from row data
+  into rules derived from the typed `TwoMesonChannel` and partial wave.
+- [x] Add phase-invariance and interference tests for mixed initial and final
   states.
-- [ ] Include a `mixing_only` regression row whose pure-basis coefficient is
-  zero but physical amplitude is nonzero.
+- [x] Include a `mixing_only` regression fixture whose pure-basis coefficient
+  is zero but physical amplitude is nonzero.
 - [ ] Recover the existing equal-`β` analytic Table IV/V amplitudes in the
   appropriate limit.
 - [ ] Compare exact waves with equal-`β` and rms-matched SHO surrogates to

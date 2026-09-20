@@ -1,6 +1,6 @@
 # Transition matrix-element API redesign: implementation plan
 
-Status: implementation in progress; Phases 0--1 complete, 2026-09-20
+Status: implementation in progress; Phases 0--2 complete, 2026-09-20
 
 Companion documents:
 
@@ -397,9 +397,9 @@ show concrete result storage; no unapproved exports appear.
 
 ### Phase 2 — coherent physical states and identical particles
 
-- Implement the internal three-state composer and complete term decomposition.
-- Finish identical mixed-daughter canonicalization and exchange symmetry.
-- Enforce one physical mass per external state.
+- [x] Implement the internal three-state composer and complete term decomposition.
+- [x] Finish identical mixed-daughter canonicalization and exchange symmetry.
+- [x] Enforce one physical mass per external state.
 
 Gate: synthetic complex-coefficient tests cover every combination of mixed
 external states; overall-phase invariance and relative-phase interference pass;

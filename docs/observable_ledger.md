@@ -65,6 +65,27 @@ column uses the *leading constant* `S0 = 3 h beta` (dropping the
 `S0 ~ 3.29` and the D/P rows to ~1%; it is the `LeadingS0()` convention (default
 of `decay_amplitude`), while `TableIVPolynomial()` keeps the printed polynomial.
 
+### Physical-state composition and identical daughters
+
+The solver-native transition layer composes a decay as
+`sum(cA * conj(cB) * conj(cC) * K(B,C;A))`. It retains every pure-component
+triple, so interference and exact zeros remain inspectable. The pure kernel
+does not receive component masses: kinematics uses the one resolved physical
+mass stored on each external state.
+
+Two resolved daughters have the same external-state identity only when their
+label, physical mass, `J^P`, and physical component ray agree. The ray is the
+ordered set of `(n,L,2S+1,J,flavors)` basis keys and coefficient ratios,
+sorted by basis key and anchored on its first nonzero coefficient. Component
+storage order and one common nonzero complex phase therefore do not alter the
+identity; relative coefficients do. Radial representation and provenance are
+calculation records, not particle-identity fields.
+
+For identical daughters, the channel derives the exchange eigenvalue
+`(-1)^(L+S)`. Odd exchange waves are absent from `allowed_partial_waves`; an
+allowed wave receives one and only one `1/sqrt(2)` normalization in the
+three-state composer. A pure-component kernel must not repeat that factor.
+
 ### Encoded so far
 
 - `data/raw/digitized_tables/table_v_strong_decays.csv`: the canonical,

@@ -146,17 +146,30 @@ function ReferenceState(
     return ReferenceState{typeof(provenance)}(String(label), mass, j, p, provenance)
 end
 
-function _state_identity(state::PhysicalState)
-    components = Tuple(
-        (
-            component.basis.n,
-            component.basis.L_label,
-            component.basis.multiplicity,
-            component.basis.J,
-            component.basis.flavors,
-        ) for component in state.components
+_basis_identity(basis::BasisState) = (
+    basis.n,
+    basis.L_label,
+    basis.multiplicity,
+    basis.J,
+    basis.flavors,
+)
+
+function _physical_ray(state::PhysicalState)
+    ordered = sort(
+        collect(state.components);
+        by = component -> repr(_basis_identity(component.basis)),
     )
-    return (state.label, state.mass_GeV, state.J, state.parity, components)
+    anchor = findfirst(component -> !iszero(component.coefficient), ordered)
+    isnothing(anchor) && error("PhysicalState invariant violated: all coefficients vanish")
+    anchor_coefficient = ordered[anchor].coefficient
+    return Tuple(
+        (_basis_identity(component.basis), component.coefficient / anchor_coefficient) for
+        component in ordered
+    )
+end
+
+function _state_identity(state::PhysicalState)
+    return (state.label, state.mass_GeV, state.J, state.parity, _physical_ray(state))
 end
 
 _state_identity(state::ReferenceState) =
@@ -190,6 +203,20 @@ struct PartialWave
         channel_spin >= 0 || throw(ArgumentError("channel spin must be non-negative"))
         new(Int(relative_L), Int(channel_spin))
     end
+end
+
+"""Internal exchange rule derived from the resolved daughter states and `(L,S)`."""
+struct _DaughterSymmetry{T<:Real}
+    identical::Bool
+    exchange_phase::Int
+    normalization::T
+end
+
+function _daughter_symmetry(final::TwoMesonChannel, wave::PartialWave)
+    identical = _same_external_state(final.first, final.second)
+    exchange_phase = isodd(wave.relative_L + wave.channel_spin) ? -1 : 1
+    normalization = identical ? inv(sqrt(2.0)) : 1.0
+    return _DaughterSymmetry(identical, exchange_phase, normalization)
 end
 
 Base.isless(a::PartialWave, b::PartialWave) =
@@ -260,6 +287,73 @@ function partial_wave_projection(final::TwoMesonChannel, initial::TransitionStat
         "general helicity-to-partial-wave projection is not implemented yet; " *
         "the Phase 3 Jacob-Wick convention gate must land first",
     ))
+end
+
+# =============================================================================
+# Coherent physical-state composition
+# =============================================================================
+
+"""One retained pure-component triple in a physical decay amplitude."""
+struct _ComponentTransitionTerm{A,B,C,W,N,K,V}
+    initial_component::A
+    first_component::B
+    second_component::C
+    mixing_coefficient::W
+    identical_normalization::N
+    kernel_value::K
+    contribution::V
+end
+
+"""Internal result of composing one physical ket with two physical bras."""
+struct _CoherentComposition{V,T<:Tuple,S,M}
+    value::V
+    terms::T
+    symmetry::S
+    external_masses_GeV::M
+end
+
+"""
+    _compose_physical_decay(kernel, final, initial, wave)
+
+Compose a pure-basis decay kernel over one physical parent and two physical
+daughters. `kernel(first_component, second_component, initial_component)` must
+exclude mixing coefficients and identical-particle normalization. Every
+component triple is retained; final-state coefficients are conjugated.
+"""
+function _compose_physical_decay(
+    kernel,
+    final::TwoMesonChannel{<:PhysicalState,<:PhysicalState},
+    initial::PhysicalState,
+    wave::PartialWave,
+)
+    wave in allowed_partial_waves(final, initial) || throw(ArgumentError(
+        "partial wave (L,S)=($(wave.relative_L),$(wave.channel_spin)) is forbidden " *
+        "for $(initial.label) -> $(final.first.label) + $(final.second.label)",
+    ))
+    symmetry = _daughter_symmetry(final, wave)
+    terms = Tuple(
+        begin
+            mixing = parent.coefficient * conj(first.coefficient) * conj(second.coefficient)
+            kernel_value = kernel(first, second, parent)
+            kernel_value isa Number || throw(ArgumentError(
+                "a pure-component decay kernel must return a Number, got $(typeof(kernel_value))",
+            ))
+            contribution = symmetry.normalization * mixing * kernel_value
+            _ComponentTransitionTerm(
+                parent,
+                first,
+                second,
+                mixing,
+                symmetry.normalization,
+                kernel_value,
+                contribution,
+            )
+        end for parent in initial.components for first in final.first.components for
+        second in final.second.components
+    )
+    value = sum(term.contribution for term in terms)
+    masses = (initial.mass_GeV, final.first.mass_GeV, final.second.mass_GeV)
+    return _CoherentComposition(value, terms, symmetry, masses)
 end
 
 abstract type TransitionKinematics end
