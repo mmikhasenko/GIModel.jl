@@ -2,7 +2,7 @@
 
 julia_version = "1.11.6"
 manifest_format = "2.0"
-project_hash = "7785aa168452f5399f795f5db4e4bbd99bf6bba5"
+project_hash = "8ec236fdd325950ed5dfc58f97aa3bde8d793270"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -500,7 +500,7 @@ version = "1.11.0"
 deps = ["KrylovKit", "LinearAlgebra", "Printf", "QuadGK", "SpecialFunctions", "TOML"]
 path = "../.."
 uuid = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
-version = "0.2.0"
+version = "0.3.0"
 
 [[deps.GIPaper]]
 deps = ["CSV", "GIModel", "LinearAlgebra", "Printf"]

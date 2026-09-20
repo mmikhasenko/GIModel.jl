@@ -62,8 +62,8 @@ An amplitude factorizes as `amp = c * X(qbar) * spatial_overlap`
 **Leading-S0 convention.** The paper's structure-dependent (S/D/P) numeric
 column uses the *leading constant* `S0 = 3 h beta` (dropping the
 `-k A qbar^2` polynomial of Table IV). That is what reproduces the reported
-`S0 ~ 3.29` and the D/P rows to ~1%; it is the `:leading` convention (default
-of `decay_amplitude`), while `:table_iv` keeps the printed polynomial.
+`S0 ~ 3.29` and the D/P rows to ~1%; it is the `LeadingS0()` convention (default
+of `decay_amplitude`), while `TableIVPolynomial()` keeps the printed polynomial.
 
 ### Encoded so far
 
@@ -72,8 +72,9 @@ of `decay_amplitude`), while `:table_iv` keeps the printed polynomial.
   `README_canonical_tables.md`).
 - `src/strong_decays.jl`: the row-oriented API — `DecayChannel`,
   `decay_amplitude` returning the 3-way `StrongDecayAmplitude` decomposition
-  (`coefficient`/`reduced`/`spatial_overlap`/`total`), `matrix_element`,
-  `decay_width`, `MesonMasses`, the `:leading`/`:table_iv`
+  (`coefficient`/`reduced`/`spatial_overlap`/`total`),
+  `reduced_matrix_element`, `decay_width`, `MesonMasses`, the
+  `LeadingS0()`/`TableIVPolynomial()`
   conventions, and the charm footnote-d path. Leading calibration gives
   `A = 1.644`, `S0 = 3.291` (`beta = 0.40 GeV`).
 - `scripts/reproduce_table_v.jl` writes

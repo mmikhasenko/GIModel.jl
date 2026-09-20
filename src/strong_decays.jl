@@ -28,19 +28,19 @@
 # `StrongDecayAmplitude` returns all three factors so a computed number is
 # self-documenting. See docs/observable_ledger.md for the full equation ledger.
 #
-# STRUCTURE-DEPENDENT CONVENTION (:table_iv vs :leading)
+# STRUCTURE-DEPENDENT CONVENTION (TableIVPolynomial vs LeadingS0)
 #   Table IV writes the structure-dependent classes as S0 - k A qbar^2 with
-#   k = 1/2, 3/10, 3/4 for S, D, P. That is `:table_iv`. But the paper's NUMERIC
+#   k = 1/2, 3/10, 3/4 for S, D, P. That is `TableIVPolynomial()`. But the paper's NUMERIC
 #   column was computed with only the LEADING constant S0 = 3 h beta (the
-#   -k A qbar^2 polynomial dropped); that is `:leading`, and it is what
+#   -k A qbar^2 polynomial dropped); that is `LeadingS0()`, and it is what
 #   reproduces both the reported S0 ~ 3.27 fit and the tabulated D/P numbers to
-#   ~1%. `:table_iv` is the default (faithful to the table's printed formula);
-#   the reproduction harness uses `:leading`.
+#   ~1%. `TableIVPolynomial()` is the default (faithful to the printed formula);
+#   the reproduction harness uses `LeadingS0()`.
 #
 # Public API (exported from GIModel.jl):
 #   StrongDecayModel, decay_momentum, reduced_decay_amplitude, spatial_overlap,
 #   strong_decay_amplitude, calibrate_strong_decay_model,
-#   DecayChannel, StrongDecayAmplitude, decay_amplitude, matrix_element,
+#   DecayChannel, StrongDecayAmplitude, decay_amplitude, reduced_matrix_element,
 #   decay_width, MesonMasses, mass
 
 """
@@ -57,6 +57,15 @@ struct StrongDecayModel
     beta_GeV::Float64
 end
 
+"""Convention for evaluating the structure-dependent Table IV amplitudes."""
+abstract type ReducedAmplitudeConvention end
+
+"""Use the full polynomial printed in Table IV."""
+struct TableIVPolynomial <: ReducedAmplitudeConvention end
+
+"""Use only the leading `S0` term employed for the paper's numeric column."""
+struct LeadingS0 <: ReducedAmplitudeConvention end
+
 """
     decay_momentum(M, m1, m2)
 
@@ -69,7 +78,8 @@ function decay_momentum(M::Real, m1::Real, m2::Real)
 end
 
 """
-    reduced_decay_amplitude(model, class, qbar; convention=:table_iv)
+    reduced_decay_amplitude(model, class, qbar;
+                            convention=TableIVPolynomial())
 
 [PAPER form, DERIVED strengths] Table IV reduced partial-wave amplitude for
 `class` at `qbar = q/beta`. Structure-independent classes (`:A`, `:Aprime`,
@@ -77,9 +87,9 @@ end
 `A' ~ A'' ~ A0 ~ A` convention).
 
 Structure-dependent classes (`:S`, `:S_c`, `:D`, `:P`) depend on `convention`:
-- `:table_iv` (default) returns `S0 - k A qbar^2` — the formula printed in
+- `TableIVPolynomial()` (default) returns `S0 - k A qbar^2` — the formula printed in
   Table IV, with `k = 3/10` for `:D` and `3/4` for `:P`.
-- `:leading` returns the constant `S0` — the convention the paper actually used
+- `LeadingS0()` returns the constant `S0` — the convention the paper actually used
   for the numeric column (drops the `-k A qbar^2` polynomial), reproducing the
   tabulated D/P amplitudes to ~1%.
 
@@ -95,21 +105,29 @@ factor. Both therefore take `k = heavy_fraction`, which defaults to `0.5`.
 """
 function reduced_decay_amplitude(
     model::StrongDecayModel, class::Symbol, qbar::Real;
-    convention::Symbol = :table_iv, heavy_fraction::Real = 0.5,
+    convention::ReducedAmplitudeConvention = TableIVPolynomial(),
+    heavy_fraction::Real = 0.5,
 )
-    # Validate the convention before the structure-independent shortcut, so a
-    # typo cannot pass silently on an A-class row and then throw on an S-class
-    # one in the same table.
-    convention in (:table_iv, :leading) ||
-        throw(ArgumentError("unknown convention `$convention` (:table_iv | :leading)"))
+    return reduced_decay_amplitude(convention, model, class, qbar; heavy_fraction)
+end
+
+function reduced_decay_amplitude(
+    ::LeadingS0, model::StrongDecayModel, class::Symbol, qbar::Real;
+    heavy_fraction::Real = 0.5,
+)
     class in (:A, :Aprime, :Adoubleprime, :A0, :A_c) && return model.A
-    if convention === :leading
-        class in (:S, :S_c, :D, :P) && return model.S0
-    else
-        class in (:S, :S_c) && return model.S0 - heavy_fraction * model.A * qbar^2
-        class === :D && return model.S0 - 0.3 * model.A * qbar^2
-        class === :P && return model.S0 - 0.75 * model.A * qbar^2
-    end
+    class in (:S, :S_c, :D, :P) && return model.S0
+    throw(ArgumentError("unknown reduced-amplitude class `$class`"))
+end
+
+function reduced_decay_amplitude(
+    ::TableIVPolynomial, model::StrongDecayModel, class::Symbol, qbar::Real;
+    heavy_fraction::Real = 0.5,
+)
+    class in (:A, :Aprime, :Adoubleprime, :A0, :A_c) && return model.A
+    class in (:S, :S_c) && return model.S0 - heavy_fraction * model.A * qbar^2
+    class === :D && return model.S0 - 0.3 * model.A * qbar^2
+    class === :P && return model.S0 - 0.75 * model.A * qbar^2
     throw(ArgumentError("unknown reduced-amplitude class `$class`"))
 end
 
@@ -156,7 +174,8 @@ _suppressed_factor(q_GeV::Real, beta_GeV::Real) = spatial_overlap(q_GeV, 0, beta
 """
     strong_decay_amplitude(model, coefficient, class, qbar_power, q_GeV;
                            heavy_fraction=0.5, recoil=false,
-                           beta_c_GeV=model.beta_GeV, convention=:table_iv)
+                           beta_c_GeV=model.beta_GeV,
+                           convention=TableIVPolynomial())
 
 Scalar (compat) Table V amplitude in `MeV^(1/2)`: `coefficient` is the signed
 flavor/spin factor, `class` the reduced-amplitude class, `qbar_power` the
@@ -177,7 +196,7 @@ function strong_decay_amplitude(
     heavy_fraction::Real = 0.5,
     recoil::Bool = false,
     beta_c_GeV::Real = model.beta_GeV,
-    convention::Symbol = :table_iv,
+    convention::ReducedAmplitudeConvention = TableIVPolynomial(),
 )
     q_GeV <= 0 && return 0.0
     qbar = q_GeV / beta_c_GeV
@@ -190,14 +209,15 @@ end
 
 """
     calibrate_strong_decay_model(rho_q_GeV, B_q_GeV; rho_amplitude, B_amplitude,
-                                 beta_GeV, convention=:table_iv)
+                                 beta_GeV,
+                                 convention=TableIVPolynomial())
 
 Fix `A` from `rho -> pi pi` (`+(4/3)^(1/2) A qbar`, paper `+12.4 MeV^(1/2)`)
 and then `S0` from `B -> [omega pi]_S` (`-(2/9)^(1/2) S(qbar)`, paper `-11`),
 given the breakup momenta of the two fit decays. `A` is convention-independent.
-`S0` differs: `:table_iv` back-solves the full `S0 - (1/2) A qbar_B^2`, while
-`:leading` sets `S0` directly to the value at `q_B` (the paper's numeric
-convention, giving `S0 ~ 3.27`).
+`S0` differs: `TableIVPolynomial()` back-solves the full
+`S0 - (1/2) A qbar_B^2`, while `LeadingS0()` sets `S0` directly to the value at
+`q_B` (the paper's numeric convention, giving `S0 ~ 3.27`).
 """
 function calibrate_strong_decay_model(
     rho_q_GeV::Real,
@@ -205,16 +225,19 @@ function calibrate_strong_decay_model(
     rho_amplitude::Real = 12.4,
     B_amplitude::Real = -11.0,
     beta_GeV::Real = 0.40,
-    convention::Symbol = :table_iv,
+    convention::ReducedAmplitudeConvention = TableIVPolynomial(),
 )
     qbar_rho = rho_q_GeV / beta_GeV
     A = rho_amplitude /
         (sqrt(4 / 3) * qbar_rho * _suppressed_factor(rho_q_GeV, beta_GeV))
     qbar_B = B_q_GeV / beta_GeV
     S_at_B = B_amplitude / (-sqrt(2 / 9) * _suppressed_factor(B_q_GeV, beta_GeV))
-    S0 = convention === :leading ? S_at_B : S_at_B + 0.5 * A * qbar_B^2
+    S0 = _calibrated_S0(convention, S_at_B, A, qbar_B)
     return StrongDecayModel(A, S0, beta_GeV)
 end
+
+_calibrated_S0(::LeadingS0, S_at_B, A, qbar_B) = S_at_B
+_calibrated_S0(::TableIVPolynomial, S_at_B, A, qbar_B) = S_at_B + 0.5 * A * qbar_B^2
 
 # =============================================================================
 # Row-oriented API: DecayChannel -> StrongDecayAmplitude
@@ -282,15 +305,15 @@ channel_has_recoil(ch::DecayChannel) = ch.class === :A_c && ch.qbar_power >= 2
 """
     StrongDecayAmplitude
 
-The 3-way decomposition of a Table V amplitude, all in `MeV^(1/2)`:
-- `coefficient` — the flavor-spin factor `c` [PAPER];
-- `reduced` — the Table IV reduced amplitude `X(qbar)`;
-- `spatial_overlap` — the SHO momentum overlap [DERIVED];
-- `total` — their product (the tabulated amplitude);
+The factorized decomposition of a Table V amplitude:
+- `coefficient` — dimensionless flavor-spin factor `c` [PAPER];
+- `reduced` — dimensionless Table IV reduced amplitude `X(qbar)`;
+- `spatial_overlap` — SHO momentum overlap in `MeV^(1/2)` [DERIVED];
+- `total` — their product in `MeV^(1/2)` (the tabulated amplitude);
 - `q_GeV` — the breakup momentum used.
 
-See [`matrix_element`](@ref) (`= coefficient*reduced`) and [`decay_width`](@ref)
-(`= total^2`).
+See [`reduced_matrix_element`](@ref) (`= coefficient*reduced`) and
+[`decay_width`](@ref) (`= total^2`).
 """
 struct StrongDecayAmplitude
     coefficient::Float64
@@ -301,16 +324,15 @@ struct StrongDecayAmplitude
 end
 
 """
-    matrix_element(a::StrongDecayAmplitude)
+    reduced_matrix_element(a::StrongDecayAmplitude)
 
-The flavor-spin matrix element `coefficient * reduced` (MeV^(1/2)) — the
-interaction part of the amplitude, before the spatial overlap.
+The dimensionless flavor-spin/reduced interaction factor
+`coefficient * reduced`, before the spatial overlap.
 """
-matrix_element(a::StrongDecayAmplitude) = a.coefficient * a.reduced
+reduced_matrix_element(a::StrongDecayAmplitude) = a.coefficient * a.reduced
 
 """
     decay_width(a::StrongDecayAmplitude)
-    decay_width(model, ch, q_or_masses; convention=:leading)
 
 Partial width `|amplitude|^2` in MeV (GI normalization: the tabulated MeV^(1/2)
 amplitude squared is the partial width).
@@ -318,20 +340,22 @@ amplitude squared is the partial width).
 decay_width(a::StrongDecayAmplitude) = a.total^2
 
 """
-    decay_amplitude(model, ch::DecayChannel, q_GeV::Real; convention=:leading)
-    decay_amplitude(model, ch::DecayChannel, masses::MesonMasses; convention=:leading)
+    decay_amplitude(model, ch::DecayChannel, q_GeV::Real;
+                    convention=LeadingS0())
+    decay_amplitude(model, ch::DecayChannel, masses::MesonMasses;
+                    convention=LeadingS0())
 
 Row-oriented Table V amplitude, returning the full [`StrongDecayAmplitude`]
 decomposition. With a `MesonMasses` the breakup momentum is resolved internally
 from the channel's parent/daughter names, so nothing is passed positionally.
 Charmed rows (`:A_c`/`:S_c`) automatically use the footnote-d form factor and
-(for A_c P-waves) the recoil multiplier. Defaults to the `:leading` convention
-(the paper's numeric column); pass `convention=:table_iv` for the printed
+(for A_c P-waves) the recoil multiplier. Defaults to `LeadingS0()` (the
+paper's numeric column); pass `convention=TableIVPolynomial()` for the printed
 Table IV formula.
 """
 function decay_amplitude(
     model::StrongDecayModel, ch::DecayChannel, q_GeV::Real;
-    convention::Symbol = :leading,
+    convention::ReducedAmplitudeConvention = LeadingS0(),
 )
     hf = ch.heavy_fraction
     qbar = q_GeV / model.beta_GeV
@@ -341,6 +365,99 @@ function decay_amplitude(
     total = ch.coefficient * reduced * overlap
     return StrongDecayAmplitude(ch.coefficient, reduced, overlap, total, Float64(q_GeV))
 end
+
+"""
+    TableVReference(model, channel, partial_wave; convention=LeadingS0())
+
+Frozen Table IV/V reference backend for the typed transition API. The explicit
+`partial_wave` records information already selected by the paper row; it is not
+used by solver-native operators, which derive all allowed waves together.
+"""
+struct TableVReference{C<:ReducedAmplitudeConvention} <: StrongDecayOperator
+    model::StrongDecayModel
+    channel::DecayChannel
+    partial_wave::PartialWave
+    convention::C
+end
+
+function TableVReference(
+    model::StrongDecayModel,
+    channel::DecayChannel,
+    partial_wave::PartialWave;
+    convention::ReducedAmplitudeConvention = LeadingS0(),
+)
+    partial_wave.relative_L == channel.qbar_power || throw(ArgumentError(
+        "legacy partial-wave L=$(partial_wave.relative_L) disagrees with " *
+        "DecayChannel qbar_power=$(channel.qbar_power)",
+    ))
+    return TableVReference{typeof(convention)}(model, channel, partial_wave, convention)
+end
+
+function _validate_transition(
+    final::TwoMesonChannel,
+    operator::TableVReference,
+    initial::TransitionState,
+)
+    initial.label == operator.channel.parent || throw(ArgumentError(
+        "reference parent `$(initial.label)` does not match row parent " *
+        "`$(operator.channel.parent)`",
+    ))
+    actual = sort([final.first.label, final.second.label])
+    expected = sort([operator.channel.daughter1, operator.channel.daughter2])
+    actual == expected || throw(ArgumentError(
+        "reference daughters $(join(actual, ", ")) do not match row daughters " *
+        "$(join(expected, ", "))",
+    ))
+    return nothing
+end
+
+function matrix_element(
+    final::TwoMesonChannel,
+    operator::TableVReference,
+    initial::TransitionState;
+    kinematics::TransitionKinematics = OnShell(),
+)
+    _validate_transition(final, operator, initial)
+    resolved = _resolve_kinematics(final, initial, kinematics)
+    q = resolved.momentum_GeV
+    q isa Real || throw(ArgumentError(
+        "TableVReference has no complex-momentum continuation; use a native operator",
+    ))
+    q > 0 || throw(ArgumentError(
+        "TableVReference requires positive real momentum; zero is reserved for closed widths",
+    ))
+    legacy = decay_amplitude(operator.model, operator.channel, q;
+        convention = operator.convention)
+    term = TransitionTerm(
+        "Table V row",
+        legacy.coefficient,
+        legacy.reduced,
+        legacy.spatial_overlap,
+        legacy.total,
+        (source = :paper, section = operator.channel.section),
+    )
+    partial_wave_amplitudes = (operator.partial_wave => legacy.total,)
+    provenance = (
+        backend = :table_v_reference,
+        convention = nameof(typeof(operator.convention)),
+        helicity_available = false,
+        row_label = operator.channel.label,
+    )
+    return TransitionAmplitude(
+        operator,
+        initial,
+        final,
+        resolved,
+        GITableVNormalization(),
+        (),
+        partial_wave_amplitudes,
+        (term,),
+        provenance,
+    )
+end
+
+partial_width(::GITableVNormalization, amplitude::TransitionAmplitude) =
+    sum(abs2(last(item)) for item in amplitude.partial_wave_amplitudes)
 
 # =============================================================================
 # MesonMasses: name -> mass resolver
@@ -374,7 +491,7 @@ Base.haskey(m::MesonMasses, name::AbstractString) = haskey(m.lookup, name)
 
 function decay_amplitude(
     model::StrongDecayModel, ch::DecayChannel, masses::MesonMasses;
-    convention::Symbol = :leading,
+    convention::ReducedAmplitudeConvention = LeadingS0(),
 )
     q = decay_momentum(meson_mass(masses, ch.parent),
         meson_mass(masses, ch.daughter1), meson_mass(masses, ch.daughter2))

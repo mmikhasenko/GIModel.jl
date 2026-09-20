@@ -13,7 +13,7 @@ GIModel = {path = ".."}
 
 [compat]
 CSV = "0.10.16"
-GIModel = "0.1.0, 0.2"
+GIModel = "0.1.0, 0.2, 0.3"
 LinearAlgebra = "1.11.0"
 Printf = "1.11.0"
 TOML = "1.0.3"

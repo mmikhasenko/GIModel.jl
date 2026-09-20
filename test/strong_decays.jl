@@ -91,8 +91,10 @@ end
 @testset "Row-oriented decay API (DecayChannel decomposition)" begin
     q_rho = decay_momentum(0.769, 0.138, 0.138)
     q_B = decay_momentum(1.231, 0.7826, 0.138)
-    model = calibrate_strong_decay_model(q_rho, q_B)          # :table_iv default
-    model_lead = calibrate_strong_decay_model(q_rho, q_B; convention = :leading)
+    model = calibrate_strong_decay_model(q_rho, q_B) # TableIVPolynomial default
+    model_lead = calibrate_strong_decay_model(q_rho, q_B; convention = LeadingS0())
+    @test calibrate_strong_decay_model(q_rho, q_B; convention = TableIVPolynomial()) == model
+    @test_throws TypeError calibrate_strong_decay_model(q_rho, q_B; convention = "leading")
 
     # spatial_overlap is the pure [DERIVED] SHO momentum factor.
     @test spatial_overlap(0.0, 1, 0.40) == 0.0
@@ -100,27 +102,28 @@ end
 
     # The 3-way decomposition multiplies back to the scalar amplitude.
     ch_rho = DecayChannel("rho", "pi", "pi", sqrt(4 / 3), :A, 1)
-    a = decay_amplitude(model, ch_rho, q_rho; convention = :table_iv)
+    a = decay_amplitude(model, ch_rho, q_rho; convention = TableIVPolynomial())
     @test a.total ≈ a.coefficient * a.reduced * a.spatial_overlap
     @test a.total ≈ strong_decay_amplitude(model, sqrt(4 / 3), :A, 1, q_rho)
     @test a.total ≈ 12.4 atol = 1e-9
-    @test matrix_element(a) ≈ a.coefficient * a.reduced
+    @test reduced_matrix_element(a) ≈ a.coefficient * a.reduced
+    @test reduced_matrix_element(a) isa Float64
     @test decay_width(a) ≈ a.total^2
 
     # leading vs table_iv: identical for structure-independent A, differ for D.
     ch_D = DecayChannel("rho2", "omega", "pi", -sqrt(1 / 36), :D, 1)
     q = 0.66
-    @test decay_amplitude(model, ch_rho, q; convention = :leading).total ≈
-          decay_amplitude(model, ch_rho, q; convention = :table_iv).total
-    @test decay_amplitude(model_lead, ch_D, q; convention = :leading).reduced ≈ model_lead.S0
-    @test decay_amplitude(model, ch_D, q; convention = :table_iv).reduced <
-          decay_amplitude(model, ch_D, q; convention = :leading).reduced
+    @test decay_amplitude(model, ch_rho, q; convention = LeadingS0()).total ≈
+          decay_amplitude(model, ch_rho, q; convention = TableIVPolynomial()).total
+    @test decay_amplitude(model_lead, ch_D, q; convention = LeadingS0()).reduced ≈ model_lead.S0
+    @test decay_amplitude(model, ch_D, q; convention = TableIVPolynomial()).reduced <
+          decay_amplitude(model, ch_D, q; convention = LeadingS0()).reduced
 
     # MesonMasses resolves the momentum internally.
     masses = MesonMasses(Dict("rho" => 0.769, "pi" => 0.138))
     @test meson_mass(masses, "rho") == 0.769
     @test masses["pi"] == 0.138
-    @test decay_amplitude(model, ch_rho, masses; convention = :table_iv).total ≈ 12.4 atol = 1e-9
+    @test decay_amplitude(model, ch_rho, masses; convention = TableIVPolynomial()).total ≈ 12.4 atol = 1e-9
     @test_throws Exception meson_mass(masses, "unregistered")
 
     # A charmed channel now carries its OWN mass ratio r = m_c/(m_c+m_d) rather
@@ -130,9 +133,9 @@ end
     r_c = mq_row["c"] / (mq_row["c"] + mq_row["d"])
     ch_c = DecayChannel("Kstar_c", "D", "pi", -sqrt(1 / 5), :A_c, 2; heavy_fraction = r_c)
     q_c = 0.4
-    got = decay_amplitude(model, ch_c, q_c; convention = :leading).total
+    got = decay_amplitude(model, ch_c, q_c; convention = LeadingS0()).total
     want = strong_decay_amplitude(model, -sqrt(1 / 5), :A_c, 2, q_c;
-        heavy_fraction = r_c, recoil = true, convention = :leading)
+        heavy_fraction = r_c, recoil = true, convention = LeadingS0())
     @test got ≈ want
 
     # Omitting it on an unequal-mass class is a construction error, never a

@@ -141,7 +141,7 @@ function main()
     params, mq = load_parameters_and_quark_masses(PARAMS_PATH)
     q_rho = modern_momentum(kinematic_mass("rho"), kinematic_mass("pi"), kinematic_mass("pi"))
     q_B = modern_momentum(kinematic_mass("B"), kinematic_mass("omega"), kinematic_mass("pi"))
-    model = calibrate_strong_decay_model(q_rho, q_B; convention = :leading)
+    model = calibrate_strong_decay_model(q_rho, q_B; convention = LeadingS0())
 
     parent_mass(section, parent) = (parent == "delta" && section == "1^3F_4" ?
         something(experimental_mass("V:1^3F_4", parent), NaN) : kinematic_mass(parent), "PDG 2026")
@@ -180,7 +180,7 @@ function main()
         M, msrc = parent_mass(section, parent)
         m1 = get(DAUGHTER_MASS, d1, NaN); m2 = get(DAUGHTER_MASS, d2, NaN)
         q = modern_momentum(M, m1, m2)
-        a = isfinite(q) ? decay_amplitude(model, ch, q; convention = :leading) : (total=NaN,)
+        a = isfinite(q) ? decay_amplitude(model, ch, q; convention = LeadingS0()) : (total=NaN,)
 
         pv, kind = parse_amp(r.amp_MeV)
         conf = ismissing(r.confidence) ? "" : String(r.confidence)
@@ -238,7 +238,7 @@ function mixing_pass(model)
                 (r,);
                 heavy_fraction_for = row -> heavy_fraction_of(String(row.parent)),
             ))
-            (isfinite(q) ? decay_amplitude(model, ch, q; convention = :leading).total : NaN, q,
+            (isfinite(q) ? decay_amplitude(model, ch, q; convention = LeadingS0()).total : NaN, q,
              String(r.daughter1), String(r.daughter2))
         end
         t = spec.theta
@@ -359,7 +359,7 @@ function implied_parent_mass(model, ch, m1, m2, pv)
     for M in 0.9:0.001:2.6
         q = modern_momentum(M, m1, m2)
         q <= 0 && continue
-        amp = decay_amplitude(model, ch, q; convention = :leading).total
+        amp = decay_amplitude(model, ch, q; convention = LeadingS0()).total
         err = abs(amp - pv)
         err < best_err && ((best_M, best_err) = (M, err))
     end

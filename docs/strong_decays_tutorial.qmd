@@ -66,7 +66,7 @@ Nothing else is tuned.
 ```{julia}
 q_rho = decay_momentum(0.769, 0.138, 0.138)     # rho -> pi pi
 q_B   = decay_momentum(1.231, 0.7826, 0.138)    # B -> omega pi
-model = calibrate_strong_decay_model(q_rho, q_B; convention = :leading)
+model = calibrate_strong_decay_model(q_rho, q_B; convention = LeadingS0())
 (A = model.A, S0 = model.S0, beta = model.beta_GeV)
 ```
 
@@ -90,33 +90,60 @@ separate, so the amplitude is self-documenting:
  reduced        = a.reduced,          # X(qbar)  [Table IV]
  spatial_overlap = a.spatial_overlap, # the SHO integral [DERIVED]
  total          = a.total,            # their product = the tabulated number
- matrix_element = matrix_element(a),  # c * X    (the interaction part)
+ reduced_matrix_element = reduced_matrix_element(a), # c * X (dimensionless)
  width_MeV      = decay_width(a))     # |amp|^2
 ```
 
 The `total` is $+12.4\ \mathrm{MeV}^{1/2}$ — the fit row, exact by construction —
 and you can read off that it is `coefficient * reduced * spatial_overlap`.
 
+### The typed reference transition
+
+The same frozen Table V calculation is available through the transition API.
+Reference states carry the external masses and quantum numbers but deliberately
+have no invented radial wave:
+
+```{julia}
+parent = ReferenceState("rho", 0.769; J = 1, parity = -1)
+final = TwoMesonChannel(
+    ReferenceState("pi", 0.138; J = 0, parity = -1),
+    ReferenceState("pi", 0.138; J = 0, parity = -1),
+)
+reference = TableVReference(model, rho_pipi, PartialWave(1, 0))
+typed = matrix_element(final, reference, parent; kinematics = OnShell())
+
+(partial_waves = partial_waves(typed),
+ amplitude = typed[PartialWave(1, 0)],
+ width_MeV = decay_width(typed))
+```
+
+The legacy tables already contain a selected partial-wave amplitude, so
+`typed.helicity` is empty and the explicit `PartialWave` records the paper-row
+metadata. Solver-native operators instead compute helicity amplitudes first and
+derive all allowed partial waves together. A closed `OnShell()` vertex request
+throws; the width convenience returns zero, while an off-shell vertex requires
+an explicit `CMKinematics(k)`.
+
 ## The leading-$S_0$ convention (the key to the S/D/P rows)
 
 Table IV writes the *structure-dependent* classes as $S_0 - k A\bar q^2$. But the
 paper's **numeric column** was computed with only the leading constant
 $S_0 = 3h\beta$ — the $-kA\bar q^2$ polynomial dropped. That is the difference
-between `:table_iv` (the printed formula) and `:leading` (what reproduces the
-table). Watch it on $\rho(1^3D_2)\to[\omega\pi]_P$, a D-class row the paper lists
+between `TableIVPolynomial()` (the printed formula) and `LeadingS0()` (what
+reproduces the table). Watch it on $\rho(1^3D_2)\to[\omega\pi]_P$, a D-class row the paper lists
 as $-7.8$:
 
 ```{julia}
 rho2 = DecayChannel("rho2", "omega", "pi", -sqrt(1/36), :D, 1; label = "rho -> [omega pi]_P")
 q = decay_momentum(1.70, 0.7826, 0.138)   # model 1^3D_2 mass ~ 1.70 GeV
-(table_iv = decay_amplitude(model, rho2, q; convention = :table_iv).total,
- leading  = decay_amplitude(model, rho2, q; convention = :leading).total,
+(table_iv = decay_amplitude(model, rho2, q; convention = TableIVPolynomial()).total,
+ leading  = decay_amplitude(model, rho2, q; convention = LeadingS0()).total,
  paper    = -7.8)
 ```
 
-`:leading` lands on $-7.8$; `:table_iv` misses by ~20%. This one convention turns
+`LeadingS0()` lands on $-7.8$; `TableIVPolynomial()` misses by ~20%. This convention turns
 ~90 previously "unscoreable" S/D/P rows into ~1% matches, and is why
-`decay_amplitude` defaults to `:leading`.
+`decay_amplitude` defaults to `LeadingS0()`.
 
 ## Loading the whole table
 

@@ -149,10 +149,35 @@ export annihilation_basis_input, fix_annihilation_phase,
 include("flavor_mixing.jl")
 
 # =============================================================================
+# Transition amplitudes: resolved states, channels, kinematics, and results
+# =============================================================================
+
+export TransitionOperator,
+    StrongDecayOperator,
+    PhysicalState,
+    ReferenceState,
+    physical_state,
+    TwoMesonChannel,
+    PartialWave,
+    allowed_partial_waves,
+    partial_wave_projection,
+    OnShell,
+    CMKinematics,
+    RelativisticTwoBodyNormalization,
+    GITableVNormalization,
+    TransitionAmplitude,
+    matrix_element,
+    partial_waves
+include("transition_amplitudes.jl")
+
+# =============================================================================
 # Strong decays: Table IV/V amplitude model
 # =============================================================================
 
 export StrongDecayModel,
+    TableIVPolynomial,
+    LeadingS0,
+    TableVReference,
     decay_momentum,
     reduced_decay_amplitude,
     spatial_overlap,
@@ -161,7 +186,7 @@ export StrongDecayModel,
     DecayChannel,
     StrongDecayAmplitude,
     decay_amplitude,
-    matrix_element,
+    reduced_matrix_element,
     decay_width,
     MesonMasses,
     meson_mass

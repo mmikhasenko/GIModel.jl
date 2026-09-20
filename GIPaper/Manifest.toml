@@ -2,7 +2,7 @@
 
 julia_version = "1.11.6"
 manifest_format = "2.0"
-project_hash = "a8b2b64944732ce7d116a51f2e706af01c3ed926"
+project_hash = "f5fa055122db9d0cb50d8a1effe8a0796a175b15"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -84,7 +84,7 @@ version = "1.11.0"
 deps = ["KrylovKit", "LinearAlgebra", "Printf", "QuadGK", "SpecialFunctions", "TOML"]
 path = ".."
 uuid = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
-version = "0.2.0"
+version = "0.3.0"
 
 [[deps.InlineStrings]]
 git-tree-sha1 = "8f3d257792a522b4601c24a577954b0a8cd7334d"
