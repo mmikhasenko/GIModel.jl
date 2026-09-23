@@ -86,3 +86,56 @@
     )
     @test_throws ArgumentError spatial(transverse)
 end
+
+
+@testset "Native solved HO/FD S-wave transition agreement" begin
+    params, mq = load_parameters_and_quark_masses(
+        joinpath(REPOSITORY_ROOT, "data", "parameters.provisional.toml"),
+    )
+    masses = ConstituentMasses(mq["q"], mq["q"])
+    ho = channel_solution(
+        params,
+        masses,
+        0;
+        solver = OscillatorSolver(nlevels_per_channel = 2),
+        nlevels = 2,
+    )
+    fd = channel_solution(
+        params,
+        masses,
+        0;
+        solver = FiniteDifferenceSolver(
+            ngrid = 1200, rmax = 28.0, nlevels_per_channel = 2,
+        ),
+        nlevels = 2,
+    )
+    operator = PseudoscalarEmission(0.7, 0.3, mq)
+    topology = QuarkModelTransitions._QuarkEmission()
+    labels = (
+        QuarkModelTransitions._Eq19OrbitalLabel(
+            QuarkModelTransitions._DirectPseudoscalarPiece(), topology, 0, -1,
+        ),
+        QuarkModelTransitions._Eq19OrbitalLabel(
+            QuarkModelTransitions._RecoilPseudoscalarPiece(), topology, 0, -1,
+        ),
+    )
+    value(solution, label, final_level, initial_level) =
+        QuarkModelTransitions._eq19_s_wave_spatial_integral(
+            operator,
+            label,
+            radial_wave(solution, final_level),
+            radial_wave(solution, initial_level),
+            0.45,
+            (:q, :q),
+        )
+
+    # The 0.3% gate is measured, not guessed: the companion checkpoint records
+    # an FD 450--1800 refinement. The worst HO/FD case is the cancellation-prone
+    # 1S--2S direct overlap (0.233%); all non-node-sensitive columns are <0.1%.
+    for label in labels, (final_level, initial_level) in
+        ((1, 1), (1, 2), (2, 1), (2, 2))
+        ho_value = value(ho, label, final_level, initial_level)
+        fd_value = value(fd, label, final_level, initial_level)
+        @test abs(ho_value - fd_value) / max(abs(ho_value), 1e-12) < 3e-3
+    end
+end
