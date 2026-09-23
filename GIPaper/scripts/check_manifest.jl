@@ -17,6 +17,7 @@ const MANIFEST_DIR = joinpath(ROOT, "docs", "paper_manifest")
 const REPORT = joinpath(ROOT, "GIPaper", "docs", "residual_reports", "manifest_check.md")
 const TEST_DIRS = [
     joinpath(ROOT, "test"),
+    joinpath(ROOT, "QuarkModelTransitions", "test"),
     joinpath(ROOT, "GIPaper", "test"),
     joinpath(ROOT, "docs", "paper-remix", "computations"),
 ]
@@ -87,11 +88,11 @@ function main()
                 push!(problems, (id, "symbol `$sym` not found in `$file`"))
             end
         end
-        # tests[]: name must occur in runtests.jl
+        # tests[]: name must occur in one of the package test trees
         for t in get(u, "tests", String[])
             occursin(String(t), test_sources) || push!(
                 problems,
-                (id, "test `$t` not found under core or GIPaper test/"),
+                (id, "test `$t` not found under a package test/ directory"),
             )
         end
         # report / anchor: file must exist (if given)

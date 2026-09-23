@@ -56,10 +56,13 @@ The review and implementation sequence is specified in
   elements needed by the elementary-emission operator.
 - [x] Make `TwoMesonChannel` contain daughters only; derive rather than request
   `(L,S)` and identical-particle exchange symmetry.
-- [ ] Factor every pure-basis result into exact algebraic coefficients times a
+- [x] Factor the Phase-III elementary-emission target set into algebraic
+  coefficients times a
   shared, wave-keyed basis of spatial integrals. The Eq. (19) term record now
   separates spin, flavor, topology, spherical contraction, and orbital label;
-  full spectroscopic recoupling and radial-label sharing remain open.
+  full spectroscopic recoupling produces helicity and partial-wave coefficient
+  matrices over the same integral columns. Numerical integral values remain
+  Phase IV.
 - [x] Introduce eagerly resolved `PhysicalState` values; no matrix-element
   layer may retain or inspect a `Spectrum`.
 - [x] Support legacy quasi-two-body labels through a mass-only `ReferenceState`

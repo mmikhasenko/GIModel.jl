@@ -424,23 +424,27 @@ the transition and GIPaper suites pass; the Table V report remains byte-identica
 
 ### Phase 3 — algebra and helicity-to-partial-wave vertical slice
 
-- [ ] Complete the state/helicity/flavor/topology/Jacob--Wick phase ledger.
-  Radial, orbital, spin, flavor, physical-state, identical-daughter, and
-  vector-pseudoscalar projection conventions are recorded; Eq. (19) momentum
-  routing and topology-to-orbital-integral signs remain open.
+Status: complete, 2026-09-23. The completion record is
+`QuarkModelTransitions/docs/phase3_completion.md`.
+
+- [x] Complete the state/helicity/flavor/topology/Jacob--Wick phase ledger.
+  Radial, orbital, spin, flavor, physical-state, identical-daughter, Eq. (19)
+  topology, spherical-contraction, and vector-pseudoscalar projection
+  conventions are recorded. Constituent-mass `q'` and derivative-integral
+  conventions are explicitly Phase-IV spatial inputs.
 - [x] Audit `PartialWaveFunctions.jl` against Appendix C, every Table XI row
   through parent `J=5`, and projection orthonormality.
 - [x] Implement normalized sparse Appendix-B flavor states and separate quark
   and antiquark emission contractions, including exact spectator/OZI zeros.
 - [x] Implement the two-spin-1/2 coupled basis and spherical Pauli components,
   with sign-sensitive quark/antiquark and Hermiticity tests.
-- [ ] Implement the pure coefficient/orbital-integral decomposition, with
+- [x] Implement the pure coefficient/orbital-integral decomposition, with
   provenance for every topology term and no numerical wave evaluation. The
   Eq. (19) spin-flavor/topology seam and its spherical-component orbital labels
   are implemented; coupling full spectroscopic states and shared radial labels
-  remains open.
-- [ ] Derive the complete helicity vectors and all partial waves for the target
-  set from that decomposition.
+  is implemented as one coefficient matrix over a shared integral basis.
+- [x] Derive the complete symbolic helicity vectors and all partial waves for
+  the target set from that decomposition.
 
 Targets: `rho -> pi pi`; one channel with two partial waves from one helicity
 vector; one S-wave structure-sensitive decay; one unequal-mass charmed decay;
