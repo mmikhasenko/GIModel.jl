@@ -48,18 +48,22 @@
     @test recoil_q0.coefficient ≈ -1
     @test recoil_qbar0.coefficient ≈ 1
 
-    # Projection selection makes the transverse terms derived exact zeros.
+    # In the helicity frame q points along +z, so g sigma.q has only mu=0.
     @test all(iszero(term.coefficient) for term in direct_terms
               if term.spin_component != 0)
+    @test all(term.component_selection == (term.spin_component == 0 ? 1 : 0)
+              for term in direct_terms)
+    @test all(term.component_selection == 1 for term in recoil_terms)
 
     # The spherical scalar product is sum_mu (-1)^mu sigma_mu v_-mu.
     triplet_minus = QuarkModelTransitions._coupled_spin(1, -1)
     transverse = QuarkModelTransitions._eq19_coefficient_decomposition(
-        direct, singlet, triplet_minus, piminus, piplus, rho0,
+        recoil, singlet, triplet_minus, piminus, piplus, rho0,
     )
     qplus = only(term for term in transverse
                  if term.topology isa q && term.spin_component == 1)
     @test qplus.spherical_phase == -1
+    @test qplus.component_selection == 1
     @test qplus.orbital_label.vector_component == -1
     @test qplus.coefficient ≈ -1
 

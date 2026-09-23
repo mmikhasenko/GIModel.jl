@@ -42,6 +42,8 @@ _eq19_topology_phase(::_RecoilPseudoscalarPiece, ::_AntiquarkEmission) = 1
 
 _eq19_coupling(::_DirectPseudoscalarPiece) = :g
 _eq19_coupling(::_RecoilPseudoscalarPiece) = :h
+_eq19_component_selection(::_DirectPseudoscalarPiece, mu::Int) = iszero(mu) ? 1 : 0
+_eq19_component_selection(::_RecoilPseudoscalarPiece, ::Int) = 1
 
 """One inspectable algebraic multiplier of a named Eq. (19) spatial integral."""
 struct _AlgebraicCoefficientTerm{P,T,F,S,C,L,R}
@@ -52,6 +54,7 @@ struct _AlgebraicCoefficientTerm{P,T,F,S,C,L,R}
     spin_factor::S
     topology_phase::Int
     spherical_phase::Int
+    component_selection::Int
     coefficient::C
     orbital_label::L
     provenance::R
@@ -84,7 +87,9 @@ function _eq19_coefficient_decomposition(
             spin = _spin_factor(topology, daughter_spin, parent_spin, mu)
             topology_phase = _eq19_topology_phase(piece, topology)
             spherical_phase = isodd(abs(mu)) ? -1 : 1
-            coefficient = topology_phase * spherical_phase * flavor * spin
+            component_selection = _eq19_component_selection(piece, mu)
+            coefficient = topology_phase * spherical_phase * component_selection *
+                          flavor * spin
             label = orbital_decomposition(piece, topology, mu)
             provenance = (
                 source = :GI1985_Eq19,
@@ -101,6 +106,7 @@ function _eq19_coefficient_decomposition(
                 spin,
                 topology_phase,
                 spherical_phase,
+                component_selection,
                 coefficient,
                 label,
                 provenance,
@@ -108,4 +114,3 @@ function _eq19_coefficient_decomposition(
         end for topology in topologies for mu in -1:1
     )
 end
-

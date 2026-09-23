@@ -32,7 +32,9 @@ checks an independent identity or paper fixture.
   because its outer and inner recoil signs cancel. The plane-wave routing is
   `exp(-i q' dot r)` for quark emission and `exp(+i q' dot r)` for antiquark
   emission. Spherical scalar products are
-  `sum_mu (-1)^mu sigma_mu v_-mu`.
+  `sum_mu (-1)^mu sigma_mu v_-mu`. In the helicity frame the emitted `q`
+  defines `+z`, so the direct `g sigma.q` piece retains only `mu=0`; the recoil
+  `h sigma.p'` piece retains all three spherical components.
 - **Appendix-C helicities.** For meson emission along `+z`, `h_0 = H_0` and
   `h_m = sqrt(2) H_m` for positive `m`, as in Eq. (C3). The vector-pseudoscalar
   projection is
