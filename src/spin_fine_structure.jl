@@ -438,6 +438,58 @@ function _zero_fine_components()
     )
 end
 
+function _zero_fine_matrices(n::Integer)
+    zero_matrix = Symmetric(zeros(Float64, n, n))
+    return (
+        spin_orbit_vector = zero_matrix,
+        spin_orbit_thomas = zero_matrix,
+        spin_orbit = zero_matrix,
+        tensor = zero_matrix,
+        total = zero_matrix,
+    )
+end
+
+# A15-A16 operator algebra is independent of the radial representation.  FD
+# and HO differ only in how the six radial sandwich matrices below are built;
+# keeping their angular/mass assembly here prevents the two numerical paths
+# from acquiring different physics through copy-and-paste edits.
+function _assemble_fine_structure_matrices(
+    masses::ConstituentMasses,
+    L::Integer,
+    J::Integer,
+    G11::AbstractMatrix,
+    G22::AbstractMatrix,
+    G12::AbstractMatrix,
+    S11::AbstractMatrix,
+    S22::AbstractMatrix,
+    T12::AbstractMatrix,
+)
+    matrices = (G11, G22, G12, S11, S22, T12)
+    size0 = size(G11)
+    size0[1] == size0[2] || throw(ArgumentError(
+        "fine-structure radial matrices must be square; got $size0",
+    ))
+    all(size(matrix) == size0 for matrix in matrices) || throw(ArgumentError(
+        "fine-structure radial matrices must have one common size",
+    ))
+
+    m1, m2 = masses.m1_GeV, masses.m2_GeV
+    ls = LdotS(Int(L), 1, Int(J))
+    vector = Symmetric(ls * (G11 / (4m1^2) + G22 / (4m2^2) + G12 / (m1 * m2)))
+    thomas = Symmetric(-ls * (S11 / (4m1^2) + S22 / (4m2^2)))
+    spin_orbit = Symmetric(Matrix(vector) + Matrix(thomas))
+    tensor = Symmetric(
+        tensor_triplet_LJ(Int(L), Int(J), 1) * T12 / (12m1 * m2),
+    )
+    return (
+        spin_orbit_vector = vector,
+        spin_orbit_thomas = thomas,
+        spin_orbit = spin_orbit,
+        tensor = tensor,
+        total = Symmetric(Matrix(spin_orbit) + Matrix(tensor)),
+    )
+end
+
 function fine_structure_components(
     params::GIParameters,
     masses::ConstituentMasses,
@@ -510,14 +562,7 @@ function fine_structure_grid_matrices(
     m2 = masses.m2_GeV
     n = length(r)
     if !(params.fine_structure.enabled && L >= 1)
-        zero_matrix = Symmetric(zeros(Float64, n, n))
-        return (
-            spin_orbit_vector = zero_matrix,
-            spin_orbit_thomas = zero_matrix,
-            spin_orbit = zero_matrix,
-            tensor = zero_matrix,
-            total = zero_matrix,
-        )
+        return _zero_fine_matrices(n)
     end
     p2_fact = eigen(p2_operator(params, m1, L, r, h))
     side(pair, eps) = momentum_relativization_matrix(
@@ -543,19 +588,8 @@ function fine_structure_grid_matrices(
                    ri -> _scalar_so_kernel(params, pair22, ri))
     T12 = sandwich(masses, params.factors.epsilon_t,
                    ri -> tensor_kernel_smeared_coulomb(params, masses, ri))
-    ls = LdotS(Int(L), 1, Int(J))
-    vector = Symmetric(ls * (G11 / (4m1^2) + G22 / (4m2^2) + G12 / (m1 * m2)))
-    thomas = Symmetric(-ls * (S11 / (4m1^2) + S22 / (4m2^2)))
-    spin_orbit = Symmetric(Matrix(vector) + Matrix(thomas))
-    tensor = Symmetric(
-        tensor_triplet_LJ(Int(L), Int(J), 1) * T12 / (12m1 * m2),
-    )
-    return (
-        spin_orbit_vector = vector,
-        spin_orbit_thomas = thomas,
-        spin_orbit = spin_orbit,
-        tensor = tensor,
-        total = Symmetric(Matrix(spin_orbit) + Matrix(tensor)),
+    return _assemble_fine_structure_matrices(
+        masses, L, J, G11, G22, G12, S11, S22, T12,
     )
 end
 
@@ -579,16 +613,9 @@ function ho_fine_structure_matrices(
     beta::Real,
     nbasis::Integer,
 )
-    zero_matrix = Symmetric(zeros(Float64, nbasis, nbasis))
     S = (multiplicity - 1) ÷ 2
     if !params.fine_structure.enabled || L == 0 || S != 1
-        return (
-            spin_orbit_vector = zero_matrix,
-            spin_orbit_thomas = zero_matrix,
-            spin_orbit = zero_matrix,
-            tensor = zero_matrix,
-            total = zero_matrix,
-        )
+        return _zero_fine_matrices(nbasis)
     end
     params.factors.fine_structure_momentum_sandwich &&
         params.factors.fine_structure_smeared_kernels || throw(ArgumentError(
@@ -596,7 +623,6 @@ function ho_fine_structure_matrices(
     ))
 
     m1, m2 = masses.m1_GeV, masses.m2_GeV
-    ls = LdotS(Int(L), 1, Int(J))
     pair11, pair22 = _mass_pair(m1, m1), _mass_pair(m2, m2)
     sandwich(pair, eps, kernel) = ho_momentum_sandwich_matrix(
         L, beta, nbasis, pair, eps, kernel,
@@ -620,18 +646,8 @@ function ho_fine_structure_matrices(
         # the residual far below the 0.1 MeV eigenvalue convergence target.
         rtol = 1e-8,
     )
-    vector = Symmetric(ls * (G11 / (4m1^2) + G22 / (4m2^2) + G12 / (m1 * m2)))
-    thomas = Symmetric(-ls * (S11 / (4m1^2) + S22 / (4m2^2)))
-    spin_orbit = Symmetric(Matrix(vector) + Matrix(thomas))
-    tensor = Symmetric(
-        tensor_triplet_LJ(Int(L), Int(J), 1) * T12 / (12m1 * m2),
-    )
-    return (
-        spin_orbit_vector = vector,
-        spin_orbit_thomas = thomas,
-        spin_orbit = spin_orbit,
-        tensor = tensor,
-        total = Symmetric(Matrix(spin_orbit) + Matrix(tensor)),
+    return _assemble_fine_structure_matrices(
+        masses, L, J, G11, G22, G12, S11, S22, T12,
     )
 end
 

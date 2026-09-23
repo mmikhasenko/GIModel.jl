@@ -90,6 +90,15 @@ for sec in sectors
         phase = cs < 0 ? -1.0 : 1.0
         theta = atand(phase * ct, phase * cs)
         projection_norm2 = cs^2 + ct^2
+        operator = spin_orbit_mixing_components(
+            params,
+            meson.constituent_masses,
+            L,
+            radial_wave(spec, s1.corrected),
+            radial_wave(spec, s3.corrected),
+        )
+        operator_scale = abs(operator.vector) + abs(operator.thomas)
+        cancellation = iszero(operator_scale) ? 0.0 : abs(operator.total) / operator_scale
         push!(results, (
             sector = sec.label,
             nL = string(n, L),
@@ -102,9 +111,12 @@ for sec in sectors
             diag_t = m3.unmixed_GeV,           # ^3L_L corrected (pre-mixing) mass
             split_MeV = 1000 * (m1.unmixed_GeV - m3.unmixed_GeV),
             offdiag_MeV = 1000 * m1.result.block.matrix[is, it],
+            vector_MeV = 1000 * operator.vector,
+            thomas_MeV = 1000 * operator.thomas,
+            cancellation_percent = 100 * cancellation,
             low = min(s1.mass_GeV, s3.mass_GeV),
             high = max(s1.mass_GeV, s3.mass_GeV),
-            outside_percent = 100 * (1 - projection_norm2),
+            outside_percent = max(0.0, 100 * (1 - projection_norm2)),
             src = sec.src,
         ))
     end
@@ -197,21 +209,29 @@ open(outpath, "w") do io
     println(io, "projection percentage distinguishes that convention issue from genuine")
     println(io, "cross-radial composition in the complete block.")
     println(io)
+    println(io, "The antisymmetric element is itself cancellation-sensitive: its vector")
+    println(io, "color-magnetic and scalar/Thomas pieces usually have opposite signs.")
+    println(io, "The survival percentage below is `|vector + Thomas| / (|vector| + |Thomas|)`.")
+    println(io, "A small value localizes the discrepancy to the relative strength of the two")
+    println(io, "Appendix-A spin-orbit kernels; it is not evidence of radial contamination.")
+    println(io)
     println(io, "## Diagnostics (raw block data)")
     println(io)
     println(io, "Corrected (pre-mixing) diagonal masses `E_s = E(^1L_L)`, `E_t = E(^3L_L)`,")
-    println(io, "same-n off-diagonal `c`, the two assigned physical masses, projected angle,")
+    println(io, "same-n off-diagonal `c = c_vector + c_Thomas`, the two assigned physical masses, projected angle,")
     println(io, "complementary angle (low/high labels exchanged), and norm carried by other")
     println(io, "radial rows. All angles already use the paper")
     println(io, "convention (identity mapping).")
     println(io)
-    println(io, "| Sector | nL | E_s (GeV) | E_t (GeV) | E_s - E_t (MeV) | offdiag c (MeV) | low (GeV) | high (GeV) | theta (deg) | complement (deg) | other radial norm (%) |")
-    println(io, "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+    println(io, "| Sector | nL | E_s (GeV) | E_t (GeV) | E_s - E_t (MeV) | vector c (MeV) | Thomas c (MeV) | total c (MeV) | survives (%) | low (GeV) | high (GeV) | theta (deg) | complement (deg) | other radial norm (%) |")
+    println(io, "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
     for r in results
         @printf(io,
-            "| %s | %s | %.4f | %.4f | %+.2f | %+.2f | %.4f | %.4f | %+.2f | %+.2f | %.2f |\n",
-            r.sector, r.nL, r.diag_s, r.diag_t, r.split_MeV, r.offdiag_MeV,
-            r.low, r.high, r.theta, r.comp, r.outside_percent)
+            "| %s | %s | %.4f | %.4f | %+.2f | %+.2f | %+.2f | %+.2f | %.1f | %.4f | %.4f | %+.2f | %+.2f | %.2f |\n",
+            r.sector, r.nL, r.diag_s, r.diag_t, r.split_MeV,
+            r.vector_MeV, r.thomas_MeV, r.offdiag_MeV,
+            r.cancellation_percent, r.low, r.high, r.theta, r.comp,
+            r.outside_percent)
     end
     println(io)
     println(io, "## Paper sources")
