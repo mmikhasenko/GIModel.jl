@@ -106,6 +106,7 @@ include("pseudoscalar_annihilation.jl")
 
 export fine_structure_split,
     fine_structure_components,
+    fine_structure_radial_kernels,
     fine_structure_grid_operator,
     spin_orbit_mixing_components,
     tensor_mixing_components,

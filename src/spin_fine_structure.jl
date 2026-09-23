@@ -392,6 +392,37 @@ function _scalar_so_kernel(params, pair, r)
            params.potential.b / r0
 end
 
+"""
+    fine_structure_radial_kernels(params, masses, r)
+
+Return the six local radial kernels appearing in Appendix A15-A16 before
+their momentum-dependent factors are applied. The fields are `vector_11`,
+`vector_22`, `vector_12`, `scalar_11`, `scalar_22`, and `tensor_12`.
+
+These are the coordinate-space middle operators in the GI sandwiches
+`B(p²) K(r) B(p²)`, not complete potentials: spin-angular coefficients and
+the explicit mass denominators in A15-A16 are deliberately not folded in.
+Broadcast this scalar method over a radial grid when plotting a profile.
+"""
+function fine_structure_radial_kernels(
+    params::GIParameters,
+    masses::ConstituentMasses,
+    r::Real,
+)
+    m1, m2 = masses.m1_GeV, masses.m2_GeV
+    pair11, pair22 = _mass_pair(m1, m1), _mass_pair(m2, m2)
+    return (
+        vector_11 = _vector_so_kernel(params, pair11, r),
+        vector_22 = _vector_so_kernel(params, pair22, r),
+        vector_12 = _vector_so_kernel(params, masses, r),
+        scalar_11 = _scalar_so_kernel(params, pair11, r),
+        scalar_22 = _scalar_so_kernel(params, pair22, r),
+        tensor_12 = params.factors.fine_structure_smeared_kernels ?
+                    tensor_kernel_smeared_coulomb(params, masses, r) :
+                    tensor_kernel_coulomb_running(r),
+    )
+end
+
 function _spin_expectation(params, pair, L, wave, epsilon, kernel)
     value = params.factors.fine_structure_momentum_sandwich ?
             radial_expect_momentum_sandwich(

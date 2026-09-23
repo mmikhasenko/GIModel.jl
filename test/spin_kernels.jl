@@ -160,6 +160,25 @@ end
     end
 end
 
+@testset "public Appendix-A fine-structure radial kernels" begin
+    params, mq = load_parameters_and_quark_masses(
+        joinpath(root, "data", "parameters.provisional.toml"),
+    )
+    masses = ConstituentMasses(mq["q"], mq["c"])
+    swapped = ConstituentMasses(mq["c"], mq["q"])
+    for r in (0.05, 0.4, 1.5, 4.0)
+        k = fine_structure_radial_kernels(params, masses, r)
+        ks = fine_structure_radial_kernels(params, swapped, r)
+        @test all(isfinite, values(k))
+        @test k.vector_11 == ks.vector_22
+        @test k.vector_22 == ks.vector_11
+        @test k.vector_12 == ks.vector_12
+        @test k.scalar_11 == ks.scalar_22
+        @test k.scalar_22 == ks.scalar_11
+        @test k.tensor_12 == ks.tensor_12
+    end
+end
+
 @testset "reduced radial u(r) expectation normalization" begin
     h = 0.1
     r = collect(h:h:(3h))

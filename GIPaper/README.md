@@ -71,5 +71,9 @@ transition implementation.
 - `GIPaper/docs/residual_reports/` is generated output and is the authoritative
   numerical audit record. Hand-written ledgers link to it instead of copying
   row counts or per-row diagnoses.
+- `GIPaper/docs/investigations/` contains reproducible mechanism studies. These
+  link to the authoritative residual report, separate model operators or test
+  hypotheses, and do not create an independent paper-comparison path. See its
+  [study index](docs/investigations/README.md).
 - Consumer publications may snapshot these reports and summarize their meaning,
   but must not implement an independent comparison path.
