@@ -1,5 +1,24 @@
 struct DummyNativeDecayOperator <: StrongDecayOperator end
 
+@testset "GIModel resolved-state adapter" begin
+    params, masses = load_parameters_and_quark_masses(
+        joinpath(REPOSITORY_ROOT, "data", "parameters.provisional.toml"),
+    )
+    spec = compute_spectrum(
+        params,
+        Meson(masses, :c, :c);
+        levels = [BasisState(1, "S", 3, 1)],
+        solver = FiniteDifferenceSolver(ngrid = 120, rmax = 12.0),
+    )
+    source = only(spec.states)
+    resolved = physical_state(spec, source)
+    @test resolved.label == source.label
+    @test resolved.mass_GeV == source.mass_GeV
+    @test resolved.J == source.J
+    @test !isempty(resolved.components)
+    @test resolved.provenance.source == :spectrum
+end
+
 @testset "Transition-amplitude domain objects" begin
     wave = OscillatorWave(0, 0.4, [1.0])
     rho_basis = BasisState(1, "S", 3, 1; label = "rho", flavors = (:u, :d))
@@ -84,7 +103,7 @@ end
         b.basis.n - c.basis.n,
     )
 
-    composed = GIModel._compose_physical_decay(kernel, final, parent, wave_S)
+    composed = QuarkModelTransitions._compose_physical_decay(kernel, final, parent, wave_S)
     expected = sum(
         a.coefficient * conj(b.coefficient) * conj(c.coefficient) * kernel(b, c, a)
         for a in parent.components for b in final.first.components for c in final.second.components
@@ -115,7 +134,7 @@ end
         (basis = component.basis, coefficient = phases[3] * component.coefficient,
          wave = component.wave) for component in second.components
     ])
-    rephased = GIModel._compose_physical_decay(
+    rephased = QuarkModelTransitions._compose_physical_decay(
         kernel,
         TwoMesonChannel(rephased_first, rephased_second),
         rephased_parent,
@@ -142,10 +161,18 @@ end
     pure_final = TwoMesonChannel(pure_first_daughter, pure_second_daughter)
     equal_kernel(b, c, a) = 1.0
     mixing_only_kernel(b, c, a) = a.basis.n == 2 ? 2.0 : 0.0
-    @test GIModel._compose_physical_decay(equal_kernel, pure_final, mixed_plus, wave_S).value ≈ sqrt(2)
-    @test GIModel._compose_physical_decay(equal_kernel, pure_final, mixed_minus, wave_S).value ≈ 0.0
-    @test GIModel._compose_physical_decay(mixing_only_kernel, pure_final, pure_first, wave_S).value == 0.0
-    @test GIModel._compose_physical_decay(mixing_only_kernel, pure_final, mixed_plus, wave_S).value ≈ sqrt(2)
+    @test QuarkModelTransitions._compose_physical_decay(
+        equal_kernel, pure_final, mixed_plus, wave_S,
+    ).value ≈ sqrt(2)
+    @test QuarkModelTransitions._compose_physical_decay(
+        equal_kernel, pure_final, mixed_minus, wave_S,
+    ).value ≈ 0.0
+    @test QuarkModelTransitions._compose_physical_decay(
+        mixing_only_kernel, pure_final, pure_first, wave_S,
+    ).value == 0.0
+    @test QuarkModelTransitions._compose_physical_decay(
+        mixing_only_kernel, pure_final, mixed_plus, wave_S,
+    ).value ≈ sqrt(2)
 
     identical = PhysicalState("B", 0.4, [
         (basis = first_basis[1], coefficient = inv(sqrt(2)), wave = wave),
@@ -156,14 +183,16 @@ end
         (basis = first_basis[1], coefficient = im / sqrt(2), wave = wave),
     ])
     identical_final = TwoMesonChannel(identical, identical_reordered_rephased)
-    @test GIModel._same_external_state(identical_final.first, identical_final.second)
+    @test QuarkModelTransitions._same_external_state(
+        identical_final.first, identical_final.second,
+    )
     relative_rephased = PhysicalState("B", 0.4, [
         (basis = first_basis[1], coefficient = inv(sqrt(2)), wave = wave),
         (basis = first_basis[2], coefficient = -im / sqrt(2), wave = wave),
     ])
-    @test !GIModel._same_external_state(identical, relative_rephased)
+    @test !QuarkModelTransitions._same_external_state(identical, relative_rephased)
     @test allowed_partial_waves(identical_final, pure_first) == [wave_S]
-    identical_composed = GIModel._compose_physical_decay(
+    identical_composed = QuarkModelTransitions._compose_physical_decay(
         equal_kernel, identical_final, pure_first, wave_S,
     )
     raw_identical = sum(
@@ -182,7 +211,7 @@ end
     vector_parent = PhysicalState("V", 1.8,
         [(basis = vector_parent_basis, coefficient = 1.0, wave = wave)])
     @test isempty(allowed_partial_waves(identical_final, vector_parent))
-    @test_throws ArgumentError GIModel._compose_physical_decay(
+    @test_throws ArgumentError QuarkModelTransitions._compose_physical_decay(
         equal_kernel, identical_final, vector_parent, PartialWave(1, 0),
     )
 end
@@ -233,7 +262,7 @@ end
     closed_row = DecayChannel("x", "a", "b", 1.0, :A, 0)
     closed_operator = TableVReference(model, closed_row, PartialWave(0, 0))
     @test decay_width(closed_final, closed_operator, closed_parent) == 0.0
-    @test_throws GIModel.ClosedChannelError matrix_element(
+    @test_throws QuarkModelTransitions.ClosedChannelError matrix_element(
         closed_final, closed_operator, closed_parent; kinematics = OnShell(),
     )
 

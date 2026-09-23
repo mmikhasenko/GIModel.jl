@@ -5,7 +5,7 @@ Status: review of
 and [transition_matrix_element_api.md](transition_matrix_element_api.md),
 2026-09-20.
 
-Reviewed against `src/strong_decays.jl`, `src/spectrum.jl`,
+Reviewed against `QuarkModelTransitions/src/strong_decays.jl`, `src/spectrum.jl`,
 `src/mock_meson_overlaps.jl`, `src/model_objects.jl`,
 `GIPaper/src/table_v.jl`, the canonical Table V CSV, and the paper's
 Appendix B/C (`paper/vision_ocr/pages/page-012.md`, `page-039.md`,

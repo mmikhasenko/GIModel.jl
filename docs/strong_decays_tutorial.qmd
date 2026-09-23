@@ -1,5 +1,5 @@
 ---
-title: "Strong Decays in GIModel: reproducing Godfrey--Isgur Table V"
+title: "Strong Decays with QuarkModelTransitions: reproducing Godfrey--Isgur Table V"
 subtitle: "A hands-on tutorial for the row-oriented decay API"
 date: 2026-07-09
 engine: julia
@@ -17,7 +17,8 @@ format:
 
 Godfrey and Isgur [Phys. Rev. D **32**, 189 (1985)] tabulate the strong decays
 $M^* \to M + P$ (a meson emitting a pseudoscalar) in their Table V. This tutorial
-shows how `GIModel` computes those amplitudes with an API built so that **you can
+shows how `QuarkModelTransitions` computes those amplitudes from GIModel inputs
+with an API built so that **you can
 see where every number comes from** — the spin--flavor matrix element, the
 harmonic-oscillator spatial overlap, and the two fitted constants — and then
 reproduces the table row by row.
@@ -45,14 +46,15 @@ in $\mathrm{MeV}^{1/2}$. The partial width is $\lvert\text{amp}\rvert^2$.
 
 ## Setup
 
-We work in the `GIPaper` project, which has `GIModel` plus `CSV` for loading the
-digitized table.
+We work in the `GIPaper` project, which has `GIModel`,
+`QuarkModelTransitions`, and `CSV` for loading the digitized table.
 
 ```{julia}
 #| output: false
 using Pkg
 Pkg.activate(joinpath("..", "GIPaper"))
 using GIModel
+using QuarkModelTransitions
 using CSV, DataFrames
 ```
 
@@ -222,7 +224,8 @@ thresholds, and operator limitations do not produce one universal explanation:
 
 ## Where to go from here
 
-- `src/strong_decays.jl` — the API, with `[PAPER]`/`[DERIVED]` tags on every
+- `QuarkModelTransitions/src/strong_decays.jl` — the API, with
+  `[PAPER]`/`[DERIVED]` tags on every
   factor.
 - `docs/observable_ledger.md` — the equation-provenance table and the
   leading-$S_0$ note.

@@ -6,6 +6,7 @@ using Test
 using CSV
 using TOML
 using GIModel
+using QuarkModelTransitions
 using GIPaper
 
 const GIPAPER_ROOT = dirname(@__DIR__)

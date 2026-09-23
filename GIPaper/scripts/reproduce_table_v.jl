@@ -3,7 +3,7 @@
 # Table V reproduction harness
 # =============================================================================
 # Loads EVERY row of the canonical `table_v_strong_decays.csv`, computes its
-# amplitude with the row-oriented GIModel decay API (leading-S0 convention), and
+# amplitude with the row-oriented transition API (leading-S0 convention), and
 # compares against the paper's tabulated MeV^(1/2) column. Writes a per-row
 # report with an "N matched / M scoreable" headline and classifies every
 # non-match by the specific paper convention it depends on.
@@ -17,6 +17,7 @@ Pkg.activate(@__DIR__)
 using CSV
 using Printf
 using GIModel
+using QuarkModelTransitions
 using GIPaper: load_table_v, quark_for, experimental_mass, historical_mass
 
 const ROOT = dirname(@__DIR__)

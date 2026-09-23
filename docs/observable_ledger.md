@@ -91,7 +91,7 @@ three-state composer. A pure-component kernel must not repeat that factor.
 - `data/raw/digitized_tables/table_v_strong_decays.csv`: the canonical,
   page-image-verified transcription of all of Table V (220 rows, see
   `README_canonical_tables.md`).
-- `src/strong_decays.jl`: the row-oriented API — `DecayChannel`,
+- `QuarkModelTransitions/src/strong_decays.jl`: the row-oriented API — `DecayChannel`,
   `decay_amplitude` returning the 3-way `StrongDecayAmplitude` decomposition
   (`coefficient`/`reduced`/`spatial_overlap`/`total`),
   `reduced_matrix_element`, `decay_width`, `MesonMasses`, the

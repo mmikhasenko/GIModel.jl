@@ -98,7 +98,8 @@ end
 
     # spatial_overlap is the pure [DERIVED] SHO momentum factor.
     @test spatial_overlap(0.0, 1, 0.40) == 0.0
-    @test spatial_overlap(0.359, 0, 0.40) ≈ GIModel._suppressed_factor(0.359, 0.40)
+    @test spatial_overlap(0.359, 0, 0.40) ≈
+          QuarkModelTransitions._suppressed_factor(0.359, 0.40)
 
     # The 3-way decomposition multiplies back to the scalar amplitude.
     ch_rho = DecayChannel("rho", "pi", "pi", sqrt(4 / 3), :A, 1)

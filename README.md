@@ -4,13 +4,19 @@ Local reproduction of the Godfrey-Isgur relativized quark model for meson
 masses. The original paper at `paper/Godfrey-Isgur-1985.pdf` is the authority;
 OCR Markdown and extracted CSVs are navigation/provenance aids.
 
-The repository has four first-class deliverables:
+The repository has five first-class deliverables:
 
 - **GIModel** (repository root) — pure computation. Mesons are specified by
   quark flavors (`Meson(mq, :c, :b)`), levels to compute by explicit
   `n^{2S+1}L_J` multiplets (`spectrum_levels`), and `compute_spectrum` returns
   an organized `Spectrum` with contribution breakdowns and intra-meson mixing.
-  It knows nothing about the paper comparison.
+  It owns the Schrödinger solver, physical-state components, wave
+  representations, and generic radial/momentum overlap operations. It knows
+  nothing about transition operators or the paper comparison.
+- **QuarkModelTransitions** (`QuarkModelTransitions/`) — bare quark-model
+  transition operators and observables consuming GIModel states and waves. It
+  owns channels, helicities, partial waves, coherent state composition,
+  matrix elements, widths, and the frozen Table IV/V reference backend.
 - **GIPaper** (`GIPaper/`) — the comparison layer. It owns the digitized paper
   data, maps reference CSV rows to mesons (`reference_meson`, no fallback
   masses), runs `compare_reference`, applies the Table III annihilation
@@ -34,11 +40,14 @@ The repository has four first-class deliverables:
 ## Current Map
 
 - `src/GIModel.jl` is the computation package entry point.
+- `QuarkModelTransitions/src/QuarkModelTransitions.jl` is the transition
+  package entry point and depends one-way on GIModel.
 - `GIPaper/src/GIPaper.jl` is the comparison package entry point; its
   [README](GIPaper/README.md) defines the package boundary and separate script
   environment.
-- `test/runtests.jl` gates the pure numerics; `GIPaper/test/runtests.jl` gates
-  the reference comparison.
+- `test/runtests.jl` gates the pure numerics;
+  `QuarkModelTransitions/test/runtests.jl` gates transition physics; and
+  `GIPaper/test/runtests.jl` gates the reference comparison.
 - `scripts/verify_project.sh` runs the current full gate (both packages).
 - `GIPaper/test/data_validation.jl` owns package-level CSV, TOML, and
   provenance invariants and runs as part of `Pkg.test()`.
@@ -137,6 +146,7 @@ Raw provenance stays under `GIPaper/data/raw/` and `paper/vision_ocr/`.
 
 ```bash
 julia --project=. -e 'using Pkg; Pkg.test()'
+julia --project=QuarkModelTransitions -e 'using Pkg; Pkg.test()'
 julia --project=GIPaper -e 'using Pkg; Pkg.test()'
 julia GIPaper/scripts/run_all_spectrum_checks.jl
 julia GIPaper/scripts/analyze_heavy_quarkonium.jl

@@ -2,7 +2,7 @@
 
 julia_version = "1.11.6"
 manifest_format = "2.0"
-project_hash = "f5fa055122db9d0cb50d8a1effe8a0796a175b15"
+project_hash = "7592d5d1de23d860a5f7c9369482242228abccea"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -84,7 +84,7 @@ version = "1.11.0"
 deps = ["KrylovKit", "LinearAlgebra", "Printf", "QuadGK", "SpecialFunctions", "TOML"]
 path = ".."
 uuid = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
-version = "0.3.0"
+version = "0.4.0"
 
 [[deps.InlineStrings]]
 git-tree-sha1 = "8f3d257792a522b4601c24a577954b0a8cd7334d"
@@ -226,6 +226,12 @@ version = "2.11.3"
 
     [deps.QuadGK.weakdeps]
     Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
+
+[[deps.QuarkModelTransitions]]
+deps = ["GIModel", "Printf"]
+path = "../QuarkModelTransitions"
+uuid = "87282b95-dd94-4373-9910-f2158c0f9e5e"
+version = "0.1.0"
 
 [[deps.Random]]
 deps = ["SHA"]

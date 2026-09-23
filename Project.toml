@@ -1,6 +1,6 @@
 name = "GIModel"
 uuid = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
-version = "0.3.0"
+version = "0.4.0"
 
 [deps]
 KrylovKit = "0b1a1467-8014-51b9-945f-bf0ae24f4b77"

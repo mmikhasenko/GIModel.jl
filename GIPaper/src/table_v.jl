@@ -1,6 +1,6 @@
-# Adapter from the paper's canonical Table V schema to GIModel decay channels.
+# Adapter from the paper's canonical Table V schema to transition-package channels.
 # The CSV schema and its provenance belong to GIPaper; the decay algebra and
-# channel type belong to GIModel.
+# channel type belong to QuarkModelTransitions.
 
 const TABLE_V_AMPLITUDE_CLASSES = Dict(
     "A" => :A,
@@ -18,12 +18,12 @@ const TABLE_V_AMPLITUDE_CLASSES = Dict(
     load_table_v(rows; heavy_fraction_for = _ -> nothing) -> Vector{DecayChannel}
 
 Convert rows in GIPaper's canonical `table_v_strong_decays.csv` schema to
-GIModel [`DecayChannel`](@ref)s. Rows marked `mixing_only` or `unlisted` are
+QuarkModelTransitions [`DecayChannel`](@ref)s. Rows marked `mixing_only` or `unlisted` are
 skipped.
 
 `heavy_fraction_for(row)` supplies `r = m_Q/(m_Q + m_q)`. The paper table does
 not encode quark content, so callers loading unequal-mass `Ac`/`Sc` rows must
-provide this resolver; GIModel will reject those channels when it is absent.
+provide this resolver; QuarkModelTransitions rejects those channels when it is absent.
 """
 function load_table_v(rows; heavy_fraction_for = _ -> nothing)
     channels = DecayChannel[]

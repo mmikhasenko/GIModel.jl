@@ -37,7 +37,7 @@
 #   ~1%. `TableIVPolynomial()` is the default (faithful to the printed formula);
 #   the reproduction harness uses `LeadingS0()`.
 #
-# Public API (exported from GIModel.jl):
+# Public API (exported from QuarkModelTransitions.jl):
 #   StrongDecayModel, decay_momentum, reduced_decay_amplitude, spatial_overlap,
 #   strong_decay_amplitude, calibrate_strong_decay_model,
 #   DecayChannel, StrongDecayAmplitude, decay_amplitude, reduced_matrix_element,

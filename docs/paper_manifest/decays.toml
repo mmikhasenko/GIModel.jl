@@ -17,7 +17,7 @@ label = "Eq. (19)"
 page = 12
 statement = "Pseudoscalar-emission decay operator (g σ·q + h σ·p'): the two-coupling amplitude for M* -> M + P."
 status = "reproduced"
-code = ["src/strong_decays.jl:strong_decay_amplitude"]
+code = ["QuarkModelTransitions/src/strong_decays.jl:strong_decay_amplitude"]
 tests = ["Table V strong-decay model"]
 report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
 metric = "Eq. (19) is evaluated through the same SU(6), single-beta SHO reduction used for the paper's numerical strong-decay tables; the Table IV classes and Table V amplitudes use beta = 0.40 GeV and the paper's two-strength fit."
@@ -75,7 +75,7 @@ label = "Table IV"
 page = 13
 statement = "Reduced partial-wave amplitude classes (A, A', A'', A0, S, D, P and charm A_c, S_c); full amplitude adds q^L exp(-q^2/16 beta^2)."
 status = "reproduced"
-code = ["src/strong_decays.jl:reduced_decay_amplitude"]
+code = ["QuarkModelTransitions/src/strong_decays.jl:reduced_decay_amplitude"]
 tests = ["Table V strong-decay model", "Table V charmed decays"]
 report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
 metric = "light calibration (A, S0) transfers to charm with no refit; LeadingS0 vs TableIVPolynomial conventions"
@@ -91,7 +91,7 @@ page = 14
 pages = "14-22"
 statement = "Strong-decay amplitudes M* -> M + P over all light + charmed nonets (220 rows, pages 14-22); decay rate = |amplitude|^2."
 status = "reproduced"
-code = ["src/strong_decays.jl:decay_amplitude", "GIPaper/scripts/reproduce_table_v.jl"]
+code = ["QuarkModelTransitions/src/strong_decays.jl:decay_amplitude", "GIPaper/scripts/reproduce_table_v.jl"]
 tests = ["Row-oriented decay API"]
 report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
 metric = "220/220 canonical rows accounted for: 107/134 scoreable rows match, 14 near, 13 miss, 82 convention-deferred, 4 context-only"
@@ -108,7 +108,7 @@ label = "Decay oscillator beta = 0.40 GeV"
 page = 14
 statement = "Single harmonic-oscillator scale beta for the SHO-limit decay amplitudes (Table V caption; Table VI footnote g confirms 'as in Table V')."
 status = "reproduced"
-code = ["src/strong_decays.jl:spatial_overlap"]
+code = ["QuarkModelTransitions/src/strong_decays.jl:spatial_overlap"]
 anchor = "paper/vision_ocr/page_images/page-014.png"
 parent = "sec-IV"
 notes = "Paper's own input, not fitted. The form factor is now one expression exp[-(1/4) r^2 q^2/beta_c^2] parametrized by the heavy fraction r = m_Q/(m_Q+m_q); the light Gaussian exp(-q^2/16 beta^2) is exactly its r = 1/2 point (verified bitwise), so there is no separate charm branch and a b-flavored row would simply pass a larger r. r is carried per row on DecayChannel and resolved by the harness from the parent's flavor content, since the canonical CSV has no quark-content column. Note the paper applies this unequal-mass treatment to CHARMED rows only: strange rows are also unequal-mass (r = 0.66) yet keep the equal-mass Gaussian, so 0.5 there is the paper's convention, not the kinematics."
@@ -120,7 +120,7 @@ label = "Strong-decay strengths A, S0"
 page = 23
 statement = "Two-point fit: A from rho->pipi=+12.4, S0 from B->[omega pi]_S=-11, at their physical breakup momenta."
 status = "reproduced"
-code = ["src/strong_decays.jl:calibrate_strong_decay_model"]
+code = ["QuarkModelTransitions/src/strong_decays.jl:calibrate_strong_decay_model"]
 tests = ["Table V strong-decay model"]
 metric = "A=1.644, S0=3.291 (leading convention; paper A=1.67, S=3.27)"
 anchor = "paper/vision_ocr/page_images/page-023.png"
@@ -158,7 +158,7 @@ label = "Eq. (C2)"
 page = 39
 statement = "Partial width from partial-wave amplitudes, fixing the sqrt(q/2pi) amplitude convention."
 status = "implemented"
-code = ["src/strong_decays.jl:spatial_overlap"]
+code = ["QuarkModelTransitions/src/strong_decays.jl:spatial_overlap"]
 anchor = "paper/vision_ocr/page_images/page-039.png"
 parent = "app-C"
 notes = "The sqrt(q/2pi) factor of the amplitude and decay_width = |amp|^2."

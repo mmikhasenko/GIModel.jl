@@ -1,8 +1,9 @@
 # Code architecture
 
-This document describes the current `GIModel` runtime. Paper-specific CSV
-loading, comparisons, plots, and residual reports live in the separate
-`GIPaper/` project; they are not part of the core module.
+This document describes the current `GIModel` runtime. Bare transition
+operators and amplitudes live in `QuarkModelTransitions/`; paper-specific CSV
+loading, comparisons, plots, and residual reports live in `GIPaper/`. Both are
+downstream packages and are not part of the core module.
 
 ## The central contract
 
@@ -47,7 +48,8 @@ flowchart LR
   HOS --> R
   R --> OPS["representation-dispatched radial/momentum operations"]
   OPS --> MIX["cross-sector mixing blocks"]
-  OPS --> DECAY["decay and annihilation observables"]
+  OPS --> TRANSITIONS["QuarkModelTransitions"]
+  OPS --> OBS["remaining observable kernels under boundary audit"]
 ```
 
 ## Spectrum stages
@@ -114,8 +116,13 @@ recursively composes spectroscopic and flavor mixing, with flavor carried by
   stages, and state-level accessors.
 - `flavor_mixing.jl`, `pseudoscalar_annihilation.jl`: annihilation block builders
   and the reference-free final isoscalar spectrum stage.
-- `strong_decays.jl`, `annihilation_widths.jl`, `mock_meson_overlaps.jl`:
-  downstream observables consuming `RadialWave`/`MomentumWave`.
+- `mock_meson_overlaps.jl`: generic mock-meson overlap kernels consuming
+  `RadialWave`/`MomentumWave`.
+- `annihilation_widths.jl`, `radiative_decays.jl`: existing observable code
+  whose final package ownership remains under boundary audit.
+- `QuarkModelTransitions/`: transition domain objects, strong-decay operators,
+  matrix elements, partial waves, and widths. It depends on GIModel; GIModel
+  never depends on it.
 - `GIPaper/`: reference-data interpretation and reproducibility reports.
 
 ## Input ownership

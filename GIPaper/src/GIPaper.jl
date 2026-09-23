@@ -6,6 +6,7 @@ module GIPaper
 # GIModel; this package only consumes its public API.
 
 using GIModel
+using QuarkModelTransitions: DecayChannel
 using CSV
 using Printf
 using LinearAlgebra

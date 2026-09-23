@@ -1,6 +1,7 @@
 # Transition matrix-element API redesign: implementation plan
 
-Status: implementation in progress; Phases 0--2 complete, 2026-09-20
+Status: implementation in progress; Phases 0--2 and package extraction complete,
+2026-09-23; Phase 3 active
 
 Companion documents:
 
@@ -31,6 +32,9 @@ Implement the redesign in stages with these decisions fixed up front:
    not a runtime dependency.
 10. Continuum dressing remains a separate post-GI layer consuming these
     off-shell vertices; it is not represented as a static `MixedState`.
+11. `GIModel` owns the Schrödinger solver, spectra, waves, and generic overlap
+    primitives. `QuarkModelTransitions` owns operators, matrix elements,
+    channels, partial waves, and widths, with a one-way dependency on GIModel.
 
 This revision adopts the review's structural findings rather than preserving
 the earlier partial-wave-per-call design.
@@ -62,7 +66,7 @@ the earlier partial-wave-per-call design.
 
 ## 3. Current-state facts
 
-`src/strong_decays.jl` currently provides `StrongDecayModel`, `DecayChannel`,
+`QuarkModelTransitions/src/strong_decays.jl` provides `StrongDecayModel`, `DecayChannel`,
 `StrongDecayAmplitude`, and `decay_amplitude`. Its one-argument
 `matrix_element(a::StrongDecayAmplitude)` returns only `coefficient * reduced`.
 That quantity is dimensionless; `spatial_overlap` and `total` carry the legacy
@@ -406,6 +410,17 @@ external states; overall-phase invariance and relative-phase interference pass;
 a `mixing_only` fixture is zero in the pure basis and nonzero physically;
 identical factors appear once; the identity rule enters the convention ledger.
 The phase adds no public names.
+
+### Phase 2.5 — package boundary
+
+- [x] Extract transition-domain objects and the frozen Table IV/V backend into
+  `QuarkModelTransitions`.
+- [x] Keep the dependency one-way: `QuarkModelTransitions -> GIModel`.
+- [x] Remove matrix-element, channel, and width exports from GIModel.
+- [x] Update GIPaper to consume both packages and retain its complete test gate.
+
+Gate: package-boundary tests pass; GIModel contains no transition dependency;
+the transition and GIPaper suites pass; the Table V report remains byte-identical.
 
 ### Phase 3 — algebra and helicity-to-partial-wave vertical slice
 

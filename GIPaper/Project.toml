@@ -5,15 +5,18 @@ version = "0.1.0"
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 GIModel = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
+QuarkModelTransitions = "87282b95-dd94-4373-9910-f2158c0f9e5e"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [sources]
 GIModel = {path = ".."}
+QuarkModelTransitions = {path = "../QuarkModelTransitions"}
 
 [compat]
 CSV = "0.10.16"
-GIModel = "0.1.0, 0.2, 0.3"
+GIModel = "0.1.0, 0.2, 0.3, 0.4"
+QuarkModelTransitions = "0.1"
 LinearAlgebra = "1.11.0"
 Printf = "1.11.0"
 TOML = "1.0.3"

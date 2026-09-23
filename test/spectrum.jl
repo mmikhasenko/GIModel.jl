@@ -74,12 +74,6 @@ end
         solver = FiniteDifferenceSolver(ngrid = 120, rmax = 12.0),
     )
     @test length(spec.states) == 4
-    resolved = physical_state(spec, first(spec.states))
-    @test resolved.label == first(spec.states).label
-    @test resolved.mass_GeV == first(spec.states).mass_GeV
-    @test resolved.J == first(spec.states).J
-    @test !isempty(resolved.components)
-    @test resolved.provenance.source == :spectrum
     for s in spec.states
         if isempty(s.mixings)
             @test s.mass_GeV ≈ s.central_GeV + s.contact_shift_GeV + s.fine_structure_shift_GeV atol = 1e-12
