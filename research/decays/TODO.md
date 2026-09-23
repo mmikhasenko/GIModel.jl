@@ -57,7 +57,9 @@ The review and implementation sequence is specified in
 - [x] Make `TwoMesonChannel` contain daughters only; derive rather than request
   `(L,S)` and identical-particle exchange symmetry.
 - [ ] Factor every pure-basis result into exact algebraic coefficients times a
-  shared, wave-keyed basis of spatial integrals.
+  shared, wave-keyed basis of spatial integrals. The Eq. (19) term record now
+  separates spin, flavor, topology, spherical contraction, and orbital label;
+  full spectroscopic recoupling and radial-label sharing remain open.
 - [x] Introduce eagerly resolved `PhysicalState` values; no matrix-element
   layer may retain or inspect a `Spectrum`.
 - [x] Support legacy quasi-two-body labels through a mass-only `ReferenceState`

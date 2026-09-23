@@ -6,6 +6,7 @@ using Printf
 
 include("flavor_algebra.jl")
 include("spin_algebra.jl")
+include("algebraic_decomposition.jl")
 
 export TransitionOperator,
     StrongDecayOperator,

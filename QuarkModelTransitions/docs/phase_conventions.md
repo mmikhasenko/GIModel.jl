@@ -26,6 +26,13 @@ checks an independent identity or paper fixture.
   `-sqrt(2) conj(P[final,initial])`, the anti-fundamental sign of Eq. (B25).
   Spectator flavor is matched exactly, so OZI-forbidden contractions are exact
   zeros rather than numerical cancellations.
+- **Eq. (19) operator signs.** After factoring out the common `i`, quark
+  emission has phase `+1` for both `g sigma.q` and `h sigma.p'`. Antiquark
+  emission has phase `-1` for the direct term and `+1` for the recoil term,
+  because its outer and inner recoil signs cancel. The plane-wave routing is
+  `exp(-i q' dot r)` for quark emission and `exp(+i q' dot r)` for antiquark
+  emission. Spherical scalar products are
+  `sum_mu (-1)^mu sigma_mu v_-mu`.
 - **Appendix-C helicities.** For meson emission along `+z`, `h_0 = H_0` and
   `h_m = sqrt(2) H_m` for positive `m`, as in Eq. (C3). The vector-pseudoscalar
   projection is
@@ -43,7 +50,7 @@ checks an independent identity or paper fixture.
 
 ## Pending before native Eq. (19)
 
-- quark versus antiquark emission phases and momentum routing;
-- topology ordering and the sign of each shared orbital-integral label;
+- the definition of `q'` in terms of external momentum and constituent masses;
+- the radial/derivative sign carried by each spatial-integral implementation;
 - conversion from the GI Appendix-C normalization to the package's canonical
   relativistic two-body normalization.

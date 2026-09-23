@@ -435,7 +435,10 @@ the transition and GIPaper suites pass; the Table V report remains byte-identica
 - [x] Implement the two-spin-1/2 coupled basis and spherical Pauli components,
   with sign-sensitive quark/antiquark and Hermiticity tests.
 - [ ] Implement the pure coefficient/orbital-integral decomposition, with
-  provenance for every topology term and no numerical wave evaluation.
+  provenance for every topology term and no numerical wave evaluation. The
+  Eq. (19) spin-flavor/topology seam and its spherical-component orbital labels
+  are implemented; coupling full spectroscopic states and shared radial labels
+  remains open.
 - [ ] Derive the complete helicity vectors and all partial waves for the target
   set from that decomposition.
 
