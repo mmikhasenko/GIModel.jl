@@ -1,7 +1,7 @@
 # Transition matrix-element API redesign: implementation plan
 
-Status: implementation in progress; Phases 0--2 and package extraction complete,
-2026-09-23; Phase 3 active
+Status: implementation in progress; Phases 0--3 and package extraction complete,
+2026-09-23; Phase 4 active
 
 Companion documents:
 
@@ -133,7 +133,7 @@ d1 = physical_state(d_spectrum, "1^1S_0")
 d2 = physical_state(k_spectrum, "1^1S_0")
 
 final = TwoMesonChannel(d1, d2)
-operator = PseudoscalarEmission(g, h)
+operator = PseudoscalarEmission(g, h, quark_masses)
 
 amp = matrix_element(final, operator, parent; kinematics=OnShell())
 
@@ -458,6 +458,9 @@ shows S/D amplitudes share the same integral basis; zeros are derived.
 Only the previously budgeted projection inspection functions are exported.
 
 ### Phase 4 — solver-native GI pseudoscalar emission
+
+Status: active, 2026-09-23. The first spatial checkpoint is recorded in
+`QuarkModelTransitions/docs/phase4_spatial_checkpoint.md`.
 
 - Implement Eq. (19) with `g,h`, analytic SHO, and native numerical waves.
 - Compute the full off-shell helicity vector and all partial waves.

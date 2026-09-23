@@ -311,6 +311,34 @@ function _oscillator_radial_value(w::OscillatorWave, r::Real)
     )
 end
 
+function _ho_reduced_radial_derivative(nr::Integer, L::Integer, beta::Real, r::Real)
+    rho = beta * r
+    x = rho^2
+    alpha = L + 0.5
+    norm = sqrt(2 * beta * gamma(nr + 1) / gamma(nr + L + 1.5))
+    envelope = norm * rho^(L + 1) * exp(-0.5x)
+    laguerre = generalized_laguerre(nr, alpha, x)
+    # d L_n^alpha(x) / dx = -L_(n-1)^(alpha+1)(x).
+    laguerre_derivative = iszero(nr) ? 0.0 :
+                          -generalized_laguerre(nr - 1, alpha + 1, x)
+    if iszero(r)
+        # Only the L=0 basis has a nonzero derivative at the origin.
+        return L == 0 ? norm * beta * generalized_laguerre(nr, alpha, 0.0) : 0.0
+    end
+    return envelope * (
+        ((L + 1) / r - beta^2 * r) * laguerre +
+        2beta^2 * r * laguerre_derivative
+    )
+end
+
+function _oscillator_radial_derivative(w::OscillatorWave, r::Real)
+    return sum(
+        w.coefficients[n + 1] *
+        _ho_reduced_radial_derivative(n, w.L, w.beta, r) for
+        n in 0:(length(w.coefficients)-1)
+    )
+end
+
 # Native HO waves are polynomial times a Gaussian. Integrating them through an
 # infinite-interval variable transform needlessly evaluates the polynomial at
 # enormous arguments, where high-order bases can form `Inf * 0 = NaN`. Ten
@@ -363,7 +391,8 @@ end
 
 function radial_overlap(left::OscillatorWave, right::OscillatorWave, f)
     nl, nr = sqrt(wave_norm(left)), sqrt(wave_norm(right))
-    if left.L == right.L && left.beta == right.beta
+    probe = f(inv(max(left.beta, right.beta)))
+    if left.L == right.L && left.beta == right.beta && probe isa Real
         n = max(length(left.coefficients), length(right.coefficients))
         cl = vcat(left.coefficients, zeros(n - length(left.coefficients)))
         cr = vcat(right.coefficients, zeros(n - length(right.coefficients)))
@@ -376,6 +405,23 @@ function radial_overlap(left::OscillatorWave, right::OscillatorWave, f)
     )
     value, _ = quadgk(
         r -> _oscillator_radial_value(left, r) * f(r) *
+             _oscillator_radial_value(right, r),
+        0.0,
+        rmax;
+        rtol = 1e-10,
+    )
+    return value / (nl * nr)
+end
+
+
+function radial_derivative_overlap(left::OscillatorWave, right::OscillatorWave, f)
+    nl, nr = sqrt(wave_norm(left)), sqrt(wave_norm(right))
+    rmax = max(
+        _oscillator_coordinate_cutoff(left),
+        _oscillator_coordinate_cutoff(right),
+    )
+    value, _ = quadgk(
+        r -> _oscillator_radial_derivative(left, r) * f(r) *
              _oscillator_radial_value(right, r),
         0.0,
         rmax;

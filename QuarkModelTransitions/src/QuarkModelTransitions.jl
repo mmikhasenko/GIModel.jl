@@ -26,6 +26,9 @@ export TransitionOperator,
     partial_waves
 include("transition_amplitudes.jl")
 
+export PseudoscalarEmission
+include("pseudoscalar_emission.jl")
+
 export StrongDecayModel,
     TableIVPolynomial,
     LeadingS0,

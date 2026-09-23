@@ -10,6 +10,7 @@ const root = REPOSITORY_ROOT
     include("flavor_algebra.jl")
     include("spin_algebra.jl")
     include("algebraic_decomposition.jl")
+    include("pseudoscalar_emission.jl")
     include("strong_decays.jl")
     include("transition_amplitudes.jl")
 end

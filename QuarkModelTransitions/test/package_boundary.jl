@@ -2,6 +2,7 @@
     transition_names = (
         :TransitionOperator,
         :StrongDecayOperator,
+        :PseudoscalarEmission,
         :PhysicalState,
         :TwoMesonChannel,
         :TransitionAmplitude,

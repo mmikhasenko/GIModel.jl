@@ -18,7 +18,20 @@
     @test isapprox(radial_overlap(w, w, x -> 1.0), 1.0; rtol = 1e-10)
     w_scaled = MeshWave(7.3 .* w.u, r)
     @test isapprox(radial_overlap(w, w_scaled, x -> 1.0), 1.0; rtol = 1e-10)
+    @test radial_overlap(w, w, _ -> 1 + 2im) ≈ 1 + 2im
     @test isapprox(radial_expect(w_scaled, x -> x), radial_expect(w, x -> x); rtol = 1e-12)
+
+    # Integration by parts gives integral r*u*u' dr = -1/2 for every
+    # normalized reduced radial wave with vanishing endpoints.
+    @test GIModel.radial_derivative_overlap(w, w, identity) ≈ -0.5 atol = 2e-3
+    @test GIModel.radial_derivative_overlap(w, w, x -> (1 + im) * x) ≈
+          -0.5(1 + im) atol = 3e-3
+
+    ho_ground = OscillatorWave(0, 0.4, [1.0])
+    @test GIModel.radial_derivative_overlap(ho_ground, ho_ground, identity) ≈
+          -0.5 atol = 1e-10
+    @test radial_overlap(ho_ground, ho_ground, _ -> 1 + 2im) ≈
+          1 + 2im atol = 1e-10
 
     # Two different waves: overlap is symmetric and bounded by 1 (Cauchy-Schwarz).
     v = r .* exp.(-0.7 .* r)

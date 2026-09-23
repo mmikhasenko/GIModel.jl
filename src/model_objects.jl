@@ -79,6 +79,7 @@ for operations and never touch its representation:
 |---|---|
 | `radial_expect(w, f)` | integral of u^2 f(r) dr |
 | `radial_overlap(wx, wy, f)` | integral of u_x u_y f(r) dr |
+| `radial_derivative_overlap(wx, wy, f)` | integral of (du_x/dr) u_y f(r) dr |
 | `momentum_wave(w, L)` | the momentum-space wave Phi(p) |
 | `momentum_expect(mw, g)` | integral of p^2 |Phi|^2 g(p) dp |
 | [`wave_norm`](@ref)`(w)` | integral of u^2 dr, guaranteed 1 |
@@ -239,9 +240,61 @@ function radial_overlap(wx::MeshWave, wy::MeshWave, f)
         throw(ArgumentError("radial_overlap: mesh points differ"))
     nx, ny = wave_norm(wx), wave_norm(wy)
     (nx > 0 && ny > 0) || throw(ArgumentError("radial_overlap: zero-norm wave"))
-    s = 0.0
+    first_value = wx.u[firstindex(wx.u)] * wy.u[firstindex(wy.u)] *
+                  f(wx.r[firstindex(wx.r)])
+    s = zero(first_value)
     @inbounds for i in eachindex(wx.r)
         s += wx.u[i] * wy.u[i] * f(wx.r[i])
+    end
+    return s * wx.h / sqrt(nx * ny)
+end
+
+raw"""
+    radial_derivative_overlap(wx::RadialWave, wy::RadialWave, f)
+
+Evaluate
+
+```math
+\int_0^\infty \frac{d u_x(r)}{dr}\,u_y(r)\,f(r)\,dr
+```
+
+with both reduced radial waves physically normalized. The derivative acts on
+the first argument. This is a generic wave operation: transition operators
+combine it with their own angular and `u/r` terms rather than inspecting a
+wave representation.
+
+The mesh method uses the solver's Dirichlet endpoints `u(0)=u(r_max+h)=0` and
+a centered difference on every interior point. Complex-valued kernels are
+supported.
+"""
+function radial_derivative_overlap(wx::MeshWave, wy::MeshWave, f)
+    length(wx.r) >= 2 || throw(ArgumentError(
+        "radial_derivative_overlap: need at least two mesh points",
+    ))
+    length(wx.r) == length(wy.r) || throw(ArgumentError(
+        "radial_derivative_overlap: waves live on different meshes",
+    ))
+    isapprox(wx.h, wy.h; rtol = 1e-10) || throw(ArgumentError(
+        "radial_derivative_overlap: mesh spacings differ",
+    ))
+    all(isapprox.(wx.r, wy.r; rtol = 1e-10, atol = 1e-12)) ||
+        throw(ArgumentError("radial_derivative_overlap: mesh points differ"))
+    nx, ny = wave_norm(wx), wave_norm(wy)
+    (nx > 0 && ny > 0) || throw(ArgumentError(
+        "radial_derivative_overlap: zero-norm wave",
+    ))
+    derivative(i) = if i == firstindex(wx.u)
+        wx.u[i + 1] / (2wx.h)
+    elseif i == lastindex(wx.u)
+        -wx.u[i - 1] / (2wx.h)
+    else
+        (wx.u[i + 1] - wx.u[i - 1]) / (2wx.h)
+    end
+    first_value = derivative(firstindex(wx.u)) * wy.u[firstindex(wy.u)] *
+                  f(wx.r[firstindex(wx.r)])
+    s = zero(first_value)
+    @inbounds for i in eachindex(wx.r)
+        s += derivative(i) * wy.u[i] * f(wx.r[i])
     end
     return s * wx.h / sqrt(nx * ny)
 end
