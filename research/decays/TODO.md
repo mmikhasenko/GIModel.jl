@@ -47,6 +47,13 @@ The review and implementation sequence is specified in
   keep `^3P0` behind its later three-route spatial-integral prototype.
 - [ ] Define the complete off-shell helicity vector and derive every allowed
   `M[A → BC; k, L, S] = ⟨BC;k,LS|T|A⟩` by a tested Jacob--Wick projection.
+- [x] Generate the Appendix-C vector-pseudoscalar projection from Clebsch--Gordan
+  coefficients and reproduce every sign and magnitude in Table XI through
+  parent `J=5`.
+- [x] Implement normalized sparse Appendix-B flavor states, exact spectator
+  selection, and separate quark/antiquark flavor contractions.
+- [x] Implement the coupled two-spin-1/2 states and spherical Pauli matrix
+  elements needed by the elementary-emission operator.
 - [x] Make `TwoMesonChannel` contain daughters only; derive rather than request
   `(L,S)` and identical-particle exchange symmetry.
 - [ ] Factor every pure-basis result into exact algebraic coefficients times a

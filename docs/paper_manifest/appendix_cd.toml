@@ -20,10 +20,10 @@ label = "Eq. (C1)"
 page = 39
 statement = "Helicity amplitude definition H_m for M* -> M + P; the basis from which the partial-wave amplitudes are projected."
 status = "folded"
-code = ["QuarkModelTransitions/src/strong_decays.jl:reduced_decay_amplitude"]
+code = ["QuarkModelTransitions/src/strong_decays.jl:reduced_decay_amplitude", "QuarkModelTransitions/src/transition_amplitudes.jl:partial_wave_projection"]
 anchor = "paper/vision_ocr/page_images/page-039.png"
 parent = "app-C"
-notes = "Folded: Table IV already tabulates the partial-wave amplitudes, so we work directly in the partial-wave basis (reduced_decay_amplitude) rather than projecting from helicity amplitudes. OCR-located on page-image 39."
+notes = "The legacy Table-IV backend remains folded directly into partial waves. The native API now carries the explicit helicity basis and projection map, but Eq. (C1)'s operator-generated helicity amplitudes remain a Phase-4 deliverable. OCR-located on page-image 39."
 
 [[unit]]
 id = "C3"
@@ -31,10 +31,12 @@ kind = "equation"
 label = "Eq. (C3)"
 page = 39
 statement = "Helicity-to-partial-wave sum rule relating H_m to the partial-wave decay amplitudes."
-status = "context"
+status = "implemented"
+code = ["QuarkModelTransitions/src/transition_amplitudes.jl:partial_wave_projection"]
+tests = ["GI Appendix C / Table XI projection"]
 anchor = "paper/vision_ocr/page_images/page-039.png"
 parent = "app-C"
-notes = "Context only: not needed while amplitudes (not widths) are compared row-by-row against Table V. No independent code — the partial-wave amplitudes are compared directly. OCR-located on page-image 39."
+notes = "Implemented as a generated Clebsch--Gordan projection for spin-zero pairs and vector-pseudoscalar channels. Tests reproduce every Table-XI sign and magnitude through parent J=5 and check row orthonormality. Higher daughter spins remain explicitly gated. OCR-located on page-image 39."
 
 # --- Appendix D: mock-meson electromagnetic matrix elements ----------------
 

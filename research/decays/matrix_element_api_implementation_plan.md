@@ -424,10 +424,20 @@ the transition and GIPaper suites pass; the Table V report remains byte-identica
 
 ### Phase 3 — algebra and helicity-to-partial-wave vertical slice
 
-- Establish the state/helicity/flavor/topology/Jacob--Wick phase ledger.
-- Audit `PartialWaveFunctions.jl` against Appendix C and identities.
-- Implement pure coefficient decomposition and sparse flavor states.
-- Derive helicity amplitudes and all partial waves for the target set.
+- [ ] Complete the state/helicity/flavor/topology/Jacob--Wick phase ledger.
+  Radial, orbital, spin, flavor, physical-state, identical-daughter, and
+  vector-pseudoscalar projection conventions are recorded; Eq. (19) momentum
+  routing and topology-to-orbital-integral signs remain open.
+- [x] Audit `PartialWaveFunctions.jl` against Appendix C, every Table XI row
+  through parent `J=5`, and projection orthonormality.
+- [x] Implement normalized sparse Appendix-B flavor states and separate quark
+  and antiquark emission contractions, including exact spectator/OZI zeros.
+- [x] Implement the two-spin-1/2 coupled basis and spherical Pauli components,
+  with sign-sensitive quark/antiquark and Hermiticity tests.
+- [ ] Implement the pure coefficient/orbital-integral decomposition, with
+  provenance for every topology term and no numerical wave evaluation.
+- [ ] Derive the complete helicity vectors and all partial waves for the target
+  set from that decomposition.
 
 Targets: `rho -> pi pi`; one channel with two partial waves from one helicity
 vector; one S-wave structure-sensitive decay; one unequal-mass charmed decay;

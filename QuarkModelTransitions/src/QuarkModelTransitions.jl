@@ -1,7 +1,11 @@
 module QuarkModelTransitions
 
 using GIModel
+using PartialWaveFunctions: CG
 using Printf
+
+include("flavor_algebra.jl")
+include("spin_algebra.jl")
 
 export TransitionOperator,
     StrongDecayOperator,

@@ -49,9 +49,19 @@ end
     @test projection.partial_waves == (PartialWave(1, 0),)
     @test projection.matrix == ones(1, 1)
     vector = ReferenceState("vector", 0.8; J = 1, parity = -1)
-    @test_throws ArgumentError partial_wave_projection(
+    vector_projection = partial_wave_projection(
         TwoMesonChannel(vector, ReferenceState("p", 0.1; J = 0, parity = -1)),
         ReferenceState("parent", 1.2; J = 1, parity = 1),
+    )
+    @test vector_projection.partial_waves == (PartialWave(0, 1), PartialWave(2, 1))
+    @test vector_projection.matrix ≈ [sqrt(1 / 3) sqrt(2 / 3);
+                                              -sqrt(2 / 3) sqrt(1 / 3)]
+    @test_throws ArgumentError partial_wave_projection(
+        TwoMesonChannel(
+            ReferenceState("tensor", 0.8; J = 2, parity = 1),
+            ReferenceState("p", 0.1; J = 0, parity = -1),
+        ),
+        ReferenceState("parent", 1.2; J = 2, parity = -1),
     )
 
     identical = TwoMesonChannel(pip, pip)
@@ -65,6 +75,59 @@ end
         TwoMesonChannel(incomplete, ReferenceState("pi", 0.138)),
         ReferenceState("A1", 1.2),
     )
+end
+
+@testset "GI Appendix C / Table XI projection" begin
+    vector = ReferenceState("V", 0.7; J = 1, parity = -1)
+    pseudoscalar = ReferenceState("P", 0.1; J = 0, parity = -1)
+    final = TwoMesonChannel(vector, pseudoscalar)
+
+    expected = Dict(
+        (0, -1) => [(1, [-1.0, 0.0])],
+        (1, 1) => [
+            (0, [sqrt(1 / 3), sqrt(2 / 3)]),
+            (2, [-sqrt(2 / 3), sqrt(1 / 3)]),
+        ],
+        (1, -1) => [(1, [0.0, -1.0])],
+        (2, 1) => [(2, [0.0, -1.0])],
+        (2, -1) => [
+            (1, [sqrt(2 / 5), sqrt(3 / 5)]),
+            (3, [-sqrt(3 / 5), sqrt(2 / 5)]),
+        ],
+        (3, 1) => [
+            (2, [sqrt(3 / 7), sqrt(4 / 7)]),
+            (4, [-sqrt(4 / 7), sqrt(3 / 7)]),
+        ],
+        (3, -1) => [(3, [0.0, -1.0])],
+        (4, 1) => [(4, [0.0, -1.0])],
+        (4, -1) => [
+            (3, [sqrt(4 / 9), sqrt(5 / 9)]),
+            (5, [-sqrt(5 / 9), sqrt(4 / 9)]),
+        ],
+        (5, 1) => [
+            (4, [sqrt(5 / 11), sqrt(6 / 11)]),
+            (6, [-sqrt(6 / 11), sqrt(5 / 11)]),
+        ],
+        (5, -1) => [(5, [0.0, -1.0])],
+    )
+
+    empty_projection = partial_wave_projection(
+        final, ReferenceState("J0+", 2.0; J = 0, parity = 1),
+    )
+    @test isempty(empty_projection.partial_waves)
+    @test size(empty_projection.matrix) == (0, 2)
+
+    for ((J, parity), rows) in expected
+        projection = partial_wave_projection(
+            final,
+            ReferenceState("parent", 2.0; J, parity),
+        )
+        @test [wave.relative_L for wave in projection.partial_waves] == first.(rows)
+        @test projection.matrix ≈ reduce(vcat, permutedims(values) for (_, values) in rows)
+        identity = [i == j ? 1.0 : 0.0 for i in eachindex(rows), j in eachindex(rows)]
+        @test projection.matrix * transpose(projection.matrix) ≈
+              identity
+    end
 end
 
 @testset "Coherent three-state composition" begin

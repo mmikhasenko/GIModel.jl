@@ -7,6 +7,8 @@ const root = REPOSITORY_ROOT
 
 @testset "QuarkModelTransitions" begin
     include("package_boundary.jl")
+    include("flavor_algebra.jl")
+    include("spin_algebra.jl")
     include("strong_decays.jl")
     include("transition_amplitudes.jl")
 end

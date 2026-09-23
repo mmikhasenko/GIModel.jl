@@ -271,11 +271,14 @@ end
 """
     partial_wave_projection(final, initial)
 
-Return the helicity-to-partial-wave map. Phase 1 implements the unique
-spin-zero-daughter projection. General Jacob--Wick projection is intentionally
-gated on the Phase 3 convention ledger.
+Return the helicity-to-partial-wave map. The columns use the GI Appendix-C
+reduced helicities `h_0 = H_0`, `h_m = sqrt(2) H_m` for `m > 0`. Spin-zero
+daughters have the unique one-column projection; a vector plus pseudoscalar is
+projected with conventional Clebsch--Gordan coefficients and reproduces Table
+XI. Higher-spin compression remains gated on its own phase audit.
 """
 function partial_wave_projection(final::TwoMesonChannel, initial::TransitionState)
+    J, _ = _state_quantum_numbers(initial)
     j1, _ = _state_quantum_numbers(final.first)
     j2, _ = _state_quantum_numbers(final.second)
     waves = Tuple(allowed_partial_waves(final, initial))
@@ -283,9 +286,23 @@ function partial_wave_projection(final::TwoMesonChannel, initial::TransitionStat
         helicities = (HelicityLabel(0, 0),)
         return PartialWaveProjection(helicities, waves, ones(Float64, length(waves), 1))
     end
+    if (j1, j2) in ((1, 0), (0, 1))
+        helicities = j1 == 1 ?
+            (HelicityLabel(0, 0), HelicityLabel(2, 0)) :
+            (HelicityLabel(0, 0), HelicityLabel(0, 2))
+        matrix = Matrix{Float64}(undef, length(waves), 2)
+        for (row, wave) in pairs(waves)
+            L = wave.relative_L
+            scale = sqrt((2L + 1) / (2J + 1))
+            matrix[row, 1] = scale * CG(L, 0, 1, 0, J, 0)
+            matrix[row, 2] = sqrt(2) * scale * CG(L, 0, 1, 1, J, 1)
+        end
+        return PartialWaveProjection(helicities, waves, matrix)
+    end
     throw(ArgumentError(
-        "general helicity-to-partial-wave projection is not implemented yet; " *
-        "the Phase 3 Jacob-Wick convention gate must land first",
+        "helicity-to-partial-wave projection is implemented for spin-zero pairs " *
+        "and vector-pseudoscalar channels; higher daughter spins require a " *
+        "separate parity/helicity-compression audit",
     ))
 end
 
