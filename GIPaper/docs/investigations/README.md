@@ -33,9 +33,20 @@ Every numerical study here should:
   vector spin-orbit, scalar/Thomas, and tensor kernels; compares central-wave
   first order with full fixed-sector diagonalization; and checks native HO
   against finite differences.
+- [Differentiable state-energy readiness](differentiable_state_energy.md) —
+  establishes that an isolated fixed-sector energy should be differentiated as
+  an eigenvalue problem, verifies its Hellmann–Feynman pullback numerically, and
+  identifies the adaptive solver and `Float64` result boundaries that must stay
+  outside the reverse-mode kernel.
 
 Regenerate the P-wave study from the repository root with:
 
 ```sh
 julia GIPaper/scripts/investigate_pwave_fine_structure.jl
+```
+
+Reproduce the state-energy pullback check with:
+
+```sh
+julia GIPaper/scripts/investigate_state_energy_differentiability.jl
 ```
