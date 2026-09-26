@@ -1,5 +1,10 @@
 # Julia AD backend research
 
+Design update (2026-09-26): follow [the fitting plan](fitting_plan.md) for the
+next experiment. Keep the current computation API and test Enzyme against a
+mass-fitting loss before exposing prepared kernels. A spectral rule is internal
+machinery and does not replace wavefunction response for general observables.
+
 Research checked on 2026-08-06. Links below are primary project documentation or
 source. Backend behavior changes, so the eventual decision must be backed by
 version-pinned probes in this repository.

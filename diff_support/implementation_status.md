@@ -1,5 +1,11 @@
 # Differentiation-enabling cleanup: implementation status
 
+Planning update (2026-09-26): [Differentiation for parameter fitting](fitting_plan.md)
+records the revised next experiment and Hellmann–Feynman caveat. Preparation is
+initially internal, the existing user API is preserved, and Enzyme is tested
+before adding abstractions. The implementation and verification entries below
+retain their dated scope; this update adds no runtime differentiation support.
+
 Implementation snapshot: integrated with the native radial-solution abstraction,
 2026-08-07. The audit reports in this directory retain their original snapshot
 types as historical evidence; this status page records the current runtime.

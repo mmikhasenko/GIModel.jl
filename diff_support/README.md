@@ -4,6 +4,12 @@ This directory preserves research and probes for a possible differentiable
 numerical core. It is not an active work plan. Nothing here is loaded by
 `GIModel`, and no AD package has been added to the project dependencies.
 
+Design update (2026-09-26): see [the fitting plan](fitting_plan.md) for the
+current direction: preserve the existing user API, test Enzyme first, and
+validate gradients of prediction losses with states recomputed at each parameter
+point. It supersedes the public prepared-kernel API proposals and grid-only beta
+selection assumptions below; the older material remains historical evidence.
+
 Snapshot: repository commit `7aef9a8`, 2026-08-06. The audit also records the
 concurrent, uncommitted HO quadrature memoization separately wherever it affects
 measurements.
