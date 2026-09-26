@@ -127,3 +127,17 @@ checkout keeps its integration wrapper and LaTeX caption in
 `report/sources/a_class_threshold.jl` and
 `report/sources/a_class_threshold_caption.tex`. Run the wrapper with the
 calculation checkout as its optional argument to refresh the paper figure.
+
+## Pseudoscalar channel census
+
+The [charge-resolved census](docs/pseudoscalar_census/README.md) distinguishes
+Table-IV partial waves, flavor/emitter contributions, and distinct final
+channels. It includes charge conjugates and closed thresholds, with explicit
+pseudoscalar and isoscalar-mixing assumptions. Regenerate its compressed JSON
+ledger and report using only Python's standard library:
+
+```sh
+python3 GIPaper/scripts/count_pseudoscalar_channels.py
+```
+
+This is an algebraic inventory, not a new numerical width calculation.
