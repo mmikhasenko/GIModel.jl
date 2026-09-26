@@ -28,9 +28,9 @@ threshold_lo=min(1.0,minimum(r.U_hg_re for r in threshold_valid))
 threshold_hi=max(1.0,maximum(r.U_hg_re for r in threshold_valid))
 threshold_pad=max(0.025,0.03*(threshold_hi-threshold_lo))
 threshold_bins=collect(range(threshold_lo-threshold_pad,threshold_hi+threshold_pad;length=36))
-publication=Figure(size=(1100,760),fontsize=23)
+publication=Figure(size=(800,600),fontsize=23)
 publication_axis=Axis(publication[1,1],xlabel=XLABEL,ylabel="Number of combinations",
-        xlabelsize=28,ylabelsize=23,xticklabelsize=21,yticklabelsize=21)
+        xlabelsize=28,ylabelsize=23,xticklabelsize=23,yticklabelsize=23)
 publication_counts=zeros(Int,length(threshold_bins)-1,length(SECTORS))
 for (s,sector) in enumerate(SECTORS), r in filter(r->r.sector==sector,threshold)
     bin=r.scalar_stable ? clamp(searchsortedlast(threshold_bins,r.U_hg_re),1,length(threshold_bins)-1) : 0
@@ -46,11 +46,10 @@ barplot!(publication_axis,repeat(publication_centers,length(SECTORS)),vec(public
          color=repeat(COLORS,inner=length(publication_centers)),width=0.94*(threshold_bins[2]-threshold_bins[1]))
 vlines!(publication_axis,[1.0];color=:black,linestyle=:dash,linewidth=2)
 xlims!(publication_axis,first(threshold_bins),last(threshold_bins))
-Label(publication[0,1],L"A,\ A^{\prime},\ A^{\prime\prime}:\quad q\to 0",fontsize=30)
-Legend(publication[2,1],[PolyElement(color=c) for c in COLORS],SECTORS;
-       orientation=:horizontal,framevisible=false,labelsize=19)
+Legend(publication[1,1],[PolyElement(color=c) for c in COLORS],SECTORS;
+       halign=:right,valign=:top,tellwidth=false,tellheight=false,
+       margin=(12,16,12,16),framevisible=false,labelsize=23)
 publication_failed=count(r->!r.certified,threshold)
-Label(publication[3,1],"9 transitions · $(length(threshold)) basis/flavor/emitter combinations · $publication_failed numerical flags retained",fontsize=17)
 save(joinpath(OUT,"threshold_histogram.pdf"),publication)
 save(joinpath(OUT,"threshold_histogram.png"),publication;px_per_unit=2)
 CSV.write(joinpath(OUT,"threshold_bins.csv"),[(bin=i,left=threshold_bins[i],right=threshold_bins[i+1]) for i in 1:length(publication_centers)])

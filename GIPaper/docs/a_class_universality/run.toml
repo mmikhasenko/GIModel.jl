@@ -18,5 +18,5 @@ schema_version = 2
 [source_sha256]
 "QuarkModelTransitions/src/pseudoscalar_emission.jl" = "c10005ce1940f2494edb5430577d8a9ec78e613c61906c263d986d1ea2c4bd26"
 "GIPaper/scripts/a_class_kernels.jl" = "f92fbeee07f3ba418175946e256038a2cec5ccfdccac5e98c7f851ec013a1333"
-"GIPaper/scripts/plot_a_class.jl" = "847abf082946fb628c80e672a8ab658dcec8dd6f4aaa3ae13818f763e757996e"
+"GIPaper/scripts/plot_a_class.jl" = "3c0bcee55580d4fe0db4d13105047b37e105941445f2dbd379bbb7d22fd22ba1"
 "GIPaper/scripts/study_a_class.jl" = "8391162dd61b23ab9f1f376978e4d459174992f1a696c86322e1a8e2fb211c7c"

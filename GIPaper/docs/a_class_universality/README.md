@@ -264,3 +264,14 @@ convention/implementation finding independent of native-wave convergence.
 Consequently this deliverable does **not** claim to have validated the task's
 specified unequal-mass formula. It provides the operator audit, reproducible
 countercheck, and complete conditional survey needed to resolve that issue.
+
+## Paper integration
+
+The publication histogram has an inset upper-right sector legend. Transition
+families, the nine-transition/810-combination census, and numerical qualifications
+belong in the caption. The separate report repository stores its wrapper and
+caption alongside the other figure sources in `sources/a_class_threshold.jl`
+and `sources/a_class_threshold_caption.tex`; the wrapper calls this study's
+renderer and copies its vector PDF to `figures/a_class_threshold.pdf`. It accepts
+an optional GIModel.jl checkout path, so an isolated computation worktree can
+supply the paper without duplicating the numerical implementation.

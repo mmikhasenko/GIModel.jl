@@ -113,3 +113,17 @@ The [A-class universality study](docs/a_class_universality/README.md) provides a
 reproducible nine-transition native-wave/common-beta-SHO kernel survey, raw
 trace and plot ledgers, and an explicit unequal-mass convention audit. It is
 separate from the physical on-shell Table V reproduction.
+
+Regenerate the publication threshold histogram from its archived traces with:
+
+```sh
+julia --project=GIPaper/scripts GIPaper/scripts/plot_a_class.jl
+python3 GIPaper/scripts/verify_a_class_artifacts.py
+```
+
+The numerical solver workflow is preserved in `scripts/study_a_class.jl` and
+`scripts/a_class_kernels.jl`; see the study README before recomputing. The paper
+checkout keeps its integration wrapper and LaTeX caption in
+`report/sources/a_class_threshold.jl` and
+`report/sources/a_class_threshold_caption.tex`. Run the wrapper with the
+calculation checkout as its optional argument to refresh the paper figure.
