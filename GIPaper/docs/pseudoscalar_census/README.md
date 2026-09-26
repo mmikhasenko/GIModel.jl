@@ -22,8 +22,9 @@ The table includes 2S -> 1S. It is a representative list, not an exhaustive list
 
 These are individual ordered flavor/emitter basis contributions, not physical decays. The old histogram calls uu/dd/ss components isoscalar and does not separately include a coherent neutral isovector. This convention must not be reinterpreted as physical isospin multiplets.
 
-## Charge-resolved channel census
+## Charge-resolved spectroscopic-basis channel census
 
+The spin labels are unmixed spectroscopic basis states, including the two axial states in open-flavor sectors. Isoscalar flavor mixing below does not include axial spin mixing. See [the explicit charm audit](charmed_scratchpad.md): 504/448 are basis counts; generic axial mixing expands the represented charm set to 532/476. These are not exhaustive physical-resonance counts.
 Each spectroscopic level has a full isovector triplet, two isoscalar flavor states, four strange states, six open-charm states and six open-bottom states. Heavy quarks are spectators. Both charge conjugates are counted. Isospin is exact (mu=md). Flavor blocks with different emitter/spectator/produced masses remain independent; no SU(3)-symmetric radial cancellation is assumed.
 The mixed case uses two generic isoscalar mixtures for parent and surviving meson; ideal uses pure nn and ss except that ground-pseudoscalar daughters always use the same mixed eta/eta-prime states as the emitted fields. Mixing coefficients are algebraic representatives, not fitted angles. Special mixing angles can reduce counts.
 For each flavor block the algebra is Fq + epsilon Fanti, where epsilon=(-1)^(Li+Si+Lf+Sf). Spin interchange and the spatial/operator parity give this relative sign. Nine retained partial waves have epsilon=+1 and nine have epsilon=-1. In the mixed/nonet case the per-row counts are respectively (20,22,32,28,28) and (14,8,32,28,28) in sector order, so the ordered total is 9*(130+110)=2160.
@@ -32,7 +33,7 @@ Ordered kernels distinguish surviving and emitted pseudoscalars. Partial-wave ch
 
 ### mixed/nonet
 
-| Sector | Ordered kernels | Partial-wave channels | Distinct final channels |
+| Sector | Ordered kernels | Partial-wave channels | Distinct basis final channels |
 |---|---:|---:|---:|
 | isovector | 306 | 258 | 224 |
 | isoscalar | 270 | 238 | 208 |
@@ -43,7 +44,7 @@ Ordered kernels distinguish surviving and emitted pseudoscalars. Partial-wave ch
 
 ### mixed/no_eta_prime
 
-| Sector | Ordered kernels | Partial-wave channels | Distinct final channels |
+| Sector | Ordered kernels | Partial-wave channels | Distinct basis final channels |
 |---|---:|---:|---:|
 | isovector | 279 | 237 | 206 |
 | isoscalar | 234 | 206 | 180 |
@@ -54,7 +55,7 @@ Ordered kernels distinguish surviving and emitted pseudoscalars. Partial-wave ch
 
 ### mixed/pi_eta
 
-| Sector | Ordered kernels | Partial-wave channels | Distinct final channels |
+| Sector | Ordered kernels | Partial-wave channels | Distinct basis final channels |
 |---|---:|---:|---:|
 | isovector | 135 | 117 | 102 |
 | isoscalar | 90 | 86 | 76 |
@@ -65,7 +66,7 @@ Ordered kernels distinguish surviving and emitted pseudoscalars. Partial-wave ch
 
 ### ideal/nonet
 
-| Sector | Ordered kernels | Partial-wave channels | Distinct final channels |
+| Sector | Ordered kernels | Partial-wave channels | Distinct basis final channels |
 |---|---:|---:|---:|
 | isovector | 285 | 237 | 206 |
 | isoscalar | 215 | 185 | 162 |
@@ -76,7 +77,7 @@ Ordered kernels distinguish surviving and emitted pseudoscalars. Partial-wave ch
 
 ### ideal/no_eta_prime
 
-| Sector | Ordered kernels | Partial-wave channels | Distinct final channels |
+| Sector | Ordered kernels | Partial-wave channels | Distinct basis final channels |
 |---|---:|---:|---:|
 | isovector | 258 | 216 | 188 |
 | isoscalar | 193 | 167 | 146 |
@@ -87,7 +88,7 @@ Ordered kernels distinguish surviving and emitted pseudoscalars. Partial-wave ch
 
 ### ideal/pi_eta
 
-| Sector | Ordered kernels | Partial-wave channels | Distinct final channels |
+| Sector | Ordered kernels | Partial-wave channels | Distinct basis final channels |
 |---|---:|---:|---:|
 | isovector | 114 | 96 | 84 |
 | isoscalar | 49 | 47 | 42 |
@@ -100,5 +101,5 @@ Ordered kernels distinguish surviving and emitted pseudoscalars. Partial-wave ch
 
 These are algebraically permitted candidates, not computed widths or a count of PDG measurements. The original nine-row calculation remains the only native-wave numerical survey here. A PDG comparison additionally needs masses and thresholds, physical mixing, coupling calibration, final-state symmetrization and uncertainties.
 Going beyond the table requires an explicit finite level inventory (radial range as well as maximum orbital L). There is no finite universal count from "up to D" alone: radial excitations are unbounded. Additional D2 transitions and other P/D daughter channels are absent from this representative table. The operator API has no Table-IV row restriction; numerical validation of an extension is a separate step.
-Suggested paper wording: Even the angular-momentum-consistent representative transitions of Table IV generate about two thousand charge-resolved partial-wave candidates across the light, strange, charm and bottom sectors when the full pseudoscalar nonet is included. This is an algebraic inventory before threshold cuts, not a claim that all corresponding widths have been evaluated or measured.
+Suggested paper wording: Even the angular-momentum-consistent representative transitions of Table IV generate about two thousand charge-resolved partial-wave candidates in the spectroscopic basis across the light, strange, charm and bottom sectors when the full pseudoscalar nonet is included. This is an algebraic inventory before threshold cuts, not a claim that all corresponding widths have been evaluated or measured.
 Source: original GI (1985), Table IV, printed p. 201 (PDF p. 13), checked against the page image rather than the OCR.
