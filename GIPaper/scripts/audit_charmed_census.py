@@ -68,6 +68,7 @@ def main():
     assert len(physical_waves)*len(ROUTES)==532
     lines=['# Charmed-meson counting scratch pad','',
       'Generated and checked by `python3 GIPaper/scripts/audit_charmed_census.py`.','',
+      'The follow-up [phase-space selection](charmed_thresholds.md) applies calculated charm masses and physical emitted-meson masses; its JSON ledger retains open and closed decisions for every entry.','',
       '## Verdict','',
       '**504 = 18 partial-wave templates × 28 charge/flavor routes.**',
       '**448 = 16 spectroscopic parent/daughter templates × 28 charge/flavor routes.**',

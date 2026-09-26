@@ -141,3 +141,14 @@ python3 GIPaper/scripts/count_pseudoscalar_channels.py
 ```
 
 This is an algebraic inventory, not a new numerical width calculation.
+
+The [charm threshold selection](docs/pseudoscalar_census/charmed_thresholds.md)
+filters the explicit 448-channel basis ledger using calculated charm masses
+and stored physical pseudoscalar masses. It preserves rejected channels and
+all mass inputs, and checks 450- against 900-point radial grids:
+
+```sh
+julia --project=GIPaper/scripts GIPaper/scripts/charmed_threshold_masses.jl
+julia --project=GIPaper/scripts GIPaper/scripts/charmed_threshold_masses.jl --refined
+python3 GIPaper/scripts/filter_charmed_thresholds.py
+```
