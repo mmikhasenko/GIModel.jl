@@ -110,11 +110,14 @@ function contact_hyperfine_operator(
     m1 = masses.m1_GeV
     m2 = masses.m2_GeV
     n = length(r)
-    if L != "S" || !(multiplicity in (1, 3)) || n < 2
+    # A15 carries no L restriction: the smeared ∇²G̃ is nonzero at r > 0, so the
+    # contact term shifts L > 0 levels too (GI Eqs. 23-26, "small but nonzero
+    # due to relativistic smearing").
+    if !(multiplicity in (1, 3)) || n < 2
         return Symmetric(zeros(Float64, n, n))
     end
     h = r[2] - r[1]
-    p2_fact = eigen(p2_operator(params, m1, 0, r, h))
+    p2_fact = eigen(p2_operator(params, m1, L_SYMBOLS[L], r, h))
     side_exponent = gi_spin_dependent_side_exponent(params.factors.epsilon_c)
     B = momentum_relativization_matrix(m1, m2, side_exponent, p2_fact)
     kernel = Diagonal([smeared_contact_kernel(params, masses, ri) for ri in r])
@@ -137,7 +140,7 @@ function ho_contact_hyperfine_matrix(
     beta::Real,
     nbasis::Integer,
 )
-    (L == 0 && multiplicity in (1, 3)) ||
+    multiplicity in (1, 3) ||
         return Symmetric(zeros(Float64, nbasis, nbasis))
     params.factors.contact_momentum_sandwich || throw(ArgumentError(
         "native HO contact requires the Appendix-A momentum-sandwich prescription",
@@ -170,7 +173,6 @@ function _contact_hyperfine_shift_diagonal(
 )
     m1 = masses.m1_GeV
     m2 = masses.m2_GeV
-    L == "S" || return 0.0
     multiplicity in (1, 3) || return 0.0
     length(r) >= 2 || return 0.0
     h = r[2] - r[1]
@@ -196,7 +198,6 @@ function _contact_hyperfine_shift_momentum_sandwich_diagonal(
     vector::AbstractVector,
     r::AbstractVector,
 )
-    L == "S" || return 0.0
     multiplicity in (1, 3) || return 0.0
     length(r) >= 2 || return 0.0
     operator = contact_hyperfine_operator(params, masses, L, multiplicity, r)
@@ -353,11 +354,11 @@ function _resummed_contact_solve(
 end
 
 """
-First-order smeared contact hyperfine shift for S-waves.
+First-order smeared contact hyperfine shift, for any `L`.
 
 Convention: the solver eigenvector is treated as the reduced radial wavefunction
-`u(r)` on a uniform mesh with physical normalization `∫|u|² dr = 1`. For an
-S-wave, `ψ(r) = u(r) / r · Y₀₀` and a 3D-normalized regulator `δ_σ(r)` satisfies
+`u(r)` on a uniform mesh with physical normalization `∫|u|² dr = 1`. With
+`ψ(r) = u(r) / r · Y_LM` and a 3D-normalized regulator `δ_σ(r)` satisfies
 `∫ d³r δ_σ(r) = 1`. Therefore
 
 `⟨α_s(r) δ_σ(r)⟩ = ∫ |u(r)|² α_s(r) δ_σ(r) dr`
@@ -372,7 +373,6 @@ function contact_hyperfine_shift(
     multiplet::FineStructureMultiplet,
     wave::RadialWave,
 )
-    multiplet.L_label == "S" || return 0.0
     multiplet.multiplicity in (1, 3) || return 0.0
     expectation = radial_expect(
         wave,
@@ -409,12 +409,11 @@ function contact_hyperfine_shift_momentum_sandwich(
     multiplet::FineStructureMultiplet,
     wave::RadialWave,
 )
-    multiplet.L_label == "S" || return 0.0
     multiplet.multiplicity in (1, 3) || return 0.0
     expectation = radial_expect_momentum_sandwich(
         params,
         masses,
-        0,
+        L_SYMBOLS[multiplet.L_label],
         wave,
         params.factors.epsilon_c,
         (r, _) -> smeared_contact_kernel(params, masses, r),

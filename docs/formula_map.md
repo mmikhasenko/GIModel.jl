@@ -57,7 +57,7 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     `src/spin_fine_structure.jl` and regression-tested against a
     finite-difference derivative in `test/spin_kernels.jl`.
 
-- `src/GIModel.jl`: smeared S-wave contact hyperfine shift.
+- `src/contact_hyperfine.jl`: smeared contact hyperfine, in every `L`.
   - Paper anchor: color hyperfine term around Eq. (4), PDF page 2, and
     smearing discussion in Appendix A, PDF pages 36-37.
   - Current status: active GI-style implementation. It uses the Table II
@@ -73,8 +73,11 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     the central S-wave Hamiltonian plus the contact operator in fixed
     multiplicity sectors. The reported `contact_shift_GeV` is therefore the
     nonperturbative level displacement relative to the spin-independent central
-    level. Non-S waves and non-FD basis diagnostics keep the perturbative
-    expectation path.
+    level. The operator is also part of every L>0 fixed-sector Hamiltonian
+    (FD and HO): the smeared kernel is nonzero at r>0, and GI Eqs. (23)-(26)
+    keep its S in all P-wave levels. Until 2026-09 it was S-wave-only, which
+    spoiled the singlet-triplet gaps behind the published mixing angles; see
+    `GIPaper/docs/investigations/mixing_composition_investigation.md`.
   - Smearing width: Appendix A (A9) is implemented as
     $$
       \sigma^2(m_1,m_2)=\sigma_0^2\left(\tfrac12+\tfrac12\left(\frac{4m_1m_2}{(m_1+m_2)^2}\right)^4\right)

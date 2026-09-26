@@ -212,13 +212,40 @@ end
     @test_throws ArgumentError GIModel.physical_u_norm(r, 0.11, u3)
 end
 
-@testset "contact hyperfine: only S-waves" begin
+@testset "smeared contact acts in L>0 states (GI Eqs. 23-26)" begin
+    # A15 has no L restriction and GI Eqs. (23)-(26) keep the contact S in every
+    # P-wave level: ^1P_1 gets -3S/4, ^3P_J get +S/4, with S "small but nonzero
+    # due to relativistic smearing". Omitting it put the ^1P_1/^3P_1 diagonal gap
+    # of every unequal-mass P wave ~20-40 MeV too high.
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
-    m = mq["c"]
-    r = collect(0.05:0.05:1.0)
-    u = exp.(-2.0 .* r)
-    @test GIModel.contact_hyperfine_shift(params, m, m, "P", 3, u, r) == 0.0
-    @test GIModel.contact_hyperfine_shift(params, m, m, "D", 3, u, r) == 0.0
+    masses = ConstituentMasses(mq["c"], mq["u"])
+    only_contact(on) = SpinTerms(contact_hyperfine = on, fine_structure = false,
+        same_j_spin_orbit = false, tensor = false)
+    for solver in (FiniteDifferenceSolver(), OscillatorSolver())
+        shift(mult) = begin
+            multiplet = FineStructureMultiplet("P", mult, 1)
+            on = fixed_channel_solution(params, masses, multiplet;
+                solver, terms = only_contact(true), nlevels = 1)
+            off = fixed_channel_solution(params, masses, multiplet;
+                solver, terms = only_contact(false), nlevels = 1)
+            first_order = GIModel.contact_hyperfine_shift_active(params, masses, multiplet,
+                radial_wave(off, 1))
+            (on.eigenvalues_GeV[1] - off.eigenvalues_GeV[1], first_order)
+        end
+        (singlet, singlet_first), (triplet, triplet_first) = shift(1), shift(3)
+        S = -4singlet_first / 3
+        @test 0.020 < S < 0.030                     # c ubar 1P: S ≈ 25 MeV
+        @test triplet_first ≈ S / 4 rtol = 0.03     # same S, spin factor +1/4
+        @test singlet ≈ singlet_first rtol = 0.05   # resummed ≈ first order
+        @test triplet ≈ triplet_first rtol = 0.05
+    end
+    # Independent Python evaluation (numerical A7-A8 smearing, momentum factors
+    # applied by a j1 Hankel transform) on the production FD 1^1P_1 wave
+    # (contact included in its fixed-sector Hamiltonian): S = 25.064 MeV.
+    spec = fixed_spectrum(params, Meson(mq, :c, :u); levels = [BasisState(1, "P", 1, 1)])
+    wave = radial_wave(spec, spectrum_state(spec, "1^1P_1"))
+    S = -4GIModel.contact_hyperfine_shift_active(params, masses, FineStructureMultiplet("P", 1, 1), wave) / 3
+    @test 1000S ≈ 25.064 atol = 0.02
 end
 
 @testset "contact smearing σ implements Appendix A (A9)" begin

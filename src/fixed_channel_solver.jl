@@ -60,8 +60,7 @@ function _fixed_channel_matrices(
     central, r = relativistic_hamiltonian(params, masses, L; solver = solver)
     h = r[2] - r[1]
     n = length(r)
-    contact = if terms.contact_hyperfine && L == 0 &&
-                 multiplet.multiplicity in (1, 3)
+    contact = if terms.contact_hyperfine && multiplet.multiplicity in (1, 3)
         if params.factors.contact_momentum_sandwich
             contact_hyperfine_operator(
                 params, masses, multiplet.L_label, multiplet.multiplicity, r,
