@@ -65,6 +65,216 @@ function _spherical_bessel_j1(x::Number)
     return sin(x) / x^2 - cos(x) / x
 end
 
+function _odd_double_factorial(n::Integer)
+    n >= -1 || throw(ArgumentError("double-factorial argument must be >= -1"))
+    result = 1
+    for value in 1:2:n
+        result *= value
+    end
+    return result
+end
+
+"""Spherical Bessel `j_l(x)` for real or complex `x` and integer `l >= 0`."""
+function _spherical_bessel_j(order::Integer, x::Number)
+    ell = Int(order)
+    ell >= 0 || throw(ArgumentError("spherical-Bessel order must be non-negative"))
+    ell == 0 && return _spherical_bessel_j0(x)
+    ell == 1 && return _spherical_bessel_j1(x)
+    iszero(x) && return zero(x)
+    if abs(x) < ell + 1
+        term = x^ell / _odd_double_factorial(2ell + 1)
+        result = term
+        for k in 0:255
+            term *= -x^2 / (2 * (k + 1) * (2ell + 2k + 3))
+            result_next = result + term
+            abs(term) <= 8eps(Float64) * max(abs(result_next), 1.0) &&
+                return result_next
+            result = result_next
+        end
+        throw(ErrorException("spherical-Bessel series failed to converge"))
+    end
+    previous = _spherical_bessel_j0(x)
+    current = _spherical_bessel_j1(x)
+    for l in 1:(ell-1)
+        previous, current = current, (2l + 1) * current / x - previous
+    end
+    return current
+end
+
+_spherical_phase(index::Integer) = isodd(abs(index)) ? -1 : 1
+
+"""
+Coefficient of one `j_order(alpha*q*r)` after expanding
+`exp(sign*i*alpha*q*z)` between two Condon--Shortley spherical harmonics.
+"""
+function _plane_wave_angular_coefficient(
+    target_L::Integer,
+    target_m::Integer,
+    source_L::Integer,
+    source_m::Integer,
+    order::Integer,
+    sign::Integer,
+)
+    Lt, mt = Int(target_L), Int(target_m)
+    Ls, ms = Int(source_L), Int(source_m)
+    ell = Int(order)
+    sign in (-1, 1) || throw(ArgumentError("plane-wave sign must be +/-1"))
+    (Lt >= 0 && Ls >= 0 && ell >= 0) || return 0.0 + 0.0im
+    (abs(mt) <= Lt && abs(ms) <= Ls && mt == ms) || return 0.0 + 0.0im
+    abs(Lt - Ls) <= ell <= Lt + Ls || return 0.0 + 0.0im
+    c0 = ComplexF64(CG(ell, 0, Ls, 0, Lt, 0))
+    cm = ComplexF64(CG(ell, 0, Ls, ms, Lt, mt))
+    return (sign * im)^ell * (2ell + 1) * sqrt((2Ls + 1) / (2Lt + 1)) *
+           c0 * cm
+end
+
+function _bessel_overlap(
+    final_wave::RadialWave,
+    initial_wave::RadialWave,
+    order::Int,
+    momentum,
+)
+    return radial_overlap(
+        final_wave,
+        initial_wave,
+        r -> _spherical_bessel_j(order, momentum * r),
+    )
+end
+
+function _bessel_over_r(order::Int, momentum, r::Real)
+    iszero(r) && return zero(momentum)
+    return _spherical_bessel_j(order, momentum * r) / r
+end
+
+function _gradient_radial_overlap(
+    final_wave::RadialWave,
+    initial_wave::RadialWave,
+    order::Int,
+    momentum,
+    inverse_r_coefficient::Int,
+)
+    bessel(r) = _spherical_bessel_j(order, momentum * r)
+    derivative = GIModel.radial_derivative_overlap(final_wave, initial_wave, bessel)
+    iszero(inverse_r_coefficient) && return derivative
+    inverse_r = radial_overlap(
+        final_wave,
+        initial_wave,
+        r -> _bessel_over_r(order, momentum, r),
+    )
+    return derivative + inverse_r_coefficient * inverse_r
+end
+
+function _validate_orbital_wave(wave::OscillatorWave, L::Int, role::AbstractString)
+    wave.L == L || throw(ArgumentError(
+        "$role OscillatorWave has L=$(wave.L), but the orbital label requires L=$L",
+    ))
+    return nothing
+end
+
+_validate_orbital_wave(::RadialWave, ::Int, ::AbstractString) = nothing
+
+function _direct_orbital_integral(
+    operator::PseudoscalarEmission,
+    label::_SpectroscopicOrbitalLabel,
+    final_wave::RadialWave,
+    initial_wave::RadialWave,
+    q::Number,
+    alpha::Real,
+)
+    elementary = label.elementary
+    iszero(elementary.vector_component) || return zero(complex(float(q)))
+    total = zero(complex(float(q)))
+    for order in abs(label.final_L-label.initial_L):(label.final_L+label.initial_L)
+        angular = _plane_wave_angular_coefficient(
+            label.final_L,
+            label.final_mL,
+            label.initial_L,
+            label.initial_mL,
+            order,
+            elementary.plane_wave_sign,
+        )
+        iszero(angular) && continue
+        total += angular * _bessel_overlap(
+            final_wave, initial_wave, order, alpha * q,
+        )
+    end
+    return operator.g * q * total
+end
+
+function _recoil_gradient_branch(
+    label::_SpectroscopicOrbitalLabel,
+    final_wave::RadialWave,
+    initial_wave::RadialWave,
+    q::Number,
+    alpha::Real,
+    gradient_L::Int,
+)
+    Lf, mf = label.final_L, label.final_mL
+    Li, mi = label.initial_L, label.initial_mL
+    component = label.elementary.vector_component
+    gradient_component = -component
+    gradient_m = mf + gradient_component
+    abs(gradient_m) <= gradient_L || return zero(complex(float(q)))
+
+    if gradient_L == Lf + 1
+        gradient_coefficient = sqrt((Lf + 1) / (2Lf + 3)) * ComplexF64(CG(
+            Lf, mf, 1, gradient_component, gradient_L, gradient_m,
+        ))
+        inverse_r_coefficient = -(Lf + 1)
+    elseif Lf > 0 && gradient_L == Lf - 1
+        gradient_coefficient = -sqrt(Lf / (2Lf - 1)) * ComplexF64(CG(
+            Lf, mf, 1, gradient_component, gradient_L, gradient_m,
+        ))
+        inverse_r_coefficient = Lf
+    else
+        return zero(complex(float(q)))
+    end
+    iszero(gradient_coefficient) && return zero(complex(float(q)))
+
+    total = zero(complex(float(q)))
+    for order in abs(gradient_L-Li):(gradient_L+Li)
+        angular = _plane_wave_angular_coefficient(
+            gradient_L,
+            gradient_m,
+            Li,
+            mi,
+            order,
+            label.elementary.plane_wave_sign,
+        )
+        iszero(angular) && continue
+        radial = _gradient_radial_overlap(
+            final_wave,
+            initial_wave,
+            order,
+            alpha * q,
+            inverse_r_coefficient,
+        )
+        total += angular * radial
+    end
+    return gradient_coefficient * total
+end
+
+function _recoil_orbital_integral(
+    operator::PseudoscalarEmission,
+    label::_SpectroscopicOrbitalLabel,
+    final_wave::RadialWave,
+    initial_wave::RadialWave,
+    q::Number,
+    alpha::Real,
+)
+    component = label.elementary.vector_component
+    component in -1:1 || throw(ArgumentError("vector component must be -1, 0, or +1"))
+    upper = _recoil_gradient_branch(
+        label, final_wave, initial_wave, q, alpha, label.final_L + 1,
+    )
+    lower = label.final_L > 0 ? _recoil_gradient_branch(
+        label, final_wave, initial_wave, q, alpha, label.final_L - 1,
+    ) : zero(upper)
+    # This is the spherical component of -i*gradient acting to the left. The
+    # (-1)^component is the Hermitian spherical-tensor conjugation phase.
+    return operator.h * (-im) * _spherical_phase(component) * (upper + lower)
+end
+
 """
 Evaluate an S-wave-to-S-wave Eq. (19) spatial column in the helicity frame.
 
@@ -81,23 +291,15 @@ function _eq19_s_wave_spatial_integral(
     momentum_GeV::Number,
     parent_flavors::Tuple{Symbol,Symbol},
 )
-    label.vector_component == 0 || throw(ArgumentError(
-        "S-to-S Eq. (19) spatial integrals vanish outside vector component zero",
-    ))
-    q = momentum_GeV
-    alpha = _eq19_momentum_fraction(operator, label.topology, parent_flavors)
-    kernel0(r) = _spherical_bessel_j0(alpha * q * r)
-    if label.piece isa _DirectPseudoscalarPiece
-        return operator.g * q * radial_overlap(final_wave, initial_wave, kernel0)
-    end
-    kernel1(r) = _spherical_bessel_j1(alpha * q * r)
-    derivative = GIModel.radial_derivative_overlap(
-        final_wave, initial_wave, kernel1,
+    spectroscopic = _SpectroscopicOrbitalLabel(label, 0, 0, 0, 0)
+    return _eq19_spatial_integral(
+        operator,
+        spectroscopic,
+        final_wave,
+        initial_wave,
+        momentum_GeV,
+        parent_flavors,
     )
-    angular = radial_overlap(
-        final_wave, initial_wave, r -> kernel1(r) / r,
-    )
-    return operator.h * label.plane_wave_sign * (derivative - angular)
 end
 
 function _eq19_spatial_integral(
@@ -108,20 +310,26 @@ function _eq19_spatial_integral(
     momentum_GeV::Number,
     parent_flavors::Tuple{Symbol,Symbol},
 )
-    (label.initial_L, label.final_L) == (0, 0) || throw(ArgumentError(
-        "the first native Eq. (19) spatial slice supports S-to-S waves; " *
-        "L=$(label.initial_L) to L=$(label.final_L) is not implemented yet",
+    Li, mi = label.initial_L, label.initial_mL
+    Lf, mf = label.final_L, label.final_mL
+    (Li >= 0 && abs(mi) <= Li) || throw(ArgumentError(
+        "invalid initial orbital labels L=$Li, m=$mi",
     ))
-    (label.initial_mL, label.final_mL) == (0, 0) || throw(ArgumentError(
-        "an S-wave orbital projection must have mL=0",
+    (Lf >= 0 && abs(mf) <= Lf) || throw(ArgumentError(
+        "invalid final orbital labels L=$Lf, m=$mf",
     ))
-    return _eq19_s_wave_spatial_integral(
-        operator,
-        label.elementary,
-        final_wave,
-        initial_wave,
-        momentum_GeV,
-        parent_flavors,
+    _validate_orbital_wave(initial_wave, Li, "initial")
+    _validate_orbital_wave(final_wave, Lf, "final")
+    alpha = _eq19_momentum_fraction(
+        operator, label.elementary.topology, parent_flavors,
+    )
+    if label.elementary.piece isa _DirectPseudoscalarPiece
+        return _direct_orbital_integral(
+            operator, label, final_wave, initial_wave, momentum_GeV, alpha,
+        )
+    end
+    return _recoil_orbital_integral(
+        operator, label, final_wave, initial_wave, momentum_GeV, alpha,
     )
 end
 

@@ -462,6 +462,12 @@ Only the previously budgeted projection inspection functions are exported.
 Status: active, 2026-09-23. The first spatial checkpoint is recorded in
 `QuarkModelTransitions/docs/phase4_spatial_checkpoint.md`.
 
+Progress, 2026-09-26: the spatial evaluator is now general in
+`L_i,m_i -> L_f,m_f`, including both recoil-gradient branches, arbitrary
+plane-wave multipoles, complex momentum, shared helicity columns, analytic
+SHO checks, and native HO/FD checks. End-to-end physical-state composition and
+normalization remain active work.
+
 - Implement Eq. (19) with `g,h`, analytic SHO, and native numerical waves.
 - Compute the full off-shell helicity vector and all partial waves.
 - Derive the Appendix C conversion to relativistic normalization.

@@ -1,6 +1,6 @@
 # Phase IV spatial checkpoint
 
-Status: first vertical slice complete, 2026-09-23. Phase IV remains active.
+Status: general orbital evaluator complete, 2026-09-26. Phase IV remains active.
 
 ## What is implemented
 
@@ -22,6 +22,11 @@ Status: first vertical slice complete, 2026-09-23. Phase IV remains active.
 - Real and complex off-shell momenta are supported by the overlap layer.
 - The Phase-III shared coefficient matrix is multiplied by these numerical
   columns without introducing a per-channel formula.
+- Arbitrary `L_i,m_i -> L_f,m_f` columns use one finite plane-wave multipole
+  sum. The recoil gradient has exactly two generic branches,
+  `L_f -> L_f+1` and `L_f -> L_f-1`; both reduce to combinations of
+  `radial_overlap` and `radial_derivative_overlap`. There are no decay-class
+  or channel-specific spatial methods.
 
 ## Independent checks now passing
 
@@ -64,14 +69,33 @@ the comparison is not being limited by that last FD refinement. This
 certificate covers the S-wave slice only and is not the final Phase-IV
 orbital-sector certificate.
 
+The general-orbital checks add four independent constraints:
+
+- The analytic equal-beta Cartesian result
+  `<P_0|exp(s i k z)|S> = s i k/(sqrt(2) beta) exp[-k^2/(4 beta^2)]` is
+  reproduced for both plane-wave signs.
+- At zero momentum the two gradient directions give the conjugate oscillator
+  matrix elements `+/- i h beta/sqrt(2)`.
+- All three spherical gradient components have equal magnitude, while invalid
+  magnetic projections are exact zeros.
+- The derived `A1 -> rho pi` S/D ratio agrees to `2e-12` with the independent
+  Table-IV expressions for `A=(g+h/4) beta` and
+  `S=[3h-(g+h/4)q^2/(2beta^2)] beta`. Both partial waves come from one
+  helicity vector and the same shared integral columns.
+
+For actual solved nonstrange `1P -> 1S` waves at `q=0.45 GeV`, native HO and
+FD (`ngrid=1200`, `rmax=28 GeV^-1`) agree by `0.063%` for the direct column,
+`0.039%` for the longitudinal recoil column, and `0.035%` for each transverse
+recoil column. The regression gate is `0.1%` for this non-node-sensitive
+orbital slice.
+
 ## Still required for the Phase-IV gate
 
-- General orbital-gradient integrals beyond S-to-S.
 - End-to-end `matrix_element` composition, including an explicit and tested
   rule for which final pseudoscalar is the elementary emitted field.
 - Appendix-C to relativistic-normalization conversion.
-- Native solved HO/FD convergence and node-sensitive certificates beyond the
-  completed S-wave slice.
+- Native solved HO/FD convergence for additional orbital and node-sensitive
+  sectors beyond the completed S-wave and `1P -> 1S` slices.
 - Separate calibration and validation channel sets.
 
 The emitted-field role is intentionally not guessed from a display label. It

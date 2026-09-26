@@ -35,6 +35,22 @@ checks an independent identity or paper fixture.
   `sum_mu (-1)^mu sigma_mu v_-mu`. In the helicity frame the emitted `q`
   defines `+z`, so the direct `g sigma.q` piece retains only `mu=0`; the recoil
   `h sigma.p'` piece retains all three spherical components.
+- **Eq. (19) momentum routing.** For a parent `q qbar` state, the positive
+  relative-coordinate fraction is the spectator mass divided by
+  `m_q+m_qbar`: `alpha_q=m_qbar/(m_q+m_qbar)` and
+  `alpha_qbar=m_q/(m_q+m_qbar)`. The topology sign remains in the plane wave,
+  not in `alpha`. Equal masses therefore give `alpha=1/2` and the Table-IV
+  Gaussian `exp[-q^2/(16 beta^2)]`.
+- **Orbital and derivative integrals.** The axial plane wave is expanded into
+  finite Condon--Shortley multipoles. Its Gaunt coefficients are generated
+  from the same `CG` implementation as the spectroscopic algebra. The recoil
+  gradient acting on the final wave has only the `L_f+1` radial combination
+  `u_f'-(L_f+1)u_f/r` and the `L_f-1` combination
+  `u_f'+L_f u_f/r`. Spherical conjugation contributes
+  `(-1)^nu`, and the retained left-gradient convention contributes `-i`.
+  Sign-sensitive tests reproduce Cartesian S/P oscillator integrals,
+  Hermitian S<->P conjugation, rotational equality of all three components,
+  the S-wave `g+h/4` reduction, and the Table-IV `A1 -> rho pi` S/D ratio.
 - **Appendix-C helicities.** For meson emission along `+z`, `h_0 = H_0` and
   `h_m = sqrt(2) H_m` for positive `m`, as in Eq. (C3). The vector-pseudoscalar
   projection is
@@ -50,9 +66,8 @@ checks an independent identity or paper fixture.
   exchange waves are removed and the allowed amplitude receives one
   `1/sqrt(2)` normalization.
 
-## Pending before native Eq. (19)
+## Pending before end-to-end native Eq. (19)
 
-- the definition of `q'` in terms of external momentum and constituent masses;
-- the radial/derivative sign carried by each spatial-integral implementation;
+- an emitted-pseudoscalar role invariant under canonical daughter ordering;
 - conversion from the GI Appendix-C normalization to the package's canonical
   relativistic two-body normalization.

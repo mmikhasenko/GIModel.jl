@@ -31,6 +31,8 @@ user workflow.
 Phase III supplies the wave-independent algebra for native GI Eq. (19): sparse
 flavor contractions, constituent-spin matrix elements, `L dot S`
 spectroscopic recoupling, a shared spatial-integral basis, complete compressed
-helicity coefficient vectors, and Appendix-C partial-wave projection. The
-spatial integrals themselves, their `g,h` operator parameters, and numerical
-HO/FD evaluation begin in Phase IV.
+helicity coefficient vectors, and Appendix-C partial-wave projection. Phase IV
+now supplies `PseudoscalarEmission(g,h,masses)` and one general
+`L_i,m_i -> L_f,m_f` spatial evaluator for analytic SHO and native HO/FD waves,
+including real or complex off-shell momentum. End-to-end physical-state
+composition and relativistic normalization remain in progress.
