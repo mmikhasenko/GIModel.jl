@@ -114,3 +114,68 @@ end
     @test result.vectors[1, 2] < 0
     @test result.vectors' * result.vectors ≈ Matrix{Float64}(I, 2, 2)
 end
+
+@testset "PhotonEmission matrix-element API" begin
+    mq = QuarkMassTable("q" => 0.22, "c" => 1.628, "b" => 4.977)
+    sw = OscillatorWave(0, 0.5, [1.0, 0.0])
+    sw2 = OscillatorWave(0, 0.5, [0.8, 0.6])
+    pw = OscillatorWave(1, 0.5, [1.0])
+
+    vector = PhysicalState("psi", 3.10, [(
+        basis = BasisState(1, "S", 3, 1; flavors = (:c, :c)),
+        coefficient = 1.0, wave = sw,
+    )])
+    pseudoscalar = PhysicalState("eta_c", 2.98, [(
+        basis = BasisState(1, "S", 1, 0; flavors = (:c, :c)),
+        coefficient = 1.0, wave = sw2,
+    )])
+    m1 = PhotonEmission(:M1, mq, PhotonEmitter((:c, :c), 1, 4 / 3))
+    amplitude = matrix_element(pseudoscalar, m1, vector)
+    q = photon_momentum(vector.mass_GeV, pseudoscalar.mass_GeV)
+    expected = m1_transition_moment(
+        momentum_wave(sw2, 0), momentum_wave(sw, 0), mq["c"], mq["c"],
+        [(4 / 3, mq["c"])],
+    )
+    @test amplitude isa RadiativeAmplitude
+    @test amplitude.multipole == :M1
+    @test amplitude.value ≈ expected
+    @test length(amplitude.terms) == 1
+    @test amplitude.provenance.prescription == :hybrid_mock_meson
+    @test decay_width(amplitude) ≈
+          1000m1_radiative_width(expected, q; parent_spin = 1)
+    @test decay_width(pseudoscalar, m1, vector) ≈ decay_width(amplitude)
+    @test decay_width(vector, m1, pseudoscalar) == 0.0
+
+    tensor = PhysicalState("chi_c2", 3.56, [(
+        basis = BasisState(1, "P", 3, 2; flavors = (:c, :c)),
+        coefficient = 1.0, wave = pw,
+    )])
+    e1 = PhotonEmission(:E1, mq, [PhotonEmitter((:c, :c), 1, 4 / 3)])
+    e1_amplitude = matrix_element(vector, e1, tensor)
+    qe = photon_momentum(tensor.mass_GeV, vector.mass_GeV)
+    expected_e1 = e1_transition_amplitude(
+        sw, momentum_wave(sw, 0), pw, momentum_wave(pw, 1), mq["c"],
+        qvalue -> (4 / 3) * e1_angular_coefficient(2) * qvalue,
+        1.0, 0.0; q = qe,
+    )
+    @test e1_amplitude.value ≈ expected_e1
+    @test decay_width(e1_amplitude) ≈ abs2(expected_e1)
+
+    singlet = PhysicalState("eta_c", 2.98, [(
+        basis = BasisState(1, "S", 1, 0; flavors = (:c, :c)),
+        coefficient = 1.0, wave = sw,
+    )])
+    m2 = PhotonEmission(:M2, mq, [PhotonEmitter((:c, :c), 1, 4 / 3)])
+    m2_amplitude = matrix_element(singlet, m2, tensor)
+    @test m2_amplitude.value ≈ spin_flip_photon_amplitude(
+        sw, pw, [(4 / 3, mq["c"])], 2,
+        photon_momentum(tensor.mass_GeV, singlet.mass_GeV),
+    )
+
+    @test_throws ArgumentError PhotonEmitter((:c, :c), 3, 1.0)
+    @test_throws ArgumentError PhotonEmission(:E2, mq,
+        [PhotonEmitter((:c, :c), 1, 1.0)])
+    @test_throws ArgumentError matrix_element(
+        ReferenceState("eta_c", 2.98; J = 0, parity = -1), m1, vector,
+    )
+end

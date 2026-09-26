@@ -24,6 +24,50 @@ partial_waves(amplitude)
 decay_width(amplitude)
 ```
 
+## Supported matrix elements
+
+The generic `matrix_element(final, operator, initial)` API currently knows three
+operator classes:
+
+| Operator class | Process represented | Result |
+| --- | --- | --- |
+| `PseudoscalarEmission` | Solver-native GI Eq. (19) strong decay `M_i -> M_f + P`, where `P` is an elementary emitted `J^P=0^-` meson | All allowed helicity and partial-wave amplitudes, coherently summed over mixed-state components; `decay_width` gives the partial width |
+| `TableVReference` | One explicitly supplied Godfrey--Isgur Table V strong-decay row | The row's preselected partial-wave amplitude and width, for reproduction and audit rather than prediction |
+| `PhotonEmission` | M1, E1, or M2 radiative transition using the published Appendix-D mock-meson realization of the Eq. (22) current | A coherently composed `RadiativeAmplitude`; `decay_width` gives the partial width in MeV |
+
+The radiative primitives remain public for inspecting individual overlap
+kernels. The generic photon path is:
+
+```julia
+current = PhotonEmitter((:c, :c), 1, 4 / 3)
+operator = PhotonEmission(:M1, quark_masses, current)
+amplitude = matrix_element(final_state, operator, initial_state)
+decay_width(amplitude)
+```
+
+`PhotonEmitter` keeps the ordered flavor pair, emitting constituent, and
+charge/isospin coefficient visible. This is necessary because a solver's
+averaged `(:q,:q)` radial component does not by itself distinguish `e_u+e_d`
+from `e_u-e_d`. The operator provenance distinguishes the Appendix-D hybrid
+from a literal unsmeared Eq. (22) current and records both fitted `m/E`
+exponents, hindered-M1 recoil, and the optional recoil form factor.
+
+The package also computes the following observables through specialized
+functions; these have not yet been adapted to `matrix_element`:
+
+- lowest-order `1S0 -> 2g`, `3S1 -> 3g`, `3P2 -> 2g`, and `3P0 -> 2g`
+  annihilation amplitudes and widths;
+- pseudoscalar and tensor two-photon annihilation amplitudes;
+- pseudoscalar leptonic, vector dilepton, and axial-vector tau-decay factors
+  and widths.
+
+It cannot yet compute general quark-pair-creation decays (for example
+`a1 -> K* Kbar` through `s sbar` creation), emission of a vector, scalar,
+axial, or tensor meson, general hadronic or semileptonic weak transitions, or
+continuum-induced mixing/coupled-channel pole dressing. In particular,
+`PseudoscalarEmission` is an elementary one-pseudoscalar emission operator,
+not a `3P0` pair-creation model.
+
 The package also contains the frozen Godfrey--Isgur Table IV/V reproduction
 backend. Its `StrongDecayModel`, `DecayChannel`, and scalar factorization
 helpers are compatibility/research-audit concepts, not a second recommended

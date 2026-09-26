@@ -94,11 +94,15 @@ function m1_transition_moment(
     m1_GeV::Real,
     m2_GeV::Real,
     terms,
+    ;
+    exponent::Real = ELECTROMAGNETIC_DEFAULTS.magnetic_exponent,
 )
     Mx = mock_wave_mass(singlet, m1_GeV, m2_GeV)
     My = mock_wave_mass(triplet, m1_GeV, m2_GeV)
     return sum(
-        c * mock_meson_overlap(singlet, triplet, m_i; Mx = Mx, My = My) for (c, m_i) in terms
+        c * mock_meson_overlap(
+            singlet, triplet, m_i; Mx = Mx, My = My, exponent = exponent,
+        ) for (c, m_i) in terms
     ) * NUCLEON_MASS_GEV
 end
 
@@ -124,11 +128,13 @@ function e1_transition_amplitude(
     M_parent_GeV::Real,
     M_child_GeV::Real;
     q = nothing,
+    exponent::Real = ELECTROMAGNETIC_DEFAULTS.electric_exponent,
 )
     q_GeV = isnothing(q) ? photon_momentum(M_parent_GeV, M_child_GeV) : float(q)
     E1 = mock_meson_radial_moment(
         wave_S, wave_P,
-        mock_mean_energy(mom_S, m_i), mock_mean_energy(mom_P, m_i), m_i; n = 1,
+        mock_mean_energy(mom_S, m_i), mock_mean_energy(mom_P, m_i), m_i;
+        n = 1, exponent = exponent,
     )
     return coeff_of_q(q_GeV) * E1 * sqrt(ALPHA_EM * 1000 * q_GeV)
 end

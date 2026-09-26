@@ -85,4 +85,7 @@ export e1_angular_coefficient, spin_flip_photon_amplitude
 export m1_recoil_moment, photon_recoil_form_factor, m1_radiative_width, neutral_m1_charge
 include("radiative_decays.jl")
 
+export PhotonEmission, PhotonEmitter, RadiativeAmplitude
+include("photon_emission.jl")
+
 end

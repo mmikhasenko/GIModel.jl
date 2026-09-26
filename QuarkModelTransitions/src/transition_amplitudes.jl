@@ -428,7 +428,7 @@ function _on_shell_momentum(final::TwoMesonChannel, initial::TransitionState)
 end
 
 _resolve_kinematics(final, initial, kinematics::CMKinematics) = kinematics
-_resolve_kinematics(final, initial, ::OnShell) =
+_resolve_kinematics(final::TwoMesonChannel, initial, ::OnShell) =
     CMKinematics(_on_shell_momentum(final, initial))
 
 abstract type AmplitudeNormalization end
@@ -473,6 +473,29 @@ function Base.getindex(amplitude::TransitionAmplitude, wave::PartialWave)
     return last(amplitude.partial_wave_amplitudes[index])
 end
 
+"""
+    matrix_element(final, operator, initial; kinematics=OnShell())
+
+Evaluate a transition operator between an initial meson and its resolved final
+object. The final object is part of the dispatch: strong decays use an ordered
+[`TwoMesonChannel`](@ref), whereas [`PhotonEmission`](@ref) uses the surviving
+final [`PhysicalState`](@ref) directly.
+
+The implemented operator classes are:
+
+- [`PseudoscalarEmission`](@ref): solver-native GI Eq. (19)
+  `M_i -> M_f + P`, with `final.second` the elementary emitted `J^P=0^-`
+  meson. It returns all allowed helicity and partial-wave amplitudes.
+- [`TableVReference`](@ref): one frozen GI Table V row with its already selected
+  partial wave, intended for paper reproduction and audit.
+- [`PhotonEmission`](@ref): the published Appendix-D mock-meson realization of
+  M1, E1, or M2 photon emission, with explicit electromagnetic-current terms.
+
+Annihilation and leptonic observables still use their specialized exported
+functions. General quark-pair creation (including `s sbar` creation),
+non-pseudoscalar meson emission, weak hadronic transitions, and
+continuum-induced mixing are not implemented.
+"""
 function matrix_element end
 function partial_width end
 

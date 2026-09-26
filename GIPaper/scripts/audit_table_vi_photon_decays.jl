@@ -51,9 +51,12 @@ function resolved(id)
     spec = descriptor.mixed ? iso_spec : spectra[descriptor.flavors]
     return spec, spectrum_state(spec, descriptor.basis)
 end
+resolved_physical(id) = begin
+    spec, state = resolved(id)
+    physical_state(spec, state)
+end
 const TABLE_POLICY = load_table_policy()["table_vi"]
 const ISOVECTORS = Set(TABLE_POLICY["isovectors"])
-mass(flavor) = mq[String(flavor)]
 charge(flavor) = flavor in (:u, :c) ? 2 / 3 : -1 / 3
 
 function kinematics(row)
@@ -62,69 +65,34 @@ function kinematics(row)
         photon_momentum(p.mass_GeV, d.mass_GeV)
 end
 
-# Cache representation-native momentum transforms/mean energies. No sampling
-# of an HO state into a mesh is used for either overlap or annihilation.
-momentum_cache = IdDict()
-mom(w, L) = get!(momentum_cache, w) do
-    G.momentum_wave(w, L)
-end
-
-function transition(kernel, parent_id, daughter_id)
-    pspec, pstate = resolved(parent_id)
-    dspec, dstate = resolved(daughter_id)
-    # Compose independently when a physical isoscalar connects to an unmixed
-    # isovector/open-flavor state. Shared coefficients enter exactly once.
-    return physical_state_amplitude(pspec, pstate) do p
-        physical_state_amplitude(dspec, dstate) do d
-            kernel(p, d)
+function photon_emitters(parent, daughter, parent_id, daughter_id, multipole)
+    parent_flavors = Set(component.basis.flavors for component in parent.components)
+    daughter_flavors = Set(component.basis.flavors for component in daughter.components)
+    shared = sort!(collect(intersect(parent_flavors, daughter_flavors)); by = string)
+    emitters = PhotonEmitter[]
+    for flavors in shared
+        f1, f2 = flavors
+        p = first(component for component in parent.components if component.basis.flavors == flavors)
+        d = first(component for component in daughter.components if component.basis.flavors == flavors)
+        spin_flip_multipole = multipole != :M1 &&
+            p.basis.multiplicity != d.basis.multiplicity
+        if f1 == f2
+            coefficient = spin_flip_multipole ? 1.0 : neutral_m1_charge(f1;
+                isovector_left = parent_id in ISOVECTORS,
+                isovector_right = daughter_id in ISOVECTORS)
+            push!(emitters, PhotonEmitter(flavors, 1, coefficient))
+        elseif multipole == :M1
+            push!(emitters, PhotonEmitter(flavors, 1, charge(f1)))
+            push!(emitters, PhotonEmitter(flavors, 2, charge(f2)))
+        elseif spin_flip_multipole
+            push!(emitters, PhotonEmitter(flavors, 1, charge(f1)))
+            push!(emitters, PhotonEmitter(flavors, 2, -charge(f2)))
+        else
+            error("unexpected open-flavor E1 row")
         end
     end
-end
-
-function m1_kernel(p, d, parent_id, daughter_id, q; recoil = false)
-    p.basis.flavors == d.basis.flavors || return 0.0
-    p.basis.L_label == d.basis.L_label == "S" || return 0.0
-    p.basis.multiplicity != d.basis.multiplicity || return 0.0
-    singlet, triplet = p.basis.multiplicity == 1 ? (p, d) : (d, p)
-    f1, f2 = p.basis.flavors
-    m1, m2 = mass(f1), mass(f2)
-    if f1 == f2
-        coefficient = neutral_m1_charge(f1;
-            isovector_left = parent_id in ISOVECTORS,
-            isovector_right = daughter_id in ISOVECTORS)
-        return recoil ? m1_recoil_moment(
-            singlet.wave, triplet.wave, m1, coefficient, q) :
-            m1_transition_moment(mom(singlet.wave, 0), mom(triplet.wave, 0),
-                m1, m2, [(coefficient, m1)])
-    end
-    recoil && error("no unequal-flavor recoil prescription in Table VI")
-    return m1_transition_moment(mom(singlet.wave, 0), mom(triplet.wave, 0),
-        m1, m2, [(charge(f1), m1), (charge(f2), m2)])
-end
-
-function multipole_kernel(p, d, parent_id, daughter_id, q, multipole)
-    p.basis.flavors == d.basis.flavors || return 0.0
-    Set([p.basis.L_label, d.basis.L_label]) == Set(["S", "P"]) || return 0.0
-    sw, pw = p.basis.L_label == "S" ? (p, d) : (d, p)
-    f1, f2 = sw.basis.flavors
-    if (sw.basis.multiplicity, pw.basis.multiplicity) == (1, 3)
-        expected = pw.basis.J == 2 ? :M2 : :E1
-        multipole == expected || error("incorrect spin-flip multipole identity")
-        # The charged A states carry e_u-e_d=1; K2 carries both unequal
-        # emitting-quark terms. These are the printed spin-flip angular coefficients.
-        terms = f1 == f2 ? [(1.0, mass(f1))] :
-            [(charge(f1), mass(f1)), (-charge(f2), mass(f2))]
-        return spin_flip_photon_amplitude(sw.wave, pw.wave, terms, pw.basis.J, q)
-    end
-    sw.basis.multiplicity == pw.basis.multiplicity || return 0.0
-    f1 == f2 || error("unexpected open-flavor E1 row")
-    c = neutral_m1_charge(f1; isovector_left = parent_id in ISOVECTORS,
-        isovector_right = daughter_id in ISOVECTORS)
-    angular = e1_angular_coefficient(pw.basis.J;
-        singlet = sw.basis.multiplicity == 1, parent_is_S = p.basis.L_label == "S")
-    return e1_transition_amplitude(sw.wave, mom(sw.wave, 0),
-        pw.wave, mom(pw.wave, 1), mass(f1), q -> c * angular * q,
-        1.0, 0.0; q = q)
+    isempty(emitters) && error("no shared flavor component for photon transition")
+    return emitters
 end
 
 function evaluate(row)
@@ -133,25 +101,28 @@ function evaluate(row)
     footnotes = split(row.footnotes, ",")
     if isnothing(q) && (multipole != :M1 || "c" in footnotes || "g" in footnotes)
         value, supplementary = NaN, 0.0
-    elseif multipole == :M1
-        value = transition(parent, daughter) do p, d
-            m1_kernel(p, d, parent, daughter, q; recoil = "c" in footnotes)
-        end
+    else
+        parent_state = resolved_physical(parent)
+        daughter_state = resolved_physical(daughter)
+        emitters = photon_emitters(
+            parent_state, daughter_state, parent, daughter, multipole,
+        )
+        operator = PhotonEmission(
+            multipole, mq, emitters;
+            recoil = "c" in footnotes,
+            recoil_form_factor = "g" in footnotes,
+        )
+        q_operator = something(q, 0.0)
+        value = real(matrix_element(
+            daughter_state, operator, parent_state;
+            kinematics = CMKinematics(q_operator),
+        ).value)
         # Explicit paper input, not fitted here: page 26 footnote a attributes
         # this additive moment to pi0-eta mixing.
-        supplementary = TABLE_POLICY["supplementary_footnote"] in footnotes ? TABLE_POLICY["supplementary_mu_N"] : 0.0
+        supplementary = multipole == :M1 &&
+            TABLE_POLICY["supplementary_footnote"] in footnotes ?
+            TABLE_POLICY["supplementary_mu_N"] : 0.0
         value += supplementary
-    else
-        isnothing(q) && error("missing photon kinematics for $(row.decay)")
-        q >= 0 || error("closed multipole channel $(row.decay)")
-        value = transition(parent, daughter) do p, d
-            multipole_kernel(p, d, parent, daughter, q, multipole)
-        end
-        supplementary = 0.0
-    end
-    if "g" in footnotes && !isnothing(q)
-        isnothing(q) && error("missing footnote-g kinematics")
-        value *= photon_recoil_form_factor(q)
     end
     p, d = states[parent], states[daughter]
     historical_q = isnothing(p.historical_mass_GeV) || isnothing(d.historical_mass_GeV) ? nothing :

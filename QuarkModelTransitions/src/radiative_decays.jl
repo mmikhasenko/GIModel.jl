@@ -10,14 +10,19 @@ both the direct and recoil terms.
 """
 function m1_recoil_moment(
     singlet::RadialWave, triplet::RadialWave, m::Real,
-    coefficient::Real, q::Real,
+    coefficient::Real, q::Real;
+    magnetic_exponent::Real = ELECTROMAGNETIC_DEFAULTS.magnetic_exponent,
+    electric_exponent::Real = ELECTROMAGNETIC_DEFAULTS.electric_exponent,
 )
     m > 0 || throw(ArgumentError("constituent mass must be positive"))
     q >= 0 || throw(ArgumentError("photon momentum must be nonnegative"))
     sp, tp = momentum_wave(singlet, 0), momentum_wave(triplet, 0)
-    direct = m1_transition_moment(sp, tp, m, m, [(coefficient, m)])
+    direct = m1_transition_moment(
+        sp, tp, m, m, [(coefficient, m)]; exponent = magnetic_exponent,
+    )
     E2 = mock_meson_radial_moment(singlet, triplet,
-        mock_mean_energy(sp, m), mock_mean_energy(tp, m), m; n = 2)
+        mock_mean_energy(sp, m), mock_mean_energy(tp, m), m;
+        n = 2, exponent = electric_exponent)
     return direct - coefficient * q^2 / (24m) * E2 * NUCLEON_MASS_GEV
 end
 
@@ -96,7 +101,8 @@ P1 denominators are sqrt(60)m and 6m, respectively. Charge coefficients
 include the relative sign of antiquark emission for this multipole.
 """
 function spin_flip_photon_amplitude(
-    wave_S::RadialWave, wave_P::RadialWave, terms, J_P::Integer, q::Real,
+    wave_S::RadialWave, wave_P::RadialWave, terms, J_P::Integer, q::Real;
+    exponent::Real = ELECTROMAGNETIC_DEFAULTS.electric_exponent,
 )
     J_P in (1, 2) || throw(ArgumentError("spin-flip prescription requires J_P=1 or 2"))
     q >= 0 || throw(ArgumentError("photon momentum must be nonnegative"))
@@ -105,6 +111,7 @@ function spin_flip_photon_amplitude(
     return sum(terms) do (c, m)
         m > 0 || throw(ArgumentError("constituent mass must be positive"))
         e1_transition_amplitude(wave_S, mom_S, wave_P, mom_P, m,
-            q -> c * q^2 / (factor * m), 1.0, 0.0; q = q)
+            q -> c * q^2 / (factor * m), 1.0, 0.0;
+            q = q, exponent = exponent)
     end
 end
