@@ -5,13 +5,15 @@ using GIModel, QuarkModelTransitions, LinearAlgebra
 export TRANSITIONS, flavor_routes, coefficients, compare_couplings, threshold_limit
 
 const TRANSITIONS = (
-    (id="A1", L="S", multiplicity=3, J=1, daughter_spin=1, relative_L=1),
-    (id="A2", L="P", multiplicity=3, J=2, daughter_spin=1, relative_L=2),
-    (id="A3", L="P", multiplicity=3, J=2, daughter_spin=3, relative_L=2),
-    (id="A4", L="P", multiplicity=3, J=1, daughter_spin=3, relative_L=2),
-    (id="A5", L="P", multiplicity=1, J=1, daughter_spin=3, relative_L=2),
-    (id="A6", L="D", multiplicity=3, J=3, daughter_spin=1, relative_L=3),
-    (id="A7", L="D", multiplicity=3, J=3, daughter_spin=3, relative_L=3),
+    (family="A", id="A1", L="S", multiplicity=3, J=1, daughter_L="S", daughter_spin=1, daughter_J=0, sho_hg=0.25, relative_L=1),
+    (family="A", id="A2", L="P", multiplicity=3, J=2, daughter_L="S", daughter_spin=1, daughter_J=0, sho_hg=0.25, relative_L=2),
+    (family="A", id="A3", L="P", multiplicity=3, J=2, daughter_L="S", daughter_spin=3, daughter_J=1, sho_hg=0.25, relative_L=2),
+    (family="A", id="A4", L="P", multiplicity=3, J=1, daughter_L="S", daughter_spin=3, daughter_J=1, sho_hg=0.25, relative_L=2),
+    (family="A", id="A5", L="P", multiplicity=1, J=1, daughter_L="S", daughter_spin=3, daughter_J=1, sho_hg=0.25, relative_L=2),
+    (family="A", id="A6", L="D", multiplicity=3, J=3, daughter_L="S", daughter_spin=1, daughter_J=0, sho_hg=0.25, relative_L=3),
+    (family="A", id="A7", L="D", multiplicity=3, J=3, daughter_L="S", daughter_spin=3, daughter_J=1, sho_hg=0.25, relative_L=3),
+    (family="Aprime", id="A8", L="P", multiplicity=1, J=1, daughter_L="P", daughter_spin=3, daughter_J=0, sho_hg=-0.25, relative_L=1),
+    (family="Adoubleprime", id="A9", L="D", multiplicity=3, J=3, daughter_L="P", daughter_spin=1, daughter_J=1, sho_hg=0.125, relative_L=2),
 )
 
 """Finite census: n=1 basis states, all u/d/s emissions, both charge conjugates.
@@ -45,7 +47,7 @@ end
 function coefficients(transition, route, parent_wave, daughter_wave, masses, q;
                       parent_mass=2.0, daughter_mass=1.0, beta=0.4, integral_cache=nothing)
     b = BasisState(1, transition.L, transition.multiplicity, transition.J; flavors=route.parent)
-    d = BasisState(1, "S", transition.daughter_spin, (transition.daughter_spin-1)÷2; flavors=route.daughter)
+    d = BasisState(1, transition.daughter_L, transition.daughter_spin, transition.daughter_J; flavors=route.daughter)
     p = BasisState(1, "S", 1, 0; flavors=route.emitted)
     state(b, w, m, tag) = PhysicalState(tag * b.label, m, [(basis=b, coefficient=1.0, wave=w)];
                                       provenance=(source=:A_class_unmixed_basis,))
@@ -54,7 +56,7 @@ function coefficients(transition, route, parent_wave, daughter_wave, masses, q;
                            state(p, OscillatorWave(0,beta,[1.0]), 0.14, "field:"))
     c = coupling_coefficients(final, PseudoscalarEmission(0,0,masses), initial;
                               kinematics=CMKinematics(q), topology=route.topology, integral_cache)
-    pw = PartialWave(transition.relative_L, (transition.daughter_spin-1)÷2)
+    pw = PartialWave(transition.relative_L, transition.daughter_J)
     return (g=Dict(c.g.partial_wave_amplitudes)[pw], h=Dict(c.h.partial_wave_amplitudes)[pw])
 end
 

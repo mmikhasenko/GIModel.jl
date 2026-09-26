@@ -17,7 +17,7 @@ const SOLVERS = (HO=OscillatorSolver(nbasis=48,max_nbasis=128,energy_tolerance_G
 
 pairname(p) = join(string.(p),"-")
 basisname(t) = "1^$(t.multiplicity)$(t.L)$(t.J)"
-daughtername(t) = "1^$(t.daughter_spin)S$((t.daughter_spin-1)÷2)"
+daughtername(t) = "1^$(t.daughter_spin)$(t.daughter_L)$(t.daughter_J)"
 routeid(t,r) = join((r.sector,pairname(r.parent),pairname(r.daughter),pairname(r.emitted),t.id,
                      basisname(t),daughtername(t),"L$(t.relative_L)",r.topology),"|")
 pointid(t,r,q,backend) = routeid(t,r)*"|q=$(q)|$(backend)"
@@ -60,21 +60,22 @@ function run_study(; pilot_only=false)
     function evaluate(t,r,q,backend)
         native_backend=backend==:SHO ? :HO : backend
         p=getwave(r.parent,t.L,t.multiplicity,native_backend)
-        d=getwave(r.daughter,"S",t.daughter_spin,native_backend)
+        d=getwave(r.daughter,t.daughter_L,t.daughter_spin,native_backend)
         wp=backend==:SHO ? sho_waves[orbital_angular_momentum(t.L)] : p.wave
-        wd=backend==:SHO ? sho_waves[0] : d.wave
+        wd=backend==:SHO ? sho_waves[orbital_angular_momentum(t.daughter_L)] : d.wave
         c=coefficients(t,r,wp,wd,mq,q;parent_mass=p.mass,daughter_mass=d.mass,beta=BETA,integral_cache)
         return (c=c,parent=p,daughter=d)
     end
 
-    # Gate the seven angular classes with a resolved light flavor and both solvers
+    # Gate the nine transitions with a resolved light flavor and both solvers
     # before expanding the census. The gate is on coefficients, not a fitted U.
     pilot_route=first(flavor_routes())
     pilot=NamedTuple[]
     for t in TRANSITIONS
         values=Dict(b=>evaluate(t,pilot_route,0.30,b).c for b in (:SHO,:HO,:FD1200,:FD1800))
-        shoratio=values[:SHO].h/values[:SHO].g
-        abs(shoratio-0.25)<1e-10 || error("equal-mass SHO A-class failure: $(t.id): $shoratio")
+        sholimit=threshold_limit(Q_THRESHOLD,[evaluate(t,pilot_route,q,:SHO).c for q in Q_THRESHOLD],t.relative_L)
+        shoratio=sholimit.value.h/sholimit.value.g
+        abs(shoratio-t.sho_hg)<1e-8 || error("equal-mass SHO A-class failure: $(t.id): $shoratio")
         for b in (:FD1200,:FD1800)
             cmp=compare_couplings(values[b],values[:HO])
             err=maximum(abs(abs(getproperty(values[b],p)/getproperty(values[:HO],p))-1) for p in (:g,:h))
@@ -102,7 +103,7 @@ function run_study(; pilot_only=false)
                 push!(raw,(trace_id=id*"|"*string(piece),point_id=id,sector=r.sector,
                     parent_flavors=pairname(r.parent),daughter_flavors=pairname(r.daughter),
                     emitted_flavors=pairname(r.emitted),light_constituent=r.light_constituent,
-                    transition=t.id,parent_basis=basisname(t),daughter_basis=daughtername(t),
+                    transition=t.id,family=t.family,parent_basis=basisname(t),daughter_basis=daughtername(t),
                     relative_L=t.relative_L,topology=string(r.topology),emitter=string(r.emitter),
                     spectator=string(r.spectator),q_GeV=q,wave_backend=string(b),operator_piece=string(piece),
                     coefficient_re=real(c),coefficient_im=imag(c),reduced_re=real(c/q^t.relative_L),
@@ -111,7 +112,7 @@ function run_study(; pilot_only=false)
                     daughter_mass_GeV=ev.daughter.mass,emitted_mass_placeholder_GeV=0.14,
                     parent_mixing=1.0,daughter_mixing=1.0,emitted_mixing=1.0,
                     parent_wave_id=b==:SHO ? "SHO|$(t.L)|beta=$BETA" : ev.parent.id,
-                    daughter_wave_id=b==:SHO ? "SHO|S|beta=$BETA" : ev.daughter.id,
+                    daughter_wave_id=b==:SHO ? "SHO|$(t.daughter_L)|beta=$BETA" : ev.daughter.id,
                     beta_comparator_GeV=BETA,parameter_sha256=parameter_hash,
                     kinematics="formal_common_q_not_on_shell",mixing_policy="unmixed_basis_components"))
             end
@@ -145,13 +146,16 @@ function run_study(; pilot_only=false)
                 push!(results,(point_id=pointid(t,r,q,b),route_id=routeid(t,r),sector=r.sector,
                     parent_flavors=pairname(r.parent),daughter_flavors=pairname(r.daughter),
                     emitted_flavors=pairname(r.emitted),light_constituent=r.light_constituent,
-                    transition=t.id,relative_L=t.relative_L,topology=string(r.topology),
+                    transition=t.id,family=t.family,relative_L=t.relative_L,topology=string(r.topology),
                     q_GeV=q,regime=q==0 ? "threshold_extrapolation" : "common_q",backend=string(b),
                     Cg_re=real(c.g),Cg_im=imag(c.g),Ch_re=real(c.h),Ch_im=imag(c.h),
                     SHO_Cg_re=real(sho.g),SHO_Cg_im=imag(sho.g),SHO_Ch_re=real(sho.h),SHO_Ch_im=imag(sho.h),
                     SHO_hg_re=real(sho.h/sho.g),SHO_hg_im=imag(sho.h/sho.g),
-                    requested_emitter_hg=me/(2*(me+ms)),implemented_spectator_hg=ms/(2*(me+ms)),
-                    equal_mass_SU3_hg=0.25,requested_formula_pass=abs(sho.h/sho.g-me/(2*(me+ms)))<1e-8,
+                    mass_formula_applicable=t.family=="A",
+                    requested_emitter_hg=t.family=="A" ? me/(2*(me+ms)) : NaN,
+                    implemented_spectator_hg=t.family=="A" ? ms/(2*(me+ms)) : NaN,
+                    equal_mass_SU3_hg=t.sho_hg,
+                    requested_formula_pass=t.family=="A" ? abs(sho.h/sho.g-me/(2*(me+ms)))<1e-8 : missing,
                     Rg_re=real(cmp.Rg),Rg_im=imag(cmp.Rg),Rh_re=real(cmp.Rh),Rh_im=imag(cmp.Rh),
                     U_hg_re=real(cmp.U_hg),U_hg_im=imag(cmp.U_hg),
                     scalar_stable=cmp.scalar_stable,vector_valid=cmp.vector_valid,vector_distance=cmp.vector_distance,
@@ -160,7 +164,7 @@ function run_study(; pilot_only=false)
                     sho_g_trace_ids=source_ids(:SHO,:g),sho_h_trace_ids=source_ids(:SHO,:h)))
             end
         end
-        if t.id=="A7"
+        if t.id==last(TRANSITIONS).id
             println("Completed flavor route $ri/$(length(routes))"); flush(stdout)
         end
     end
@@ -170,7 +174,7 @@ function run_study(; pilot_only=false)
     CSV.write(joinpath(OUTPUT,"certificates.csv"),certificates)
     @assert length(unique(r.trace_id for r in raw))==length(raw)
     open(joinpath(OUTPUT,"run.toml"),"w") do io
-        TOML.print(io,Dict("schema_version"=>1,"julia_version"=>string(VERSION),
+        TOML.print(io,Dict("schema_version"=>2,"julia_version"=>string(VERSION),
             "source_revision"=>strip(read(`git -C $ROOT rev-parse HEAD`,String)),
             "parameter_sha256"=>parameter_hash,"beta_GeV"=>BETA,"threshold_q_GeV"=>Q_THRESHOLD,
             "common_q_GeV"=>Q_SCAN,"trace_count"=>length(raw),"flavor_route_count"=>length(routes),

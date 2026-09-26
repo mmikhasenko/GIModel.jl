@@ -29,14 +29,15 @@ def main():
     memberships = rows("plot_membership")
     certificates = {r["certificate_id"]: r for r in rows("certificates")}
     wave_ids = {r["wave_id"] for r in rows("waves")}
-    assert len(traces) == 40320
+    assert len(traces) == 51840
     raw = {r["trace_id"]: r for r in traces}
     assert len(raw) == len(traces)
-    assert len(comparisons) == 7560
-    assert len(certificates) == 2520
-    assert len(memberships) == 5040
+    assert len(comparisons) == 9720
+    assert len(certificates) == 3240
+    assert len(memberships) == 7290
     assert {r["wave_backend"] for r in traces} == {"HO", "SHO", "FD1200", "FD1800"}
-    assert {r["transition"] for r in traces} == {f"A{i}" for i in range(1, 8)}
+    assert {r["transition"] for r in traces} == {f"A{i}" for i in range(1, 10)}
+    assert {r["family"] for r in traces} == {"A", "Aprime", "Adoubleprime"}
     for row in traces:
         assert row["parent_mixing"] == row["daughter_mixing"] == row["emitted_mixing"] == "1.0"
         for role in ("parent", "daughter"):
@@ -71,14 +72,23 @@ def main():
             assert abs(number(r, "U_hg").imag) < 1e-8
 
     expected = {r["point_id"] for r in comparisons if r["backend"] == "HO"}
-    for figure in ("histograms", "transition_panels"):
+    for figure in ("histograms", "transition_panels", "threshold_histogram"):
         entries = [m for m in memberships if m["figure"] == figure]
-        assert len(entries) == len(expected)
-        assert {m["point_id"] for m in entries} == expected
+        selected = expected if figure != "threshold_histogram" else {k for k in expected if float(points[k]["q_GeV"]) == 0}
+        assert len(entries) == len(selected)
+        assert {m["point_id"] for m in entries} == selected
         for m in entries:
             r = points[m["point_id"]]
             for key in ("native_g_trace_ids", "native_h_trace_ids", "sho_g_trace_ids", "sho_h_trace_ids"):
                 assert m[key] == r[key]
+    with (OUT / "threshold_bins.csv").open(newline="") as stream:
+        edges = {int(r["bin"]): (float(r["left"]), float(r["right"])) for r in csv.DictReader(stream)}
+    publication = [m for m in memberships if m["figure"] == "threshold_histogram"]
+    assert len(publication) == 810
+    for m in publication:
+        if m["scalar_stable"] == "true":
+            left, right = edges[int(m["bin"])]
+            assert left <= float(m["x"]) <= right
     print(f"Verified {len(traces)} raw pieces, {len(comparisons)} comparisons, "
           f"{len(certificates)} certificates and {len(memberships)} plot contributions.")
 

@@ -110,6 +110,6 @@ julia --project=GIPaper/scripts GIPaper/scripts/trace_rate_inputs.jl
 ```
 
 The [A-class universality study](docs/a_class_universality/README.md) provides a
-reproducible seven-transition native-wave/common-beta-SHO kernel survey, raw
+reproducible nine-transition native-wave/common-beta-SHO kernel survey, raw
 trace and plot ledgers, and an explicit unequal-mass convention audit. It is
 separate from the physical on-shell Table V reproduction.

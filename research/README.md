@@ -26,5 +26,5 @@ of the package API, reproduction layer, or polished report.
   `PhysicalState`, and closes eight of the plan's ten review questions.
 
 The [A-class realistic-wave universality study](../GIPaper/docs/a_class_universality/README.md)
-contains the seven-transition formal kernel census, numerical certificates,
+contains the nine-transition formal kernel census, numerical certificates,
 trace-to-plot ledger, and unequal-mass convention audit.

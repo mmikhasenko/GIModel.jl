@@ -75,8 +75,8 @@ Ch = Dict(c.h.partial_wave_amplitudes)
 contributions, not separately normalized physical decay widths. The returned
 objects are ordinary `TransitionAmplitude`s, retaining component provenance.
 
-The [A-class study](../GIPaper/docs/a_class_universality/README.md) compares all
-seven Table-IV A transitions with native waves. It explicitly records an
+The [A-class study](../GIPaper/docs/a_class_universality/README.md) compares the
+seven Table-IV A transitions plus A′ and A″ with native waves. It explicitly records an
 unresolved unequal-mass convention discrepancy: the existing final-wave
 relative-coordinate gradient yields the **spectator** fraction divided by two
 for common-beta SHO. The requested emitter-fraction extension is stored as a

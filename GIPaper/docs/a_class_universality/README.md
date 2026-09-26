@@ -1,10 +1,13 @@
 # A-class realistic-wave universality study
 
-This deliverable tests the seven reduced Table-IV A amplitudes using the existing
+This deliverable tests nine reduced Table-IV transitions (seven A, one A′, and
+one A″) using the existing
 native Eq. (19) operator. **It is a formal common-q, unmixed-basis kernel survey,
 not a list of physical open decays.** The numerical results and plots are in
-[numerical_summary.md](numerical_summary.md), [histograms.pdf](histograms.pdf),
-and [transition_panels.pdf](transition_panels.pdf).
+[numerical_summary.md](numerical_summary.md). The publication target is the
+[threshold histogram](threshold_histogram.pdf), with its [caption](threshold_caption.md).
+The [finite-q histograms](histograms.pdf) and [nine transition panels](transition_panels.pdf)
+are validation figures.
 
 There is an unresolved physics convention discrepancy: the requested
 `m_emitter/[2(m_emitter+m_spectator)]` SHO coefficient is not produced by the
@@ -42,12 +45,14 @@ implementation is introduced.
 | A5 | 1¹P₁ → 1³S₁ + P | 2 |
 | A6 | 1³D₃ → 1¹S₀ + P | 3 |
 | A7 | 1³D₃ → 1³S₁ + P | 3 |
+| A8 (A′) | 1¹P₁ → 1³P₀ + P | 1 |
+| A9 (A″) | 1³D₃ → 1¹P₁ + P | 2 |
 
 The finite applicability rule is explicit in `flavor_routes()`: the parent
 ordered pair is ud/du (isovector); uu/dd/ss (resolved isoscalar basis); us/ds/su/sd
 (strange); or c/b with each u/d/s, in both orientations. Each light emitter may
 become u, d, or s; the spectator stays unchanged and the emitted flavor is fixed
-by that transfer. This gives 90 flavor/topology routes, hence 630 reduced
+by that transfer. This gives 90 flavor/topology routes, hence 810 reduced
 transition routes. Heavy constituents never emit light pseudoscalars; cc, bb,
 and cb/bc are excluded. Heavy-light records retain the original strange versus
 nonstrange light constituent and the final exact flavor pair separately.
@@ -101,12 +106,38 @@ coincide only at equal masses. Changing the coordinate fraction or adding a
 boost term merely to enforce the emitter expression would be an unverified
 operator change. This study makes neither change. `requested_emitter_hg`,
 `implemented_spectator_hg`, `SHO_hg_re/im`, and `requested_formula_pass` expose the
-difference row by row. `equal_mass_SU3_hg=0.25` is always a labeled comparator,
-including for strange rows; no strange mass is secretly replaced.
+difference row by row for the original A family. `mass_formula_applicable=false`
+marks the two new families; their unequal-mass comparators are evaluated directly
+through the same SHO operator, with no guessed mass rescaling.
+`equal_mass_SU3_hg` stores the family-specific threshold value (+1/4, −1/4, +1/8);
+no strange mass is secretly replaced.
 
 A future resolved moving-frame derivation should update the operator, the
 independent unequal-mass tests, and regenerate the study together. Until then,
 heavy-light findings are conditional on the implemented convention.
+
+## Added A′ and A″ transitions
+
+The daughter orbital label and total J are explicit in the transition catalog.
+This is essential: channel spin equals the daughter's total J (the emitted P has
+J=0), not its constituent spin. A′ uses a central ³P₀ daughter, and A″ a central
+¹P₁ daughter. P-wave fine-structure radial distortions are still excluded under
+the same unmixed central-wave prescription as the existing parent P/D waves.
+
+The equal-mass common-beta **threshold** ratios are −1/4 for A′ and +1/8 for A″.
+The full native Eq. (19) evaluator has finite-q polynomial corrections for these
+P-wave-daughter channels even with SHO waves. Tests therefore check their
+extrapolated ratios, and independently compare finite-q analytic SHO overlaps
+with sampled-mesh derivative/overlap integrals. They do not force the threshold
+constants at finite q. This corrects the earlier discussion's suggestion that
+all three families have constant SHO ratios away from threshold.
+
+The publication histogram uses each family's own matched SHO threshold limit,
+so U_hg=1 is the common reference, including for the negative A′ coefficient.
+All nine transitions enter, with the five original sector colors. The A family
+has seven times the transition multiplicity of either new family; this weighting
+is explicit, not an equal-family average. Sector counts are 108 isovector, 162
+isoscalar, 216 strange, 162 charmed and 162 bottom-flavored combinations.
 
 ## Numerics and certification
 
@@ -121,7 +152,7 @@ for g and h. All five uncollapsed samples are retained. q=0 in the derived
 file means extrapolation; the operator is never evaluated at q=0 for this
 reduction. The separate common-q scan uses 0.15, 0.30, 0.60 GeV.
 
-The light pilot covers all seven classes before the census expands. The initial
+The light pilot now covers all nine transitions before the census expands. The initial
 HO default versus FD600/1200 at rmax=28 GeV⁻¹ had a worst coefficient difference
 of 1.929% in A7. Increasing the HO basis to 48–128 with a 1 keV energy tolerance
 and enlarging the FD box to 48 GeV⁻¹ did not remove it. The retained pilot tables
@@ -173,7 +204,10 @@ the runner also writes uncompressed local copies. The plotter accepts either.
   certificate is filtered out. Unstable scalar entries have bin zero and are
   represented by the vector-fallback artifact if any occur.
 - `run.toml`: census, grids, tolerances, Julia version, parameter SHA-256 and source file hashes.
-- `histograms.pdf/png`, `transition_panels.pdf/png`: vector publication output
+- `threshold_histogram.pdf/png`: the single-panel publication target, with
+  consistently typeset LaTeX subscripts. `threshold_caption.md` records scope
+  and numerical qualifications; `threshold_bins.csv` stores the exact bin edges.
+- `histograms.pdf/png`, `transition_panels.pdf/png`: finite-q validation figures
   and preview rasters. Colors encode the same five sectors throughout.
 
 Table V's on-shell inputs, reference backend, amplitudes and tests are unchanged.
@@ -191,7 +225,22 @@ HO/SHO records share external reference masses; FD records retain their own
 solver eigenvalues for audit. Those small external-mass differences do not enter
 any coefficient or comparator in this off-shell study.
 
-## Findings and remaining work
+## Nine-transition threshold result
+
+The primary histogram contains all 810 combinations. Of these, 798 pass the
+unchanged numerical gates. All 90 A′ and all 90 A″ threshold combinations pass;
+the twelve flags are the original A6/A7 cases. A′ spans U_hg=0.825275–1.174724,
+and A″ spans 0.880702–1.104238. No scalar ratio is unstable at threshold.
+The original seven-transition results were compared by trace id against the
+preceding archive: all 40,320 original operator-piece values are exactly
+unchanged. The new families broaden the low side of the distribution without
+altering the original calculation.
+
+## Original seven-transition baseline and remaining work
+
+The following numbers describe the original A-only baseline. The current
+nine-transition results, including per-family ranges and flags, are generated
+in [numerical_summary.md](numerical_summary.md).
 
 The threshold range is 0.921537–1.221715 across all sectors. Equal-mass light
 kernels can therefore depart appreciably from the common-beta coupling ratio

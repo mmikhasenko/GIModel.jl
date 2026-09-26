@@ -8,7 +8,7 @@
   Existing under-resolution/quadrature warnings occurred in deliberate solver
   stress tests; no core source changes were made for this study.
 - `julia --project=GIPaper GIPaper/test/runtests.jl`:
-  **2,745 passed**, including 93 new survey contracts. This suite requires the
+  **2,869 passed**, including 217 survey contracts. This suite requires the
   independently maintained `paper/` source archive. The first run in the isolated
   worktree had 20 missing-provenance failures; an ignored symlink to the existing
   local archive supplied those unchanged reference files, after which it passed.
@@ -21,6 +21,23 @@ The unequal-mass SHO tests certify what the existing operator computes
 (spectator fraction), not the requested emitter expression. The discrepancy is
 an open physics issue, exposed by `requested_formula_pass` in the data.
 
-Artifact validation passed: **40,320** raw pieces, **7,560** comparisons,
-**2,520** certificates and **5,040** plot contributions. Both generated PNG
-figures were visually inspected; the PDF companions preserve vector graphics.
+The expanded artifact audit passed for **51,840** raw pieces, **9,720** comparisons,
+**3,240** certificates and **7,290** plot contributions. Of those contributions,
+810 belong to the new standalone threshold histogram. Exact publication-bin
+edges are checked against every contribution.
+
+The new A′/A″ tests verify the −1/4 and +1/8 SHO threshold limits for both emitter
+lines, and compare finite-q analytic SHO overlaps to independently sampled mesh
+waves. At q=0.30 GeV the new light pilot's refined-FD coefficient errors are
+0.0054% (A′) and 0.0704% (A″). The original transition-package/core tests above
+were run for the unchanged operator implementation in the preceding commit;
+the complete GIPaper suite was rerun for this extension.
+
+All **40,320** original raw operator-piece values were compared by trace id to
+the preceding archive and are exactly unchanged (maximum relative difference
+zero). The expanded threshold census has **798/810** numerical passes: all
+180 new-family combinations pass, and only the original twelve flags remain.
+
+The standalone threshold PNG and both validation figures were visually inspected.
+All U_hg labels now use LaTeXStrings, including consistently sized h/g subscripts.
+The final plotting run completed without warnings.
