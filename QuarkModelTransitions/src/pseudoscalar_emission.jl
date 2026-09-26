@@ -362,10 +362,12 @@ function _eq19_spatial_integral(
         operator, label.elementary.topology, parent_flavors,
     )
     if label.elementary.piece isa _DirectPseudoscalarPiece
+        iszero(operator.g) && return zero(complex(float(momentum_GeV)))
         return _direct_orbital_integral(
             operator, label, final_wave, initial_wave, momentum_GeV, alpha,
         )
     end
+    iszero(operator.h) && return zero(complex(float(momentum_GeV)))
     return _recoil_orbital_integral(
         operator, label, final_wave, initial_wave, momentum_GeV, alpha,
     )
@@ -384,17 +386,28 @@ function _eq19_wave_amplitude(
     final_wave::RadialWave,
     initial_wave::RadialWave,
     momentum_GeV::Number,
-    parent_flavors::Tuple{Symbol,Symbol},
+    parent_flavors::Tuple{Symbol,Symbol};
+    topology::Symbol = :both,
+    integral_cache::Union{Nothing,AbstractDict} = nothing,
 )
+    topology in (:both, :quark, :antiquark) ||
+        throw(ArgumentError("topology must be :both, :quark, or :antiquark"))
+    function integral(label)
+        evaluate() = _eq19_spatial_integral(
+            operator, label, final_wave, initial_wave, momentum_GeV, parent_flavors,
+        )
+        isnothing(integral_cache) && return evaluate()
+        # Flavor/spin algebra stays outside the cache. The key contains every
+        # spatial input, including the resolved routing fraction and couplings.
+        key = (label, final_wave, initial_wave, momentum_GeV,
+               _eq19_momentum_fraction(operator, label.elementary.topology, parent_flavors),
+               operator.g, operator.h)
+        return get!(evaluate, integral_cache, key)
+    end
     integrals = Tuple(
-        _eq19_spatial_integral(
-            operator,
-            label,
-            final_wave,
-            initial_wave,
-            momentum_GeV,
-            parent_flavors,
-        ) for label in decomposition.integral_labels
+        (topology === :both ||
+         (topology === :quark) == (label.elementary.topology isa _QuarkEmission)) ?
+        integral(label) : zero(complex(float(momentum_GeV))) for label in decomposition.integral_labels
     )
     values = collect(integrals)
     helicity_values = decomposition.helicity_coefficients * values
@@ -423,6 +436,10 @@ component terms, and `RelativisticTwoBodyNormalization`.
 elementary `0^-` field; reversing the pair chooses the other Fig.-14 assignment
 for a two-pseudoscalar channel.
 
+`topology` selects `:both` (default), `:quark`, or `:antiquark`. An optional
+caller-owned `integral_cache=Dict()` reuses identical spatial integrals; do not
+mutate wave arrays while reusing it. Flavor and component terms remain distinct.
+
 All components require explicit ordered quark-antiquark flavors. The averaged
 `:q` flavor is deliberately rejected because it does not specify an isospin
 wavefunction. Complex `CMKinematics` is accepted for the off-shell vertex, but
@@ -433,7 +450,11 @@ function matrix_element(
     operator::PseudoscalarEmission,
     initial::PhysicalState;
     kinematics::TransitionKinematics = OnShell(),
+    topology::Symbol = :both,
+    integral_cache::Union{Nothing,AbstractDict} = nothing,
 )
+    topology in (:both, :quark, :antiquark) ||
+        throw(ArgumentError("topology must be :both, :quark, or :antiquark"))
     roles = _validate_eq19_transition(final, initial)
     resolved = _resolve_kinematics(final, initial, kinematics)
     q = resolved.momentum_GeV
@@ -471,6 +492,8 @@ function matrix_element(
                     parent.wave,
                     q,
                     parent_flavors,
+                    topology = topology,
+                    integral_cache = integral_cache,
                 )
                 integral_count += length(pure.spatial_integrals)
 
@@ -512,6 +535,7 @@ function matrix_element(
     )
     provenance = (
         backend = :native_eq19,
+        topology = topology,
         source = (:GI1985_Eq19, :GI1985_AppendixB, :GI1985_AppendixC),
         emitted = roles.emitted.label,
         surviving = roles.surviving.label,
@@ -531,6 +555,30 @@ function matrix_element(
         partial_wave_amplitudes,
         Tuple(terms),
         provenance,
+    )
+end
+
+"""
+    coupling_coefficients(final, operator::PseudoscalarEmission, initial;
+                          kinematics=OnShell(), topology=:both)
+
+Return `(g=amplitude_g, h=amplitude_h)` from unit-coupling calls to
+[`matrix_element`](@ref). Each result retains helicities, partial waves,
+component terms and provenance. Recombine any amplitude entry as
+`g * coefficients.g + h * coefficients.h`; the input operator supplies masses,
+not the output coupling values. `topology=:quark` or `:antiquark` isolates one
+emitter line; their sum is the default `:both` amplitude. The optional
+`integral_cache=Dict()` is shared by both calls (see `matrix_element`).
+"""
+function coupling_coefficients(final, operator::PseudoscalarEmission, initial;
+                               kinematics::TransitionKinematics = OnShell(),
+                               topology::Symbol = :both,
+                               integral_cache::Union{Nothing,AbstractDict} = nothing)
+    return (
+        g = matrix_element(final, PseudoscalarEmission(1, 0, operator.quark_masses),
+                           initial; kinematics, topology, integral_cache),
+        h = matrix_element(final, PseudoscalarEmission(0, 1, operator.quark_masses),
+                           initial; kinematics, topology, integral_cache),
     )
 end
 

@@ -21,6 +21,7 @@ const params, mq = load_parameters_and_quark_masses(GIPaper.model_parameters_pat
     include("data_validation.jl")
     include("reference_loading.jl")
     include("table_v.jl")
+    include("a_class_universality.jl")
     include("table_vi.jl")
     include("mass_inputs.jl")
     include("comparison.jl")

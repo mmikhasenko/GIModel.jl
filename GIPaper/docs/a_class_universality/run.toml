@@ -1,0 +1,22 @@
+base_revision = "24319b3c5c81bc252be8d8167d2605acae4b3e2d"
+source_identity = "working source identified by SHA-256; base_revision precedes study edits"
+threshold_q_GeV = [0.12, 0.06, 0.03, 0.015, 0.0075]
+julia_version = "1.11.5"
+operator_convention = "existing Eq19 spectator coordinate fraction; emitter formula discrepancy retained"
+beta_GeV = 0.4
+threshold_tolerance = 0.002
+transition_count = 7
+flavor_route_count = 90
+fd_refinement_tolerance = 0.003
+trace_count = 40320
+scope = "unmixed n=1 spectroscopic kernels; no physical width prediction"
+numerical_certificate_tolerance = 0.03
+common_q_GeV = [0.15, 0.3, 0.6]
+parameter_sha256 = "aee6d87fa316f529261b7b7c79b3860a6530b94459007e10723f765e9e9bfb16"
+schema_version = 1
+
+[source_sha256]
+"QuarkModelTransitions/src/pseudoscalar_emission.jl" = "c10005ce1940f2494edb5430577d8a9ec78e613c61906c263d986d1ea2c4bd26"
+"GIPaper/scripts/a_class_kernels.jl" = "8c89f68d2297c0c98c38e1dfadfa1b052c3f27c31a3935735a05e63f6e2dcbf6"
+"GIPaper/scripts/plot_a_class.jl" = "f1d8f6fb57539433dd564ebbd9ccbdec544254ec032a0b7bfb97081bdeeeb2be"
+"GIPaper/scripts/study_a_class.jl" = "c2844be398808f07c9d10323f3fd7117664bf902c8e303725bac05a9b2196868"

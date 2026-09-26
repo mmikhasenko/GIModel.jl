@@ -29,7 +29,7 @@ export TransitionOperator,
     partial_waves
 include("transition_amplitudes.jl")
 
-export PseudoscalarEmission
+export PseudoscalarEmission, coupling_coefficients
 include("pseudoscalar_emission.jl")
 
 export StrongDecayModel,

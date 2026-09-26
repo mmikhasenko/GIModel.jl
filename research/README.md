@@ -24,3 +24,7 @@ of the package API, reproduction layer, or polished report.
   partial waves its projection, splits the algebra from the spatial integrals
   at the coefficient/orbital-label line, replaces `StateView` with a resolved
   `PhysicalState`, and closes eight of the plan's ten review questions.
+
+The [A-class realistic-wave universality study](../GIPaper/docs/a_class_universality/README.md)
+contains the seven-transition formal kernel census, numerical certificates,
+trace-to-plot ledger, and unequal-mass convention audit.

@@ -12,6 +12,7 @@ const root = REPOSITORY_ROOT
     include("spin_algebra.jl")
     include("algebraic_decomposition.jl")
     include("pseudoscalar_emission.jl")
+    include("coupling_coefficients.jl")
     include("observables.jl")
     include("radiative_decays.jl")
     include("strong_decays.jl")

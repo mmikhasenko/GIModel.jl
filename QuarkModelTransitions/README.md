@@ -59,3 +59,31 @@ and annihilation mixing of the mass spectrum remain in GIModel.
 phenomenological inputs. They are separate from spectrum parameters and from
 numerical controls. GIPaper owns the table-specific reference data and the
 [rate input ledger](../GIPaper/docs/rate_input_ledger.md).
+
+## Linear coupling coefficients
+
+```julia
+c = coupling_coefficients(final, operator, initial;
+    kinematics = CMKinematics(0.3), topology = :quark)
+Cg = Dict(c.g.partial_wave_amplitudes)
+Ch = Dict(c.h.partial_wave_amplitudes)
+# For every allowed PartialWave pw: H[pw] = g*Cg[pw] + h*Ch[pw].
+```
+
+`topology` accepts `:both` (default), `:quark`, or `:antiquark` on both
+`matrix_element` and `coupling_coefficients`. These are linear emitter-line
+contributions, not separately normalized physical decay widths. The returned
+objects are ordinary `TransitionAmplitude`s, retaining component provenance.
+
+The [A-class study](../GIPaper/docs/a_class_universality/README.md) compares all
+seven Table-IV A transitions with native waves. It explicitly records an
+unresolved unequal-mass convention discrepancy: the existing final-wave
+relative-coordinate gradient yields the **spectator** fraction divided by two
+for common-beta SHO. The requested emitter-fraction extension is stored as a
+separate, generally failing comparator; it has not been inserted into the
+operator as an empirical correction.
+
+For repeated surveys, both calls accept `integral_cache=Dict()`. This optional,
+caller-owned cache reuses only spatial integrals with identical waves, orbital
+labels, q, routing fraction, and couplings; it never combines flavor traces.
+Do not mutate wave coefficients or mesh arrays while reusing that dictionary.
