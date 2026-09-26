@@ -1,0 +1,846 @@
+script_sha256 = "0af99eb3c23de361a8bbd4cae2c26d3c6f57c5fd508e1e478e6fbb6c8e41f9fa"
+prescription = "fixed-sector basis masses, no flavor annihilation; charm reused from prior audit"
+level_inventory = "3S,2P,2D,1F,1G (same as full spectrum figure)"
+solver = "FiniteDifferenceSolver{:relativistic, :full}(450, 24.0, :relativistic, :full, 6)"
+parameter_sha256 = "aee6d87fa316f529261b7b7c79b3860a6530b94459007e10723f765e9e9bfb16"
+
+[[states]]
+label = "1^1S_0"
+n = 1
+J = 0
+sector = "D"
+multiplicity = 1
+unmixed_GeV = 1.873434057836381
+mixing_count = 0
+L = "S"
+mixed_GeV = 1.873434057836381
+[[states]]
+label = "1^3S_1"
+n = 1
+J = 1
+sector = "D"
+multiplicity = 3
+unmixed_GeV = 2.0380174119877985
+mixing_count = 1
+L = "S"
+mixed_GeV = 2.037738314716362
+[[states]]
+label = "2^1S_0"
+n = 2
+J = 0
+sector = "D"
+multiplicity = 1
+unmixed_GeV = 2.582437835630503
+mixing_count = 0
+L = "S"
+mixed_GeV = 2.582437835630503
+[[states]]
+label = "2^3S_1"
+n = 2
+J = 1
+sector = "D"
+multiplicity = 3
+unmixed_GeV = 2.6449274487731786
+mixing_count = 1
+L = "S"
+mixed_GeV = 2.644851844113636
+[[states]]
+label = "1^1P_1"
+n = 1
+J = 1
+sector = "D"
+multiplicity = 1
+unmixed_GeV = 2.4752839685382586
+mixing_count = 1
+L = "P"
+mixed_GeV = 2.4753396276543196
+[[states]]
+label = "1^3P_0"
+n = 1
+J = 0
+sector = "D"
+multiplicity = 3
+unmixed_GeV = 2.3870246966772113
+mixing_count = 0
+L = "P"
+mixed_GeV = 2.3870246966772113
+[[states]]
+label = "1^3P_1"
+n = 1
+J = 1
+sector = "D"
+multiplicity = 3
+unmixed_GeV = 2.456937965984113
+mixing_count = 1
+L = "P"
+mixed_GeV = 2.4552642196806658
+[[states]]
+label = "1^3P_2"
+n = 1
+J = 2
+sector = "D"
+multiplicity = 3
+unmixed_GeV = 2.497307505808392
+mixing_count = 1
+L = "P"
+mixed_GeV = 2.497251880801168
+[[states]]
+label = "1^1D_2"
+n = 1
+J = 2
+sector = "D"
+multiplicity = 1
+unmixed_GeV = 2.8308540266010365
+mixing_count = 1
+L = "D"
+mixed_GeV = 2.816707398539002
+[[states]]
+label = "1^3D_1"
+n = 1
+J = 1
+sector = "D"
+multiplicity = 3
+unmixed_GeV = 2.8146182535902
+mixing_count = 1
+L = "D"
+mixed_GeV = 2.8148906329872734
+[[states]]
+label = "1^3D_2"
+n = 1
+J = 2
+sector = "D"
+multiplicity = 3
+unmixed_GeV = 2.8327942504913604
+mixing_count = 1
+L = "D"
+mixed_GeV = 2.8454908328371324
+[[states]]
+label = "1^3D_3"
+n = 1
+J = 3
+sector = "D"
+multiplicity = 3
+unmixed_GeV = 2.8318886550329534
+mixing_count = 1
+L = "D"
+mixed_GeV = 2.8318710289194318
+[[states]]
+label = "1^1S_0"
+n = 1
+J = 0
+sector = "Ds"
+multiplicity = 1
+unmixed_GeV = 1.9739885648389925
+mixing_count = 0
+L = "S"
+mixed_GeV = 1.9739885648389925
+[[states]]
+label = "1^3S_1"
+n = 1
+J = 1
+sector = "Ds"
+multiplicity = 3
+unmixed_GeV = 2.124675961191624
+mixing_count = 1
+L = "S"
+mixed_GeV = 2.1243825287332694
+[[states]]
+label = "2^1S_0"
+n = 2
+J = 0
+sector = "Ds"
+multiplicity = 1
+unmixed_GeV = 2.674630212791473
+mixing_count = 0
+L = "S"
+mixed_GeV = 2.674630212791473
+[[states]]
+label = "2^3S_1"
+n = 2
+J = 1
+sector = "Ds"
+multiplicity = 3
+unmixed_GeV = 2.734414728032351
+mixing_count = 1
+L = "S"
+mixed_GeV = 2.7343577269477195
+[[states]]
+label = "1^1P_1"
+n = 1
+J = 1
+sector = "Ds"
+multiplicity = 1
+unmixed_GeV = 2.5643471724278486
+mixing_count = 1
+L = "P"
+mixed_GeV = 2.5647392653074133
+[[states]]
+label = "1^3P_0"
+n = 1
+J = 0
+sector = "Ds"
+multiplicity = 3
+unmixed_GeV = 2.4743317149726813
+mixing_count = 0
+L = "P"
+mixed_GeV = 2.4743317149726813
+[[states]]
+label = "1^3P_1"
+n = 1
+J = 1
+sector = "Ds"
+multiplicity = 3
+unmixed_GeV = 2.546477493759877
+mixing_count = 1
+L = "P"
+mixed_GeV = 2.5454516036837553
+[[states]]
+label = "1^3P_2"
+n = 1
+J = 2
+sector = "Ds"
+multiplicity = 3
+unmixed_GeV = 2.587261203583762
+mixing_count = 1
+L = "P"
+mixed_GeV = 2.5872072798231143
+[[states]]
+label = "1^1D_2"
+n = 1
+J = 2
+sector = "Ds"
+multiplicity = 1
+unmixed_GeV = 2.9130398245589815
+mixing_count = 1
+L = "D"
+mixed_GeV = 2.901144722191225
+[[states]]
+label = "1^3D_1"
+n = 1
+J = 1
+sector = "Ds"
+multiplicity = 3
+unmixed_GeV = 2.897047345584877
+mixing_count = 1
+L = "D"
+mixed_GeV = 2.8972966908768774
+[[states]]
+label = "1^3D_2"
+n = 1
+J = 2
+sector = "Ds"
+multiplicity = 3
+unmixed_GeV = 2.914855722111687
+mixing_count = 1
+L = "D"
+mixed_GeV = 2.9261380865948032
+[[states]]
+label = "1^3D_3"
+n = 1
+J = 3
+sector = "Ds"
+multiplicity = 3
+unmixed_GeV = 2.915232396750142
+mixing_count = 1
+L = "D"
+mixed_GeV = 2.9152151669783866
+[[states]]
+label = "1^1S_0"
+mixed_GeV = 0.14854872076098502
+J = 0
+sector = "nn"
+multiplicity = 1
+unmixed_GeV = 0.14854872076098502
+mixing_count = 0
+L = "S"
+n = 1
+[[states]]
+label = "1^3S_1"
+mixed_GeV = 0.7697381935446095
+J = 1
+sector = "nn"
+multiplicity = 3
+unmixed_GeV = 0.7711896047422471
+mixing_count = 1
+L = "S"
+n = 1
+[[states]]
+label = "2^1S_0"
+mixed_GeV = 1.2916177254800516
+J = 0
+sector = "nn"
+multiplicity = 1
+unmixed_GeV = 1.2916177254800516
+mixing_count = 0
+L = "S"
+n = 2
+[[states]]
+label = "2^3S_1"
+mixed_GeV = 1.455079812834554
+J = 1
+sector = "nn"
+multiplicity = 3
+unmixed_GeV = 1.4555645864031561
+mixing_count = 1
+L = "S"
+n = 2
+[[states]]
+label = "1^1P_1"
+mixed_GeV = 1.2576173588517077
+J = 1
+sector = "nn"
+multiplicity = 1
+unmixed_GeV = 1.2576173588517077
+mixing_count = 0
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_0"
+mixed_GeV = 1.0681989981682705
+J = 0
+sector = "nn"
+multiplicity = 3
+unmixed_GeV = 1.0681989981682705
+mixing_count = 0
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_1"
+mixed_GeV = 1.223173052906691
+J = 1
+sector = "nn"
+multiplicity = 3
+unmixed_GeV = 1.223173052906691
+mixing_count = 0
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_2"
+mixed_GeV = 1.2974867797198808
+J = 2
+sector = "nn"
+multiplicity = 3
+unmixed_GeV = 1.2976873997688152
+mixing_count = 1
+L = "P"
+n = 1
+[[states]]
+label = "1^1D_2"
+mixed_GeV = 1.687036846331301
+J = 2
+sector = "nn"
+multiplicity = 1
+unmixed_GeV = 1.687036846331301
+mixing_count = 0
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_1"
+mixed_GeV = 1.6628069480406031
+J = 1
+sector = "nn"
+multiplicity = 3
+unmixed_GeV = 1.6612005895552513
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_2"
+mixed_GeV = 1.6932675502579233
+J = 2
+sector = "nn"
+multiplicity = 3
+unmixed_GeV = 1.6932675502579233
+mixing_count = 0
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_3"
+mixed_GeV = 1.6814533607778164
+J = 3
+sector = "nn"
+multiplicity = 3
+unmixed_GeV = 1.681503423009713
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^1S_0"
+mixed_GeV = 0.6548072597619381
+J = 0
+sector = "ss"
+multiplicity = 1
+unmixed_GeV = 0.6548072597619381
+mixing_count = 0
+L = "S"
+n = 1
+[[states]]
+label = "1^3S_1"
+mixed_GeV = 1.016083842711828
+J = 1
+sector = "ss"
+multiplicity = 3
+unmixed_GeV = 1.0170237486186409
+mixing_count = 1
+L = "S"
+n = 1
+[[states]]
+label = "2^1S_0"
+mixed_GeV = 1.5770504995658285
+J = 0
+sector = "ss"
+multiplicity = 1
+unmixed_GeV = 1.5770504995658285
+mixing_count = 0
+L = "S"
+n = 2
+[[states]]
+label = "2^3S_1"
+mixed_GeV = 1.6886223419306057
+J = 1
+sector = "ss"
+multiplicity = 3
+unmixed_GeV = 1.6888607275722904
+mixing_count = 1
+L = "S"
+n = 2
+[[states]]
+label = "1^1P_1"
+mixed_GeV = 1.49798311368723
+J = 1
+sector = "ss"
+multiplicity = 1
+unmixed_GeV = 1.49798311368723
+mixing_count = 0
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_0"
+mixed_GeV = 1.3426557046102414
+J = 0
+sector = "ss"
+multiplicity = 3
+unmixed_GeV = 1.3426557046102414
+mixing_count = 0
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_1"
+mixed_GeV = 1.4708247367387166
+J = 1
+sector = "ss"
+multiplicity = 3
+unmixed_GeV = 1.4708247367387166
+mixing_count = 0
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_2"
+mixed_GeV = 1.5331272303926604
+J = 2
+sector = "ss"
+multiplicity = 3
+unmixed_GeV = 1.5332729256939115
+mixing_count = 1
+L = "P"
+n = 1
+[[states]]
+label = "1^1D_2"
+mixed_GeV = 1.8975551818630465
+J = 2
+sector = "ss"
+multiplicity = 1
+unmixed_GeV = 1.8975551818630465
+mixing_count = 0
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_1"
+mixed_GeV = 1.8774733189263149
+J = 1
+sector = "ss"
+multiplicity = 3
+unmixed_GeV = 1.8765562430694227
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_2"
+mixed_GeV = 1.9028398685351002
+J = 2
+sector = "ss"
+multiplicity = 3
+unmixed_GeV = 1.9028398685351002
+mixing_count = 0
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_3"
+mixed_GeV = 1.895778488673885
+J = 3
+sector = "ss"
+multiplicity = 3
+unmixed_GeV = 1.8958187998086515
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^1S_0"
+mixed_GeV = 0.46092989091923187
+J = 0
+sector = "K"
+multiplicity = 1
+unmixed_GeV = 0.46092989091923187
+mixing_count = 0
+L = "S"
+n = 1
+[[states]]
+label = "1^3S_1"
+mixed_GeV = 0.9016396536260225
+J = 1
+sector = "K"
+multiplicity = 3
+unmixed_GeV = 0.9027232566168266
+mixing_count = 1
+L = "S"
+n = 1
+[[states]]
+label = "2^1S_0"
+mixed_GeV = 1.4531708776602983
+J = 0
+sector = "K"
+multiplicity = 1
+unmixed_GeV = 1.4531708776602983
+mixing_count = 0
+L = "S"
+n = 2
+[[states]]
+label = "2^3S_1"
+mixed_GeV = 1.57862438697588
+J = 1
+sector = "K"
+multiplicity = 3
+unmixed_GeV = 1.5789676457420074
+mixing_count = 1
+L = "S"
+n = 2
+[[states]]
+label = "1^1P_1"
+mixed_GeV = 1.3836307589123062
+J = 1
+sector = "K"
+multiplicity = 1
+unmixed_GeV = 1.3837307877331315
+mixing_count = 1
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_0"
+mixed_GeV = 1.2186059136319898
+J = 0
+sector = "K"
+multiplicity = 3
+unmixed_GeV = 1.2186059136319898
+mixing_count = 0
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_1"
+mixed_GeV = 1.3538014350689442
+J = 1
+sector = "K"
+multiplicity = 3
+unmixed_GeV = 1.3539953072686863
+mixing_count = 1
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_2"
+mixed_GeV = 1.4202384356746374
+J = 2
+sector = "K"
+multiplicity = 3
+unmixed_GeV = 1.4204052994602527
+mixing_count = 1
+L = "P"
+n = 1
+[[states]]
+label = "1^1D_2"
+mixed_GeV = 1.7944832855894555
+J = 2
+sector = "K"
+multiplicity = 1
+unmixed_GeV = 1.796084022576978
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_1"
+mixed_GeV = 1.7744244967952936
+J = 1
+sector = "K"
+multiplicity = 3
+unmixed_GeV = 1.773259201172673
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_2"
+mixed_GeV = 1.8031251726246662
+J = 2
+sector = "K"
+multiplicity = 3
+unmixed_GeV = 1.8017773000120871
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_3"
+mixed_GeV = 1.7926247804637436
+J = 3
+sector = "K"
+multiplicity = 3
+unmixed_GeV = 1.7926691323931143
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^1S_0"
+mixed_GeV = 5.309784865571862
+J = 0
+sector = "B"
+multiplicity = 1
+unmixed_GeV = 5.309784865571862
+mixing_count = 0
+L = "S"
+n = 1
+[[states]]
+label = "1^3S_1"
+mixed_GeV = 5.369257333981916
+J = 1
+sector = "B"
+multiplicity = 3
+unmixed_GeV = 5.369305232388918
+mixing_count = 1
+L = "S"
+n = 1
+[[states]]
+label = "2^1S_0"
+mixed_GeV = 5.904442530430012
+J = 0
+sector = "B"
+multiplicity = 1
+unmixed_GeV = 5.904442530430012
+mixing_count = 0
+L = "S"
+n = 2
+[[states]]
+label = "2^3S_1"
+mixed_GeV = 5.933464643848971
+J = 1
+sector = "B"
+multiplicity = 3
+unmixed_GeV = 5.9334752978035255
+mixing_count = 1
+L = "S"
+n = 2
+[[states]]
+label = "1^1P_1"
+mixed_GeV = 5.785522657435763
+J = 1
+sector = "B"
+multiplicity = 1
+unmixed_GeV = 5.786169627343705
+mixing_count = 1
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_0"
+mixed_GeV = 5.74993456364394
+J = 0
+sector = "B"
+multiplicity = 3
+unmixed_GeV = 5.74993456364394
+mixing_count = 0
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_1"
+mixed_GeV = 5.776830481507084
+J = 1
+sector = "B"
+multiplicity = 3
+unmixed_GeV = 5.778371300884187
+mixing_count = 1
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_2"
+mixed_GeV = 5.79474161378973
+J = 2
+sector = "B"
+multiplicity = 3
+unmixed_GeV = 5.794752031471132
+mixing_count = 1
+L = "P"
+n = 1
+[[states]]
+label = "1^1D_2"
+mixed_GeV = 6.0954646832341695
+J = 2
+sector = "B"
+multiplicity = 1
+unmixed_GeV = 6.109346235397144
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_1"
+mixed_GeV = 6.108765723536257
+J = 1
+sector = "B"
+multiplicity = 3
+unmixed_GeV = 6.108723685722229
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_2"
+mixed_GeV = 6.12451530097206
+J = 2
+sector = "B"
+multiplicity = 3
+unmixed_GeV = 6.1123535608891935
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_3"
+mixed_GeV = 6.104839961606222
+J = 3
+sector = "B"
+multiplicity = 3
+unmixed_GeV = 6.104843604527492
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^1S_0"
+mixed_GeV = 5.390705485803151
+J = 0
+sector = "Bs"
+multiplicity = 1
+unmixed_GeV = 5.390705485803151
+mixing_count = 0
+L = "S"
+n = 1
+[[states]]
+label = "1^3S_1"
+mixed_GeV = 5.447310999627962
+J = 1
+sector = "Bs"
+multiplicity = 3
+unmixed_GeV = 5.447365942031972
+mixing_count = 1
+L = "S"
+n = 1
+[[states]]
+label = "2^1S_0"
+mixed_GeV = 5.984630345695935
+J = 0
+sector = "Bs"
+multiplicity = 1
+unmixed_GeV = 5.984630345695935
+mixing_count = 0
+L = "S"
+n = 2
+[[states]]
+label = "2^3S_1"
+mixed_GeV = 6.01328625393073
+J = 1
+sector = "Bs"
+multiplicity = 3
+unmixed_GeV = 6.013294891192512
+mixing_count = 1
+L = "S"
+n = 2
+[[states]]
+label = "1^1P_1"
+mixed_GeV = 5.864051455287729
+J = 1
+sector = "Bs"
+multiplicity = 1
+unmixed_GeV = 5.864214916408846
+mixing_count = 1
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_0"
+mixed_GeV = 5.8266005484429435
+J = 0
+sector = "Bs"
+multiplicity = 3
+unmixed_GeV = 5.8266005484429435
+mixing_count = 0
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_1"
+mixed_GeV = 5.8555031581232475
+J = 1
+sector = "Bs"
+multiplicity = 3
+unmixed_GeV = 5.856430982958489
+mixing_count = 1
+L = "P"
+n = 1
+[[states]]
+label = "1^3P_2"
+mixed_GeV = 5.873825424340091
+J = 2
+sector = "Bs"
+multiplicity = 3
+unmixed_GeV = 5.873836159219346
+mixing_count = 1
+L = "P"
+n = 1
+[[states]]
+label = "1^1D_2"
+mixed_GeV = 6.168860631241378
+J = 2
+sector = "Bs"
+multiplicity = 1
+unmixed_GeV = 6.1814406151648065
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_1"
+mixed_GeV = 6.1805972147549015
+J = 1
+sector = "Bs"
+multiplicity = 3
+unmixed_GeV = 6.18055555205078
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_2"
+mixed_GeV = 6.195977542885001
+J = 2
+sector = "Bs"
+multiplicity = 3
+unmixed_GeV = 6.184279618161199
+mixing_count = 1
+L = "D"
+n = 1
+[[states]]
+label = "1^3D_3"
+mixed_GeV = 6.178013812960309
+J = 3
+sector = "Bs"
+multiplicity = 3
+unmixed_GeV = 6.178017552496409
+mixing_count = 1
+L = "D"
+n = 1

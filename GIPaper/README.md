@@ -152,3 +152,22 @@ julia --project=GIPaper/scripts GIPaper/scripts/charmed_threshold_masses.jl
 julia --project=GIPaper/scripts GIPaper/scripts/charmed_threshold_masses.jl --refined
 python3 GIPaper/scripts/filter_charmed_thresholds.py
 ```
+
+### Five-sector threshold and isospin counts
+
+The [five-sector scratch pad](docs/pseudoscalar_census/five_sector_scratchpad.md)
+records charge-resolved, isospin-reduced and charge-conjugation-reduced counts,
+including every retained group's members and closed-threshold decisions. It
+uses the same finite Table-IV basis inventory as the charm audit, ideal excited
+isoscalar flavor states, and physical ground light pseudoscalar masses in both
+final roles. Reproduce after generating the charm mass inputs above:
+
+```sh
+julia --project=GIPaper/scripts GIPaper/scripts/five_sector_threshold_masses.jl
+julia --project=GIPaper/scripts GIPaper/scripts/five_sector_threshold_masses.jl --refined
+julia --project=GIPaper/scripts GIPaper/scripts/count_five_sector_thresholds.jl
+python3 GIPaper/scripts/verify_five_sector_thresholds.py
+```
+
+The last command independently reconstructs the Julia ledger from the earlier
+Python flavor enumeration, checking every channel and reduction key.
