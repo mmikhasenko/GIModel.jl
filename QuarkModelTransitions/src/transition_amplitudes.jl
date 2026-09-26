@@ -175,11 +175,21 @@ end
 _state_identity(state::ReferenceState) =
     (state.label, state.mass_GeV, state.J, state.parity, :reference)
 
-_state_sort_key(state::TransitionState) = repr(_state_identity(state))
 _same_external_state(a::TransitionState, b::TransitionState) =
     _state_identity(a) == _state_identity(b)
 
-"""A canonically ordered pair of daughter states, without a user-selected partial wave."""
+"""
+    TwoMesonChannel(first, second)
+
+An ordered pair of daughter states. The constructor preserves the supplied
+order; it never sorts the daughters.
+
+For [`PseudoscalarEmission`](@ref), use
+`TwoMesonChannel(surviving, emitted)`: `second` must be the emitted `0^-`
+state. Reverse the arguments to choose the other assignment in a
+two-pseudoscalar channel. Identical-particle rules use state identity, not
+sorting.
+"""
 struct TwoMesonChannel{A<:TransitionState,B<:TransitionState}
     first::A
     second::B
@@ -187,9 +197,6 @@ struct TwoMesonChannel{A<:TransitionState,B<:TransitionState}
         A<:TransitionState,
         B<:TransitionState,
     }
-        if _state_sort_key(second) < _state_sort_key(first)
-            return new{B,A}(second, first)
-        end
         return new{A,B}(first, second)
     end
 end

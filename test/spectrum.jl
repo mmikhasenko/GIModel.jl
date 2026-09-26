@@ -393,16 +393,7 @@ end
     @test sum(fixed.r .* fixed.u) > 0
     @test [w.u for w in cached.waves] == before
 
-    # Both solvers give the same smeared origin factor -- the quantity the second
-    # cache was introduced to correct. Agreement here is what makes it removable.
-    m = mq["q"]
-    sfd = wavefunction_origin_smearing(
-        radial_wave(compute_spectrum(params, Meson(mq, :q, :q); levels = lv,
-            solver = FiniteDifferenceSolver()), "1^1S_0"), m; L = 0)
-    sho = wavefunction_origin_smearing(
-        radial_wave(compute_spectrum(params, Meson(mq, :q, :q); levels = lv,
-            solver = OscillatorSolver()), "1^1S_0"), m; L = 0)
-    @test isapprox(abs(sfd), abs(sho); rtol = 0.01)
+
 end
 
 @testset "central diagnostic is independent of fixed -> mixed production" begin

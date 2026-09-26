@@ -2,7 +2,7 @@
 
 julia_version = "1.11.6"
 manifest_format = "2.0"
-project_hash = "f279c81af4bef87ea073ec92f1f7c99b5367dd35"
+project_hash = "fd81cb1cb7a890e29fbf73817347d98962be54e8"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -503,7 +503,7 @@ uuid = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
 version = "0.4.0"
 
 [[deps.GIPaper]]
-deps = ["CSV", "GIModel", "LinearAlgebra", "Printf", "QuarkModelTransitions"]
+deps = ["CSV", "GIModel", "LinearAlgebra", "Printf", "QuarkModelTransitions", "TOML"]
 path = ".."
 uuid = "49ec1c8d-b0ea-4dff-ad2d-05293f1534fc"
 version = "0.1.0"

@@ -346,3 +346,6 @@ which also makes it the one file here that touches reference data.
 
 No narrative, cells in the order they were typed. Treat it as a starting point
 for your own poking, not as a document.
+
+The annihilation-width example also uses `QuarkModelTransitions`, which owns
+the observable kernels; spectrum-only examples need only GIModel.

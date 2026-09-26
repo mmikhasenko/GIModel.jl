@@ -7,6 +7,9 @@
 > the leading-S₀ convention, and the photon-decay overlap kernels — the
 > physics-convention reasoning the per-unit `notes` only summarize.
 
+Numerical input values and per-row records are in
+[GIPaper’s rate input ledger](../GIPaper/docs/rate_input_ledger.md).
+
 Scope ledger for GI observables beyond the mass spectrum (gap-ledger item 8).
 The mass-spectrum reproduction machinery stays in `src/` untouched; decay and
 electromagnetic conventions are tracked here before/while they are encoded.
@@ -103,7 +106,7 @@ three-state composer. A pure-component kernel must not repeat that factor.
   classification, and per-miss diagnosis. This ledger intentionally does not
   copy those generated totals.
 - `GIPaper.load_table_v` owns the adapter from the paper's canonical CSV schema
-  to GIModel's reusable `DecayChannel` type.
+  to QuarkModelTransitions' reusable `DecayChannel` type.
 
 ### Findings that make Table V reproduce
 

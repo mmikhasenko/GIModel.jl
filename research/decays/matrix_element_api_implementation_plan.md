@@ -1,7 +1,8 @@
 # Transition matrix-element API redesign: implementation plan
 
-Status: implementation in progress; Phases 0--3 and package extraction complete,
-2026-09-23; Phase 4 active
+Status: implementation in progress; Phases 0--3, package extraction, and the
+Phase-4 public Eq. (19) assembly complete, 2026-09-26; convergence and sector
+validation remain active
 
 Companion documents:
 
@@ -338,10 +339,11 @@ analytic-continuation domain.
 
 ### Identical daughters
 
-`TwoMesonChannel` canonicalizes daughter ordering. Once `(L,S)` is derived,
-exchange symmetry uses `(-1)^(L+S)` together with internal quantum numbers to
-remove forbidden waves and apply normalization once. Mixed daughters are
-compared after component expansion, not merely by display label. The exact
+`TwoMesonChannel` preserves daughter ordering so operator roles are explicit;
+GI Eq. (19) uses `(surviving, emitted)`. Once `(L,S)` is derived, exchange
+symmetry uses `(-1)^(L+S)` together with internal quantum numbers to remove
+forbidden waves and apply normalization once. Mixed daughters are compared
+after component expansion, not merely by display label. The exact
 component-identity key is a Phase 2 deliverable.
 
 ### Conventions and generated algebra
@@ -465,8 +467,9 @@ Status: active, 2026-09-23. The first spatial checkpoint is recorded in
 Progress, 2026-09-26: the spatial evaluator is now general in
 `L_i,m_i -> L_f,m_f`, including both recoil-gradient branches, arbitrary
 plane-wave multipoles, complex momentum, shared helicity columns, analytic
-SHO checks, and native HO/FD checks. End-to-end physical-state composition and
-normalization remain active work.
+SHO checks, and native HO/FD checks. The same kernel is assembled into the
+public `matrix_element` path with explicit ambiguity-free emitted-field routing, coherent
+physical-state composition, all allowed partial waves, and Eq. (C2) widths.
 
 - Implement Eq. (19) with `g,h`, analytic SHO, and native numerical waves.
 - Compute the full off-shell helicity vector and all partial waves.
@@ -549,7 +552,7 @@ and reports stay unchanged until typed replacements have full coverage.
 | Ambiguous normalization | typed normalization and Appendix C conversion | 1, 4 |
 | Closed channel silently zeroed | zero width only; explicit complex-k vertex | 1 |
 | Phase mismatch | phase ledger and sign-sensitive fixtures | 2–4 |
-| Identical mixed daughters double counted | canonical channel and exchange tests | 2 |
+| Identical mixed daughters double counted | ordered-role and exchange tests | 2 |
 | Quasi-two-body rows lost | `ReferenceState` accepted by legacy only | 1 |
 | `^3P0` reduced to radial overlaps | mandatory three-route prototype | 5 |
 | Shifted-momentum interpolation bias | refinement and SHO comparisons | 5 |

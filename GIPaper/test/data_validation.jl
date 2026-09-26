@@ -72,7 +72,6 @@ end
         "m_c" => ("masses", "m_c_MeV"),
         "m_b" => ("masses", "m_b_MeV"),
         "b" => ("potential", "b_GeV2"),
-        "Lambda" => ("potential", "Lambda_MeV"),
         "c" => ("potential", "c_MeV"),
         "sigma0" => ("relativistic_smearing", "sigma0_GeV"),
         "s" => ("relativistic_smearing", "s"),
@@ -81,6 +80,8 @@ end
         "epsilon_so_vector" => ("relativistic_factors", "epsilon_so_vector"),
         "epsilon_so_scalar" => ("relativistic_factors", "epsilon_so_scalar"),
     )
+    @test !haskey(model["potential"], "Lambda_MeV")
+    @test table_values["Lambda"] == 200
     for (key, path) in mappings
         @test haskey(table_values, key)
         @test table_values[key] ≈ Float64(model[path[1]][path[2]]) rtol = 1e-9

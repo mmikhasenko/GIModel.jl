@@ -261,3 +261,21 @@ function load_params_with_central(dir, central_name)
     )
     return load_parameters_and_quark_masses(p)
 end
+
+@testset "Strict runtime parameter files" begin
+    original = GIModel.TOML.parsefile(default_parameters_path())
+    @test GIModel.gi_parameters_from_raw(original) isa GIParameters
+    for (section, key) in (("potential", "central"), ("relativistic_factors", "epsilon_c"), ("relativistic_factors", "contact_momentum_sandwich"), ("annihilation", "p1_A_np"))
+        raw = deepcopy(original)
+        delete!(raw[section], key)
+        @test_throws ArgumentError GIModel.gi_parameters_from_raw(raw)
+    end
+    for (section, key, value) in (("potential", "Lambda_MeV", 200), ("potential", "b_GeV2", Inf), ("relativistic_factors", "epsilon_c", true), ("fine_structure", "enabled", 1))
+        raw = deepcopy(original); raw[section][key] = value
+        @test_throws ArgumentError GIModel.gi_parameters_from_raw(raw)
+    end
+    raw = deepcopy(original); delete!(raw, "annihilation")
+    @test GIModel.gi_parameters_from_raw(raw).annihilation == AnnihilationAmplitudes()
+    raw = deepcopy(original); raw["masses"]["m_c_MeV"] = -1
+    @test_throws ArgumentError GIModel.quark_masses_from_raw(raw)
+end

@@ -1,9 +1,9 @@
 #!/usr/bin/env julia
 # Canonical Table VI audit. Reference identities/kinematics belong to GIPaper;
-# overlap kernels, multipole assembly and physical-state composition to GIModel.
+# operators belong to QuarkModelTransitions; states and waves belong to GIModel.
 using Pkg
 Pkg.activate(dirname(@__DIR__))
-using GIModel, GIPaper, Dates, Printf, Statistics
+using GIModel, QuarkModelTransitions, GIPaper, Dates, Printf, Statistics
 
 const ROOT = dirname(@__DIR__)
 const G = GIModel
@@ -51,7 +51,8 @@ function resolved(id)
     spec = descriptor.mixed ? iso_spec : spectra[descriptor.flavors]
     return spec, spectrum_state(spec, descriptor.basis)
 end
-const ISOVECTORS = Set(["rho", "pi", "pi0", "A2", "A1", "B"])
+const TABLE_POLICY = load_table_policy()["table_vi"]
+const ISOVECTORS = Set(TABLE_POLICY["isovectors"])
 mass(flavor) = mq[String(flavor)]
 charge(flavor) = flavor in (:u, :c) ? 2 / 3 : -1 / 3
 
@@ -138,7 +139,7 @@ function evaluate(row)
         end
         # Explicit paper input, not fitted here: page 26 footnote a attributes
         # this additive moment to pi0-eta mixing.
-        supplementary = "a" in footnotes ? 0.01 : 0.0
+        supplementary = TABLE_POLICY["supplementary_footnote"] in footnotes ? TABLE_POLICY["supplementary_mu_N"] : 0.0
         value += supplementary
     else
         isnothing(q) && error("missing photon kinematics for $(row.decay)")

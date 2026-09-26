@@ -3,6 +3,7 @@ uuid = "49ec1c8d-b0ea-4dff-ad2d-05293f1534fc"
 version = "0.1.0"
 
 [deps]
+TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 GIModel = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
 QuarkModelTransitions = "87282b95-dd94-4373-9910-f2158c0f9e5e"
@@ -14,8 +15,9 @@ GIModel = {path = ".."}
 QuarkModelTransitions = {path = "../QuarkModelTransitions"}
 
 [compat]
+julia = "1.11"
 CSV = "0.10.16"
-GIModel = "0.1.0, 0.2, 0.3, 0.4"
+GIModel = "0.4"
 QuarkModelTransitions = "0.1"
 LinearAlgebra = "1.11.0"
 Printf = "1.11.0"
@@ -23,7 +25,6 @@ TOML = "1.0.3"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 
 [targets]
-test = ["Test", "TOML"]
+test = ["Test"]

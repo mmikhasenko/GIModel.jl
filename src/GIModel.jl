@@ -16,7 +16,7 @@ include("constants.jl")
 export orbital_angular_momentum, orbital_label
 export ConstituentMasses, reduced_mass, FineStructureMultiplet
 export RadialWave, MeshWave, OscillatorWave, sample_wave
-export radial_expect, radial_overlap, wave_norm
+export radial_expect, radial_overlap, radial_derivative_overlap, wave_norm
 export MomentumWave, MeshMomentumWave, OscillatorMomentumWave,
     momentum_wave, momentum_expect, momentum_overlap, momentum_functional
 include("model_objects.jl")
@@ -149,40 +149,8 @@ export annihilation_basis_input, fix_annihilation_phase,
     add_isoscalar_annihilation, compute_isoscalar_spectrum
 include("flavor_mixing.jl")
 
-# =============================================================================
-# Table VII annihilation widths: gluonic QQ̄ → gluons
-# =============================================================================
-
-export wavefunction_origin_smearing,
-    observable_momentum_wave,
-    gluonic_annihilation_amplitude,
-    gluonic_annihilation_width,
-    GLUONIC_CHANNELS,
-    mock_meson_mass,
-    leptonic_decay_factor,
-    LEPTONIC_FACTOR_KINDS,
-    two_photon_amplitude,
-    charge_radius_squared,
-    leptonic_pseudoscalar_width,
-    dilepton_vector_width,
-    axial_tau_width,
-    G_FERMI_GEV,
-    HBARC_FM2
-include("annihilation_widths.jl")
-
-export ALPHA_EM,
-    NUCLEON_MASS_GEV,
-    photon_momentum,
-    m1_transition_moment,
-    e1_transition_amplitude,
-    mock_momentum_wave,
-    mock_mean_energy,
-    mock_wave_mass,
-    mock_meson_overlap,
-    mock_meson_radial_moment
-include("mock_meson_overlaps.jl")
-export e1_angular_coefficient, spin_flip_photon_amplitude
-export m1_recoil_moment, photon_recoil_form_factor, m1_radiative_width, neutral_m1_charge
-include("radiative_decays.jl")
+# Generic wave transforms stay independent of transition operators.
+export mock_momentum_wave
+include("momentum_waves.jl")
 
 end

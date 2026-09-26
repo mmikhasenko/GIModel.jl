@@ -36,8 +36,11 @@
     gaussian = exp(-q^2 / (16beta^2))
     direct_expected = operator.g * q * gaussian
     recoil_magnitude = operator.h * q * gaussian / 4
-    spatial(label, momentum=q) = QuarkModelTransitions._eq19_s_wave_spatial_integral(
-        operator, label, wave, wave, momentum, (:u, :d),
+    s_label(label) = QuarkModelTransitions._SpectroscopicOrbitalLabel(
+        label, 0, 0, 0, 0,
+    )
+    spatial(label, momentum=q) = QuarkModelTransitions._eq19_spatial_integral(
+        operator, s_label(label), wave, wave, momentum, (:u, :d),
     )
     @test spatial(direct_q) ≈ direct_expected rtol = 1e-10
     @test spatial(direct_qbar) ≈ direct_expected rtol = 1e-10
@@ -75,8 +78,8 @@
     # independent finite-difference derivative implementation.
     r = collect(range(0.01, 30.0; step = 0.01))
     mesh = sample_wave(wave, r)
-    mesh_spatial(label) = QuarkModelTransitions._eq19_s_wave_spatial_integral(
-        operator, label, mesh, mesh, q, (:u, :d),
+    mesh_spatial(label) = QuarkModelTransitions._eq19_spatial_integral(
+        operator, s_label(label), mesh, mesh, q, (:u, :d),
     )
     @test mesh_spatial(direct_q) ≈ direct_expected rtol = 2e-5
     @test mesh_spatial(recoil_q) ≈ recoil_magnitude rtol = 2e-5
@@ -85,6 +88,135 @@
         QuarkModelTransitions._RecoilPseudoscalarPiece(), qtop, 1, -1,
     )
     @test spatial(transverse) == 0
+end
+
+
+@testset "Public native Eq. (19) transition" begin
+    mq = QuarkMassTable(
+        "u" => 0.22, "d" => 0.22, "q" => 0.22, "s" => 0.419,
+    )
+    operator = PseudoscalarEmission(0.7, 0.3, mq)
+    s_wave = OscillatorWave(0, 0.4, [1.0])
+    p_wave = OscillatorWave(1, 0.4, [1.0])
+
+    a1 = PhysicalState("a1+", 1.60, [(
+        basis = BasisState(1, "P", 3, 1; label = "a1+", flavors = (:u, :d)),
+        coefficient = 1.0,
+        wave = p_wave,
+    )])
+    rho = PhysicalState("rho0-u", 0.77, [(
+        basis = BasisState(1, "S", 3, 1; label = "rho0-u", flavors = (:u, :u)),
+        coefficient = 1.0,
+        wave = s_wave,
+    )])
+    pion = PhysicalState("pi+", 0.14, [(
+        basis = BasisState(1, "S", 1, 0; label = "pi+", flavors = (:u, :d)),
+        coefficient = 1.0,
+        wave = s_wave,
+    )])
+    final = TwoMesonChannel(rho, pion)
+    reversed = TwoMesonChannel(pion, rho)
+    amplitude = matrix_element(final, operator, a1; kinematics = CMKinematics(0.31))
+
+    @test amplitude.normalization isa RelativisticTwoBodyNormalization
+    @test partial_waves(amplitude) == [PartialWave(0, 1), PartialWave(2, 1)]
+    @test_throws ArgumentError matrix_element(
+        reversed, operator, a1; kinematics = CMKinematics(0.31),
+    )
+    @test amplitude.provenance.backend == :native_eq19
+    @test amplitude.provenance.emitted == "pi+"
+    @test amplitude.provenance.surviving == "rho0-u"
+    @test all(term.provenance.source == :GI1985_Eq19 for term in amplitude.terms)
+    @test all(isfinite(last(item)) for item in amplitude.helicity)
+    @test all(isfinite(last(item)) for item in amplitude.partial_wave_amplitudes)
+    expected_width = 1000 * 0.31 / (2pi * 3) *
+                     sum(abs2(last(item)) for item in amplitude.partial_wave_amplitudes)
+    @test decay_width(amplitude) ≈ expected_width
+    @test_throws ArgumentError decay_width(matrix_element(
+        final, operator, a1; kinematics = CMKinematics(0.1im),
+    ))
+
+    # Native physical-state composition is coherent: two algebraically equal
+    # parent components interfere at amplitude level, not as averaged widths.
+    mixed_parent(sign) = PhysicalState("mixed-a1", 1.60, [
+        (
+            basis = BasisState(n, "P", 3, 1;
+                label = "a1-$n", flavors = (:u, :d)),
+            coefficient = (n == 1 ? 1.0 : sign) / sqrt(2),
+            wave = p_wave,
+        ) for n in 1:2
+    ])
+    constructive = matrix_element(
+        final, operator, mixed_parent(1.0); kinematics = CMKinematics(0.31),
+    )
+    destructive = matrix_element(
+        final, operator, mixed_parent(-1.0); kinematics = CMKinematics(0.31),
+    )
+    @test all(
+        last(constructive.partial_wave_amplitudes[i]) ≈
+        sqrt(2) * last(amplitude.partial_wave_amplitudes[i])
+        for i in eachindex(amplitude.partial_wave_amplitudes)
+    )
+    @test all(
+        isapprox(last(item), 0.0; atol = 1e-13)
+        for item in destructive.partial_wave_amplitudes
+    )
+    @test decay_width(constructive) ≈ 2 * decay_width(amplitude)
+    @test decay_width(destructive) ≈ 0.0 atol = 1e-24
+
+    # For P P, the explicit emitted state chooses exactly one
+    # elementary-emission assignment (GI Fig. 14); reversing constructor
+    # arguments cannot add a second copy of the same pair-creation diagram.
+    parent_vector = PhysicalState("rho0-u", 0.90, [(
+        basis = BasisState(1, "S", 3, 1; label = "rho0-u", flavors = (:u, :u)),
+        coefficient = 1.0,
+        wave = s_wave,
+    )])
+    piplus = pion
+    piminus = PhysicalState("pi-", 0.14, [(
+        basis = BasisState(1, "S", 1, 0; label = "pi-", flavors = (:d, :u)),
+        coefficient = 1.0,
+        wave = s_wave,
+    )])
+    pp = matrix_element(
+        TwoMesonChannel(piplus, piminus), operator, parent_vector;
+        kinematics = CMKinematics(0.2),
+    )
+    pp_reversed = matrix_element(
+        TwoMesonChannel(piminus, piplus), operator, parent_vector;
+        kinematics = CMKinematics(0.2),
+    )
+    @test pp.provenance.emitted == "pi-"
+    @test pp_reversed.provenance.emitted == "pi+"
+    @test pp.provenance.two_pseudoscalar_rule == :ordered_second_is_emitted
+    @test length(pp.terms) == 1
+
+    coarse = PhysicalState("ambiguous-nonstrange", 0.14, [(
+        basis = BasisState(1, "S", 1, 0; flavors = (:q, :q)),
+        coefficient = 1.0,
+        wave = s_wave,
+    )])
+    @test_throws ArgumentError matrix_element(
+        TwoMesonChannel(rho, coarse), operator, a1;
+        kinematics = CMKinematics(0.2),
+    )
+
+    vector2 = PhysicalState("vector2", 0.3, [(
+        basis = BasisState(1, "S", 3, 1; flavors = (:d, :u)),
+        coefficient = 1.0,
+        wave = s_wave,
+    )])
+    @test_throws ArgumentError matrix_element(
+        TwoMesonChannel(rho, vector2), operator, a1;
+        kinematics = CMKinematics(0.2),
+    )
+
+    reference_parent = ReferenceState("closed-reference", 0.2; J = 0, parity = 1)
+    reference_final = TwoMesonChannel(
+        ReferenceState("p1", 0.15; J = 0, parity = -1),
+        ReferenceState("p2", 0.15; J = 0, parity = -1),
+    )
+    @test_throws ArgumentError decay_width(reference_final, operator, reference_parent)
 end
 
 @testset "General Eq. (19) orbital integrals" begin
@@ -115,19 +247,6 @@ end
         QuarkModelTransitions._eq19_spatial_integral(
             operator, label, final_wave, initial_wave, q, (:u, :d),
         )
-
-    # Generic multipole machinery must reduce exactly to the old S-to-S slice.
-    for piece in (direct, recoil), topology in (qtop, atop)
-        sign = topology isa QuarkModelTransitions._QuarkEmission ? -1 : 1
-        elementary = QuarkModelTransitions._Eq19OrbitalLabel(
-            piece, topology, 0, sign,
-        )
-        general = orbital(piece, topology, 0, sign, 0, 0, 0, 0)
-        @test spatial(general, s_wave, s_wave) ≈
-              QuarkModelTransitions._eq19_s_wave_spatial_integral(
-                  operator, elementary, s_wave, s_wave, momentum, (:u, :d),
-              ) rtol = 2e-13
-    end
 
     # Independent Cartesian Gaussian result:
     # <P_0|exp(s*i*k*z)|S> = s*i*k/(sqrt(2)*beta) exp[-k^2/(4beta^2)].
@@ -266,9 +385,9 @@ end
         ),
     )
     value(solution, label, final_level, initial_level) =
-        QuarkModelTransitions._eq19_s_wave_spatial_integral(
+        QuarkModelTransitions._eq19_spatial_integral(
             operator,
-            label,
+            QuarkModelTransitions._SpectroscopicOrbitalLabel(label, 0, 0, 0, 0),
             radial_wave(solution, final_level),
             radial_wave(solution, initial_level),
             0.45,

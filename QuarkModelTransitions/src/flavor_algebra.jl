@@ -76,6 +76,41 @@ function _heavy_flavor_state(heavy::Symbol, light_antiquark::Symbol)
     ])
 end
 
+"""GI Appendix-B phase for a pure ordered quark-antiquark flavor ket."""
+function _pure_flavor_phase(flavors::Tuple{Symbol,Symbol})
+    canonical = map(flavor -> flavor === :n ? :q : flavor, flavors)
+    any(==(:q), canonical) && throw(ArgumentError(
+        "the averaged flavor :q does not identify a physical isospin state; " *
+        "resolve it into explicit :u and :d PhysicalState components",
+    ))
+    # B1--B13 fix the charged-light phases. Other pure ordered pairs use the
+    # positive basis-ket phase; observable widths are invariant under a common
+    # external-state rephasing.
+    return get(
+        Dict(
+            (:u, :d) => -1.0,
+            (:u, :s) => -1.0,
+            (:d, :s) => -1.0,
+            (:s, :d) => -1.0,
+        ),
+        Tuple(canonical),
+        1.0,
+    )
+end
+
+"""Pure component flavor ket, derived without inspecting a display label."""
+function _component_flavor_state(component)
+    flavors = component.basis.flavors
+    isnothing(flavors) && throw(ArgumentError(
+        "native transition components require explicit ordered quark-antiquark flavors",
+    ))
+    phase = _pure_flavor_phase(flavors)
+    return _FlavorState(
+        string(first(flavors), last(flavors), "bar"),
+        [flavors => phase],
+    )
+end
+
 """`X_q^P(final, initial)` derived from the emitted pseudoscalar flavor ket."""
 function _flavor_transfer(
     ::_QuarkEmission,

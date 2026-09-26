@@ -3,8 +3,8 @@ source = "Godfrey-Isgur 1985"
 doi = "10.1103/PhysRevD.32.189"
 page = 5
 table = "Table II"
-status = "provisional_raw_digitization"
-authority_note = "Verify symbols and values against paper/Godfrey-Isgur-1985.pdf before promoting to data/clean/parameters.toml."
+status = "reviewed_runtime_preset"
+authority_note = "Runtime preset reviewed against Table II and Appendix A; see docs/model_inputs.md. Historical filename retained for compatibility. Table II reference transcription lives in GIPaper/data/clean/."
 
 [masses]
 m_ud_avg_MeV = 220
@@ -14,7 +14,6 @@ m_b_MeV = 4977
 
 [potential]
 b_GeV2 = 0.18
-Lambda_MeV = 200
 c_MeV = -253
 # Which central-potential construction to use (mutually exclusive by design):
 #   "pointwise"                    — raw V = br - 4α_s/(3r) + c diagnostic baseline.

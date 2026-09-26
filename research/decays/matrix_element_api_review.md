@@ -106,7 +106,7 @@ Make the channel the pair of daughters only, and return the whole partial-wave
 set:
 
 ```julia
-final = TwoMesonChannel(d1, d2)          # canonicalized, symmetrized if identical
+final = TwoMesonChannel(d1, d2)          # ordered; identity still drives symmetry
 
 amp = matrix_element(final, operator, parent; kinematics = CMKinematics(k))
 

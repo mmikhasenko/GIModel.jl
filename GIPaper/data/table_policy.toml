@@ -1,0 +1,64 @@
+[metadata]
+role = "Paper reproduction prescriptions and legacy validation anchors; not generic operator defaults"
+source = "Godfrey and Isgur, Phys. Rev. D 32, 189 (1985), Tables V-VII and associated discussion"
+doi = "10.1103/PhysRevD.32.189"
+
+[table_v]
+convention = "LeadingS0"
+rho_amplitude = 12.4
+B_amplitude = -11.0
+amplitude_unit = "MeV^(1/2)"
+source = "Table V rho -> pi pi and B -> omega pi calibration amplitudes"
+charmed_parents = ["Dstar0", "Dstarplus", "Kstar_c", "kappa_c", "Q1c", "Q2c"]
+heavy_fraction_policy = "Table V footnote d: use m_c/(m_c+m_d) only for the listed charmed rows; other rows use the equal-mass value 1/2"
+
+[[table_v.mixing]]
+section = "1P_1 strange"
+theta_deg = 34.0
+singlet = "Q1"
+triplet = "Q2"
+source = "Fig. 4 / Table V footnote b; rounded paper mixing angle, not solved anew by this harness"
+[[table_v.mixing]]
+section = "1^3D_2 1^1D_2 strange"
+theta_deg = 33.0
+singlet = "Q1_1D2"
+triplet = "Q2_1D2"
+source = "Table V same-J strange D-wave prescription; rounded paper angle"
+[[table_v.mixing]]
+section = "1P_1 charmed"
+theta_deg = -41.0
+singlet = "Q1c"
+triplet = "Q2c"
+source = "Table V charmed P-wave prescription; rounded paper angle"
+
+[table_vi]
+supplementary_mu_N = 0.01
+supplementary_footnote = "a"
+source = "Table VI footnote a: additive magnetic-moment contribution, in nuclear magnetons"
+isovectors = ["rho", "pi", "pi0", "A2", "A1", "B"]
+flavor_policy = "Neutral light isovectors use the isovector charge combination; other flavor assignments and mixed-state flags are in table_vi_states.csv"
+
+[table_vii.validation]
+f_pi_GeV = 0.1307
+hbar_GeV_s = 6.582119e-25
+pion_lifetime_s = 2.6033e-8
+psi_dilepton_width_GeV = 5.55e-6
+source = "Legacy audit comparison values retained at existing precision; original edition not recorded. Not PDG-2026 measurements and never calibration inputs."
+role = "Comparison-only D7/D8 sanity checks; no feedback to predicted amplitudes"
+
+[[table_vii.dilepton_validation]]
+label = "rho -> e+ e-"
+width_GeV = 7.04e-6
+note = ""
+[[table_vii.dilepton_validation]]
+label = "psi -> e+ e-"
+width_GeV = 5.55e-6
+note = "QCD (1−16α_s/3π) not in D8"
+[[table_vii.dilepton_validation]]
+label = "psi' -> e+ e-"
+width_GeV = 2.34e-6
+note = ""
+[[table_vii.dilepton_validation]]
+label = "Upsilon -> e+ e-"
+width_GeV = 1.34e-6
+note = ""

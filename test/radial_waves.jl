@@ -110,7 +110,6 @@
     w_one = radial_wave(sol3, 1)
     w_big = MeshWave(13.7 .* w_one.u, w_one.r)
     for probe in (
-        w -> charge_radius_squared(w, mq["q"], 2 // 3, mq["s"], 1 // 3),
         w -> radial_expect(w, x -> x^2),
         w -> wave_norm(w) / wave_norm(w),
         w -> momentum_expect(momentum_wave(w, 0), p -> 1.0),

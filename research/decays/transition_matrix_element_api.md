@@ -166,9 +166,11 @@ XI are fixtures for this generic layer. Several partial waves may share the
 same helicity amplitudes and spatial-integral basis, so they are always
 calculated together.
 
-`TwoMesonChannel` canonicalizes daughter order. Identical-particle exchange
-uses the derived `(L,S)` and phase `(-1)^(L+S)`, with internal-state quantum
-numbers, to remove forbidden waves and apply the normalization once.
+`TwoMesonChannel` preserves daughter order so an operator can assign physical
+roles without a separate channel type. For GI elementary emission it is
+`(surviving, emitted)`. Identical-particle exchange uses state identity, the
+derived `(L,S)`, and phase `(-1)^(L+S)` to remove forbidden waves and apply the
+normalization once.
 
 ### 5. Convert to observables
 
@@ -219,7 +221,7 @@ exactly once by the Condon--Shortley spherical-harmonic convention.
 ## Phase conventions and mixed states
 
 Preserve the radial-wave outer-lobe phase, mixing-eigenvector anchor, one flavor
-phase convention, one helicity convention, and canonical daughter order. An
+phase convention, one helicity convention, and explicit daughter order. An
 overall external-state phase may rotate an amplitude but cannot alter a width;
 relative component and topology phases remain observable.
 

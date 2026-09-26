@@ -107,10 +107,9 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
   - Paper: (A7)–(A8) with $\sigma$ from (A9), Table II; PDF p. 36.
   - **Not** the closed-form (A12)–(A14) branch used by the active central path:
   a naive 3D blur of the pointwise $-4\alpha_s/(3r)$ piece can move the small-$r$
-  potential toward less binding on a fixed radial line. The flag
-  `appendix_a_smearing` in the parameters file is **off** by default; keep it as
-  a diagnostic comparator below the closed-form modes.
-  - Code toggle: `GIParameters.appendix_a_smearing` gates `potential_diagonal` →
+  potential toward less binding on a fixed radial line. This is an explicitly selected diagnostic comparator. The shipped preset
+  selects `appendix_a_momentum_sandwich`.
+  - Code toggle: `central = AppendixASmearing3D()` selects `potential_diagonal` →
     `smeared_central_values`.
   - Regression test: `test/central_potentials.jl` checks that
     `smear_3d_radial` preserves a
@@ -131,9 +130,8 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     grid). There are no $4\pi$ volume factors in this construction; it is a
     mesh-local proxy used to bracket “pointwise” vs “smeared” sensitivity in
     heavy-quarkonium diagnostics.
-  - Code toggle: `GIParameters.coulomb_1d_smear` gates `potential_diagonal` →
-    `coulomb_1d_smeared_central_values`. This is an older comparator path below
-    the closed-form and derivative modes in dispatcher precedence.
+  - Code toggle: `central = Coulomb1DSmearing()` selects `potential_diagonal` →
+    `coulomb_1d_smeared_central_values`. Central methods are mutually exclusive typed dispatch choices.
 
 - `src/appendix_a_derivative_potential.jl`: **Appendix-A derivative
   proxy** for the Coulomb block on the same FD mesh.
@@ -148,10 +146,9 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     radial Laplacian `f''+2f'/r`; `appendix_a_derivative_central_values` applies
     it to `static_coulomb_G` using the same Table II width from
     `contact_smearing_sigma`.
-  - Code toggle: `GIParameters.appendix_a_derivative_g` gates
+  - Code toggle: `central = AppendixADerivativeG()` selects
     `potential_diagonal` through the named dispatcher `central_potential_values`.
-    This is now an older comparator path below the closed-form modes, but above
-    the raw 3D/1D smearing diagnostics.
+    This diagnostic must be selected explicitly; there is no dispatcher precedence.
 
 - `src/GIModel.jl`: **closed-form Appendix-A central candidates**
   from the checked Appendix-A markdown source.
@@ -164,13 +161,11 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     the central Coulomb factor as a matrix on the existing FD $p^2$ eigenbasis:
     $G'=A(p)\tilde G(r)A(p)$ with
     $A(p)=\sqrt{1+p^2/(E_1E_2)}$ and $E_i=\sqrt{p^2+m_i^2}$.
-  - This is the first implementation path that follows the local (A12)–(A14)
-    source directly. It is still an FD-basis analogue rather than the original
-    paper-order HO calculation.
-  - Code toggles: `GIParameters.appendix_a_closed_form` and
-    `GIParameters.appendix_a_momentum_sandwich`. Precedence is now
-    `appendix_a_momentum_sandwich`, then `appendix_a_closed_form`, then the older
-    comparator modes.
+  - Both FD and paper-order HO solvers implement this central prescription in
+    their native momentum-squared representation.
+  - Select `AppendixAClosedForm()` or `AppendixAMomentumSandwich()` through
+    the immutable `GIParameters` constructor’s `central` keyword; the latter
+    is the shipped preset. Methods do not form a precedence chain.
 
 - `GIPaper/src/reference_state.jl`: `ReferenceState` and
   `load_reference_spectrum` own CSV IO.

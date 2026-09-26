@@ -2,7 +2,7 @@
 # =============================================================================
 # chi_c0 vs chi_c2 annihilation: two-gluon and two-photon widths
 # =============================================================================
-# Worked example on top of the Table VII machinery (`src/annihilation_widths.jl`).
+# Worked example on top of the Table VII machinery (`QuarkModelTransitions/src/annihilation_widths.jl`).
 # It answers: why is Gamma(chi_c0 -> gg) about six times Gamma(chi_c2 -> gg),
 # when the lowest-order spin algebra alone says 15/4 = 3.75?
 #
@@ -33,6 +33,7 @@ Pkg.instantiate(; io = devnull)
 
 using Printf
 using GIModel
+using QuarkModelTransitions
 
 const PARAMS_PATH = joinpath(dirname(@__DIR__), "data", "parameters.provisional.toml")
 const NGRID, RMAX, NPTS, INITIAL_NBASIS = 1200, 24.0, 900, 24

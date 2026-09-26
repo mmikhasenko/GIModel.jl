@@ -1,0 +1,212 @@
+julia_version = "1.11.6"
+schema_version = 1
+
+[constants]
+alpha_em = 0.0072973525205055605
+down_charge = -0.3333333333333333
+fermi_GeV_minus2 = 1.1663787e-5
+hbarc_squared_GeV2_fm2 = 0.0389391289
+nucleon_mass_GeV = 0.93827
+up_charge = 0.6666666666666666
+
+[electromagnetic_defaults]
+charge_radius_exponent = 0.2
+electric_exponent = 0.5
+magnetic_exponent = 0.7
+recoil_beta_GeV = 0.4
+
+[numerics]
+FD_default_momentum_npoints = 1501
+FD_default_momentum_pmax_GeV = 30.0
+FD_observable_pmax_cap_GeV = 60.0
+HO_momentum_quadgk_rtol = 1.0e-9
+HO_narrow_spin_rtol = 1.0e-8
+HO_operator_initial_order = 64
+HO_operator_max_order = 8192
+HO_operator_rtol = 1.0e-10
+
+[paper_table_policy.metadata]
+doi = "10.1103/PhysRevD.32.189"
+role = "Paper reproduction prescriptions and legacy validation anchors; not generic operator defaults"
+source = "Godfrey and Isgur, Phys. Rev. D 32, 189 (1985), Tables V-VII and associated discussion"
+
+[paper_table_policy.table_v]
+B_amplitude = -11.0
+amplitude_unit = "MeV^(1/2)"
+charmed_parents = ["Dstar0", "Dstarplus", "Kstar_c", "kappa_c", "Q1c", "Q2c"]
+convention = "LeadingS0"
+heavy_fraction_policy = "Table V footnote d: use m_c/(m_c+m_d) only for the listed charmed rows; other rows use the equal-mass value 1/2"
+rho_amplitude = 12.4
+source = "Table V rho -> pi pi and B -> omega pi calibration amplitudes"
+
+    [[paper_table_policy.table_v.mixing]]
+    section = "1P_1 strange"
+    singlet = "Q1"
+    source = "Fig. 4 / Table V footnote b; rounded paper mixing angle, not solved anew by this harness"
+    theta_deg = 34.0
+    triplet = "Q2"
+    [[paper_table_policy.table_v.mixing]]
+    section = "1^3D_2 1^1D_2 strange"
+    singlet = "Q1_1D2"
+    source = "Table V same-J strange D-wave prescription; rounded paper angle"
+    theta_deg = 33.0
+    triplet = "Q2_1D2"
+    [[paper_table_policy.table_v.mixing]]
+    section = "1P_1 charmed"
+    singlet = "Q1c"
+    source = "Table V charmed P-wave prescription; rounded paper angle"
+    theta_deg = -41.0
+    triplet = "Q2c"
+
+[paper_table_policy.table_vi]
+flavor_policy = "Neutral light isovectors use the isovector charge combination; other flavor assignments and mixed-state flags are in table_vi_states.csv"
+isovectors = ["rho", "pi", "pi0", "A2", "A1", "B"]
+source = "Table VI footnote a: additive magnetic-moment contribution, in nuclear magnetons"
+supplementary_footnote = "a"
+supplementary_mu_N = 0.01
+
+[[paper_table_policy.table_vii.dilepton_validation]]
+label = "rho -> e+ e-"
+note = ""
+width_GeV = 7.04e-6
+[[paper_table_policy.table_vii.dilepton_validation]]
+label = "psi -> e+ e-"
+note = "QCD (1−16α_s/3π) not in D8"
+width_GeV = 5.55e-6
+[[paper_table_policy.table_vii.dilepton_validation]]
+label = "psi' -> e+ e-"
+note = ""
+width_GeV = 2.34e-6
+[[paper_table_policy.table_vii.dilepton_validation]]
+label = "Upsilon -> e+ e-"
+note = ""
+width_GeV = 1.34e-6
+
+[paper_table_policy.table_vii.validation]
+f_pi_GeV = 0.1307
+hbar_GeV_s = 6.582119e-25
+pion_lifetime_s = 2.6033e-8
+psi_dilepton_width_GeV = 5.55e-6
+role = "Comparison-only D7/D8 sanity checks; no feedback to predicted amplitudes"
+source = "Legacy audit comparison values retained at existing precision; original edition not recorded. Not PDG-2026 measurements and never calibration inputs."
+
+[running_coupling]
+gammas_GeV = [0.5, 1.5811388300841898, 15.811388300841896]
+historical_Lambda_MeV_not_used = 200
+weights = [0.25, 0.15, 0.2]
+
+[source_sha256]
+"GIPaper/data/mass_inputs/README.md" = "d0774ed12ac110c397b8fc3521463860cdee1475be555d4e2a8e88f261cde7f8"
+"GIPaper/data/mass_inputs/assignments.csv" = "b3ca7cc9a67f67fc3aa76ada00ea668a7d770f19374beadd058c70c4df0d1a8b"
+"GIPaper/data/mass_inputs/averages.csv" = "7482218eb3b3550445bf0c762ee36b681723d4dd271ebbf1cff7f9b658214d1a"
+"GIPaper/data/mass_inputs/historical.csv" = "5154e52641106e77693ab28d5ec4874de983c0f486bce610b3b1973637409a91"
+"GIPaper/data/mass_inputs/pdg-2026.csv" = "52a3c3e2c5a297191d0b9bba947a7e1a9f7e1d08e97c0028c7b37262a3ce7f7b"
+"GIPaper/data/mass_inputs/selection.csv" = "382fbcd798a918ab450d78dfad1b2abc552815b0ec7dd7d1d0f10e08f62d39a6"
+"GIPaper/data/mass_inputs/source.json" = "ae5cc54fc49430f2228a7f0095857311028640739e50c8b0fd650e20525d803a"
+"GIPaper/data/raw/digitized_tables/table_v_strong_decays.csv" = "0ea9b40e179f07c6f496a088a1c3e617a8ac6c93b39ddbfea0e74b9407a8d0c2"
+"GIPaper/data/raw/digitized_tables/table_vi_photon_decays.csv" = "234f5e6bb5621c0a6a39444ebc289ed42cd9a4e413c190ea1f1aef0f42a8c9a2"
+"GIPaper/data/raw/digitized_tables/table_vii_annihilation_em.csv" = "a5f9d0fe6b09ccb10e3d9874765ee9dad9fc8ae2a34089c11f88bd8d47bc55ac"
+"GIPaper/data/table_policy.toml" = "a5eac311870b8d46d888a936eafd6864858a0227b9242075c051a28b7ec51463"
+"GIPaper/data/table_vi_states.csv" = "c771fc46ea51086419f9523fe2fb1c5fbdbe62cfbe6837f5be3f3343d01f6333"
+"GIPaper/scripts/audit_table_vi_photon_decays.jl" = "e80a84c3af549abd0730a6cb71aef2bb9dd488b0e9109de75bae3dc50b6126dc"
+"GIPaper/scripts/audit_table_vii.jl" = "3bcacd5d0cdec0b4039c2d7a07401027e78ad5143148dbd8bdad5fd6637b3790"
+"GIPaper/scripts/reproduce_table_v.jl" = "bf1269d6baa805bd003b3f0d06e1a9c178989f81375f464a1bf15d64bc1c21ca"
+"GIPaper/scripts/trace_rate_inputs.jl" = "ca21316211d01f619d2e3d5f179bbc3e062bd4b62fd107144d11916b22825566"
+"GIPaper/src/GIPaper.jl" = "aacf8eccee872ca10f5a61dcf5c6f9cfca6efa436aab1872d282d97dc84722c4"
+"GIPaper/src/comparison.jl" = "05ad6ba26cbd7c27431cbe7615fe0778d0148802a3f17f0625366f82ae5447b5"
+"GIPaper/src/mass_inputs.jl" = "aaa553e05c56a92e04ffc4b69c72bb91f9e8e27ff9b943ebfda8b70c8f09a06c"
+"GIPaper/src/paths.jl" = "3fee9d6637cea123c248a3ccee377a294f863dd2178274bb9d56f6522c7c207a"
+"GIPaper/src/reference_meson.jl" = "fb67912057460d5eadd434000025a3e753def4775031a6652ce55634df5851ed"
+"GIPaper/src/reference_state.jl" = "95118cc4c37fe95705981939df33fc09329cc03680e95971c8744f4b1c5b8e76"
+"GIPaper/src/residual_report.jl" = "d508c3381c45da0bd95ff0517e1d8070e10657862bde68a5e6040e2c515a7262"
+"GIPaper/src/table_iii_annihilation.jl" = "bd71eecf2ab807556952fb57e04dc0f76d9b32815c3edaf579383d94a2a64320"
+"GIPaper/src/table_policy.jl" = "81a3dd4c8290dcf43d43cb97fe4f97a29fe6842bd64e08bc435b48928eafc96f"
+"GIPaper/src/table_v.jl" = "ecf1b77864d80033a57b407ba0d65c9c98cc5b09a2cb23ab199dc6efd55d0dcd"
+"GIPaper/src/table_vi.jl" = "255c1299b61cff87575619e5363766dd043c3959f15aac050edd4a33b96fd866"
+"QuarkModelTransitions/src/QuarkModelTransitions.jl" = "f364930117888b759f98b45dacce764402d3b3057c00b6c0c299561ec95471d3"
+"QuarkModelTransitions/src/algebraic_decomposition.jl" = "fdbb8d2b93528418cac0adba6dc21115f5c6141ce3b7dbf190818e463ab3edca"
+"QuarkModelTransitions/src/annihilation_widths.jl" = "39e99c38d218857f7b27aabf587889fbfb2530cd1720ecec5d0a738e67b02fcf"
+"QuarkModelTransitions/src/flavor_algebra.jl" = "0c1826540df1b1c7d6fe151caabd1e6031d839bd2bdea378ed9c4feea5126a0a"
+"QuarkModelTransitions/src/mock_meson_overlaps.jl" = "301c71c6699fb065cdc165eb2b21f5bdd06bb6d1863650a636ec82a1d3652165"
+"QuarkModelTransitions/src/observable_inputs.jl" = "57b5584c59bdfdf6d545e3628dc6ed735bf1d50e24c871290589c6d011ba9794"
+"QuarkModelTransitions/src/pseudoscalar_emission.jl" = "45e71c3f4f2612a9dcdf800fe980d0f48c80dacff13a84bc878ee115a3b7f1bf"
+"QuarkModelTransitions/src/radiative_decays.jl" = "f20799961a4ffae111e7970c452340bc0cf455a0e73de77f1333119584b9023a"
+"QuarkModelTransitions/src/spin_algebra.jl" = "26704de1e5f3aa895efb3eb307a1923aaabf6e419592fa6670c15b40870756de"
+"QuarkModelTransitions/src/strong_decays.jl" = "0ae4630b7facc0a57464a6916f224d778bdf6c9c91dd1d6d4b5a9c1a7e390a3b"
+"QuarkModelTransitions/src/transition_amplitudes.jl" = "9818bce8a5f6ba1b98249fd426fd048d042e98f782f70bac4da2a86625ba4f44"
+"data/parameters.provisional.toml" = "aee6d87fa316f529261b7b7c79b3860a6530b94459007e10723f765e9e9bfb16"
+"src/GIModel.jl" = "e8cf518856ab0c5e8fcb750b0dc5c11f82f09eb566c6ad0e9708d908846abda3"
+"src/appendix_a_derivative_potential.jl" = "84782a5faa7de2729d3e7f41c9d6f99e2ec8e143b12805bdb32c29105beca090"
+"src/appendix_a_status.jl" = "ff54a3c5d4c19f28c79e9db16f0a71bbd48f8be4a8641e4f62a5471695bdb101"
+"src/central_potential_dispatch.jl" = "b7cfba76fd818458bfb9cf5acdf7751f57cbcbb6cfdae223ff7d040a68bf1d05"
+"src/channel_solver.jl" = "c72fd11f3836ec17ee41e9a3ef848cc4244eee72e191daeb460179843bae571d"
+"src/constants.jl" = "278b9315767e45d1f252fc27a5dc748a56778f74e51f56b9be4f9d081180ddf3"
+"src/contact_hyperfine.jl" = "5e3e62e987f6eb1610cbcc7597f14b3c4010d4ac64fd976ac9b0f4d85591d6b9"
+"src/fixed_channel_solver.jl" = "db9e7e7ae3cd09823b2ab23aa894625846838da3be00231507666545f66f09ff"
+"src/flavor_mixing.jl" = "58824af19a6395a9f109f303c36c5940b40867b5f2584aada3e21026f90bb5c0"
+"src/hamiltonian.jl" = "47878357ffefffd4074d4a79c299373f452c9407910d36c4b64bc475655b7177"
+"src/harmonic_oscillator_basis.jl" = "016b135961ee42f6d865ddc6209ce39d0d7d59651dc3e1141e9dd9ad66921033"
+"src/meson.jl" = "345c6e1821bd581cd522358f86f7f1220ba4ed9e7ce5562adfac72deafbcae07"
+"src/model_objects.jl" = "3bc7f2fe2af01c2da372d986c70f645f3974e2ec5a2a1a86eaded463989f237b"
+"src/momentum_waves.jl" = "db83752cf1a494548ee170be156c23a32960f9d6969b8bdb9bcc5fd096b249aa"
+"src/parameters.jl" = "7407a6ff35f521033aa9997aa7c7cb3405daeac33c522147adcb7ad5b8ea154b"
+"src/pseudoscalar_annihilation.jl" = "9c91e091a5e6e95010f3f1882a0b021bdf34caa910547680417bfc195034f245"
+"src/quark.jl" = "439a102466c98bd7dc703085fe0bd07450d139505028b8fe825b1837b95fb7ba"
+"src/quark_mass_table.jl" = "d4f5aa7bf7d142e20040bd2b3f6a2d5512eb86b894b505c028e8c915c523f7d5"
+"src/radial_1d_coulomb_smear.jl" = "b7274a67f9411f2b63c9c76ffade4e5056a8b87b838fb5efa82b0f3aaa1aea94"
+"src/radial_grid.jl" = "b8d518b7f40b5c7e4b750032c5501c4fdf3e76b606cabdaea3ac0208cb38fc4a"
+"src/running_coupling.jl" = "f7db4cba692acc11ee2c89e6d5ed58bf48a811a97953d1127d2335e996343d37"
+"src/sector_solver.jl" = "c94526db69bc634cf02127cc0a8406d267470a4bc25813dd76b7d53fd33ad90b"
+"src/smearing_appendix_a.jl" = "a4d3c844503a8d3197d7ed8722c188f652b886e885475b8e12e2a40b8d7124e8"
+"src/solver_options.jl" = "466022db504a38051b4353b39d253dd2cb29886264b7d2fb78fef5f7afecda40"
+"src/spectrum.jl" = "3ce1327d204d491560c7254ebfd204663f270ef1561206ff4033f976a910be90"
+"src/spin_fine_structure.jl" = "006832de32739fa20558c75df93a288a32602ba35821e0cc1a65a366098ae7a6"
+"src/state_mixing.jl" = "e126ce69d931a6caf4cb8f9d45ab19d642ca24b9c7cd30e5b8ebb1a95d1b58ff"
+
+[spectrum_configuration.annihilation]
+a_3p2 = -0.8
+p1_A_np = 0.5
+p1_m_eta_GeV = 0.548
+p2_A_np = 0.55
+p2_M0_GeV = 1.17
+s1_A = 2.5
+
+[spectrum_configuration.fine_structure]
+enabled = true
+
+[spectrum_configuration.masses]
+m_b_MeV = 4977
+m_c_MeV = 1628
+m_s_MeV = 419
+m_ud_avg_MeV = 220
+
+[spectrum_configuration.metadata]
+authority_note = "Runtime preset reviewed against Table II and Appendix A; see docs/model_inputs.md. Historical filename retained for compatibility. Table II reference transcription lives in GIPaper/data/clean/."
+doi = "10.1103/PhysRevD.32.189"
+page = 5
+source = "Godfrey-Isgur 1985"
+status = "reviewed_runtime_preset"
+table = "Table II"
+
+[spectrum_configuration.potential]
+b_GeV2 = 0.18
+c_MeV = -253
+central = "appendix_a_momentum_sandwich"
+
+[spectrum_configuration.relativistic_factors]
+contact_momentum_sandwich = true
+epsilon_c = -0.168
+epsilon_so_scalar = 0.055
+epsilon_so_vector = -0.035
+epsilon_t = 0.025
+fine_structure_momentum_sandwich = true
+fine_structure_smeared_kernels = true
+
+[spectrum_configuration.relativistic_smearing]
+s = 1.55
+sigma0_GeV = 1.8
+
+[trace_sha256]
+"table_v.toml" = "d49cf7feea73963fe3b0e0316ea0ea9e32f3edd090fba8af7277c3092ae25091"
+"table_vi.toml" = "c43e7f7d170fd8973947d9d7154a2cb04b10a45fb145a61837fe0667d00df91f"
+"table_vii.toml" = "e8f5f3f3a6cf2791cfe37d409eb2fde44646089a7d1f62786dc78edae34e49f9"

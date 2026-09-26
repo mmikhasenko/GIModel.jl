@@ -41,8 +41,10 @@ end
 
     final = TwoMesonChannel(pip, pim)
     reversed = TwoMesonChannel(pim, pip)
-    @test final.first.label == reversed.first.label
-    @test final.second.label == reversed.second.label
+    @test final.first.label == "pi+"
+    @test final.second.label == "pi-"
+    @test reversed.first.label == "pi-"
+    @test reversed.second.label == "pi+"
     @test allowed_partial_waves(final, rho) == [PartialWave(1, 0)]
 
     projection = partial_wave_projection(final, rho)

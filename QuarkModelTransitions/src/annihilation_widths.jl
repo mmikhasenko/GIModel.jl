@@ -100,7 +100,7 @@ const FD_OBSERVABLE_PMAX_GEV = 60.0
 """
     observable_momentum_wave(wave, L; npoints=900)
 
-Return the normalized momentum-space representation used by GIModel
+Return the normalized momentum-space representation used by transition
 observables. For finite-difference waves the transform respects the mesh
 Nyquist limit and the certified 60 GeV integration cutoff; oscillator waves
 retain their exact infinite-domain representation.
@@ -291,7 +291,7 @@ function charge_radius_squared(
     e1::Real,
     m2_GeV::Real,
     e2::Real;
-    f::Real = 0.2,
+    f::Real = ELECTROMAGNETIC_DEFAULTS.charge_radius_exponent,
     npoints::Integer = 900,
 )
     m1, m2 = float(m1_GeV), float(m2_GeV)

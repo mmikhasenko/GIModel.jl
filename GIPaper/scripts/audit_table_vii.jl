@@ -3,7 +3,7 @@
 # Table VII audit — gluonic (part c) and leptonic (part a) slices.
 # =============================================================================
 # Reproduces Table VII annihilation amplitudes from the model wavefunctions
-# with ZERO free parameters.
+# with the spectrum preset and explicit transition-operator inputs.
 #
 # Gluonic:  amp = sqrt(prefactor(channel, α_s(M), m_Q)) · S_L(Ψ), amp² = Γ,
 #           with S_L the Eq. (17) smeared wavefunction-at-origin.
@@ -20,14 +20,15 @@
 # convention the model reproduces the paper's alternating amplitude signs.
 #
 # Not modelled: the hypothetical t-tbar rows (eta_t, zeta; no top constituent
-# mass in the 1985 set) and the remaining subtables (gamma-gamma, charge radii).
+# mass in the 1985 set). Two-photon and charge-radius rows are included.
 
 using Pkg
 Pkg.activate(@__DIR__; io = devnull)
 
 using Printf
 using GIModel
-using GIPaper: experimental_mass
+using QuarkModelTransitions
+using GIPaper: experimental_mass, load_table_policy
 
 kinematic_mass(label) = something(experimental_mass("VII", label), NaN)
 
@@ -36,10 +37,16 @@ const TABLE = joinpath(ROOT, "data", "raw", "digitized_tables", "table_vii_annih
 const PARAMS_PATH = default_parameters_path()
 const REPORT = joinpath(ROOT, "docs", "residual_reports", "table_vii_annihilation_em.md")
 
-const NGRID = 1200
-const RMAX = 24.0
 const NPTS = 900
 const INITIAL_NBASIS = 24 # adaptive paper-order full diagonalization starts here
+
+# External validation anchors, distinct from the inputs to the model prediction.
+# These are legacy comparison values, not a claim of updated PDG 2026 widths.
+const TABLE_POLICY = load_table_policy()["table_vii"]
+const VALIDATION_INPUTS = (; (Symbol(k) => TABLE_POLICY["validation"][k] for k in
+    ("f_pi_GeV", "hbar_GeV_s", "pion_lifetime_s", "psi_dilepton_width_GeV"))...)
+const DILEPTON_VALIDATION_ROWS = [(r["label"], r["width_GeV"], r["note"])
+    for r in TABLE_POLICY["dilepton_validation"]]
 
 # Phase convention: outermost antinode positive (see header).
 reporting_wave(wave::RadialWave) = wave
@@ -260,7 +267,7 @@ function run_leptonic(params, solver_ho, mq, paper)
         end
         M = kinematic_mass(row.decay)
         wave = reporting_wave(radial_wave(fam, row.n))
-        L = GIModel.LEPTONIC_FACTOR_KINDS[row.kind][1]
+        L = QuarkModelTransitions.LEPTONIC_FACTOR_KINDS[row.kind][1]
         Mt = mock_meson_mass(wave, m1, m2; L = L, npoints = NPTS)
         factor = isfinite(M) ? leptonic_decay_factor(row.kind, wave, m1, m2, M; npoints = NPTS) : NaN
         model = row.coeff * factor
@@ -473,16 +480,12 @@ function main()
 
     # Eqs. (D7)-(D9): widths from the decay constants. Formula validation +
     # model-f D8 dilepton predictions (see report section).
-    wpi_exp = leptonic_pseudoscalar_width(0.1307 / kinematic_mass("pi -> mu nu"), kinematic_mass("pi -> mu nu"), experimental_mass("D7", "mu"))
-    wpi_pdg = 6.582119e-25 / 2.6033e-8
-    fpsi_exp = sqrt(5.55e-6 / ((4π / 3) * GIModel.ALPHA_EM^2 * kinematic_mass("psi -> e+ e-")))
+    wpi_exp = leptonic_pseudoscalar_width(VALIDATION_INPUTS.f_pi_GeV / kinematic_mass("pi -> mu nu"), kinematic_mass("pi -> mu nu"), experimental_mass("D7", "mu"))
+    wpi_pdg = VALIDATION_INPUTS.hbar_GeV_s / VALIDATION_INPUTS.pion_lifetime_s
+    fpsi_exp = sqrt(VALIDATION_INPUTS.psi_dilepton_width_GeV / ((4π / 3) * QuarkModelTransitions.ALPHA_EM^2 * kinematic_mass("psi -> e+ e-")))
     lep_by = Dict(r.label => r for r in lep)
     wid = NamedTuple[]
-    for (label, pdg, note) in
-        [("rho -> e+ e-", 7.04e-6, ""),
-         ("psi -> e+ e-", 5.55e-6, "QCD (1−16α_s/3π) not in D8"),
-         ("psi' -> e+ e-", 2.34e-6, ""),
-         ("Upsilon -> e+ e-", 1.34e-6, "")]
+    for (label, pdg, note) in DILEPTON_VALIDATION_ROWS
         f = abs(lep_by[label].model)
         w = dilepton_vector_width(f, kinematic_mass(label))
         push!(wid, (label = label, f = f, width = w, pdg = pdg, ratio = w / pdg, note = note))
@@ -746,6 +749,7 @@ function main()
             signed_sqrt(r.rE2), signed_sqrt(r.paper),
             isnan(r.ratio) ? "—" : @sprintf("%.2f", r.ratio))
     end
+    return (; solver_ho, glu, lep, gg, ggm, cr, wid, wpi_exp, wpi_pdg, fpsi_exp)
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__

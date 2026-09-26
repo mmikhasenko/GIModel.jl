@@ -27,7 +27,7 @@ end
 Amplitude form factor exp(-q²/(16β²)) for emission with recoil absorbed by a
 light-quark system (Table VI footnote g). Both q and beta are in GeV.
 """
-function photon_recoil_form_factor(q::Real; beta::Real = 0.40)
+function photon_recoil_form_factor(q::Real; beta::Real = ELECTROMAGNETIC_DEFAULTS.recoil_beta_GeV)
     q >= 0 || throw(ArgumentError("photon momentum must be nonnegative"))
     beta > 0 || throw(ArgumentError("beta must be positive"))
     return exp(-q^2 / (16beta^2))

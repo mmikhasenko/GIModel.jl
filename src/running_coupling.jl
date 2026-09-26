@@ -24,9 +24,9 @@ alpha_s_r(r::Real) = sum(a * erf(g * r) for (a, g) in zip(ALPHA_COEFFS, ALPHA_GA
     alpha_s_q(Q) -> Float64
 
 The Godfrey–Isgur running coupling ``\\alpha_s(Q^2) = \\sum_k \\alpha_k\\,
-e^{-Q^2/4\\gamma_k^2}`` (Eq. 5), `Q` in GeV — three fixed Gaussians with **no
+e^{-Q^2/4\\gamma_k^2}`` (Eq. 12), `Q` in GeV — three fixed Gaussians with **no
 quark-mass or flavor dependence at all**: there is no ``n_f`` threshold, so
-`Lambda_MeV` in the parameter file is never consulted. This is the precise
+the historical `Lambda_MeV` reference value is not a runtime input. This is the precise
 sense in which the model's medium is flavor-blind; quark mass enters the model
 only through [`contact_smearing_sigma`](@ref) and the relativistic weight.
 """

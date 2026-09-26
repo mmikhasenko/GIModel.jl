@@ -67,7 +67,7 @@ report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
 anchor = "paper/vision_ocr/page_images/page-024.png"
 parent = "sec-IV"
 
-code = ["GIPaper/src/table_vi.jl:load_table_vi", "GIPaper/src/table_vi.jl:load_table_vi_states", "src/radiative_decays.jl", "src/flavor_mixing.jl:add_isoscalar_annihilation", "GIPaper/scripts/audit_table_vi_photon_decays.jl"]
+code = ["GIPaper/src/table_vi.jl:load_table_vi", "GIPaper/src/table_vi.jl:load_table_vi_states", "QuarkModelTransitions/src/radiative_decays.jl", "src/flavor_mixing.jl:add_isoscalar_annihilation", "GIPaper/scripts/audit_table_vi_photon_decays.jl"]
 tests = ["Canonical Table VI identities and predictions", "Complete Table VI state mapping", "Radiative charge normalization and recoil", "Four-flavor physical-state annihilation bridge", "Photon multipole angular factors and powers"]
 metric = "79/79 canonical rows computed: 42 M1, 35 E1, 2 M2; signed residuals and photon-kinematics provenance reported"
 notes = "Complete coverage through native fixed-channel HO waves and shared four-flavor physical-state composition. Canonical references eliminate duplicated targets; A1 -> pi is spin-flip E1, not M2. The perfect eta-mixing normalization is applied only through state coefficients. Footnotes c/g are implemented; footnote a adds the explicit paper-supplied +0.01 mu_N input. Excited eta and cancellation-sensitive transitions retain quantitative residuals; reproduced means complete implementation/accounting, not exact agreement in every row. No new fitted constant."
@@ -80,7 +80,7 @@ page = 28
 pages = "28-30"
 statement = "Leptonic decay constants, gamma-gamma and gluonic annihilation amplitudes, and charge radii <r_E^2> from the model wavefunctions (page-width table; 61 rows on pages 28-30 across the leptonic/gamma_gamma/gluonic/charge_radius subtables)."
 status = "reproduced"
-code = ["src/annihilation_widths.jl:gluonic_annihilation_amplitude", "src/annihilation_widths.jl:leptonic_decay_factor", "src/annihilation_widths.jl:two_photon_amplitude", "src/annihilation_widths.jl:charge_radius_squared", "src/fixed_channel_solver.jl:fixed_channel_solution", "GIPaper/scripts/audit_table_vii.jl", "GIPaper/scripts/audit_w6_ho_order.jl"]
+code = ["QuarkModelTransitions/src/annihilation_widths.jl:gluonic_annihilation_amplitude", "QuarkModelTransitions/src/annihilation_widths.jl:leptonic_decay_factor", "QuarkModelTransitions/src/annihilation_widths.jl:two_photon_amplitude", "QuarkModelTransitions/src/annihilation_widths.jl:charge_radius_squared", "src/fixed_channel_solver.jl:fixed_channel_solution", "GIPaper/scripts/audit_table_vii.jl", "GIPaper/scripts/audit_w6_ho_order.jl"]
 tests = ["Table VII gluonic annihilation", "Table VII leptonic decay constants", "Table VII two-photon amplitudes", "Table VII charge radii", "Table VII mixed eta/eta' two-photon", "Native HO fixed-channel spin-distorted waves", "Native HO full fixed-channel diagonalization"]
 report = "GIPaper/docs/residual_reports/table_vii_annihilation_em.md"
 metric = "one native fixed-channel HO treatment: gluonic 16/16 signs, median 1.05; leptonic 24/24 scoreable signs, median 1.03 (2 unavailable); clean two-photon 8/8 signs, median 1.06; mixed eta 3/3 scoreable signs, median 0.78 (1 unavailable); charge radii median 1.02; 4 hypothetical top-flavor rows unavailable"

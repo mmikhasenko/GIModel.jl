@@ -1,6 +1,7 @@
 # Phase IV spatial checkpoint
 
-Status: general orbital evaluator complete, 2026-09-26. Phase IV remains active.
+Status: general orbital evaluator and public Eq. (19) assembly complete,
+2026-09-26. Phase IV validation remains active.
 
 ## What is implemented
 
@@ -91,13 +92,12 @@ orbital slice.
 
 ## Still required for the Phase-IV gate
 
-- End-to-end `matrix_element` composition, including an explicit and tested
-  rule for which final pseudoscalar is the elementary emitted field.
-- Appendix-C to relativistic-normalization conversion.
 - Native solved HO/FD convergence for additional orbital and node-sensitive
   sectors beyond the completed S-wave and `1P -> 1S` slices.
 - Separate calibration and validation channel sets.
 
-The emitted-field role is intentionally not guessed from a display label. It
-must be made invariant under `TwoMesonChannel` canonicalization before the
-public end-to-end method is enabled.
+The public method now uses the ordered
+`TwoMesonChannel(surviving, emitted)` contract and verifies that the second
+state is `J^P=0^-`. It never infers the role from a display label.
+The Appendix-C normalization and coherent physical-state composition are part
+of the same `matrix_element` route; the Table-V backend is not a fallback.

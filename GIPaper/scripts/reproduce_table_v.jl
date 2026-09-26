@@ -18,39 +18,18 @@ using CSV
 using Printf
 using GIModel
 using QuarkModelTransitions
-using GIPaper: load_table_v, quark_for, experimental_mass, historical_mass
+using GIPaper: load_table_v, quark_for, experimental_mass, historical_mass, load_table_policy
 
 const ROOT = dirname(@__DIR__)
 const TABLE = joinpath(ROOT, "data", "raw", "digitized_tables", "table_v_strong_decays.csv")
 const REPORT = joinpath(ROOT, "docs", "residual_reports", "table_v_reproduction.md")
 const PARAMS_PATH = default_parameters_path()
 
-# --- Flavor content from the parent name -------------------------------------
-const NN = Set([
-    "rho", "rho2", "rho3", "rhoD", "rhoS", "piprime", "A1", "A2", "A3", "B",
-    "delta", "delta2", "g", "D1285", "eps", "f", "H", "omega", "omega2",
-    "omega3", "omegaD", "omegaS", "omega_1D2", "eta_r", "h",  # h = f4 (nn): decays to pi pi, K Kbar
-])
-const SS = Set([
-    "phi", "phi2", "phi3", "phiD", "phiS", "phi_1D2", "Hprime", "fprime",
-    "epsprime", "hprime", "etaprime_r", "E1420",  # h' = f4' (ss): decays to K Kbar, eta eta
-])
-const STRANGE = Set([
-    "Kstar", "Kstar2", "Kstar3", "Kstar4", "KstarD", "KstarS", "Kprime",
-    "kappa", "Q1", "Q2", "Q1_1D2", "Q2_1D2",
-])
-const CHARMED = Set(["Dstar0", "Dstarplus", "Kstar_c", "kappa_c", "Q1c", "Q2c"])
-
-function parent_flavor(parent)
-    parent in NN && return (:q, :q)
-    parent in SS && return (:s, :s)
-    parent in STRANGE && return (:q, :s)
-    parent in CHARMED && return (:c, :d)
-    error("unknown parent flavor for `$parent`")
-end
+const TABLE_POLICY = load_table_policy()["table_v"]
+const CHARMED = Set(TABLE_POLICY["charmed_parents"])
 
 # Heavy-quark share of the constituent mass, r = m_Q/(m_Q + m_q), which selects
-# the decay form factor (see GIModel.spatial_overlap). Read from the same TOML
+# the decay form factor (see QuarkModelTransitions.spatial_overlap). Read from the same TOML
 # as everything else — the value is NOT frozen in src.
 #
 # Note what this makes visible: the paper applies its footnote-d unequal-mass
@@ -60,32 +39,6 @@ end
 const _QUARK_MASSES = load_quark_masses(PARAMS_PATH)
 const CHARM_FRACTION = _QUARK_MASSES["c"] / (_QUARK_MASSES["c"] + _QUARK_MASSES["d"])
 heavy_fraction_of(parent) = parent in CHARMED ? CHARM_FRACTION : 0.5
-
-# --- (n, L, multiplicity, J) from the section header (+ parent for mixed Q's) -
-function parent_level(section, parent)
-    s = section
-    if occursin("1P_1", s)   # strange/charmed 1P: Q1 = pure singlet, Q2 = pure triplet
-        parent in ("Q1", "Q1c") && return (1, "P", 1, 1)
-        parent in ("Q2", "Q2c") && return (1, "P", 3, 1)
-    end
-    if s == "1^3D_2 1^1D_2 strange"
-        parent == "Q1_1D2" && return (1, "D", 1, 2)
-        parent == "Q2_1D2" && return (1, "D", 3, 2)
-    end
-    s in ("1^3S_1", "1^3S_1 charmed") && return (1, "S", 3, 1)
-    s in ("1^3P_2", "1^3P_2 charmed") && return (1, "P", 3, 2)
-    s == "1^3P_1 nonstrange" && return (1, "P", 3, 1)
-    s == "1^1P_1 nonstrange" && return (1, "P", 1, 1)
-    s in ("1^3P_0", "1^3P_0 charmed") && return (1, "P", 3, 0)
-    s == "1^3D_3" && return (1, "D", 3, 3)
-    s == "1^3D_2 nonstrange" && return (1, "D", 3, 2)
-    s == "1^1D_2 nonstrange" && return (1, "D", 1, 2)
-    s == "1^3D_1" && return (1, "D", 3, 1)
-    s == "1^3F_4" && return (1, "F", 3, 4)
-    s == "2^1S_0" && return (2, "S", 1, 0)
-    s == "2^3S_1" && return (2, "S", 3, 1)
-    error("unknown level for section `$section`, parent `$parent`")
-end
 
 # All charge conventions and unavailable assignments live in the shared registry.
 const DAUGHTER_MASS = Dict(label => something(experimental_mass("V", label), NaN)
@@ -106,24 +59,9 @@ end
 
 const QUASI_TWO_BODY = Set(["delta2", "eps", "kappa"])
 
-# Same-J mixing sections: the printed Q1/Q2 formulas are the PURE singlet/triplet
-# amplitudes (footnotes b, c); the numeric column is for the physical mixed
-# states. Each entry: (paper angle deg, singlet parent, triplet parent,
-# flavor sector, singlet level, triplet level).
-struct MixSpec
-    theta::Float64
-    q1::String; q2::String
-    flavor::Tuple{Symbol,Symbol}
-    lvl1::Tuple{Int,String,Int,Int}; lvl2::Tuple{Int,String,Int,Int}
-end
-const MIX = Dict(
-    # theta_1P ~ +34 deg (Fig. 4); K1(1270)/K1(1400) physical masses.
-    "1P_1 strange" => MixSpec(34.0, "Q1", "Q2", (:q, :s), (1, "P", 1, 1), (1, "P", 3, 1)),
-    # theta_1D ~ +33 deg; explicit experimental assignments in the registry.
-    "1^3D_2 1^1D_2 strange" => MixSpec(33.0, "Q1_1D2", "Q2_1D2", (:q, :s), (1, "D", 1, 2), (1, "D", 3, 2)),
-    # charm 1P ~ -41 deg; unresolved experimental correspondence is deferred.
-    "1P_1 charmed" => MixSpec(-41.0, "Q1c", "Q2c", (:c, :d), (1, "P", 1, 1), (1, "P", 3, 1)),
-)
+# External paper angles; no spectrum solving or per-row mass correction here.
+const MIX = Dict(row["section"] => (theta=row["theta_deg"], q1=row["singlet"], q2=row["triplet"])
+    for row in TABLE_POLICY["mixing"])
 const MIXING_SECTIONS = Set(keys(MIX))
 
 # Parse the paper's amp_MeV string -> (value, kind).
@@ -139,10 +77,10 @@ function parse_amp(text)
 end
 
 function main()
-    params, mq = load_parameters_and_quark_masses(PARAMS_PATH)
     q_rho = modern_momentum(kinematic_mass("rho"), kinematic_mass("pi"), kinematic_mass("pi"))
     q_B = modern_momentum(kinematic_mass("B"), kinematic_mass("omega"), kinematic_mass("pi"))
-    model = calibrate_strong_decay_model(q_rho, q_B; convention = LeadingS0())
+    model = calibrate_strong_decay_model(q_rho, q_B; convention = LeadingS0(),
+        rho_amplitude = TABLE_POLICY["rho_amplitude"], B_amplitude = TABLE_POLICY["B_amplitude"])
 
     parent_mass(section, parent) = (parent == "delta" && section == "1^3F_4" ?
         something(experimental_mass("V:1^3F_4", parent), NaN) : kinematic_mass(parent), "PDG 2026")
@@ -209,6 +147,7 @@ function main()
 
     write_report(model, rows, q_rho, q_B)
     summarize(model, rows)
+    return (; model, rows, q_rho, q_B)
 end
 
 # Physical mixed-state amplitude via the Fig.-4 rotation:

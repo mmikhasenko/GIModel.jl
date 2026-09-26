@@ -6,7 +6,8 @@
     PseudoscalarEmission(g, h, quark_masses)
 
 Godfrey--Isgur elementary pseudoscalar-emission operator of Eq. (19).
-`g` and `h` are the dimensionless direct and recoil couplings.
+`g` and `h` are the direct and recoil couplings in `GeV^-1`; the products
+`g*q` and `h*p'` in Eq. (19) are dimensionless.
 `quark_masses` is a [`QuarkMassTable`](@ref) and is copied into the operator so
 the constituent-coordinate momentum routing is explicit and reproducible.
 
@@ -30,6 +31,70 @@ struct PseudoscalarEmission <: StrongDecayOperator
             throw(ArgumentError("constituent masses must be finite and positive"))
         return new(gf, hf, copy(quark_masses))
     end
+end
+
+_is_pseudoscalar(state::PhysicalState) = state.J == 0 && state.parity == -1
+
+"""
+Resolve the ordered Eq. (19) roles. The first daughter is the surviving
+composite meson and the second is the elementary emitted pseudoscalar. For two
+pseudoscalars this selects one Fig.-14 rearrangement assignment; reverse the
+`TwoMesonChannel` arguments to select the other assignment.
+"""
+function _eq19_daughter_roles(final::TwoMesonChannel{<:PhysicalState,<:PhysicalState})
+    _is_pseudoscalar(final.second) || throw(ArgumentError(
+        "PseudoscalarEmission requires channel.second to be the emitted J^P=0^- " *
+        "state; construct TwoMesonChannel(surviving, emitted)",
+    ))
+    return (surviving = final.first, emitted = final.second)
+end
+
+function _validate_emitted_components(state::PhysicalState)
+    for component in state.components
+        basis = component.basis
+        L = orbital_angular_momentum(basis.L_label)
+        (basis.J == 0 && basis.multiplicity == 1 && L == 0) || throw(ArgumentError(
+            "the elementary emitted field must contain only ^1S_0 components; " *
+            "got $(basis.label)",
+        ))
+        _component_flavor_state(component)
+    end
+    return nothing
+end
+
+function _validate_eq19_transition(
+    final::TwoMesonChannel{<:PhysicalState,<:PhysicalState},
+    initial::PhysicalState,
+)
+    roles = _eq19_daughter_roles(final)
+    _validate_emitted_components(roles.emitted)
+    for state in (initial, roles.surviving), component in state.components
+        _component_flavor_state(component)
+    end
+    return roles
+end
+
+function _validate_transition(
+    final::TwoMesonChannel{<:PhysicalState,<:PhysicalState},
+    ::PseudoscalarEmission,
+    initial::PhysicalState,
+)
+    _validate_eq19_transition(final, initial)
+    return nothing
+end
+
+function _validate_transition(
+    final::TwoMesonChannel,
+    ::PseudoscalarEmission,
+    initial::TransitionState,
+)
+    states = (initial, final.first, final.second)
+    unresolved = findfirst(state -> !(state isa PhysicalState), states)
+    state = isnothing(unresolved) ? initial : states[unresolved]
+    throw(ArgumentError(
+        "PseudoscalarEmission requires resolved PhysicalState inputs; " *
+        "`$(state.label)` is a $(nameof(typeof(state)))",
+    ))
 end
 
 function _constituent_mass(operator::PseudoscalarEmission, flavor::Symbol)
@@ -275,33 +340,6 @@ function _recoil_orbital_integral(
     return operator.h * (-im) * _spherical_phase(component) * (upper + lower)
 end
 
-"""
-Evaluate an S-wave-to-S-wave Eq. (19) spatial column in the helicity frame.
-
-The direct column is `g*q*<j0(alpha*q*r)>`. The recoil column evaluates the
-radial part of `sigma.p'`, including the `d/dr-u/r` gradient of the final
-S-wave and the sign of the constituent plane wave. Couplings are included;
-spin, flavor, topology, and spherical-contraction coefficients are not.
-"""
-function _eq19_s_wave_spatial_integral(
-    operator::PseudoscalarEmission,
-    label::_Eq19OrbitalLabel,
-    final_wave::RadialWave,
-    initial_wave::RadialWave,
-    momentum_GeV::Number,
-    parent_flavors::Tuple{Symbol,Symbol},
-)
-    spectroscopic = _SpectroscopicOrbitalLabel(label, 0, 0, 0, 0)
-    return _eq19_spatial_integral(
-        operator,
-        spectroscopic,
-        final_wave,
-        initial_wave,
-        momentum_GeV,
-        parent_flavors,
-    )
-end
-
 function _eq19_spatial_integral(
     operator::PseudoscalarEmission,
     label::_SpectroscopicOrbitalLabel,
@@ -370,4 +408,154 @@ function _eq19_wave_amplitude(
         zip(decomposition.partial_waves, partial_wave_values)
     )
     return _Eq19WaveAmplitude(integrals, helicity, partial_waves)
+end
+
+"""
+    matrix_element(final, operator::PseudoscalarEmission, initial;
+                   kinematics=OnShell())
+
+Evaluate GI Eq. (19) on resolved physical states. The result contains the
+compressed Appendix-C helicities, every allowed partial wave, coherent
+component terms, and `RelativisticTwoBodyNormalization`.
+
+`final` is order-sensitive: construct it as
+`TwoMesonChannel(surviving, emitted)`. The second daughter must be the
+elementary `0^-` field; reversing the pair chooses the other Fig.-14 assignment
+for a two-pseudoscalar channel.
+
+All components require explicit ordered quark-antiquark flavors. The averaged
+`:q` flavor is deliberately rejected because it does not specify an isospin
+wavefunction. Complex `CMKinematics` is accepted for the off-shell vertex, but
+[`decay_width`](@ref) is defined only for real momentum.
+"""
+function matrix_element(
+    final::TwoMesonChannel{<:PhysicalState,<:PhysicalState},
+    operator::PseudoscalarEmission,
+    initial::PhysicalState;
+    kinematics::TransitionKinematics = OnShell(),
+)
+    roles = _validate_eq19_transition(final, initial)
+    resolved = _resolve_kinematics(final, initial, kinematics)
+    q = resolved.momentum_GeV
+    allowed = Tuple(allowed_partial_waves(final, initial))
+    identical_normalization = _same_external_state(final.first, final.second) ?
+        inv(sqrt(2.0)) : 1.0
+
+    projection = partial_wave_projection(final, initial)
+    helicity_labels = projection.helicities
+    helicity_values = zeros(ComplexF64, length(helicity_labels))
+    wave_values = zeros(ComplexF64, length(allowed))
+    terms = TransitionTerm[]
+    integral_count = 0
+
+    for parent in initial.components
+        parent_flavor = _component_flavor_state(parent)
+        parent_flavors = parent.basis.flavors::Tuple{Symbol,Symbol}
+        for daughter in roles.surviving.components
+            daughter_flavor = _component_flavor_state(daughter)
+            for emitted in roles.emitted.components
+                emitted_flavor = _component_flavor_state(emitted)
+                mixing = parent.coefficient * conj(daughter.coefficient) *
+                         conj(emitted.coefficient)
+                decomposition = _eq19_angular_decomposition(
+                    daughter.basis,
+                    parent.basis,
+                    daughter_flavor,
+                    emitted_flavor,
+                    parent_flavor,
+                )
+                pure = _eq19_wave_amplitude(
+                    operator,
+                    decomposition,
+                    daughter.wave,
+                    parent.wave,
+                    q,
+                    parent_flavors,
+                )
+                integral_count += length(pure.spatial_integrals)
+
+                for (label, value) in pure.helicity
+                    index = findfirst(==(label), helicity_labels)
+                    isnothing(index) && error("internal Eq. (19) helicity-order mismatch")
+                    helicity_values[index] += identical_normalization * mixing * value
+                end
+                for (wave, value) in pure.partial_waves
+                    index = findfirst(==(wave), allowed)
+                    isnothing(index) && continue
+                    contribution = identical_normalization * mixing * value
+                    wave_values[index] += contribution
+                    T = ComplexF64
+                    push!(terms, TransitionTerm(
+                        "$(parent.basis.label) -> $(daughter.basis.label) + " *
+                        "$(emitted.basis.label), (L,S)=" *
+                        "($(wave.relative_L),$(wave.channel_spin))",
+                        T(identical_normalization * mixing),
+                        one(T),
+                        T(value),
+                        T(contribution),
+                        (
+                            source = :GI1985_Eq19,
+                            parent = _basis_identity(parent.basis),
+                            surviving = _basis_identity(daughter.basis),
+                            emitted = _basis_identity(emitted.basis),
+                            partial_wave = wave,
+                        ),
+                    ))
+                end
+            end
+        end
+    end
+
+    helicity = Tuple(label => value for (label, value) in zip(helicity_labels, helicity_values))
+    partial_wave_amplitudes = Tuple(
+        wave => value for (wave, value) in zip(allowed, wave_values)
+    )
+    provenance = (
+        backend = :native_eq19,
+        source = (:GI1985_Eq19, :GI1985_AppendixB, :GI1985_AppendixC),
+        emitted = roles.emitted.label,
+        surviving = roles.surviving.label,
+        two_pseudoscalar_rule = _is_pseudoscalar(final.first) ?
+            :ordered_second_is_emitted : :not_applicable,
+        spatial_integral_evaluations = integral_count,
+        amplitude_units = :dimensionless,
+        width_units = :MeV,
+    )
+    return TransitionAmplitude(
+        operator,
+        initial,
+        final,
+        resolved,
+        RelativisticTwoBodyNormalization(),
+        helicity,
+        partial_wave_amplitudes,
+        Tuple(terms),
+        provenance,
+    )
+end
+
+function decay_width(
+    final::TwoMesonChannel{<:PhysicalState,<:PhysicalState},
+    operator::PseudoscalarEmission,
+    initial::PhysicalState;
+)
+    _validate_eq19_transition(final, initial)
+    initial.mass_GeV <= final.first.mass_GeV + final.second.mass_GeV && return 0.0
+    return decay_width(matrix_element(
+        final, operator, initial; kinematics = OnShell(),
+    ))
+end
+
+function partial_width(
+    ::RelativisticTwoBodyNormalization,
+    amplitude::TransitionAmplitude{<:PseudoscalarEmission},
+)
+    q = amplitude.kinematics.momentum_GeV
+    q isa Real || throw(ArgumentError(
+        "a decay width is defined only for real on-shell momentum",
+    ))
+    q >= 0 || throw(ArgumentError("decay momentum must be non-negative"))
+    spin_average = 2 * amplitude.initial.J + 1
+    return 1000 * q / (2pi * spin_average) *
+           sum(abs2(last(item)) for item in amplitude.partial_wave_amplitudes)
 end

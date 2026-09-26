@@ -34,6 +34,7 @@ Pkg.activate(@__DIR__; io = devnull)
 using Printf
 using LinearAlgebra
 using GIModel
+using QuarkModelTransitions
 
 const ROOT = dirname(@__DIR__)                                  # GIPaper/
 const PARAMS_PATH = default_parameters_path()

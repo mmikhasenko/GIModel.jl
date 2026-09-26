@@ -23,6 +23,4 @@ include("testutils.jl")
     include("radial_waves.jl")
     include("fixed_channel_solvers.jl")
     include("spectrum.jl")
-    include("observables.jl")
-    include("radiative_decays.jl")
 end

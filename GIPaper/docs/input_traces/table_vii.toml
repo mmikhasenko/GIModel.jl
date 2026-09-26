@@ -1,0 +1,2457 @@
+common_inputs = "common.toml"
+not_computed = "hypothetical top rows: no constituent top mass; registered missing experimental masses remain unavailable"
+observable_npoints = 900
+
+[[canonical_rows]]
+decay = "pi -> mu nu"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+1.3"
+[[canonical_rows]]
+decay = "K -> mu nu"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.47"
+[[canonical_rows]]
+decay = "D -> mu nu"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.13"
+[[canonical_rows]]
+decay = "F -> mu nu"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.17"
+[[canonical_rows]]
+decay = "B -> mu nu"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.033"
+[[canonical_rows]]
+decay = "1^1S_0(bc) -> mu nu"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.091"
+[[canonical_rows]]
+decay = "tau -> A1 nu"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.11"
+[[canonical_rows]]
+decay = "tau -> K*(892) nu"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.30"
+[[canonical_rows]]
+decay = "rho -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.20"
+[[canonical_rows]]
+decay = "omega -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.07"
+[[canonical_rows]]
+decay = "phi -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.11"
+[[canonical_rows]]
+decay = "rhoS -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.037"
+[[canonical_rows]]
+decay = "rhoD -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.019"
+[[canonical_rows]]
+decay = "omegaS -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.012"
+[[canonical_rows]]
+decay = "omegaD -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.006"
+[[canonical_rows]]
+decay = "phiS -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.027"
+[[canonical_rows]]
+decay = "phiD -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.012"
+[[canonical_rows]]
+decay = "psi -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.12"
+[[canonical_rows]]
+decay = "psi' -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.063"
+[[canonical_rows]]
+decay = "psi'' -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.011"
+[[canonical_rows]]
+decay = "psi''' -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.046"
+[[canonical_rows]]
+decay = "Upsilon -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.026"
+[[canonical_rows]]
+decay = "Upsilon' -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.017"
+[[canonical_rows]]
+decay = "Upsilon'' -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.014"
+[[canonical_rows]]
+decay = "Upsilon''' -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.012"
+[[canonical_rows]]
+decay = "1^3D_1(bb) -> e+ e-"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.0008"
+[[canonical_rows]]
+decay = "zeta -> e+ e-"
+implemented = false
+status = "no constituent top mass"
+subtable = "leptonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "+0.01"
+[[canonical_rows]]
+decay = "pi -> gamma gamma"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gamma_gamma"
+
+    [canonical_rows.comparison_only]
+    predicted = "2.6 eV^1/2"
+[[canonical_rows]]
+decay = "pi' -> gamma gamma"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gamma_gamma"
+
+    [canonical_rows.comparison_only]
+    predicted = "-1.0 keV^1/2"
+[[canonical_rows]]
+decay = "eta -> gamma gamma"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gamma_gamma"
+
+    [canonical_rows.comparison_only]
+    predicted = "0.50 keV^1/2"
+[[canonical_rows]]
+decay = "eta' -> gamma gamma"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gamma_gamma"
+
+    [canonical_rows.comparison_only]
+    predicted = "1.3 keV^1/2"
+[[canonical_rows]]
+decay = "eta_r -> gamma gamma"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gamma_gamma"
+
+    [canonical_rows.comparison_only]
+    predicted = "-2.7 keV^1/2"
+[[canonical_rows]]
+decay = "eta'_r -> gamma gamma"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gamma_gamma"
+
+    [canonical_rows.comparison_only]
+    predicted = "-2.2 keV^1/2"
+[[canonical_rows]]
+decay = "eta_c -> gamma gamma"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gamma_gamma"
+
+    [canonical_rows.comparison_only]
+    predicted = "2.6 keV^1/2"
+[[canonical_rows]]
+decay = "eta'_c -> gamma gamma"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gamma_gamma"
+
+    [canonical_rows.comparison_only]
+    predicted = "-2.2 keV^1/2"
+[[canonical_rows]]
+decay = "eta_b -> gamma gamma"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gamma_gamma"
+
+    [canonical_rows.comparison_only]
+    predicted = "0.62 keV^1/2"
+[[canonical_rows]]
+decay = "eta_t -> gamma gamma"
+implemented = false
+status = "no constituent top mass"
+subtable = "gamma_gamma"
+
+    [canonical_rows.comparison_only]
+    predicted = "1.5 keV^1/2"
+[[canonical_rows]]
+decay = "A2 -> gamma gamma"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gamma_gamma"
+
+    [canonical_rows.comparison_only]
+    predicted = "-1.2 keV^1/2"
+[[canonical_rows]]
+decay = "f -> gamma gamma"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gamma_gamma"
+
+    [canonical_rows.comparison_only]
+    predicted = "-1.9 keV^1/2"
+[[canonical_rows]]
+decay = "f' -> gamma gamma"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gamma_gamma"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.25 keV^1/2"
+[[canonical_rows]]
+decay = "eta_c -> 2g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "4.7"
+[[canonical_rows]]
+decay = "psi -> 3g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "0.42"
+[[canonical_rows]]
+decay = "eta'_c -> 2g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-2.7"
+[[canonical_rows]]
+decay = "psi' -> 3g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.28"
+[[canonical_rows]]
+decay = "eta_b -> 2g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "2.5"
+[[canonical_rows]]
+decay = "Upsilon -> 3g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "0.21"
+[[canonical_rows]]
+decay = "eta'_b -> 2g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-1.7"
+[[canonical_rows]]
+decay = "Upsilon' -> 3g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.15"
+[[canonical_rows]]
+decay = "Upsilon'' -> 3g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "0.13"
+[[canonical_rows]]
+decay = "Upsilon''' -> 3g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.11"
+[[canonical_rows]]
+decay = "eta_t -> 2g"
+implemented = false
+status = "no constituent top mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "1.1"
+[[canonical_rows]]
+decay = "zeta -> 3g"
+implemented = false
+status = "no constituent top mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "0.10"
+[[canonical_rows]]
+decay = "chi_2c -> 2g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "0.88"
+[[canonical_rows]]
+decay = "chi_0c -> 2g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "2.5"
+[[canonical_rows]]
+decay = "chi_2b -> 2g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "0.35"
+[[canonical_rows]]
+decay = "chi_0b -> 2g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "0.82"
+[[canonical_rows]]
+decay = "chi'_2b -> 2g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.37"
+[[canonical_rows]]
+decay = "chi'_0b -> 2g"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "gluonic"
+
+    [canonical_rows.comparison_only]
+    predicted = "-0.82"
+[[canonical_rows]]
+decay = "pi+"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "charge_radius"
+
+    [canonical_rows.comparison_only]
+    predicted = "+(0.66)^2"
+[[canonical_rows]]
+decay = "K+"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "charge_radius"
+
+    [canonical_rows.comparison_only]
+    predicted = "+(0.59)^2"
+[[canonical_rows]]
+decay = "K0"
+implemented = true
+status = "see result; may lack experimental mass"
+subtable = "charge_radius"
+
+    [canonical_rows.comparison_only]
+    predicted = "-(0.30)^2"
+
+[[charge_radius]]
+mass = "not used"
+wave_profile = "charge_radius"
+
+    [charge_radius.result]
+    anchor = true
+    label = "pi+"
+    paper = 0.43560000000000004
+    rE2 = 0.42351658316685076
+    ratio = 0.972260291934919
+    sign_ok = true
+
+    [charge_radius.row_configuration]
+    anchor = true
+    decay = "pi+"
+    e1 = 0.6666666666666666
+    e2 = 0.3333333333333333
+    f1 = "q"
+    f2 = "q"
+[[charge_radius]]
+mass = "not used"
+wave_profile = "charge_radius"
+
+    [charge_radius.result]
+    anchor = false
+    label = "K+"
+    paper = 0.34809999999999997
+    rE2 = 0.3537435191828092
+    ratio = 1.0162123504246172
+    sign_ok = true
+
+    [charge_radius.row_configuration]
+    anchor = false
+    decay = "K+"
+    e1 = 0.6666666666666666
+    e2 = 0.3333333333333333
+    f1 = "q"
+    f2 = "s"
+[[charge_radius]]
+mass = "not used"
+wave_profile = "charge_radius"
+
+    [charge_radius.result]
+    anchor = false
+    label = "K0"
+    paper = -0.09
+    rE2 = -0.1029161522099557
+    ratio = 1.1435128023328411
+    sign_ok = true
+
+    [charge_radius.row_configuration]
+    anchor = false
+    decay = "K0"
+    e1 = -0.3333333333333333
+    e2 = 0.3333333333333333
+    f1 = "q"
+    f2 = "s"
+
+[[derived_dilepton_widths]]
+f = 0.19816485883555943
+label = "rho -> e+ e-"
+note = ""
+pdg = 7.04e-6
+ratio = 0.964601454857935
+width = 6.790794242199863e-6
+[[derived_dilepton_widths]]
+f = 0.12301081239644884
+label = "psi -> e+ e-"
+note = "QCD (1−16α_s/3π) not in D8"
+pdg = 5.55e-6
+ratio = 1.883389238976937
+width = 1.0452810276322002e-5
+[[derived_dilepton_widths]]
+f = 0.06534942321882728
+label = "psi' -> e+ e-"
+note = ""
+pdg = 2.34e-6
+ratio = 1.5005612425618797
+width = 3.5113133075947987e-6
+[[derived_dilepton_widths]]
+f = 0.02850604799882349
+label = "Upsilon -> e+ e-"
+note = ""
+pdg = 1.34e-6
+ratio = 1.2796699926553694
+width = 1.7147577901581951e-6
+
+[experimental_validation_only]
+dilepton_anchors = [["rho -> e+ e-", 7.04e-6, ""], ["psi -> e+ e-", 5.55e-6, "QCD (1−16α_s/3π) not in D8"], ["psi' -> e+ e-", 2.34e-6, ""], ["Upsilon -> e+ e-", 1.34e-6, ""]]
+fpsi_from_measured_width = 0.08963409632539047
+wpi_from_lifetime_GeV = 2.5283751392463414e-17
+wpi_from_measured_f_GeV = 2.6258413289578155e-17
+
+    [experimental_validation_only.anchors]
+    f_pi_GeV = 0.1307
+    hbar_GeV_s = 6.582119e-25
+    pion_lifetime_s = 2.6033e-8
+    psi_dilepton_width_GeV = 5.55e-6
+
+    [experimental_validation_only.muon]
+    assignment_note = ""
+    context = "D7"
+    edition = "2026"
+    key = "mu"
+    label = "mu"
+    mass_GeV = 0.1056583755
+    note = ""
+    particle = "mu MASS"
+    pdg_display = "105.6583755+-0.0000023"
+    pdg_id = "S004M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S004M"
+    status = "PDG average"
+
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "eta_c"
+    label = "eta_c -> 2g"
+    mass_GeV = 2.984094916772463
+    note = ""
+    particle = "eta_c(1S) MASS"
+    pdg_display = "2984.09+-0.30"
+    pdg_id = "M026M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M026M"
+    status = "PDG average"
+
+    [gluonic.result]
+    M = 2.984094916772463
+    S = 0.3384853220059119
+    alpha = 0.25982953923599944
+    label = "eta_c -> 2g"
+    model = 4.944623924907838
+    paper = 4.7
+    ratio = 1.0520476435974124
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 0
+    channel = "S0_2g"
+    decay = "eta_c -> 2g"
+    flavor = "c"
+    n = 1
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "psi"
+    label = "psi -> 3g"
+    mass_GeV = 3.096900354542921
+    note = ""
+    particle = "J/psi(1S) MASS"
+    pdg_display = "3096.900+-0.006"
+    pdg_id = "M070M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M070M"
+    status = "PDG average"
+
+    [gluonic.result]
+    M = 3.096900354542921
+    S = 0.26450546161716504
+    alpha = 0.2555949429834331
+    label = "psi -> 3g"
+    model = 0.43506783790858067
+    paper = 0.42
+    ratio = 1.0358758045442398
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 0
+    channel = "S1_3g"
+    decay = "psi -> 3g"
+    flavor = "c"
+    n = 1
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "eta_c2"
+    label = "eta'_c -> 2g"
+    mass_GeV = 3.637762839740389
+    note = ""
+    particle = "eta_c(2S) MASS"
+    pdg_display = "3637.8+-0.6"
+    pdg_id = "M059M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M059M"
+    status = "PDG average"
+
+    [gluonic.result]
+    M = 3.637762839740389
+    S = -0.2135882455027771
+    alpha = 0.23730822820933545
+    label = "eta'_c -> 2g"
+    model = -2.849673127686302
+    paper = -2.7
+    ratio = 1.0554344917356673
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 0
+    channel = "S0_2g"
+    decay = "eta'_c -> 2g"
+    flavor = "c"
+    n = 2
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "psi2"
+    label = "psi' -> 3g"
+    mass_GeV = 3.686097362258823
+    note = ""
+    particle = "psi(2S) MASS"
+    pdg_display = "3686.097+-0.011"
+    pdg_id = "M071M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M071M"
+    status = "PDG fit"
+
+    [gluonic.result]
+    M = 3.686097362258823
+    S = -0.19637892290326878
+    alpha = 0.2358492179331192
+    label = "psi' -> 3g"
+    model = -0.2863126156910351
+    paper = -0.28
+    ratio = 1.022545056039411
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 0
+    channel = "S1_3g"
+    decay = "psi' -> 3g"
+    flavor = "c"
+    n = 2
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "eta_b"
+    label = "eta_b -> 2g"
+    mass_GeV = 9.39869813003584
+    note = ""
+    particle = "eta_b(1S) MASS"
+    pdg_display = "9398.7+-2.0"
+    pdg_id = "M171M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M171M"
+    status = "PDG average"
+
+    [gluonic.result]
+    M = 9.39869813003584
+    S = 0.8655553084558741
+    alpha = 0.18311259716019904
+    label = "eta_b -> 2g"
+    model = 2.9147728020525174
+    paper = 2.5
+    ratio = 1.165909120821007
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 0
+    channel = "S0_2g"
+    decay = "eta_b -> 2g"
+    flavor = "b"
+    n = 1
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "Upsilon"
+    label = "Upsilon -> 3g"
+    mass_GeV = 9.460399964216766
+    note = ""
+    particle = "Upsilon(1S) MASS"
+    pdg_display = "9460.40+-0.10"
+    pdg_id = "M049M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M049M"
+    status = "PDG average"
+
+    [gluonic.result]
+    M = 9.460399964216766
+    S = 0.6853079067074032
+    alpha = 0.18289726746788829
+    label = "Upsilon -> 3g"
+    model = 0.22319130837615558
+    paper = 0.21
+    ratio = 1.0628157541721694
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 0
+    channel = "S1_3g"
+    decay = "Upsilon -> 3g"
+    flavor = "b"
+    n = 1
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "eta_b2"
+    label = "eta'_b -> 2g"
+    mass_GeV = 9.999
+    note = ""
+    particle = "eta_b(2S) MASS"
+    pdg_display = "9999+-4"
+    pdg_id = "M200M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M200M"
+    status = "PDG average"
+
+    [gluonic.result]
+    M = 9.999
+    S = -0.5790599296895511
+    alpha = 0.1809779264344767
+    label = "eta'_b -> 2g"
+    model = -1.9272621087133603
+    paper = -1.7
+    ratio = 1.1336835933608003
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 0
+    channel = "S0_2g"
+    decay = "eta'_b -> 2g"
+    flavor = "b"
+    n = 2
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "Upsilon2"
+    label = "Upsilon' -> 3g"
+    mass_GeV = 10.023399999999999
+    note = ""
+    particle = "Upsilon(2S) MASS"
+    pdg_display = "10023.4+-0.5"
+    pdg_id = "M052M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M052M"
+    status = "PDG average"
+
+    [gluonic.result]
+    M = 10.023399999999999
+    S = -0.4956412785142034
+    alpha = 0.1808892098646106
+    label = "Upsilon' -> 3g"
+    model = -0.1587695344015473
+    paper = -0.15
+    ratio = 1.058463562676982
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 0
+    channel = "S1_3g"
+    decay = "Upsilon' -> 3g"
+    flavor = "b"
+    n = 2
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "Upsilon3"
+    label = "Upsilon'' -> 3g"
+    mass_GeV = 10.3551
+    note = ""
+    particle = "Upsilon(3S) MASS"
+    pdg_display = "10355.1+-0.5"
+    pdg_id = "M048M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M048M"
+    status = "PDG average"
+
+    [gluonic.result]
+    M = 10.3551
+    S = 0.43238764643368716
+    alpha = 0.17966745472596082
+    label = "Upsilon'' -> 3g"
+    model = 0.1371065208379354
+    paper = 0.13
+    ratio = 1.0546655449071953
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 0
+    channel = "S1_3g"
+    decay = "Upsilon'' -> 3g"
+    flavor = "b"
+    n = 3
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "Upsilon4"
+    label = "Upsilon''' -> 3g"
+    mass_GeV = 10.579380866425991
+    note = ""
+    particle = "Upsilon(4S) MASS"
+    pdg_display = "10579.4+-1.2"
+    pdg_id = "M047M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M047M"
+    status = "PDG average"
+
+    [gluonic.result]
+    M = 10.579380866425991
+    S = -0.3981105152641277
+    alpha = 0.17882463367350016
+    label = "Upsilon''' -> 3g"
+    model = -0.12535029917079876
+    paper = -0.11
+    ratio = 1.1395481742799887
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 0
+    channel = "S1_3g"
+    decay = "Upsilon''' -> 3g"
+    flavor = "b"
+    n = 4
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "chi_c2"
+    label = "chi_2c -> 2g"
+    mass_GeV = 3.556168201191627
+    note = ""
+    particle = "chi_c2(1P) MASS"
+    pdg_display = "3556.17+-0.07"
+    pdg_id = "M057M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M057M"
+    status = "PDG average"
+
+    [gluonic.result]
+    M = 3.556168201191627
+    S = 0.12907023111635968
+    alpha = 0.23983888905875067
+    label = "chi_2c -> 2g"
+    model = 0.898741838614071
+    paper = 0.88
+    ratio = 1.0212975438796261
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 1
+    channel = "P2_2g"
+    decay = "chi_2c -> 2g"
+    flavor = "c"
+    n = 1
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "chi_c0"
+    label = "chi_0c -> 2g"
+    mass_GeV = 3.415497307177493
+    note = ""
+    particle = "chi_c0(1P) MASS"
+    pdg_display = "3415.50+-0.19"
+    pdg_id = "M056M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M056M"
+    status = "PDG average"
+
+    [gluonic.result]
+    M = 3.415497307177493
+    S = 0.18806477499697272
+    alpha = 0.24439794172049553
+    label = "chi_0c -> 2g"
+    model = 2.584103502374403
+    paper = 2.5
+    ratio = 1.0336414009497612
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 1
+    channel = "P0_2g"
+    decay = "chi_0c -> 2g"
+    flavor = "c"
+    n = 1
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "chi_b2"
+    label = "chi_2b -> 2g"
+    mass_GeV = 9.91221
+    note = "From average gamma energy below, using Upsilon(2S) mass = 10023.26+-0.31 MeV"
+    particle = "chi_b2(1P) MASS"
+    pdg_display = "9912.21+-0.26+-0.31"
+    pdg_id = "M078M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M078M"
+    status = "PDG quoted value"
+
+    [gluonic.result]
+    M = 9.91221
+    S = 0.17933660049049902
+    alpha = 0.18129221907454404
+    label = "chi_2b -> 2g"
+    model = 0.3087621993367174
+    paper = 0.35
+    ratio = 0.8821777123906211
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 1
+    channel = "P2_2g"
+    decay = "chi_2b -> 2g"
+    flavor = "b"
+    n = 1
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "chi_b0"
+    label = "chi_0b -> 2g"
+    mass_GeV = 9.859440000000001
+    note = "From average gamma energy below, using Upsilon(2S) mass = 10023.26+-0.31 MeV"
+    particle = "chi_b0(1P) MASS"
+    pdg_display = "9859.44+-0.42+-0.31"
+    pdg_id = "M076M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M076M"
+    status = "PDG quoted value"
+
+    [gluonic.result]
+    M = 9.859440000000001
+    S = 0.2666673693318707
+    alpha = 0.1814823525146709
+    label = "chi_0b -> 2g"
+    model = 0.890012156576344
+    paper = 0.82
+    ratio = 1.0853806787516391
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 1
+    channel = "P0_2g"
+    decay = "chi_0b -> 2g"
+    flavor = "b"
+    n = 1
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "chi_b22"
+    label = "chi'_2b -> 2g"
+    mass_GeV = 10.26865
+    note = "From gamma energy below, using Upsilon(3S) mass = 10355.2+-0.5 MeV"
+    particle = "chi_b2(2P) MASS"
+    pdg_display = "10268.65+-0.22+-0.50"
+    pdg_id = "M081M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M081M"
+    status = "PDG quoted value"
+
+    [gluonic.result]
+    M = 10.26865
+    S = -0.19292749309651347
+    alpha = 0.17998871297836697
+    label = "chi'_2b -> 2g"
+    model = -0.3297732470743522
+    paper = -0.37
+    ratio = 0.8912790461468978
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 1
+    channel = "P2_2g"
+    decay = "chi'_2b -> 2g"
+    flavor = "b"
+    n = 2
+[[gluonic]]
+wave_profile = "fixed sector, at least four radial levels"
+
+    [gluonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "chi_b02"
+    label = "chi'_0b -> 2g"
+    mass_GeV = 10.2325
+    note = "From gamma energy below, using Upsilon(3S) mass = 10355.2+-0.5 MeV"
+    particle = "chi_b0(2P) MASS"
+    pdg_display = "10232.5+-0.4+-0.5"
+    pdg_id = "M079M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M079M"
+    status = "PDG quoted value"
+
+    [gluonic.result]
+    M = 10.2325
+    S = -0.266534613237778
+    alpha = 0.18012245601917012
+    label = "chi'_0b -> 2g"
+    model = -0.8829032958240709
+    paper = -0.82
+    ratio = 1.0767113363708183
+    sign_ok = true
+
+    [gluonic.row_configuration]
+    L = 1
+    channel = "P0_2g"
+    decay = "chi'_0b -> 2g"
+    flavor = "b"
+    n = 2
+
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "pi+"
+    label = "pi -> mu nu"
+    mass_GeV = 0.13957039098368132
+    note = ""
+    particle = "pi+- MASS"
+    pdg_display = "139.57039+-0.00018"
+    pdg_id = "S008M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S008M"
+    status = "PDG fit"
+
+    [leptonic.result]
+    M = 0.13957039098368132
+    Mt = 1.6504984135732235
+    factor = 0.3938746392544349
+    kind = "P_P"
+    label = "pi -> mu nu"
+    model = 1.3644217740030882
+    paper = 1.3
+    ratio = 1.0495552107716062
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 3.4641016151377544
+    decay = "pi -> mu nu"
+    f1 = "q"
+    f2 = "q"
+    kind = "P_P"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "K+"
+    label = "K -> mu nu"
+    mass_GeV = 0.4936765994580406
+    note = ""
+    particle = "K+- MASS"
+    pdg_display = "493.677+-0.015"
+    pdg_id = "S010M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S010M"
+    status = "PDG fit"
+
+    [leptonic.result]
+    M = 0.4936765994580406
+    Mt = 1.665349783686064
+    factor = 0.13740828938008687
+    kind = "P_P"
+    label = "K -> mu nu"
+    model = 0.47599627717487486
+    paper = 0.47
+    ratio = 1.012758036542287
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 3.4641016151377544
+    decay = "K -> mu nu"
+    f1 = "q"
+    f2 = "s"
+    kind = "P_P"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "D+"
+    label = "D -> mu nu"
+    mass_GeV = 1.869664743570898
+    note = ""
+    particle = "D+- MASS"
+    pdg_display = "1869.66+-0.05"
+    pdg_id = "S031M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S031M"
+    status = "PDG fit"
+
+    [leptonic.result]
+    M = 1.869664743570898
+    Mt = 2.552942952363502
+    factor = 0.03888214280674273
+    kind = "P_P"
+    label = "D -> mu nu"
+    model = 0.1346916936968543
+    paper = 0.13
+    ratio = 1.0360899515142639
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 3.4641016151377544
+    decay = "D -> mu nu"
+    f1 = "q"
+    f2 = "c"
+    kind = "P_P"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "Ds"
+    label = "F -> mu nu"
+    mass_GeV = 1.9683548722252
+    note = ""
+    particle = "D_s+- MASS"
+    pdg_display = "1968.35+-0.07"
+    pdg_id = "S034M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S034M"
+    status = "PDG fit"
+
+    [leptonic.result]
+    M = 1.9683548722252
+    Mt = 2.7235116190014805
+    factor = 0.050929854546616825
+    kind = "P_P"
+    label = "F -> mu nu"
+    model = 0.17642619139366625
+    paper = 0.17
+    ratio = 1.0378011258450954
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 3.4641016151377544
+    decay = "F -> mu nu"
+    f1 = "s"
+    f2 = "c"
+    kind = "P_P"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "B+"
+    label = "B -> mu nu"
+    mass_GeV = 5.279405997146907
+    note = ""
+    particle = "B+- MASS"
+    pdg_display = "5279.41+-0.07"
+    pdg_id = "S041M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S041M"
+    status = "PDG fit"
+
+    [leptonic.result]
+    M = 5.279405997146907
+    Mt = 5.75598438253893
+    factor = 0.009610659245209496
+    kind = "P_P"
+    label = "B -> mu nu"
+    model = 0.03329230021386881
+    paper = 0.033
+    ratio = 1.0088575822384487
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 3.4641016151377544
+    decay = "B -> mu nu"
+    f1 = "q"
+    f2 = "b"
+    kind = "P_P"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "Bc"
+    label = "1^1S_0(bc) -> mu nu"
+    mass_GeV = 6.27447
+    note = ""
+    particle = "B_c+ MASS"
+    pdg_display = "6274.47+-0.32"
+    pdg_id = "S091M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S091M"
+    status = "PDG average"
+
+    [leptonic.result]
+    M = 6.27447
+    Mt = 7.143490630608147
+    factor = 0.027158032823564177
+    kind = "P_P"
+    label = "1^1S_0(bc) -> mu nu"
+    model = 0.09407818536807282
+    paper = 0.091
+    ratio = 1.033826212835965
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 3.4641016151377544
+    decay = "1^1S_0(bc) -> mu nu"
+    f1 = "c"
+    f2 = "b"
+    kind = "P_P"
+    n = 1
+[[leptonic]]
+wave_profile = "central, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "a1"
+    label = "tau -> A1 nu"
+    mass_GeV = 1.23
+    note = ""
+    particle = "a_1(1260) MASS"
+    pdg_display = "1230+-40"
+    pdg_id = "M010M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M010M"
+    status = "PDG estimate"
+
+    [leptonic.result]
+    M = 1.23
+    Mt = 1.2902270788058103
+    factor = 0.03510115114630183
+    kind = "Pp_A1"
+    label = "tau -> A1 nu"
+    model = 0.09928104801201593
+    paper = 0.11
+    ratio = 0.9025549819274176
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 2.8284271247461903
+    decay = "tau -> A1 nu"
+    f1 = "q"
+    f2 = "q"
+    kind = "Pp_A1"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "Kstar+"
+    label = "tau -> K*(892) nu"
+    mass_GeV = 0.891882454260085
+    note = ""
+    particle = "CHARGED ONLY, HADROPRODUCED"
+    pdg_display = "891.88+-0.23"
+    pdg_id = "M018M1"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M018M1"
+    status = "PDG average"
+
+    [leptonic.result]
+    M = 0.891882454260085
+    Mt = 1.2607608507473296
+    factor = 0.0879558282995515
+    kind = "V_V"
+    label = "tau -> K*(892) nu"
+    model = 0.30468792687325535
+    paper = 0.3
+    ratio = 1.0156264229108511
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 3.4641016151377544
+    decay = "tau -> K*(892) nu"
+    f1 = "q"
+    f2 = "s"
+    kind = "V_V"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "rho0"
+    label = "rho -> e+ e-"
+    mass_GeV = 0.7752611563582926
+    note = ""
+    particle = "NEUTRAL ONLY, e+ e-"
+    pdg_display = "775.26+-0.23"
+    pdg_id = "M009M0"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M009M0"
+    status = "PDG average"
+
+    [leptonic.result]
+    M = 0.7752611563582926
+    Mt = 1.0897187293185953
+    factor = 0.08090046484962989
+    kind = "V_V"
+    label = "rho -> e+ e-"
+    model = 0.19816485883555943
+    paper = 0.2
+    ratio = 0.990824294177797
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 2.449489742783178
+    decay = "rho -> e+ e-"
+    f1 = "q"
+    f2 = "q"
+    kind = "V_V"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "omega"
+    label = "omega -> e+ e-"
+    mass_GeV = 0.782655723752181
+    note = ""
+    particle = "omega(782) MASS"
+    pdg_display = "782.66+-0.13"
+    pdg_id = "M001M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M001M"
+    status = "PDG average"
+
+    [leptonic.result]
+    M = 0.782655723752181
+    Mt = 1.0897187293185953
+    factor = 0.07937898382607048
+    kind = "V_V"
+    label = "omega -> e+ e-"
+    model = 0.0648126688915038
+    paper = 0.07
+    ratio = 0.9258952698786257
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 0.816496580927726
+    decay = "omega -> e+ e-"
+    f1 = "q"
+    f2 = "q"
+    kind = "V_V"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "phi"
+    label = "phi -> e+ e-"
+    mass_GeV = 1.019459752114901
+    note = ""
+    particle = "phi(1020) MASS"
+    pdg_display = "1019.460+-0.016"
+    pdg_id = "M004M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M004M"
+    status = "PDG average"
+
+    [leptonic.result]
+    M = 1.019459752114901
+    Mt = 1.434648422080569
+    factor = 0.09777807635043577
+    kind = "V_V"
+    label = "phi -> e+ e-"
+    model = -0.11290439740353574
+    paper = -0.11
+    ratio = 1.0264036127594158
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = -1.1547005383792515
+    decay = "phi -> e+ e-"
+    f1 = "s"
+    f2 = "s"
+    kind = "V_V"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+    context = "VII"
+    edition = "2026"
+    key = "rho1450"
+    label = "rhoS -> e+ e-"
+    mass_GeV = 1.465
+    note = "This is only an educated guess; the error given is larger than the error on the average of the published values."
+    particle = "rho(1450) MASS"
+    pdg_display = "1465+-25"
+    pdg_id = "M105M0"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M105M0"
+    status = "PDG estimate"
+
+    [leptonic.result]
+    M = 1.465
+    Mt = 1.3611924341054924
+    factor = -0.014776193260605388
+    kind = "V_V"
+    label = "rhoS -> e+ e-"
+    model = -0.036194133829234816
+    paper = -0.037
+    ratio = 0.9782198332225627
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 2.449489742783178
+    decay = "rhoS -> e+ e-"
+    f1 = "q"
+    f2 = "q"
+    kind = "V_V"
+    n = 2
+[[leptonic]]
+wave_profile = "central, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+    context = "VII"
+    edition = "2026"
+    key = "rho1700"
+    label = "rhoD -> e+ e-"
+    mass_GeV = 1.72
+    note = ""
+    particle = "eta rho0 AND pi+ pi- MODES"
+    pdg_display = "1720+-20"
+    pdg_id = "M065M0"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M065M0"
+    status = "PDG estimate"
+
+    [leptonic.result]
+    M = 1.72
+    Mt = 1.3926394642053843
+    factor = 0.01329942064691359
+    kind = "Vp_V"
+    label = "rhoD -> e+ e-"
+    model = 0.015356848181123255
+    paper = 0.019
+    ratio = 0.8082551674275398
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 1.1547005383792515
+    decay = "rhoD -> e+ e-"
+    f1 = "q"
+    f2 = "q"
+    kind = "Vp_V"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+    context = "VII"
+    edition = "2026"
+    key = "omega1420"
+    label = "omegaS -> e+ e-"
+    mass_GeV = 1.41
+    note = ""
+    particle = "omega(1420) MASS"
+    pdg_display = "1410+-60"
+    pdg_id = "M125M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M125M"
+    status = "PDG estimate"
+
+    [leptonic.result]
+    M = 1.41
+    Mt = 1.3611924341054924
+    factor = -0.01595142869108335
+    kind = "V_V"
+    label = "omegaS -> e+ e-"
+    model = -0.013024286987181988
+    paper = -0.012
+    ratio = 1.0853572489318324
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 0.816496580927726
+    decay = "omegaS -> e+ e-"
+    f1 = "q"
+    f2 = "q"
+    kind = "V_V"
+    n = 2
+[[leptonic]]
+wave_profile = "central, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+    context = "VII"
+    edition = "2026"
+    key = "omega1650"
+    label = "omegaD -> e+ e-"
+    mass_GeV = 1.67
+    note = ""
+    particle = "omega(1650) MASS"
+    pdg_display = "1670+-30"
+    pdg_id = "M126M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M126M"
+    status = "PDG estimate"
+
+    [leptonic.result]
+    M = 1.67
+    Mt = 1.3926394642053843
+    factor = 0.01410771488466032
+    kind = "Vp_V"
+    label = "omegaD -> e+ e-"
+    model = 0.005430061990872751
+    paper = 0.006
+    ratio = 0.9050103318121251
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 0.3849001794597505
+    decay = "omegaD -> e+ e-"
+    f1 = "q"
+    f2 = "q"
+    kind = "Vp_V"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+    context = "VII"
+    edition = "2026"
+    key = "phi1680"
+    label = "phiS -> e+ e-"
+    mass_GeV = 1.68
+    note = ""
+    particle = "e+ e- PRODUCTION"
+    pdg_display = "1680+-20"
+    pdg_id = "M067M1"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M067M1"
+    status = "PDG estimate"
+
+    [leptonic.result]
+    M = 1.68
+    Mt = 1.6448670623032615
+    factor = -0.02460638842818062
+    kind = "V_V"
+    label = "phiS -> e+ e-"
+    model = 0.028413009965589143
+    paper = 0.027
+    ratio = 1.0523337024292276
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = -1.1547005383792515
+    decay = "phiS -> e+ e-"
+    f1 = "s"
+    f2 = "s"
+    kind = "V_V"
+    n = 2
+[[leptonic]]
+wave_profile = "central, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = "No unique experimental identification of the GI 1D ss vector."
+    context = "VII"
+    edition = "2026"
+    key = ""
+    label = "phiD -> e+ e-"
+    mass_GeV = "unavailable"
+    note = ""
+    particle = "unassigned"
+    pdg_display = ""
+    pdg_id = ""
+    source_url = ""
+    status = "unavailable"
+
+    [leptonic.result]
+    M = nan
+    Mt = 1.6545199908638741
+    factor = nan
+    kind = "Vp_V"
+    label = "phiD -> e+ e-"
+    model = nan
+    paper = -0.012
+    ratio = nan
+    sign_ok = false
+
+    [leptonic.row_configuration]
+    coeff = -0.5443310539518174
+    decay = "phiD -> e+ e-"
+    f1 = "s"
+    f2 = "s"
+    kind = "Vp_V"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "psi"
+    label = "psi -> e+ e-"
+    mass_GeV = 3.096900354542921
+    note = ""
+    particle = "J/psi(1S) MASS"
+    pdg_display = "3096.900+-0.006"
+    pdg_id = "M070M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M070M"
+    status = "PDG average"
+
+    [leptonic.result]
+    M = 3.096900354542921
+    Mt = 3.730160206324588
+    factor = 0.053265244237743224
+    kind = "V_V"
+    label = "psi -> e+ e-"
+    model = 0.12301081239644884
+    paper = 0.12
+    ratio = 1.0250901033037405
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 2.309401076758503
+    decay = "psi -> e+ e-"
+    f1 = "c"
+    f2 = "c"
+    kind = "V_V"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "psi2"
+    label = "psi' -> e+ e-"
+    mass_GeV = 3.686097362258823
+    note = ""
+    particle = "psi(2S) MASS"
+    pdg_display = "3686.097+-0.011"
+    pdg_id = "M071M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M071M"
+    status = "PDG fit"
+
+    [leptonic.result]
+    M = 3.686097362258823
+    Mt = 3.833206811123301
+    factor = -0.028297130315082537
+    kind = "V_V"
+    label = "psi' -> e+ e-"
+    model = -0.06534942321882728
+    paper = -0.063
+    ratio = 1.0372924320448775
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 2.309401076758503
+    decay = "psi' -> e+ e-"
+    f1 = "c"
+    f2 = "c"
+    kind = "V_V"
+    n = 2
+[[leptonic]]
+wave_profile = "central, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "psi3770"
+    label = "psi'' -> e+ e-"
+    mass_GeV = 3.7736771046364113
+    note = ""
+    particle = "psi(3770) MASS"
+    pdg_display = "3773.7+-0.7"
+    pdg_id = "M053M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M053M"
+    status = "PDG fit"
+
+    [leptonic.result]
+    M = 3.7736771046364113
+    Mt = 3.8039018309541675
+    factor = 0.006443710444339971
+    kind = "Vp_V"
+    label = "psi'' -> e+ e-"
+    model = 0.007015023395055819
+    paper = 0.011
+    ratio = 0.6377293995505291
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 1.0886621079036347
+    decay = "psi'' -> e+ e-"
+    f1 = "c"
+    f2 = "c"
+    kind = "Vp_V"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "psi4040"
+    label = "psi''' -> e+ e-"
+    mass_GeV = 4.0396
+    note = ""
+    particle = "psi(4040) MASS"
+    pdg_display = "4040+-4"
+    pdg_id = "M072M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M072M"
+    status = "PDG average"
+
+    [leptonic.result]
+    M = 4.0396
+    Mt = 3.9362429468576092
+    factor = 0.020728239156978353
+    kind = "V_V"
+    label = "psi''' -> e+ e-"
+    model = 0.047869817828433574
+    paper = 0.046
+    ratio = 1.0406482136615995
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = 2.309401076758503
+    decay = "psi''' -> e+ e-"
+    f1 = "c"
+    f2 = "c"
+    kind = "V_V"
+    n = 3
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "Upsilon"
+    label = "Upsilon -> e+ e-"
+    mass_GeV = 9.460399964216766
+    note = ""
+    particle = "Upsilon(1S) MASS"
+    pdg_display = "9460.40+-0.10"
+    pdg_id = "M049M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M049M"
+    status = "PDG average"
+
+    [leptonic.result]
+    M = 9.460399964216766
+    Mt = 10.394456680555422
+    factor = 0.024686961728479704
+    kind = "V_V"
+    label = "Upsilon -> e+ e-"
+    model = -0.02850604799882349
+    paper = -0.026
+    ratio = 1.096386461493211
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = -1.1547005383792515
+    decay = "Upsilon -> e+ e-"
+    f1 = "b"
+    f2 = "b"
+    kind = "V_V"
+    n = 1
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "Upsilon2"
+    label = "Upsilon' -> e+ e-"
+    mass_GeV = 10.023399999999999
+    note = ""
+    particle = "Upsilon(2S) MASS"
+    pdg_display = "10023.4+-0.5"
+    pdg_id = "M052M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M052M"
+    status = "PDG average"
+
+    [leptonic.result]
+    M = 10.023399999999999
+    Mt = 10.404035550055513
+    factor = -0.0159124942036927
+    kind = "V_V"
+    label = "Upsilon' -> e+ e-"
+    model = 0.01837416562396068
+    paper = 0.017
+    ratio = 1.080833271997687
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = -1.1547005383792515
+    decay = "Upsilon' -> e+ e-"
+    f1 = "b"
+    f2 = "b"
+    kind = "V_V"
+    n = 2
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "Upsilon3"
+    label = "Upsilon'' -> e+ e-"
+    mass_GeV = 10.3551
+    note = ""
+    particle = "Upsilon(3S) MASS"
+    pdg_display = "10355.1+-0.5"
+    pdg_id = "M048M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M048M"
+    status = "PDG average"
+
+    [leptonic.result]
+    M = 10.3551
+    Mt = 10.459668630341724
+    factor = 0.013041382891888149
+    kind = "V_V"
+    label = "Upsilon'' -> e+ e-"
+    model = -0.015058891846473205
+    paper = -0.014
+    ratio = 1.0756351318909432
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = -1.1547005383792515
+    decay = "Upsilon'' -> e+ e-"
+    f1 = "b"
+    f2 = "b"
+    kind = "V_V"
+    n = 3
+[[leptonic]]
+wave_profile = "fixed S sector, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "Upsilon4"
+    label = "Upsilon''' -> e+ e-"
+    mass_GeV = 10.579380866425991
+    note = ""
+    particle = "Upsilon(4S) MASS"
+    pdg_display = "10579.4+-1.2"
+    pdg_id = "M047M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M047M"
+    status = "PDG average"
+
+    [leptonic.result]
+    M = 10.579380866425991
+    Mt = 10.51999120171981
+    factor = -0.011536945267100265
+    kind = "V_V"
+    label = "Upsilon''' -> e+ e-"
+    model = 0.013321716911172633
+    paper = 0.012
+    ratio = 1.1101430759310527
+    sign_ok = true
+
+    [leptonic.row_configuration]
+    coeff = -1.1547005383792515
+    decay = "Upsilon''' -> e+ e-"
+    f1 = "b"
+    f2 = "b"
+    kind = "V_V"
+    n = 4
+[[leptonic]]
+wave_profile = "central, four radial levels"
+
+    [leptonic.mass]
+    assignment_note = "No unambiguous experimental counterpart assigned to this GI state."
+    context = "VII"
+    edition = "2026"
+    key = ""
+    label = "1^3D_1(bb) -> e+ e-"
+    mass_GeV = "unavailable"
+    note = ""
+    particle = "unassigned"
+    pdg_display = ""
+    pdg_id = ""
+    source_url = ""
+    status = "unavailable"
+
+    [leptonic.result]
+    M = nan
+    Mt = 10.36096733372397
+    factor = nan
+    kind = "Vp_V"
+    label = "1^3D_1(bb) -> e+ e-"
+    model = nan
+    paper = -0.0008
+    ratio = nan
+    sign_ok = false
+
+    [leptonic.row_configuration]
+    coeff = -0.5443310539518174
+    decay = "1^3D_1(bb) -> e+ e-"
+    f1 = "b"
+    f2 = "b"
+    kind = "Vp_V"
+    n = 1
+
+[[mixed_two_photon]]
+annihilation = "PaperP1Annihilation"
+basis = ["1qq", "1ss", "2qq", "2ss"]
+label = "eta -> gamma gamma"
+q_eff_qq = 0.3928371006591931
+q_eff_ss = 0.1111111111111111
+
+    [mixed_two_photon.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "eta"
+    label = "eta -> gamma gamma"
+    mass_GeV = 0.54786187114402
+    note = ""
+    particle = "eta MASS"
+    pdg_display = "547.862+-0.017"
+    pdg_id = "S014M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S014M"
+    status = "PDG average"
+
+    [mixed_two_photon.result]
+    M = 0.54786187114402
+    M_model = 0.5314772345311842
+    label = "eta -> gamma gamma"
+    mix = [0.6248404049550534, -0.7717757456265587, 0.11055625761001875, 0.04140025001665202]
+    model = 0.43637589306327057
+    paper = 0.5
+    ratio = 0.8727517861265411
+    sign_ok = true
+[[mixed_two_photon]]
+annihilation = "PaperP1Annihilation"
+basis = ["1qq", "1ss", "2qq", "2ss"]
+label = "eta' -> gamma gamma"
+q_eff_qq = 0.3928371006591931
+q_eff_ss = 0.1111111111111111
+
+    [mixed_two_photon.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "eta_prime"
+    label = "eta' -> gamma gamma"
+    mass_GeV = 0.9577837638923
+    note = ""
+    particle = "eta'(958) MASS"
+    pdg_display = "957.78+-0.06"
+    pdg_id = "M002M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M002M"
+    status = "PDG average"
+
+    [mixed_two_photon.result]
+    M = 0.9577837638923
+    M_model = 0.9998502326820864
+    label = "eta' -> gamma gamma"
+    mix = [0.5677123613541406, 0.552460272009056, 0.591001932200761, 0.15233856620157857]
+    model = 1.0195342228717974
+    paper = 1.3
+    ratio = 0.7842570945167672
+    sign_ok = true
+[[mixed_two_photon]]
+annihilation = "PaperP1Annihilation"
+basis = ["1qq", "1ss", "2qq", "2ss"]
+label = "eta_r -> gamma gamma"
+q_eff_qq = 0.3928371006591931
+q_eff_ss = 0.1111111111111111
+
+    [mixed_two_photon.mass]
+    assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+    context = "VII"
+    edition = "2026"
+    key = "eta1295"
+    label = "eta_r -> gamma gamma"
+    mass_GeV = 1.293710130391174
+    note = ""
+    particle = "eta(1295) MASS"
+    pdg_display = "1294+-4"
+    pdg_id = "M037M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M037M"
+    status = "PDG average"
+
+    [mixed_two_photon.result]
+    M = 1.293710130391174
+    M_model = 1.4956491896038737
+    label = "eta_r -> gamma gamma"
+    mix = [-0.2516275556009487, -0.16023807616013122, 0.5857490530899592, -0.7535949701364836]
+    model = -1.8263456997421694
+    paper = -2.7
+    ratio = 0.6764243332378405
+    sign_ok = true
+[[mixed_two_photon]]
+annihilation = "PaperP1Annihilation"
+basis = ["1qq", "1ss", "2qq", "2ss"]
+label = "eta'_r -> gamma gamma"
+q_eff_qq = 0.3928371006591931
+q_eff_ss = 0.1111111111111111
+
+    [mixed_two_photon.mass]
+    assignment_note = "Historical eta(1440) / ss radial assignment is ambiguous between modern eta(1405) and eta(1475)."
+    context = "VII"
+    edition = "2026"
+    key = ""
+    label = "eta'_r -> gamma gamma"
+    mass_GeV = "unavailable"
+    note = ""
+    particle = "unassigned"
+    pdg_display = ""
+    pdg_id = ""
+    source_url = ""
+    status = "unavailable"
+
+    [mixed_two_photon.result]
+    M = nan
+    M_model = 1.7994224123729774
+    label = "eta'_r -> gamma gamma"
+    mix = [-0.47324487991271735, -0.27106015063588584, 0.543499840701403, 0.6381015605146241]
+    model = nan
+    paper = -2.2
+    ratio = nan
+    sign_ok = false
+
+[solver]
+basis_step = 8
+beta_grid = [0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25, 1.35, 1.45, 1.55, 1.65, 1.75, 1.85, 1.95, 2.05, 2.15, 2.25, 2.35]
+beta_tolerance_GeV = 0.002
+converge = true
+energy_tolerance_GeV = 0.0001
+max_nbasis = 80
+nbasis = 24
+nlevels_per_channel = 6
+
+[[two_photon]]
+wave_profile = "fixed S singlet, four radial levels"
+
+    [two_photon.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "pi0"
+    label = "pi -> gamma gamma"
+    mass_GeV = 0.13497682776768472
+    note = ""
+    particle = "pi0 MASS"
+    pdg_display = "134.9768+-0.0005"
+    pdg_id = "S009M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S009M"
+    status = "PDG fit"
+
+    [two_photon.result]
+    M = 0.13497682776768472
+    kind = "P"
+    label = "pi -> gamma gamma"
+    model = 2.507246193363756
+    paper = 2.6
+    ratio = 0.9643254589860599
+    sign_ok = true
+    unit = "eV"
+
+    [two_photon.row_configuration]
+    decay = "pi -> gamma gamma"
+    f1 = "q"
+    f2 = "q"
+    kind = "P"
+    n = 1
+    q_eff = 0.2357022603955158
+    unit = "eV"
+[[two_photon]]
+wave_profile = "fixed S singlet, four radial levels"
+
+    [two_photon.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "pi1300"
+    label = "pi' -> gamma gamma"
+    mass_GeV = 1.3
+    note = ""
+    particle = "pi(1300) MASS"
+    pdg_display = "1300+-100"
+    pdg_id = "M058M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M058M"
+    status = "PDG estimate"
+
+    [two_photon.result]
+    M = 1.3
+    kind = "P"
+    label = "pi' -> gamma gamma"
+    model = -1.0559134566772654
+    paper = -1.0
+    ratio = 1.0559134566772654
+    sign_ok = true
+    unit = "keV"
+
+    [two_photon.row_configuration]
+    decay = "pi' -> gamma gamma"
+    f1 = "q"
+    f2 = "q"
+    kind = "P"
+    n = 2
+    q_eff = 0.2357022603955158
+    unit = "keV"
+[[two_photon]]
+wave_profile = "fixed S singlet, four radial levels"
+
+    [two_photon.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "eta_c"
+    label = "eta_c -> gamma gamma"
+    mass_GeV = 2.984094916772463
+    note = ""
+    particle = "eta_c(1S) MASS"
+    pdg_display = "2984.09+-0.30"
+    pdg_id = "M026M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M026M"
+    status = "PDG average"
+
+    [two_photon.result]
+    M = 2.984094916772463
+    kind = "P"
+    label = "eta_c -> gamma gamma"
+    model = 2.76615027688835
+    paper = 2.6
+    ratio = 1.0639039526493652
+    sign_ok = true
+    unit = "keV"
+
+    [two_photon.row_configuration]
+    decay = "eta_c -> gamma gamma"
+    f1 = "c"
+    f2 = "c"
+    kind = "P"
+    n = 1
+    q_eff = 0.4444444444444444
+    unit = "keV"
+[[two_photon]]
+wave_profile = "fixed S singlet, four radial levels"
+
+    [two_photon.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "eta_c2"
+    label = "eta'_c -> gamma gamma"
+    mass_GeV = 3.637762839740389
+    note = ""
+    particle = "eta_c(2S) MASS"
+    pdg_display = "3637.8+-0.6"
+    pdg_id = "M059M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M059M"
+    status = "PDG average"
+
+    [two_photon.result]
+    M = 3.637762839740389
+    kind = "P"
+    label = "eta'_c -> gamma gamma"
+    model = -2.3805275414210856
+    paper = -2.2
+    ratio = 1.0820579733732207
+    sign_ok = true
+    unit = "keV"
+
+    [two_photon.row_configuration]
+    decay = "eta'_c -> gamma gamma"
+    f1 = "c"
+    f2 = "c"
+    kind = "P"
+    n = 2
+    q_eff = 0.4444444444444444
+    unit = "keV"
+[[two_photon]]
+wave_profile = "fixed S singlet, four radial levels"
+
+    [two_photon.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "eta_b"
+    label = "eta_b -> gamma gamma"
+    mass_GeV = 9.39869813003584
+    note = ""
+    particle = "eta_b(1S) MASS"
+    pdg_display = "9398.7+-2.0"
+    pdg_id = "M171M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M171M"
+    status = "PDG average"
+
+    [two_photon.result]
+    M = 9.39869813003584
+    kind = "P"
+    label = "eta_b -> gamma gamma"
+    model = 0.7315611085601808
+    paper = 0.62
+    ratio = 1.1799372718712593
+    sign_ok = true
+    unit = "keV"
+
+    [two_photon.row_configuration]
+    decay = "eta_b -> gamma gamma"
+    f1 = "b"
+    f2 = "b"
+    kind = "P"
+    n = 1
+    q_eff = 0.1111111111111111
+    unit = "keV"
+[[two_photon]]
+wave_profile = "central P, four radial levels; ideal flavor"
+
+    [two_photon.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "a2"
+    label = "A2 -> gamma gamma"
+    mass_GeV = 1.318202926499983
+    note = ""
+    particle = "a_2(1320) MASS"
+    pdg_display = "1318.2+-0.6"
+    pdg_id = "M012M0"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M012M0"
+    status = "PDG average"
+
+    [two_photon.result]
+    M = 1.318202926499983
+    kind = "P2"
+    label = "A2 -> gamma gamma"
+    model = -1.1968204555991508
+    paper = -1.2
+    ratio = 0.9973503796659591
+    sign_ok = true
+    unit = "keV"
+
+    [two_photon.row_configuration]
+    decay = "A2 -> gamma gamma"
+    f1 = "q"
+    f2 = "q"
+    kind = "P2"
+    n = 1
+    q_eff = 0.2357022603955158
+    unit = "keV"
+[[two_photon]]
+wave_profile = "central P, four radial levels; ideal flavor"
+
+    [two_photon.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "f2"
+    label = "f -> gamma gamma"
+    mass_GeV = 1.2754120499190051
+    note = ""
+    particle = "f_2(1270) MASS"
+    pdg_display = "1275.4+-0.8"
+    pdg_id = "M005M"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M005M"
+    status = "PDG average"
+
+    [two_photon.result]
+    M = 1.2754120499190051
+    kind = "P2"
+    label = "f -> gamma gamma"
+    model = -1.8983667541438463
+    paper = -1.9
+    ratio = 0.9991403969178139
+    sign_ok = true
+    unit = "keV"
+
+    [two_photon.row_configuration]
+    decay = "f -> gamma gamma"
+    f1 = "q"
+    f2 = "q"
+    kind = "P2"
+    n = 1
+    q_eff = 0.3928371006591931
+    unit = "keV"
+[[two_photon]]
+wave_profile = "central P, four radial levels; ideal flavor"
+
+    [two_photon.mass]
+    assignment_note = ""
+    context = "VII"
+    edition = "2026"
+    key = "f2prime"
+    label = "f' -> gamma gamma"
+    mass_GeV = 1.517304243265377
+    note = ""
+    particle = "f_2'(1525) MASS"
+    pdg_display = "1517.3+-2.4"
+    pdg_id = "M013MX"
+    source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M013MX"
+    status = "PDG average"
+
+    [two_photon.result]
+    M = 1.517304243265377
+    kind = "P2"
+    label = "f' -> gamma gamma"
+    model = -0.4336387903546542
+    paper = -0.25
+    ratio = 1.7345551614186168
+    sign_ok = true
+    unit = "keV"
+
+    [two_photon.row_configuration]
+    decay = "f' -> gamma gamma"
+    f1 = "s"
+    f2 = "s"
+    kind = "P2"
+    n = 1
+    q_eff = 0.1111111111111111
+    unit = "keV"

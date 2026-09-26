@@ -43,7 +43,7 @@ The review and implementation sequence is specified in
 
 ## WP1: solver-native strong-decay amplitudes
 
-- [ ] Implement GI Eq. (19) pseudoscalar emission as the first native operator;
+- [x] Implement GI Eq. (19) pseudoscalar emission as the first native operator;
   keep `^3P0` behind its later three-route spatial-integral prototype.
 - [ ] Define the complete off-shell helicity vector and derive every allowed
   `M[A → BC; k, L, S] = ⟨BC;k,LS|T|A⟩` by a tested Jacob--Wick projection.
@@ -70,7 +70,7 @@ The review and implementation sequence is specified in
 - [x] Specify threshold behavior: closed on-shell widths vanish, while a
   closed-channel vertex requires explicit complex `CMKinematics` and is never
   silently zeroed.
-- [ ] Evaluate the spatial integrals with the actual initial and daughter GI
+- [x] Evaluate the spatial integrals with the actual initial and daughter GI
   wave functions and combine mixed physical states coherently.
 - [x] Add a three-state coherent composer for one parent and two daughters. It
   must conjugate final-state coefficients and retain every component triple in

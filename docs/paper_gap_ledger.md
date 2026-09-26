@@ -85,9 +85,10 @@ native fixed-channel waves and canonical targets. Excited eta and deeply
 cancelled transitions retain explicit numerical residuals. The old
 `Upsilon'' -> eta_b gamma` sign discrepancy was an encoding error;
 the printed -0.004 agrees with the calculation.
-Applying Eq. (19) directly to the calculated physical wavefunctions would go
-beyond the paper's numerical SU(6)/single-beta SHO treatment. It is recorded in
-the README as a possible improvement, not as a reproduction gap.
+Applying Eq. (19) directly to the calculated physical wavefunctions goes
+beyond the paper's numerical SU(6)/single-beta SHO treatment. It is now a
+separate native `QuarkModelTransitions` workflow, not a reproduction gap or a
+fallback used by the frozen Table-IV/V reports.
 
 ## Explicitly not missing
 

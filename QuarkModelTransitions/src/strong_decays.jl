@@ -222,9 +222,9 @@ given the breakup momenta of the two fit decays. `A` is convention-independent.
 function calibrate_strong_decay_model(
     rho_q_GeV::Real,
     B_q_GeV::Real;
-    rho_amplitude::Real = 12.4,
-    B_amplitude::Real = -11.0,
-    beta_GeV::Real = 0.40,
+    rho_amplitude::Real = STRONG_DECAY_DEFAULTS.rho_amplitude,
+    B_amplitude::Real = STRONG_DECAY_DEFAULTS.B_amplitude,
+    beta_GeV::Real = STRONG_DECAY_DEFAULTS.beta_GeV,
     convention::ReducedAmplitudeConvention = TableIVPolynomial(),
 )
     qbar_rho = rho_q_GeV / beta_GeV

@@ -3,13 +3,35 @@
 GIPaper is the paper-reproduction and comparison layer for GIModel.
 
 - `GIModel` owns model parameters, physics types, numerical solvers, spectra,
-  amplitudes, widths, and other reusable computations.
+  wave operations and mass-spectrum mixing.
+- `QuarkModelTransitions` owns decay operators, radiative/annihilation
+  amplitudes, widths, charge radii and the frozen Table IV/V backend.
 - `GIPaper` owns digitized 1985-paper data, paper-row adapters, reference-state
   matching, residual reports, and reproduction audits.
-- `GIPaper/src/` depends only on GIModel's exported API. Plotting and audit-only
+- `GIPaper/src/` consumes GIModel and QuarkModelTransitions APIs. Plotting and audit-only
   dependencies live in the separate `GIPaper/scripts/` environment.
 - `GIPaper/extraction/` contains the isolated Python OCR/data-provenance tools;
   neither Julia package depends on them.
+
+For a downstream Julia 1.11+ environment, develop the three local packages
+in one operation (replace the path with your checkout):
+
+```julia
+using Pkg
+root = "/absolute/path/to/GIModel.jl"
+Pkg.develop([PackageSpec(path=root),
+    PackageSpec(path=joinpath(root, "QuarkModelTransitions")),
+    PackageSpec(path=joinpath(root, "GIPaper"))])
+using GIModel, GIPaper
+params, mq = load_parameters_and_quark_masses(model_parameters_path())
+reference = load_reference_spectrum(reference_spectrum_path("charmonium"))
+```
+
+[Table policy](data/table_policy.toml) records paper calibration and flavor/mixing
+prescriptions separately from operator defaults. The
+[rate input ledger](docs/rate_input_ledger.md) explains per-row traces and their
+freshness check. `data/clean/parameters.toml` is a Table II transcription, not a
+solver configuration; use `model_parameters_path()` for computation.
 
 Run the package tests with:
 
@@ -77,3 +99,12 @@ transition implementation.
   [study index](docs/investigations/README.md).
 - Consumer publications may snapshot these reports and summarize their meaning,
   but must not implement an independent comparison path.
+
+## Numerical inputs to rates
+
+See [the rate input ledger](docs/rate_input_ledger.md). Regenerate the table
+reports and per-row TOML input records together with:
+
+```sh
+julia --project=GIPaper/scripts GIPaper/scripts/trace_rate_inputs.jl
+```

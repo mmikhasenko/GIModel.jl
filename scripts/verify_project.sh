@@ -13,8 +13,8 @@ julia --project=GIPaper -e 'using Pkg; Pkg.test()'
 julia GIPaper/scripts/audit_ho_convergence.jl # PA-12: adaptive native-HO certificate
 julia GIPaper/scripts/audit_fd_convergence.jl # FD-COMP: independent grid/domain certificate
 julia GIPaper/scripts/audit_table_iii_mixings.jl
-julia GIPaper/scripts/reproduce_table_v.jl
-julia GIPaper/scripts/audit_table_vii.jl   # Table VII gluonic annihilation (zero-parameter)
+julia --project=GIPaper/scripts GIPaper/scripts/trace_rate_inputs.jl # regenerates Tables V/VI/VII and input traces
+julia --project=GIPaper/scripts GIPaper/scripts/check_input_traces.jl
 julia GIPaper/scripts/audit_w6_ho_order.jl # W6: paper-order HO full diagonalization
 # The two FD-vs-oscillator audits. Ungated until now, and it showed: the
 # GIModel/GIPaper split (4dfd4c5) broke audit_nonmixing_contact.jl outright, and
@@ -28,7 +28,6 @@ julia GIPaper/scripts/audit_nonmixing_contact.jl
 # bottomonium S waves, moved 0.0084 -> 0.0083 (paper +0.007, verdict unchanged).
 # mixing_studies.jl also rewrites two PNGs; they are byte-reproducible run to run.
 julia GIPaper/scripts/audit_mixing_angles.jl
-julia GIPaper/scripts/audit_table_vi_photon_decays.jl
 julia GIPaper/scripts/audit_realistic_factors.jl
 julia --project=GIPaper/scripts GIPaper/docs/mixing_studies.jl
 julia GIPaper/scripts/analyze_heavy_quarkonium.jl

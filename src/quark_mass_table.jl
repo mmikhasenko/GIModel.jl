@@ -36,7 +36,8 @@ Meson(custom, :c, :b)
 const QuarkMassTable = Dict{String,Float64}
 
 function quark_masses_from_raw(raw)::QuarkMassTable
-    m = raw["masses"]
+    m = validate_parameter_section(raw, "masses", ("m_ud_avg_MeV", "m_s_MeV", "m_c_MeV", "m_b_MeV"))
+    all(>(0), values(m)) || throw(ArgumentError("constituent masses must be positive"))
     return Dict{String,Float64}(
         "u" => m["m_ud_avg_MeV"] / 1000,
         "d" => m["m_ud_avg_MeV"] / 1000,

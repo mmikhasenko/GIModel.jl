@@ -3,8 +3,8 @@ source = "Godfrey-Isgur 1985"
 doi = "10.1103/PhysRevD.32.189"
 page = 5
 table = "Table II"
-status = "audited_active_solver_inputs"
-notes = "Published Table II values only. Solver switches remain in data/parameters.provisional.toml."
+status = "audited_reference_transcription"
+notes = "Published Table II reference values only, not a runtime preset. Lambda motivates the fixed Gaussian profile; alpha_s_critical is its derived sum. Load default_parameters_path() for GIModel computations."
 
 [masses]
 m_ud_avg_MeV = 220

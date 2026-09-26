@@ -358,7 +358,42 @@ GIParameters(
     annihilation = annihilation,
 )
 
+# File input is strict: constructors remain available for deliberate diagnostics.
+function validate_parameter_section(raw, name, required; optional=())
+    haskey(raw, name) || throw(ArgumentError("missing parameter section [$name]"))
+    section = raw[name]
+    section isa AbstractDict || throw(ArgumentError("[$name] must be a table"))
+    unknown = setdiff(collect(keys(section)), [required...; optional...])
+    isempty(unknown) || throw(ArgumentError("unknown or inactive [$name] key(s): $(join(sort!(unknown), ", "))"))
+    absent = filter(key -> !haskey(section, key), required)
+    isempty(absent) || throw(ArgumentError("missing [$name] key(s): $(join(absent, ", "))"))
+    for (key, value) in section
+        key == "central" && continue
+        if key in ("enabled", "contact_momentum_sandwich", "fine_structure_momentum_sandwich", "fine_structure_smeared_kernels")
+            value isa Bool || throw(ArgumentError("[$name].$key must be a boolean"))
+        else
+            value isa Real && !(value isa Bool) && isfinite(value) ||
+                throw(ArgumentError("[$name].$key must be a finite number"))
+        end
+    end
+    return section
+end
+
+function validate_model_file(raw)
+    allowed = ("metadata", "masses", "potential", "relativistic_smearing", "relativistic_factors", "fine_structure", "annihilation")
+    unknown = setdiff(collect(keys(raw)), allowed)
+    isempty(unknown) || throw(ArgumentError("unknown parameter section(s): $(join(sort!(unknown), ", "))"))
+    validate_parameter_section(raw, "potential", ("b_GeV2", "c_MeV", "central"))
+    validate_parameter_section(raw, "relativistic_smearing", ("sigma0_GeV", "s"))
+    validate_parameter_section(raw, "relativistic_factors", ("epsilon_c", "epsilon_t", "epsilon_so_vector", "epsilon_so_scalar", "contact_momentum_sandwich", "fine_structure_momentum_sandwich", "fine_structure_smeared_kernels"))
+    validate_parameter_section(raw, "fine_structure", ("enabled",))
+    haskey(raw, "masses") && validate_parameter_section(raw, "masses", ("m_ud_avg_MeV", "m_s_MeV", "m_c_MeV", "m_b_MeV"))
+    haskey(raw, "annihilation") && validate_parameter_section(raw, "annihilation", ("p1_A_np", "p1_m_eta_GeV", "p2_A_np", "p2_M0_GeV", "s1_A", "a_3p2"))
+    return nothing
+end
+
 function gi_parameters_from_raw(raw)::GIParameters
+    validate_model_file(raw)
     pot = raw["potential"]
     rf = get(raw, "relativistic_factors", Dict{String,Any}())
     fs = get(raw, "fine_structure", Dict{String,Any}())
@@ -416,7 +451,12 @@ end
 Read a solver-parameter TOML file (`data/parameters.provisional.toml` layout:
 `[potential]` with a `central` method name, `[relativistic_smearing]`,
 `[relativistic_factors]`, `[fine_structure]`, optional `[annihilation]`).
-Missing switches default to `false`/paper values. Use
+All listed sections and their fields are required; unknown/inactive keys are errors.
+The optional annihilation section must be complete when supplied; when omitted,
+the documented `AnnihilationAmplitudes()` defaults apply. Programmatic constructors
+remain available for diagnostic configurations. The historical Table II
+`Lambda_MeV` is reference-only: the runtime uses the published fixed Gaussian
+coupling profile rather than refitting it from Lambda. Use
 [`load_parameters_and_quark_masses`](@ref) to also get the `[masses]` table.
 The file describes the model only; pick the radial method with a
 [`RadialSolver`](@ref) at the call site.

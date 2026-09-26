@@ -65,9 +65,13 @@ checks an independent identity or paper fixture.
 - **Identical daughters.** Exchange contributes `(-1)^(L+S)`; forbidden odd
   exchange waves are removed and the allowed amplitude receives one
   `1/sqrt(2)` normalization.
-
-## Pending before end-to-end native Eq. (19)
-
-- an emitted-pseudoscalar role invariant under canonical daughter ordering;
-- conversion from the GI Appendix-C normalization to the package's canonical
-  relativistic two-body normalization.
+- **Emitted-pseudoscalar role.** `TwoMesonChannel` preserves order. Eq. (19)
+  interprets `first` as the surviving composite daughter and requires `second`
+  to be the emitted `J^P=0^-` field. For two pseudoscalars, reversing the pair
+  selects the other Fig.-14 assignment. The operator evaluates one assignment
+  and never silently sums two descriptions of the same pair-creation diagram.
+- **Appendix-C normalization.** The `(4ωω')^(1/2)/(2π)^(9/2)` factor in Eq. (19)
+  cancels the inverse factor defining `H_tilde` below Eq. (C2). The evaluated
+  bracket is therefore dimensionless, and the width is
+  `1000q/(2π(2J_i+1)) sum_LS |A_LS|^2` in MeV. Complex off-shell vertices have
+  no width.

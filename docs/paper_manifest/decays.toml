@@ -17,13 +17,13 @@ label = "Eq. (19)"
 page = 12
 statement = "Pseudoscalar-emission decay operator (g σ·q + h σ·p'): the two-coupling amplitude for M* -> M + P."
 status = "reproduced"
-code = ["QuarkModelTransitions/src/strong_decays.jl:strong_decay_amplitude"]
-tests = ["Table V strong-decay model"]
+code = ["QuarkModelTransitions/src/pseudoscalar_emission.jl:matrix_element", "QuarkModelTransitions/src/strong_decays.jl:strong_decay_amplitude"]
+tests = ["Public native Eq. (19) transition", "Table V strong-decay model"]
 report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
 metric = "Eq. (19) is evaluated through the same SU(6), single-beta SHO reduction used for the paper's numerical strong-decay tables; the Table IV classes and Table V amplitudes use beta = 0.40 GeV and the paper's two-strength fit."
 anchor = "paper/vision_ocr/page_images/page-012.png"
 parent = "sec-IV"
-notes = "Direct evaluation of g sigma.q + h sigma.p' between the calculated physical model wavefunctions would be a beyond-paper improvement, not a missing step in reproducing the paper's published numerical treatment."
+notes = "The frozen Table-IV/V route reproduces the paper's published SU(6), single-beta treatment. The separate native route now evaluates g sigma.q + h sigma.p' between resolved physical model wavefunctions; this is a beyond-paper improvement, not a reproduction fallback."
 
 [[unit]]
 id = "eq-20"
@@ -59,7 +59,7 @@ label = "Eq. (22)"
 page = 23
 statement = "Photon-emission helicity amplitude for radiative (EM) decays."
 status = "implemented"
-code = ["src/mock_meson_overlaps.jl:mock_meson_overlap", "src/mock_meson_overlaps.jl:mock_meson_radial_moment", "src/mock_meson_overlaps.jl:m1_transition_moment", "src/mock_meson_overlaps.jl:e1_transition_amplitude", "src/mock_meson_overlaps.jl:photon_momentum", "src/radiative_decays.jl", "GIPaper/scripts/audit_table_vi_photon_decays.jl"]
+code = ["QuarkModelTransitions/src/mock_meson_overlaps.jl:mock_meson_overlap", "QuarkModelTransitions/src/mock_meson_overlaps.jl:mock_meson_radial_moment", "QuarkModelTransitions/src/mock_meson_overlaps.jl:m1_transition_moment", "QuarkModelTransitions/src/mock_meson_overlaps.jl:e1_transition_amplitude", "QuarkModelTransitions/src/mock_meson_overlaps.jl:photon_momentum", "QuarkModelTransitions/src/radiative_decays.jl", "GIPaper/scripts/audit_table_vi_photon_decays.jl"]
 tests = ["Appendix-D mock-meson overlap kernels", "Radiative charge normalization and recoil", "Photon multipole angular factors and powers"]
 report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
 anchor = "paper/vision_ocr/page_images/page-023.png"
@@ -109,6 +109,7 @@ page = 14
 statement = "Single harmonic-oscillator scale beta for the SHO-limit decay amplitudes (Table V caption; Table VI footnote g confirms 'as in Table V')."
 status = "reproduced"
 code = ["QuarkModelTransitions/src/strong_decays.jl:spatial_overlap"]
+tests = ["Table V strong-decay model"]
 anchor = "paper/vision_ocr/page_images/page-014.png"
 parent = "sec-IV"
 notes = "Paper's own input, not fitted. The form factor is now one expression exp[-(1/4) r^2 q^2/beta_c^2] parametrized by the heavy fraction r = m_Q/(m_Q+m_q); the light Gaussian exp(-q^2/16 beta^2) is exactly its r = 1/2 point (verified bitwise), so there is no separate charm branch and a b-flavored row would simply pass a larger r. r is carried per row on DecayChannel and resolved by the harness from the parent's flavor content, since the canonical CSV has no quark-content column. Note the paper applies this unequal-mass treatment to CHARMED rows only: strange rows are also unequal-mass (r = 0.66) yet keep the equal-mass Gaussian, so 0.5 there is the paper's convention, not the kinematics."
@@ -158,7 +159,8 @@ label = "Eq. (C2)"
 page = 39
 statement = "Partial width from partial-wave amplitudes, fixing the sqrt(q/2pi) amplitude convention."
 status = "implemented"
-code = ["QuarkModelTransitions/src/strong_decays.jl:spatial_overlap"]
+code = ["QuarkModelTransitions/src/pseudoscalar_emission.jl:partial_width", "QuarkModelTransitions/src/strong_decays.jl:spatial_overlap"]
+tests = ["Public native Eq. (19) transition", "Table V strong-decay model"]
 anchor = "paper/vision_ocr/page_images/page-039.png"
 parent = "app-C"
-notes = "The sqrt(q/2pi) factor of the amplitude and decay_width = |amp|^2."
+notes = "The native Eq. (19) result uses q/[2pi(2J+1)] times the complete partial-wave norm and reports MeV. The frozen Table-V convention absorbs sqrt(q/2pi) into its MeV^(1/2) amplitude and uses decay_width = |amp|^2."

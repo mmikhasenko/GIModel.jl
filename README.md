@@ -1,8 +1,28 @@
-# Godfrey-Isgur Reproduction
+# GIModel.jl
 
 Local reproduction of the Godfrey-Isgur relativized quark model for meson
 masses. The original paper at `paper/Godfrey-Isgur-1985.pdf` is the authority;
 OCR Markdown and extracted CSVs are navigation/provenance aids.
+
+GIModel computes meson spectra and wavefunctions with independent harmonic-oscillator
+and finite-difference solvers. It has three external runtime dependencies
+(KrylovKit, QuadGK and SpecialFunctions), plus Julia standard libraries.
+Julia 1.11 or later is required; release checks use Julia 1.11.
+
+From a checkout, install into your own Julia environment:
+
+```julia
+using Pkg
+Pkg.develop(path="/absolute/path/to/GIModel.jl")
+using GIModel
+params, mq = load_parameters_and_quark_masses(default_parameters_path())
+spec = compute_spectrum(params, Meson(mq, :c, :c); levels = spectrum_levels(1))
+```
+
+The preset path is independent of your working directory. The ordinary spectrum
+uses [18 numerical physics inputs](docs/model_inputs.md); optional isoscalar mixing
+and transition calculations have additional inputs. For wave operations and
+worked examples, see [examples](examples/README.md).
 
 The repository has five first-class deliverables:
 
@@ -12,11 +32,13 @@ The repository has five first-class deliverables:
   an organized `Spectrum` with contribution breakdowns and intra-meson mixing.
   It owns the Schrödinger solver, physical-state components, wave
   representations, and generic radial/momentum overlap operations. It knows
-  nothing about transition operators or the paper comparison.
+  nothing about decay operators or the paper comparison. Isoscalar annihilation
+  mixing remains here because it changes the mass spectrum.
 - **QuarkModelTransitions** (`QuarkModelTransitions/`) — bare quark-model
   transition operators and observables consuming GIModel states and waves. It
   owns channels, helicities, partial waves, coherent state composition,
-  matrix elements, widths, and the frozen Table IV/V reference backend.
+  matrix elements, radiative and annihilation observables, charge radii, widths,
+  and the frozen Table IV/V reference backend.
 - **GIPaper** (`GIPaper/`) — the comparison layer. It owns the digitized paper
   data, maps reference CSV rows to mesons (`reference_meson`, no fallback
   masses), runs `compare_reference`, applies the Table III annihilation
@@ -48,7 +70,7 @@ The repository has five first-class deliverables:
 - `test/runtests.jl` gates the pure numerics;
   `QuarkModelTransitions/test/runtests.jl` gates transition physics; and
   `GIPaper/test/runtests.jl` gates the reference comparison.
-- `scripts/verify_project.sh` runs the current full gate (both packages).
+- `scripts/verify_project.sh` runs the current full gate (all three packages).
 - `GIPaper/test/data_validation.jl` owns package-level CSV, TOML, and
   provenance invariants and runs as part of `Pkg.test()`.
 - `GIPaper/extraction/data_checks.py promote-clean` remains the write-oriented
@@ -62,7 +84,7 @@ The repository has five first-class deliverables:
   non-mixing/contact scorecards.
 - `examples/` collects worked examples of GIModel driven as a physics tool —
   public API only, no paper data — in their own environment
-  (`examples/Project.toml`: GIModel + CairoMakie + PlutoUI). See
+  (`examples/Project.toml`: GIModel + QuarkModelTransitions + CairoMakie + PlutoUI). See
   [examples/README.md](examples/README.md), which doubles as the "how is this
   package used" walkthrough. Three curated examples, plus
   `examples/played_with_model.jl`, the uncurated scratch notebook (the one file
@@ -78,6 +100,8 @@ The repository has five first-class deliverables:
   - `examples/chi_c_annihilation_widths.jl`, a script computing `χ_c0`/`χ_c2`
     two-gluon and two-photon widths and splitting their ratio into the `15/4`
     spin algebra times the J-dependent distortion of the wave at the origin.
+- [Rate input ledger](GIPaper/docs/rate_input_ledger.md) traces the numerical
+  inputs to Tables V, VI and VII, with generated per-row records.
 - [Discoverability](docs/discoverability.md) describes the help conventions and links
   to the [public API documentation graph](docs/discoverability_graph.md).
 - `docs/formula_map.md` maps active code paths to paper equations.
@@ -109,14 +133,14 @@ early research notes) lives under `archive/` — see
 ## Possible Improvements Beyond the 1985 Paper
 
 The strong-decay tables in the paper use an analytic SU(6), single-oscillator-
-scale approximation with `beta = 0.40 GeV`. A useful future extension would
-apply the underlying Eq. (19) quark-emission operator
-`g σ·q + h σ·p'` directly between the calculated physical meson
-wavefunctions. That would retain radial nodes, state-dependent length scales,
-spectroscopic/flavor mixing, and the solver-native HO or FD representation in
-the decay amplitude. It is deliberately not a blocker for reproducing the
-paper, because it goes beyond the approximation used for the paper's numerical
-strong-decay results.
+scale approximation with `beta = 0.40 GeV`. `QuarkModelTransitions` now also
+applies the underlying Eq. (19) operator `g σ·q + h σ·p'` directly between
+resolved physical meson wavefunctions. The native path retains radial nodes,
+state-dependent length scales, coherent spectroscopic/flavor mixing, and the
+solver-native HO or FD representation; it returns helicities, all allowed
+partial waves, and an Eq. (C2) width. This is deliberately separate from the
+frozen Table IV/V reproduction because it goes beyond the approximation used
+for the paper's numerical strong-decay results.
 
 Another possible extension is differentiable mass prediction with respect to
 continuous model parameters. The preliminary route-specific numerical evidence
@@ -156,9 +180,11 @@ Pure-model usage without any reference data:
 
 ```julia
 using GIModel
-params, mq = load_parameters_and_quark_masses("data/parameters.provisional.toml")
+params, mq = load_parameters_and_quark_masses(default_parameters_path())
 spec = compute_spectrum(params, Meson(mq, :c, :c); levels = spectrum_levels(2))
 ```
+
+GIModel/GIPaper package checks: `bash scripts/verify_packages.sh`.
 
 Full local gate:
 

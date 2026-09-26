@@ -17,7 +17,7 @@ central_potential_path(params::GIParameters)::CentralPotentialPath =
 central_potential_path(::AppendixAMomentumSandwich) = CentralPotentialPath(
     "appendix_a_momentum_sandwich",
     "Closed-form smeared G̃(r), S̃(r), plus central Coulomb momentum sandwich G' = A(p)G̃A(p) in the solver's native p² representation",
-    "Active spin-independent GI central candidate from the checked Appendix-A source; takes precedence over diagonal comparator modes.",
+    "Shipped spin-independent GI central prescription. The central-method type selects exactly one construction.",
 )
 
 central_potential_path(::AppendixAClosedForm) = CentralPotentialPath(
@@ -29,13 +29,13 @@ central_potential_path(::AppendixAClosedForm) = CentralPotentialPath(
 central_potential_path(::AppendixADerivativeG) = CentralPotentialPath(
     "appendix_a_derivative_g",
     "First finite-difference derivative term for Gaussian-smearing G(r): G + ∇²G/(4σ²); S(r)=br+c pointwise",
-    "Older comparator path for Appendix-A work. The closed-form A12-A14 and momentum-sandwich modes take precedence.",
+    "Derivative-expansion diagnostic, selected explicitly; not the shipped central prescription.",
 )
 
 central_potential_path(::AppendixASmearing3D) = CentralPotentialPath(
     "experimental_3d_convl_a7a8",
     "(A7)–(A8) smearing style via `smear_3d_radial` on pointwise G and S; not (A12)–(A13)",
-    "Can remove small-r binding; default is `central = \"pointwise\"` in `parameters.provisional.toml`.",
+    "Can remove small-r binding; the shipped preset uses the closed-form momentum sandwich.",
 )
 
 central_potential_path(::Coulomb1DSmearing) = CentralPotentialPath(
@@ -47,5 +47,5 @@ central_potential_path(::Coulomb1DSmearing) = CentralPotentialPath(
 central_potential_path(::PointwiseCentral) = CentralPotentialPath(
     "pointwise_fd",
     "Eqs. (11)–(13) orientation: V = b r - 4α_s/(3r) + c on the FD mesh",
-    "Semirelativistic kinetic + this V is the raw diagnostic baseline; the active reproduction candidate is the closed-form Appendix-A momentum-sandwich path.",
+    "Semirelativistic kinetic + this V is the raw diagnostic baseline; the shipped prescription is the closed-form Appendix-A momentum-sandwich path.",
 )

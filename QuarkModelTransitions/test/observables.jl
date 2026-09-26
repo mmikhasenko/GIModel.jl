@@ -89,7 +89,7 @@ end
     @test leptonic_pseudoscalar_width(0.0, 0.13957, 0.10566) == 0.0 # f=0
 
     # D8: Γ(V→ℓ⁺ℓ⁻) round-trips the measured ψ→ee width; scales as M·f².
-    f_V = sqrt(5.55e-6 / ((4π / 3) * GIModel.ALPHA_EM^2 * 3.0969))
+    f_V = sqrt(5.55e-6 / ((4π / 3) * QuarkModelTransitions.ALPHA_EM^2 * 3.0969))
     @test isapprox(dilepton_vector_width(f_V, 3.0969), 5.55e-6; rtol = 1e-6)
     @test isapprox(dilepton_vector_width(2f_V, 3.0969), 4 * 5.55e-6; rtol = 1e-6)  # ∝ f²
 
@@ -369,4 +369,24 @@ end
     eta_c = abs(gluonic_annihilation_amplitude(
         :S0_2g, S, GIModel.alpha_s_q(sol.eigenvalues_GeV[1]), mc)) * sqrt(1000) / 4.700
     @test 0.95 < eta_c < 1.20
+end
+
+@testset "Observable handoff from GIModel waves" begin
+    params, mq = load_parameters_and_quark_masses(default_parameters_path())
+    lv = [BasisState(1, "S", 1, 0), BasisState(2, "S", 1, 0)]
+    # Both solvers give the same smeared origin factor -- the quantity the second
+    # cache was introduced to correct. Agreement here is what makes it removable.
+    m = mq["q"]
+    sfd = wavefunction_origin_smearing(
+        radial_wave(compute_spectrum(params, Meson(mq, :q, :q); levels = lv,
+            solver = FiniteDifferenceSolver()), "1^1S_0"), m; L = 0)
+    sho = wavefunction_origin_smearing(
+        radial_wave(compute_spectrum(params, Meson(mq, :q, :q); levels = lv,
+            solver = OscillatorSolver()), "1^1S_0"), m; L = 0)
+    @test isapprox(abs(sfd), abs(sho); rtol = 0.01)
+    sol = channel_solution(params, ConstituentMasses(mq["q"], mq["s"]), 0; nlevels=1)
+    wave = radial_wave(sol, 1)
+    scaled = MeshWave(13.7 .* wave.u, wave.r)
+    radius(w) = charge_radius_squared(w, mq["q"], 2//3, mq["s"], 1//3)
+    @test isapprox(radius(wave), radius(scaled); rtol=1e-10)
 end

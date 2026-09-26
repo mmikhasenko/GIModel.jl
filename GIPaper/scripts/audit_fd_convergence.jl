@@ -6,6 +6,7 @@ using Pkg
 Pkg.activate(@__DIR__; io = devnull)
 
 using GIModel
+using QuarkModelTransitions
 using LinearAlgebra
 using Printf
 
