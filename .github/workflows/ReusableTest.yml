@@ -15,7 +15,7 @@ on:
             os:
                 required: false
                 type: string
-                default: ubuntu-latest
+                default: ubuntu-24.04
             arch:
                 description: "Julia architecture; default uses the runner's native architecture"
                 required: false
