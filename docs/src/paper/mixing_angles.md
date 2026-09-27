@@ -22,7 +22,10 @@ In the paper's convention (lower state
 | ``b\bar c`` | +69.1° | −53° | +68° |
 
 The GIModel column is from the recorded report, computed with the
-finite-difference solver; the oscillator solver gives values within 2° of it
+finite-difference solver and retained here as a historical cross-check. New
+paper comparisons use `OscillatorSolver()` explicitly. After correcting the
+HO momentum operators, the ground-state P-wave regression agrees with FD
+within 0.1° for the tested light–strange, charm–light, and bottom–light systems
 (see [Heavy-light mesons and mixing](@ref)). Most higher states (``1D``,
 ``2P``, ``1F``, ``2D``, ``1G``) show the same pattern; the [mixing-angle report](reports/mixing_angles.md) lists all thirteen
 caption angles.

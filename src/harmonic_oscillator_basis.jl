@@ -5,7 +5,7 @@
 #
 #   momentum side   `ho_p2_matrix`        exact closed-form matrix elements
 #   position side   `ho_operator_matrix`  generalized Gauss-Laguerre (Golub-Welsch)
-#   A(p) factor     spectral function of the exact p²
+#   A(p) factor     continuum momentum quadrature with Fourier-Bessel phases
 #
 # A uniform mesh belongs only to the finite-difference comparator. Plotting code
 # may explicitly sample an `OscillatorWave`, but no mesh is retained by the HO
@@ -215,29 +215,14 @@ Verified against the mesh projection it replaced: the difference falls from
 4.3e-3 at `(ngrid, rmax) = (450, 24)` to 7.4e-5 at `(8000, 56)`, i.e. it is the
 mesh's error and not this formula's.
 
-**Wired into `oscillator_hamiltonian_for_beta`, but only atomically** — together
-with an exact position side, never alone. On its own it produced a Hamiltonian
-whose kinetic operator belonged to the continuum problem and whose potential
-belonged to the discretized one, which is the Hamiltonian of no single problem
-and not variational: the charmonium `1S` landed 9.4 MeV *below* the
-finite-difference answer, the wrong side for a finite basis, and two Table VII
-gluonic ratios fell out of band. Two prerequisites had to be found first. The
-basis had no phase convention (see [`orthonormalize_physical_basis`](@ref)); an
-earlier note here dismissed the QR signs as a uniform `-1` that cancels, which
-was wrong — they flip on isolated columns (n = 10 and n = 18 at `β = 0.65,
-nbasis = 24`), so they do not cancel. And the potential side was still projected
-through the mesh, now [`ho_operator_matrix`](@ref).
+For non-polynomial momentum factors, do not take a matrix function of this
+finite matrix: `f(P_N p² P_N)` is not `P_N f(p²) P_N`. The production
+Hamiltonian projects the continuum momentum function by independent
+Gauss–Laguerre quadrature. Momentum sandwiches also retain an auxiliary
+intermediate basis, since applying a momentum factor can take a wave outside
+its original variational space. The energy basis is still refined by
+[`OscillatorSolver`](@ref).
 
-With both sides exact the sign is right: charm sits +0.18 MeV and bottom
-+0.55 MeV *above* the finite-difference result, as a variational calculation in
-a finite basis must. The light sectors sit ≈1.5 MeV below, which reads the other
-way — the oscillator answer is a true bound on the continuum one, so it is the
-finite-difference mesh that is high where short-distance structure is hardest to
-resolve. The finite-difference / oscillator tolerance widened from 1e-3 to 3e-3
-at the same time, not from lost accuracy but because the two paths became
-independent: while the oscillator path projected the finite-difference `p²` it
-was a Galerkin restriction of that problem and inherited its discretization
-error, so the two agreed artificially well.
 """
 function ho_p2_matrix(L::Integer, β::Real, nbasis::Integer)
     nbasis >= 1 || throw(ArgumentError("ho_p2_matrix: nbasis must be ≥ 1"))
@@ -529,6 +514,16 @@ function oscillator_momentum_factor_matrix(
     return Symmetric(fact.vectors * Diagonal(diag) * fact.vectors')
 end
 
+# Project the function of the continuum momentum operator, rather than taking
+# a function of the truncated p² matrix. These differ for every non-polynomial
+# function; increasing nbasis while reoptimizing beta can hide that error in
+# the energy. Fourier-Bessel transformation gives beta -> 1/beta and (-1)^n.
+function _ho_momentum_operator_matrix(L, beta, nbasis, f; rtol = 1e-10)
+    matrix = ho_operator_matrix(L, inv(beta), nbasis, f; rtol)
+    signs = [isodd(n) ? -1.0 : 1.0 for n in 0:(nbasis-1)]
+    return Symmetric(signs .* Matrix(matrix) .* transpose(signs))
+end
+
 function momentum_relativization_matrix(m1::Real, m2::Real, exponent::Real, p2_fact)
     lambda = max.(p2_fact.values, 0)
     e1 = sqrt.(lambda .+ m1^2)
@@ -543,7 +538,11 @@ gi_spin_dependent_side_exponent(epsilon::Real) = 0.5 + float(epsilon)
     ho_momentum_sandwich_matrix(L, beta, nbasis, masses, epsilon, kernel)
 
 Native harmonic-oscillator matrix for `B(p^2) kernel(r) B(p^2)`, where
-`B=(m1*m2/(E1*E2))^(1/2+epsilon)`. No coordinate mesh is constructed.
+`B=(m1*m2/(E1*E2))^(1/2+epsilon)`. The continuum momentum function is
+integrated independently of the variational basis. The intermediate product
+uses `2nbasis + 32` functions before projection back onto the requested basis;
+this auxiliary space grows along with energy-basis refinement. No coordinate
+mesh is constructed.
 """
 function ho_momentum_sandwich_matrix(
     L::Integer,
@@ -554,15 +553,18 @@ function ho_momentum_sandwich_matrix(
     kernel;
     rtol::Real = 1e-10,
 )
-    p2 = Symmetric(Matrix(ho_p2_matrix(L, beta, nbasis)))
-    B = momentum_relativization_matrix(
-        masses.m1_GeV,
-        masses.m2_GeV,
-        gi_spin_dependent_side_exponent(epsilon),
-        eigen(p2),
+    m1, m2 = masses.m1_GeV, masses.m2_GeV
+    # B creates components outside the variational space. Retain an auxiliary
+    # space for the intermediate product before projecting back to nbasis.
+    work_basis = 2nbasis + 32
+    B = _ho_momentum_operator_matrix(
+        L, beta, work_basis,
+        p -> (m1 * m2 / sqrt((p^2 + m1^2) * (p^2 + m2^2)))^
+             gi_spin_dependent_side_exponent(epsilon),
     )
-    K = ho_operator_matrix(L, beta, nbasis, kernel; rtol = rtol)
-    return Symmetric(B * K * B)
+    K = ho_operator_matrix(L, beta, work_basis, kernel; rtol = rtol)
+    C = view(B, :, 1:nbasis)
+    return Symmetric(transpose(C) * K * C)
 end
 
 """Native Eq. (A17) spin-independent oscillator Hamiltonian."""
@@ -579,16 +581,22 @@ function oscillator_central_matrix(
         "`$(central_potential_method(params.central))`",
     ))
     m1, m2 = masses.m1_GeV, masses.m2_GeV
-    p2 = Symmetric(Matrix(ho_p2_matrix(L, beta, nbasis)))
-    kinetic = oscillator_kinetic_matrix(p2, m1) + oscillator_kinetic_matrix(p2, m2)
-    A = oscillator_momentum_factor_matrix(p2, m1, m2; power = 0.5)
+    kinetic = _ho_momentum_operator_matrix(
+        L, beta, nbasis, p -> sqrt(p^2 + m1^2) + sqrt(p^2 + m2^2),
+    )
+    work_basis = 2nbasis + 32
+    A = _ho_momentum_operator_matrix(
+        L, beta, work_basis,
+        p -> sqrt(1 + p^2 / sqrt((p^2 + m1^2) * (p^2 + m2^2))),
+    )
     G = ho_operator_matrix(
-        L, beta, nbasis, r -> smeared_coulomb_G_closed(params, m1, m2, r),
+        L, beta, work_basis, r -> smeared_coulomb_G_closed(params, m1, m2, r),
     )
     S = ho_operator_matrix(
         L, beta, nbasis, r -> smeared_confinement_S_closed(params, m1, m2, r),
     )
-    return Symmetric(kinetic + Symmetric(A * G * A + S))
+    C = view(A, :, 1:nbasis)
+    return Symmetric(kinetic + transpose(C) * G * C + S)
 end
 
 function oscillator_hamiltonian_for_beta(

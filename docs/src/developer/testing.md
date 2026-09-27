@@ -13,7 +13,15 @@ checks. Tests check invariants and independent limits (closed-form integrals,
 sum rules, agreement of the two solvers) rather than frozen numbers where
 possible.
 
-Solver-convergence sweeps take a few minutes and run only on request:
+Solver-convergence sweeps take a few minutes and run only on request.
+They include unequal-mass P-wave mixing comparisons between FD, adaptive HO,
+and common-β HO (`test/heavy/mixing_convergence.jl`). Energy convergence alone
+does not certify a mixing angle: cancellations can magnify small operator and
+wave errors. HO spin expectation values therefore refine the momentum-operator
+basis independently of the solved wave. The quick suite also checks these
+sandwiches against analytic-wave momentum integrals and sampled FD waves.
+
+Run the sweeps with:
 
 ```bash
 GI_HEAVY_TESTS=true julia --project=. -e 'using Pkg; Pkg.test()'

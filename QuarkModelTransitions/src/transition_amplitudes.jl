@@ -15,6 +15,7 @@ import GIModel.QuarkModelTransitions as QMT
 
 ## Related
 
+- [`superpose`](@ref) — construct coherent combinations.
 - [`matrix_element`](@ref) — evaluate an operator between states.
 """
 abstract type TransitionOperator end
@@ -76,6 +77,7 @@ operator = PhotonEmission(masses)
 
 - [`matrix_element`](@ref) — evaluate an operator between states.
 - [`physical_state`](@ref) — adapt a solved spectrum state.
+- [`superpose`](@ref) — construct coherent combinations.
 - [`PhotonEmission`](@ref) — infer and evaluate a photon transition.
 - [`TwoMesonChannel`](@ref) — ordered surviving and emitted daughters.
 """
@@ -135,6 +137,82 @@ function PhysicalState(
     )
 end
 
+# Resolve only a channel explicitly identified by the isoscalar solver. Keep
+# the original state's coarse components for operators whose AnnihilationTerm
+# already supplies effective flavor coefficients.
+function _electromagnetic_components(state::PhysicalState)
+    (hasproperty(state.provenance, :nonstrange_isoscalar) &&
+     state.provenance.nonstrange_isoscalar) || return state.components
+    return Tuple(Iterators.flatten(map(state.components) do c
+        basis = c.basis
+        if basis.flavors in ((:q, :q), (:u, :u), (:d, :d))
+            return Tuple(StateComponent(
+                BasisState(basis.n, basis.L_label, basis.multiplicity, basis.J;
+                           label = basis.label, flavors = (flavor, flavor)),
+                c.coefficient / sqrt(2), c.wave,
+            ) for flavor in (:u, :d))
+        end
+        return (c,)
+    end))
+end
+
+function _components_norm_squared(components)
+    value = 0.0 + 0.0im
+    for a in components, b in components
+        ba, bb = a.basis, b.basis
+        (ba.flavors, ba.L_label, ba.multiplicity, ba.J) ==
+            (bb.flavors, bb.L_label, bb.multiplicity, bb.J) || continue
+        value += conj(a.coefficient) * b.coefficient * radial_overlap(a.wave, b.wave, _ -> 1.0)
+    end
+    result = real(value)
+    isfinite(result) && result > 0 || throw(ArgumentError("state combination has zero or invalid norm"))
+    return result
+end
+
+"""
+    superpose(states, coefficients; mass_GeV, label="superposition", normalize=true)
+
+Form a coherent linear combination of [`PhysicalState`](@ref)s. Supply the
+physical mass explicitly: a superposition of states with different masses is
+not automatically a mass eigenstate. Normalization includes radial overlaps
+and interference, not just the sum of coefficient squares. Known isoscalar
+light channels are resolved into explicit uū/dd̄ components before combining.
+
+## Example
+
+```julia
+using GIModel, GIModel.QuarkModelTransitions
+wave = OscillatorWave(0, 0.5, [1.0])
+up = PhysicalState("uubar", 0.14, [(basis=BasisState(1,"S",1,0; flavors=(:u,:u)), coefficient=1.0, wave)])
+down = PhysicalState("ddbar", 0.14, [(basis=BasisState(1,"S",1,0; flavors=(:d,:d)), coefficient=1.0, wave)])
+pi0 = superpose([up, down], [1, -1]; label="pi0", mass_GeV=0.135)
+@assert pi0.components[2].coefficient ≈ -1/sqrt(2)
+```
+
+## Related
+
+[`PhysicalState`](@ref), [`physical_state`](@ref).
+"""
+function superpose(states, coefficients; mass_GeV::Real,
+                   label::AbstractString = "superposition", normalize::Bool = true)
+    length(states) == length(coefficients) && !isempty(states) ||
+        throw(ArgumentError("supply one coefficient per state and at least one state"))
+    all(state -> state isa PhysicalState, states) || throw(ArgumentError("superpose requires PhysicalStates"))
+    all(c -> c isa Number && isfinite(c), coefficients) || throw(ArgumentError("coefficients must be finite numbers"))
+    components = Tuple(StateComponent(c.basis, weight * c.coefficient, c.wave)
+                       for (state, weight) in zip(states, coefficients)
+                       for c in _electromagnetic_components(state))
+    # Validate quantum numbers before evaluating overlaps.
+    candidate = PhysicalState(label, mass_GeV, components)
+    norm_squared = _components_norm_squared(candidate.components)
+    scale = normalize ? sqrt(norm_squared) : 1.0
+    return PhysicalState(label, mass_GeV,
+        (StateComponent(c.basis, c.coefficient / scale, c.wave) for c in components);
+        provenance = (source = :superposition, input_norm_squared = norm_squared,
+                      normalized = normalize))
+end
+
+
 _state_mass(state::CentralState) = state.central_GeV
 _state_mass(state::Union{CorrectedState,MixedState}) = state.mass_GeV
 
@@ -145,6 +223,7 @@ function _physical_state_provenance(spec::Spectrum, state)
         spectrum_stage = nameof(typeof(state)),
         channels = channels,
         state_label = state.label,
+        nonstrange_isoscalar = spec.nonstrange_isoscalar,
     )
 end
 

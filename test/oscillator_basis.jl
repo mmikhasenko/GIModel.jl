@@ -189,3 +189,19 @@ end
     @test_throws ArgumentError ho_p2_matrix(0, -1.0, 4)
     @test_throws ArgumentError ho_p2_matrix(0, 0.5, 0)
 end
+
+@testset "Continuum momentum projection is not a finite p² matrix function" begin
+    L, beta, nbasis = 1, 0.9, 4
+    m = 0.22
+    f(p) = sqrt(m^2 + p^2)
+    op = GIModel._ho_momentum_operator_matrix(L, beta, nbasis, f)
+    for (i, j) in ((1, 1), (1, 3), (3, 4))
+        exact, _ = quadgk(0.0, 20.0; rtol = 1e-11) do p
+            (-1.0)^(i+j-2) * GIModel.ho_reduced_radial(i-1, L, inv(beta), p) *
+            GIModel.ho_reduced_radial(j-1, L, inv(beta), p) * f(p)
+        end
+        @test op[i, j] ≈ exact atol = 1e-9
+    end
+    @test GIModel._ho_momentum_operator_matrix(L, beta, nbasis, p -> p^2) ≈
+          Matrix(GIModel.ho_p2_matrix(L, beta, nbasis)) atol = 1e-11
+end

@@ -7,6 +7,8 @@ not a physical width; in particular the pseudoscalar convention is f_P/M_P.
 ³S₁ or ³D₁ assignment and calculates its coefficient with
 `vector_current_prefactor`. Supply explicit uū/dd̄ components for rho/omega;
 the mass-sector aliases q/n do not specify a charge or an isospin state.
+States obtained from an isoscalar spectrum carry that information explicitly;
+the electromagnetic current resolves their nonstrange channel as (uū+dd̄)/√2.
 Result terms expose `prefactor` (including state mixing) and `kernel` (V or V′),
 whose product is `contribution`. Different components can have different kernels;
 in general there is no single factorizable V for a mixed state.
@@ -66,7 +68,8 @@ matrix_element(final::Vacuum, op::LeptonicCurrent, initial::PhysicalState; npoin
 function mass_correction_factor(final::Vacuum, op::LeptonicCurrent,
                                 initial::PhysicalState; target_mass::Real,
                                 npoints::Integer=900)
-    target = PhysicalState(initial.label, _correction_mass(target_mass), initial.components)
+    target = PhysicalState(initial.label, _correction_mass(target_mass), initial.components;
+                           provenance = initial.provenance)
     return _correction_ratio(matrix_element(final, op, target; npoints).value,
                              matrix_element(final, op, initial; npoints).value)
 end
@@ -134,3 +137,6 @@ function _ann_kernel(::Vacuum, op::LeptonicCurrent, c, M, npoints)
     return leptonic_decay_factor(kind, c.wave, _ann_mass(op,a), _ann_mass(op,b), M; npoints)
 end
 
+
+_ann_components(op::LeptonicCurrent, initial::PhysicalState) =
+    op.kind == :electromagnetic ? _electromagnetic_components(initial) : initial.components

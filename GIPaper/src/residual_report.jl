@@ -141,7 +141,7 @@ function write_residual_report(
     path::AbstractString,
     title::AbstractString,
     rows;
-    solver::RadialSolver = FiniteDifferenceSolver(),
+    solver::RadialSolver = OscillatorSolver(),
     contact_hyperfine::Bool = true,
     central::CentralPotentialMethod = PointwiseCentral(),
     contact_momentum_sandwich::Bool = false,

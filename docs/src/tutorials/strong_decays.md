@@ -46,25 +46,21 @@ K_star, K_plus, K_zero = physical_state(us, S1), physical_state(us, S0), physica
 ```
 
 ```
-(ρ = 0.768977665477035, a₁ = 1.2368662604136422, b₁ = 1.2184001041514223, K⁺ = 0.4610640117875302)
+(ρ = 0.7712488094493981, a₁ = 1.2375460303738788, b₁ = 1.2184697225583834, K⁺ = 0.4612729692037647)
 ```
 
-Neutral isospin states are superpositions of $u\bar u$ and $d\bar d$. A [`PhysicalState`](@ref) can be built from any signed components, so a small helper combines solved states:
+Neutral isospin states are superpositions of $u\bar u$ and $d\bar d$. [`superpose`](@ref) combines the solved states and normalizes their coherent wavefunction. The model has degenerate u and d masses, so the component masses are equal here; the resulting mass is supplied explicitly:
 
 ```julia
-function combine(label, parts)
-    components = [(basis = c.basis, coefficient = w * c.coefficient, wave = c.wave)
-                  for (state, w) in parts for c in state.components]
-    mass = sum(w^2 * state.mass_GeV for (state, w) in parts)
-    PhysicalState(label, mass, components; provenance = (source = :isospin_combination,))
-end
-pi_zero = combine("π⁰", [(physical_state(uu, S0), 1 / √2), (physical_state(dd, S0), -1 / √2)])
-omega = combine("ω", [(physical_state(uu, S1), 1 / √2), (physical_state(dd, S1), 1 / √2)])
+up0, down0 = physical_state(uu, S0), physical_state(dd, S0)
+up1, down1 = physical_state(uu, S1), physical_state(dd, S1)
+pi_zero = superpose([up0, down0], [1, -1]; label="π⁰", mass_GeV=up0.mass_GeV)
+omega = superpose([up1, down1], [1, 1]; label="ω", mass_GeV=up1.mass_GeV)
 pi_zero
 ```
 
 ```
-PhysicalState("π⁰", 0.148835145791396 GeV, 2 components)
+PhysicalState("π⁰", 0.14906372897241119 GeV, 2 components)
 ```
 
 The flavor components must be explicit (`:u`, `:d`): the averaged `:q` cannot say whether a state is $u\bar u + d\bar d$ or $u\bar u - d\bar d$, so the operator rejects it.
@@ -110,7 +106,7 @@ h = h_over_g * g
 ```
 
 ```
-(g = 3.570568815606355, h = 2.859583128833854)
+(g = 3.555583210811114, h = 2.8475815165247615)
 ```
 
 ## Predictions
@@ -128,11 +124,11 @@ end
 ```
 
 ```
-ρ⁺ → π⁺ π⁰    q = 355 MeV   Γ = 149.1 MeV
-K*⁺ → K⁰ π⁺   q = 311 MeV   Γ = 58.9 MeV
-K*⁺ → K⁺ π⁰   q = 311 MeV   Γ = 29.4 MeV
-a₁⁺ → ρ⁺ π⁰   q = 359 MeV   Γ = 237.4 MeV   D/S = -0.141
-b₁⁺ → ω π⁺    q = 345 MeV   Γ = 122.7 MeV   D/S = 0.258
+ρ⁺ → π⁺ π⁰    q = 356 MeV   Γ = 149.1 MeV
+K*⁺ → K⁰ π⁺   q = 312 MeV   Γ = 58.7 MeV
+K*⁺ → K⁺ π⁰   q = 312 MeV   Γ = 29.3 MeV
+a₁⁺ → ρ⁺ π⁰   q = 358 MeV   Γ = 234.3 MeV   D/S = -0.14
+b₁⁺ → ω π⁺    q = 343 MeV   Γ = 120.9 MeV   D/S = 0.256
 ```
 
 Compare with measured values:
@@ -159,7 +155,7 @@ factor = mass_correction_factor(first(Dict(channels)["K*⁺ → K⁰ π⁺"]),
 ```
 
 ```
-0.9387320442404171 - 0.0im
+0.9370022218084451 - 0.0im
 ```
 
 The factor multiplies that partial-wave amplitude; the phase-space factor $q$ in the width changes separately.

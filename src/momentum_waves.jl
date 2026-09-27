@@ -17,7 +17,13 @@ struct MeshMomentumWave <: MomentumWave
     phi::Vector{Float64}
 end
 
-"""Exact momentum-space view of a native [`OscillatorWave`](@ref)."""
+"""
+Exact momentum-space view of a native [`OscillatorWave`](@ref).
+Call `phi(p)` to evaluate the radial `Phi_L(p)` at a nonnegative momentum in
+GeV; its normalization is `integral p^2 abs2(Phi_L(p)) dp = 1`.
+For example, `momentum_wave(OscillatorWave(0, 0.5, [1.0]))(0.3)` evaluates
+an assumed Gaussian wave directly, without a sampled transform.
+"""
 struct OscillatorMomentumWave <: MomentumWave
     source::OscillatorWave
 end
@@ -94,6 +100,11 @@ function _oscillator_momentum_value(mw::OscillatorMomentumWave, p::Real)
         ho_reduced_radial(n, w.L, inv(w.beta), pf) / pf for
         n in 0:(length(w.coefficients)-1)
     )
+end
+
+function (wave::OscillatorMomentumWave)(p::Real)
+    isfinite(p) && p >= 0 || throw(ArgumentError("momentum must be finite and nonnegative"))
+    return _oscillator_momentum_value(wave, p)
 end
 
 """

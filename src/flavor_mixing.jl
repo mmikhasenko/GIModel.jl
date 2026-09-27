@@ -257,7 +257,8 @@ function _combined_isoscalar_spectrum(nn::MixedSpectrum, ss::MixedSpectrum)
         cache[key] = solution
     end
     computation = SectorComputation(parameters(nn), nn.computation.solver, cache)
-    return Spectrum([nn_meson, ss_meson], vcat(nn.states, ss.states), computation)
+    return Spectrum([nn_meson, ss_meson], vcat(nn.states, ss.states), computation;
+                    nonstrange_isoscalar = true)
 end
 
 function _apply_annihilation_result!(spec::MixedSpectrum, result::MixingResult)
@@ -382,8 +383,8 @@ end
 End-to-end model-level isoscalar calculation: solve both native flavor
 channels through fixed-sector and spectroscopic mixing, then call
 [`add_isoscalar_annihilation`](@ref). No paper reference rows are accepted.
-The default is native HO because this is the paper-algorithm entry point;
-callers may pass another [`RadialSolver`](@ref) explicitly for an independent comparator.
+The default is [`FiniteDifferenceSolver`](@ref), matching [`compute_spectrum`](@ref).
+Pass `solver = OscillatorSolver()` explicitly to use the paper’s oscillator method.
 
 Returns a [`MixedSpectrum`](@ref) with both [`Meson`](@ref) channels.
 Use [`spectrum_state`](@ref) with a flavor-qualified [`BasisState`](@ref) when
@@ -400,7 +401,7 @@ function compute_isoscalar_spectrum(
     nn_meson::Meson,
     ss_meson::Meson;
     levels::AbstractVector{BasisState} = spectrum_levels(2),
-    solver::RadialSolver = OscillatorSolver(),
+    solver::RadialSolver = FiniteDifferenceSolver(),
     terms::SpinTerms = SpinTerms(),
     pseudoscalar::Union{Nothing,PseudoscalarAnnihilationModel} = nothing,
     pseudoscalar_targets = nothing,
@@ -455,7 +456,7 @@ function add_isoscalar_annihilation(
         cache[key] = solution
     end
     combined = Spectrum(channels, vcat([spec.states for spec in spectra]...),
-        SectorComputation(params, solver, cache))
+        SectorComputation(params, solver, cache); nonstrange_isoscalar = true)
     if isnothing(pseudoscalar)
         isempty(pseudoscalar_basis) ||
             throw(ArgumentError("pseudoscalar_basis requires a model"))

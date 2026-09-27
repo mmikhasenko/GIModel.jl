@@ -120,3 +120,9 @@ waves and the allowed ones carry a factor ``1/\sqrt2``. The width is
 ```
 
 in GeV, returned in MeV by [`decay_width`](@ref).
+
+All mass-mixing eigenvectors use positive overlap with their assigned unmixed
+state, ordered by unmixed mass. If that overlap is zero, the largest component
+sets the phase. This convention is shared by spin-orbit, tensor, and annihilation
+mixing. `diagonalize_mixing_block(...; phase_anchor=1)` explicitly requests a
+common first-row anchor when comparison with another convention requires it.

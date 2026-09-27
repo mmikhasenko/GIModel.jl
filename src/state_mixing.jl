@@ -210,21 +210,42 @@ struct MixingResult
     end
 end
 
-"""
-    diagonalize_mixing_block(block; phase_anchor=1)
+# Use the same ascending-unmixed-mass assignment as Spectrum. Each physical
+# state keeps a positive overlap with its assigned precursor. Anchoring every
+# state to the first nn entry instead reverses a heavy state whose tiny nn
+# admixture is negative, and reverses all its transition amplitudes.
+function _phase_fix_state_columns!(vectors::AbstractMatrix{<:Real}, diagonal)
+    anchors = sortperm(diagonal)
+    length(anchors) == size(vectors, 2) || throw(ArgumentError("phase basis size mismatch"))
+    for (col, anchor) in enumerate(anchors)
+        # A zero overlap cannot define a phase; use the largest component.
+        index = iszero(vectors[anchor, col]) ? argmax(abs.(vectors[:, col])) : anchor
+        vectors[index, col] < 0 && (vectors[:, col] .*= -1)
+    end
+    return vectors
+end
 
-Diagonalize a mixing block. Eigenvector phases are fixed by making the
-`phase_anchor` component non-negative when possible, so reports remain stable.
 """
-function diagonalize_mixing_block(block::MixingBlock; phase_anchor::Integer = 1)
+    diagonalize_mixing_block(block; phase_anchor=:assigned)
+
+Diagonalize a mixing block. By default each column has positive overlap with
+its assigned basis state, using ascending unmixed masses for the assignment,
+as in the spectrum and annihilation solvers. A zero overlap falls back to the
+largest component. An integer `phase_anchor` explicitly selects a common
+anchor row for callers that need that convention.
+"""
+function diagonalize_mixing_block(block::MixingBlock; phase_anchor::Union{Symbol,Integer} = :assigned)
     n = length(block.basis)
-    1 <= phase_anchor <= n ||
+    (phase_anchor === :assigned || (phase_anchor isa Integer && 1 <= phase_anchor <= n)) ||
         throw(ArgumentError("phase_anchor=$phase_anchor outside 1:$n"))
     fact = eigen(Symmetric(block.matrix))
     vectors = Matrix(fact.vectors)
-    for col in axes(vectors, 2)
-        if vectors[phase_anchor, col] < 0
-            vectors[:, col] .*= -1
+    if phase_anchor === :assigned
+        _phase_fix_state_columns!(vectors, diag(block.matrix))
+    else
+        for col in axes(vectors, 2)
+            anchor = iszero(vectors[phase_anchor, col]) ? argmax(abs.(vectors[:, col])) : phase_anchor
+            vectors[anchor, col] < 0 && (vectors[:, col] .*= -1)
         end
     end
     return MixingResult(block, collect(Float64, fact.values), vectors)

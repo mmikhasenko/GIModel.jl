@@ -31,64 +31,64 @@ admixture. No per-row sign adjustment is made.
 
 ## M1
 
-Non-parenthesized targets: 28/31 signs; median |model/paper| 1.001.
+Non-parenthesized targets: 28/31 signs; median |model/paper| 1.002.
 
 | Decay | Computed | Paper | q MeV | q reference MeV | src |
 |---|---:|---:|---:|---:|---|
-| rho -> pi gamma | +0.688388 | +0.69 | 375.3 | 375.7 | PDG 2026 |
-| rho -> eta gamma | +1.44473 | +1.53 | 194.0 | 194.5 | PDG 2026 |
-| eta' -> rho gamma | +1.99716 | +1.85 | 165.1 | 164.7 | PDG 2026 |
-| omega -> pi gamma | +2.0646 | +2.07 | 379.2 | 379.3 | PDG 2026 |
-| omega -> eta gamma | +0.464122 | +0.50 | 199.6 | 199.7 | PDG 2026 |
-| eta' -> omega gamma | +0.679878 | +0.63 | 159.1 | 159.0 | PDG 2026 |
-| phi -> pi gamma | +0.0584151 | (+0.06) | 500.4 | 500.7 | PDG 2026 |
-| phi -> eta gamma | +0.750002 | +0.71 | 362.5 | 362.8 | PDG 2026 |
-| phi -> eta' gamma | -0.596056 | -0.66 | 59.8 | 60.1 | PDG 2026 |
-| eta_r -> omega gamma | +0.0875515 | -0.18 | 410.1 | 507.1 | PDG 2026 |
-| eta_r -> rho gamma | +0.297925 | +0.57 | 414.6 | 510.9 | PDG 2026 |
-| eta_r -> phi gamma | +0.502568 | +0.37 | 245.2 | 358.7 | PDG 2026 |
-| eta'_r -> omega gamma | -0.0722687 | +0.01 | NaN | 626.9 | experimental assignment unavailable |
-| eta'_r -> rho gamma | -0.218603 | +0.008 | NaN | 630.3 | experimental assignment unavailable |
-| eta'_r -> phi gamma | -0.026182 | -0.29 | NaN | 495.9 | experimental assignment unavailable |
-| K*+ -> K+ gamma | +0.91088 | +0.91 | 309.3 | — | PDG 2026 |
-| K*0 -> K0 gamma | -1.19996 | -1.20 | 309.5 | — | PDG 2026 |
-| D*+ -> D+ gamma | -0.352498 | -0.35 | 135.7 | — | PDG 2026 |
+| rho -> pi gamma | +0.688552 | +0.69 | 375.3 | 375.7 | PDG 2026 |
+| rho -> eta gamma | +1.44545 | +1.53 | 194.0 | 194.5 | PDG 2026 |
+| eta' -> rho gamma | +2.00574 | +1.85 | 165.1 | 164.7 | PDG 2026 |
+| omega -> pi gamma | +2.06509 | +2.07 | 379.2 | 379.3 | PDG 2026 |
+| omega -> eta gamma | +0.464316 | +0.50 | 199.6 | 199.7 | PDG 2026 |
+| eta' -> omega gamma | +0.682791 | +0.63 | 159.1 | 159.0 | PDG 2026 |
+| phi -> pi gamma | +0.0585345 | (+0.06) | 500.4 | 500.7 | PDG 2026 |
+| phi -> eta gamma | +0.750264 | +0.71 | 362.5 | 362.8 | PDG 2026 |
+| phi -> eta' gamma | -0.596911 | -0.66 | 59.8 | 60.1 | PDG 2026 |
+| eta_r -> omega gamma | +0.0901472 | -0.18 | 410.1 | 507.1 | PDG 2026 |
+| eta_r -> rho gamma | +0.306125 | +0.57 | 414.6 | 510.9 | PDG 2026 |
+| eta_r -> phi gamma | +0.507345 | +0.37 | 245.2 | 358.7 | PDG 2026 |
+| eta'_r -> omega gamma | -0.0698938 | +0.01 | NaN | 626.9 | experimental assignment unavailable |
+| eta'_r -> rho gamma | -0.211788 | +0.008 | NaN | 630.3 | experimental assignment unavailable |
+| eta'_r -> phi gamma | -0.0304954 | -0.29 | NaN | 495.9 | experimental assignment unavailable |
+| K*+ -> K+ gamma | +0.912245 | +0.91 | 309.3 | — | PDG 2026 |
+| K*0 -> K0 gamma | -1.20071 | -1.20 | 309.5 | — | PDG 2026 |
+| D*+ -> D+ gamma | -0.352501 | -0.35 | 135.7 | — | PDG 2026 |
 | D*0 -> D0 gamma | +1.77902 | +1.78 | 137.0 | — | PDG 2026 |
-| F* -> F gamma | -0.13432 | -0.13 | 138.9 | — | PDG 2026 |
+| F* -> F gamma | -0.134325 | -0.13 | 138.9 | — | PDG 2026 |
 | B*- -> B- gamma | +1.3652 | +1.37 | 45.1 | — | PDG 2026 |
 | B*0 -> B0 gamma | -0.775895 | -0.78 | 44.8 | — | PDG 2026 |
 | Fb* -> Fb gamma | -0.552079 | -0.55 | 48.3 | — | PDG 2026 |
 | psi -> eta_c gamma | +0.68781 | +0.69 | 110.8 | 114.8 | PDG 2026 |
 | psi' -> eta'_c gamma | +0.684319 | +0.68 | 48.0 | — | PDG 2026 |
-| psi' -> eta_c gamma | -0.0580166 | -0.056 | 635.2 | 638.4 | PDG 2026 |
+| psi' -> eta_c gamma | -0.0580167 | -0.056 | 635.2 | 638.4 | PDG 2026 |
 | Upsilon -> eta_b gamma | -0.121106 | -0.13 | 61.5 | 59.8 | PDG 2026 |
 | Upsilon' -> eta'_b gamma | -0.121129 | -0.12 | 24.4 | 42.9 | PDG 2026 |
-| Upsilon' -> eta_b gamma | +0.00769233 | +0.007 | 605.2 | 603.6 | PDG 2026 |
+| Upsilon' -> eta_b gamma | +0.00769234 | +0.007 | 605.2 | 603.6 | PDG 2026 |
 | Upsilon'' -> eta''_b gamma | -0.120756 | -0.12 | NaN | 15.0 | experimental assignment unavailable |
-| Upsilon'' -> eta'_b gamma | +0.00713656 | +0.007 | 350.0 | 368.2 | PDG 2026 |
-| Upsilon'' -> eta_b gamma | -0.00373863 | -0.004 | 912.2 | 911.0 | PDG 2026 |
-| psi -> eta gamma | +0.00144075 | (+0.001) | 1500.0 | 1500.0 | PDG 2026 |
-| psi -> eta' gamma | +0.00294847 | (+0.003) | 1400.3 | 1400.3 | PDG 2026 |
-| psi -> pi0 gamma | +0.000745235 | (+0.0007) | 1545.5 | 1545.6 | PDG 2026 |
-| psi -> eta_r gamma | -0.00139098 | (-0.002) | 1278.2 | 1213.7 | PDG 2026 |
-| psi -> eta'_r gamma | -0.00549882 | (-0.002) | NaN | 1119.6 | experimental assignment unavailable |
-| Upsilon -> eta gamma | +9.57213e-05 | (+8e-5) | 4714.3 | 4714.1 | PDG 2026 |
-| Upsilon -> eta' gamma | -3.27426e-05 | (+3e-6) | 4681.7 | 4681.5 | PDG 2026 |
-| Upsilon -> pi0 gamma | +4.14884e-08 | (~0) | 4729.2 | 4729.0 | PDG 2026 |
-| Upsilon -> eta_r gamma | +8.59612e-05 | (-9e-5) | 4641.7 | 4620.4 | PDG 2026 |
-| Upsilon -> eta'_r gamma | +8.26145e-05 | (+3e-4) | NaN | 4589.6 | experimental assignment unavailable |
+| Upsilon'' -> eta'_b gamma | +0.00713663 | +0.007 | 350.0 | 368.2 | PDG 2026 |
+| Upsilon'' -> eta_b gamma | -0.00373866 | -0.004 | 912.2 | 911.0 | PDG 2026 |
+| psi -> eta gamma | +0.00143968 | (+0.001) | 1500.0 | 1500.0 | PDG 2026 |
+| psi -> eta' gamma | +0.0029533 | (+0.003) | 1400.3 | 1400.3 | PDG 2026 |
+| psi -> pi0 gamma | +0.000744799 | (+0.0007) | 1545.5 | 1545.6 | PDG 2026 |
+| psi -> eta_r gamma | -0.00138598 | (-0.002) | 1278.2 | 1213.7 | PDG 2026 |
+| psi -> eta'_r gamma | -0.00549436 | (-0.002) | NaN | 1119.6 | experimental assignment unavailable |
+| Upsilon -> eta gamma | +9.56384e-05 | (+8e-5) | 4714.3 | 4714.1 | PDG 2026 |
+| Upsilon -> eta' gamma | -3.25933e-05 | (+3e-6) | 4681.7 | 4681.5 | PDG 2026 |
+| Upsilon -> pi0 gamma | +4.14351e-08 | (~0) | 4729.2 | 4729.0 | PDG 2026 |
+| Upsilon -> eta_r gamma | +8.65799e-05 | (-9e-5) | 4641.7 | 4620.4 | PDG 2026 |
+| Upsilon -> eta'_r gamma | +8.2539e-05 | (+3e-4) | NaN | 4589.6 | experimental assignment unavailable |
 
 ## E1
 
-Non-parenthesized targets: 28/29 signs; median |model/paper| 1.009.
+Non-parenthesized targets: 28/29 signs; median |model/paper| 1.017.
 
 | Decay | Computed | Paper | q MeV | q reference MeV | src |
 |---|---:|---:|---:|---:|---|
-| A2 -> rho gamma | +0.150254 | +0.15 | 431.1 | 430.6 | PDG 2026 |
-| f' -> phi gamma | -0.300197 | -0.31 | 416.2 | 421.4 | PDG 2026 |
-| A2_0 -> omega gamma | +0.443804 | +0.44 | 426.8 | 426.4 | PDG 2026 |
-| A1 -> pi gamma | +0.615717 | +0.56 | 607.3 | 630.0 | PDG 2026 |
-| B -> pi gamma | +0.632305 | +0.63 | 607.0 | 607.8 | PDG 2026 |
+| A2 -> rho gamma | +0.15143 | +0.15 | 431.1 | 430.6 | PDG 2026 |
+| f' -> phi gamma | -0.303033 | -0.31 | 416.2 | 421.4 | PDG 2026 |
+| A2_0 -> omega gamma | +0.447278 | +0.44 | 426.8 | 426.4 | PDG 2026 |
+| A1 -> pi gamma | +0.615503 | +0.56 | 607.3 | 630.0 | PDG 2026 |
+| B -> pi gamma | +0.631939 | +0.63 | 607.0 | 607.8 | PDG 2026 |
 | chi_2c -> psi gamma | +0.522107 | +0.50 | 429.6 | 429.4 | PDG 2026 |
 | chi_1c -> psi gamma | +0.453983 | +0.44 | 389.4 | 388.7 | PDG 2026 |
 | chi_0c -> psi gamma | +0.31202 | +0.30 | 303.7 | 303.2 | PDG 2026 |
@@ -102,23 +102,23 @@ Non-parenthesized targets: 28/29 signs; median |model/paper| 1.009.
 | Upsilon' -> chi_1b gamma | -0.0396098 | -0.038 | 129.8 | 130.1 | PDG 2026 |
 | Upsilon' -> chi_0b gamma | -0.0296249 | -0.025 | 162.6 | 161.7 | PDG 2026 |
 | chi'_2b -> Upsilon' gamma | -0.117979 | -0.12 | 242.3 | 234.3 | PDG 2026 |
-| chi'_2b -> Upsilon gamma | +0.0858095 | +0.09 | 776.4 | 768.8 | PDG 2026 |
+| chi'_2b -> Upsilon gamma | +0.0858098 | +0.09 | 776.4 | 768.8 | PDG 2026 |
 | chi'_1b -> Upsilon' gamma | -0.113882 | -0.11 | 229.4 | 224.5 | PDG 2026 |
-| chi'_1b -> Upsilon gamma | +0.0683633 | +0.069 | 764.2 | 759.6 | PDG 2026 |
+| chi'_1b -> Upsilon gamma | +0.0683635 | +0.069 | 764.2 | 759.6 | PDG 2026 |
 | chi'_0b -> Upsilon' gamma | -0.102612 | -0.10 | 207.0 | 204.9 | PDG 2026 |
-| chi'_0b -> Upsilon gamma | +0.0451211 | +0.047 | 743.0 | 741.0 | PDG 2026 |
+| chi'_0b -> Upsilon gamma | +0.0451212 | +0.047 | 743.0 | 741.0 | PDG 2026 |
 | Upsilon'' -> chi'_2b gamma | -0.046837 | -0.044 | 86.1 | 94.6 | PDG 2026 |
-| Upsilon'' -> chi_2b gamma | -0.0200217 | -0.020 | 433.4 | 432.6 | PDG 2026 |
+| Upsilon'' -> chi_2b gamma | -0.0200216 | -0.020 | 433.4 | 432.6 | PDG 2026 |
 | Upsilon'' -> chi'_1b gamma | -0.0426439 | -0.043 | 99.2 | 104.5 | PDG 2026 |
-| Upsilon'' -> chi_1b gamma | -0.00727061 | -0.008 | 452.0 | 452.6 | PDG 2026 |
+| Upsilon'' -> chi_1b gamma | -0.00727053 | -0.008 | 452.0 | 452.6 | PDG 2026 |
 | Upsilon'' -> chi'_0b gamma | -0.031295 | -0.030 | 121.9 | 124.2 | PDG 2026 |
-| Upsilon'' -> chi_0b gamma | +0.00197291 | -0.002 | 483.8 | 483.2 | PDG 2026 |
-| psi -> A2 gamma | +0.00269243 | (+0.002) | 1267.9 | 1268.0 | PDG 2026 |
-| psi -> f gamma | +0.00980485 | (+0.024) | 1285.8 | 1288.1 | PDG 2026 |
-| psi -> f' gamma | +0.00301354 | (+0.010) | 1176.8 | 1173.0 | PDG 2026 |
-| Upsilon -> A2 gamma | +0.00256883 | (+0.002) | 4638.4 | 4638.2 | PDG 2026 |
-| Upsilon -> f gamma | -0.0010315 | (-0.006) | 4644.2 | 4644.8 | PDG 2026 |
-| Upsilon -> f' gamma | -0.0019534 | (-0.002) | 4608.5 | 4607.1 | PDG 2026 |
+| Upsilon'' -> chi_0b gamma | +0.00197288 | -0.002 | 483.8 | 483.2 | PDG 2026 |
+| psi -> A2 gamma | +0.00271128 | (+0.002) | 1267.9 | 1268.0 | PDG 2026 |
+| psi -> f gamma | +0.00980963 | (+0.024) | 1285.8 | 1288.1 | PDG 2026 |
+| psi -> f' gamma | +0.00300425 | (+0.010) | 1176.8 | 1173.0 | PDG 2026 |
+| Upsilon -> A2 gamma | +0.002585 | (+0.002) | 4638.4 | 4638.2 | PDG 2026 |
+| Upsilon -> f gamma | -0.00102654 | (-0.006) | 4644.2 | 4644.8 | PDG 2026 |
+| Upsilon -> f' gamma | -0.00196242 | (-0.002) | 4608.5 | 4607.1 | PDG 2026 |
 
 ## M2
 
@@ -126,17 +126,17 @@ Non-parenthesized targets: 2/2 signs; median |model/paper| 0.998.
 
 | Decay | Computed | Paper | q MeV | q reference MeV | src |
 |---|---:|---:|---:|---:|---|
-| A2 -> pi gamma | +0.560955 | +0.55 | 651.9 | 651.8 | PDG 2026 |
-| K*(1420) -> K gamma | +0.468441 | +0.48 | 628.2 | 626.9 | PDG 2026 |
+| A2 -> pi gamma | +0.560542 | +0.55 | 651.9 | 651.8 | PDG 2026 |
+| K*(1420) -> K gamma | +0.468967 | +0.48 | 628.2 | 626.9 | PDG 2026 |
 
 ## Largest magnitude residuals
 
-- eta'_r -> rho gamma: |model/paper| 27.325.
-- eta'_r -> omega gamma: |model/paper| 7.227.
-- eta'_r -> phi gamma: |model/paper| 0.090.
-- eta_r -> omega gamma: |model/paper| 0.486.
-- eta_r -> rho gamma: |model/paper| 0.523.
-- eta_r -> phi gamma: |model/paper| 1.358.
+- eta'_r -> rho gamma: |model/paper| 26.474.
+- eta'_r -> omega gamma: |model/paper| 6.989.
+- eta'_r -> phi gamma: |model/paper| 0.105.
+- eta_r -> omega gamma: |model/paper| 0.501.
+- eta_r -> rho gamma: |model/paper| 0.537.
+- eta_r -> phi gamma: |model/paper| 1.371.
 - Upsilon' -> chi_0b gamma: |model/paper| 1.185.
 - A1 -> pi gamma: |model/paper| 1.099.
 

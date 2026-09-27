@@ -275,11 +275,84 @@ radial_expect_momentum_sandwich(
     params, masses, L, wave.u, wave.r, wave.h, epsilon, f,
 )
 
+# Evaluate normalized Laguerre functions in one recurrence. Operator refinement
+# can require many more functions than the energy solve; separate gamma factors
+# and unweighted polynomials would overflow in that auxiliary basis.
 function _ho_expansion_value(L::Integer, beta::Real, coefficients, r::Real)
-    return sum(
-        coefficients[n + 1] * ho_reduced_radial(n, L, beta, r) for
-        n in 0:(length(coefficients)-1)
-    )
+    rho = beta * r
+    x = rho^2
+    alpha = L + 0.5
+    previous = 0.0
+    current = sqrt(2beta / gamma(L + 1.5)) * rho^(L + 1)
+    value = coefficients[1] * current
+    logscale = 0.0
+    for n in 0:(length(coefficients)-2)
+        following = ((2n + alpha + 1 - x) * current -
+                     sqrt(n * (n + alpha)) * previous) /
+                    sqrt((n + 1) * (n + alpha + 1))
+        previous, current = current, following
+        value += coefficients[n + 2] * current
+        if max(abs(previous), abs(current), abs(value)) > 1e100
+            previous *= 1e-100
+            current *= 1e-100
+            value *= 1e-100
+            logscale += log(1e100)
+        end
+    end
+    return value * exp(logscale - x / 2)
+end
+
+function _ho_momentum_transformed(wave, masses, epsilon, nbasis)
+    nodes, Z = gauss_laguerre_dvr(wave.L, nbasis, nbasis)
+    lambda = (wave.beta .* nodes).^2
+    m1, m2 = masses.m1_GeV, masses.m2_GeV
+    factors = (m1 * m2 ./ sqrt.((lambda .+ m1^2) .* (lambda .+ m2^2))) .^
+              gi_spin_dependent_side_exponent(epsilon)
+    # Momentum and coordinate Jacobi matrices differ by (-1)^n on each
+    # basis row. Reuse the dimensionless quadrature decomposition across beta
+    # values, masses and kernels; never form the dense B matrix.
+    signs = [isodd(n) ? -1.0 : 1.0 for n in 0:(nbasis-1)]
+    n = length(wave.coefficients)
+    projected = transpose(view(Z, 1:n, :)) * (view(signs, 1:n) .* wave.coefficients)
+    return signs .* (Z * (factors .* projected))
+end
+
+# A converged energy does not certify f(P_N p² P_N): the small-momentum
+# relativization factors can need a much larger space than the wave itself.
+# Resolve the sandwich with fixed input coefficients, including the new tails
+# produced by B, and require two successive refinements of the integral.
+function _ho_cross_sandwich(masses, left, right, epsilon, f)
+    nbasis = nextpow(2, max(64, length(left.coefficients), length(right.coefficients)))
+    previous = nothing
+    consecutive = 0
+    delta = Inf
+    while nbasis <= 2048
+        c_left = _ho_momentum_transformed(left, masses, epsilon, nbasis)
+        c_right = left === right ? c_left :
+                  _ho_momentum_transformed(right, masses, epsilon, nbasis)
+        rmax = max(
+            _oscillator_tail_rho(left.L, nbasis) / left.beta,
+            _oscillator_tail_rho(right.L, nbasis) / right.beta,
+        )
+        value, _ = quadgk(
+            r -> _ho_expansion_value(left.L, left.beta, c_left, r) *
+                 _ho_expansion_value(right.L, right.beta, c_right, r) * f(r, 0),
+            0.0, rmax; rtol = 1e-9, atol = 1e-12,
+        )
+        if !isnothing(previous)
+            delta = abs(value - previous)
+            consecutive = isapprox(value, previous; rtol = 1e-6, atol = 1e-9) ?
+                          consecutive + 1 : 0
+            consecutive >= 2 && return value / sqrt(wave_norm(left) * wave_norm(right))
+        end
+        previous = value
+        nbasis *= 2
+    end
+    throw(ErrorException(
+        "HO momentum sandwich did not converge through 2048 auxiliary functions " *
+        "(beta=$(left.beta), $(right.beta), epsilon=$epsilon, " *
+        "last change=$delta, value=$previous)",
+    ))
 end
 
 function radial_expect_momentum_sandwich(
@@ -293,22 +366,7 @@ function radial_expect_momentum_sandwich(
     L == wave.L || throw(ArgumentError(
         "radial_expect_momentum_sandwich: L=$L does not match wave L=$(wave.L)",
     ))
-    p2_fact = eigen(Symmetric(Matrix(ho_p2_matrix(L, wave.beta, length(wave.coefficients)))))
-    B = momentum_relativization_matrix(
-        masses.m1_GeV,
-        masses.m2_GeV,
-        gi_spin_dependent_side_exponent(epsilon),
-        p2_fact,
-    )
-    transformed = B * wave.coefficients
-    rmax = _oscillator_coordinate_cutoff(wave)
-    value, _ = quadgk(
-        r -> _ho_expansion_value(L, wave.beta, transformed, r)^2 * f(r, 0),
-        0.0,
-        rmax;
-        rtol = 1e-9,
-    )
-    return value / wave_norm(wave)
+    return _ho_cross_sandwich(masses, wave, wave, epsilon, f)
 end
 
 function radial_cross_expect_momentum_sandwich(
@@ -376,33 +434,7 @@ function radial_cross_expect_momentum_sandwich(
     L_left == left.L && L_right == right.L || throw(ArgumentError(
         "radial_cross_expect_momentum_sandwich: orbital labels do not match waves",
     ))
-    side_exponent = gi_spin_dependent_side_exponent(epsilon)
-    left_p2 = eigen(Symmetric(Matrix(ho_p2_matrix(
-        L_left, left.beta, length(left.coefficients),
-    ))))
-    right_p2 = eigen(Symmetric(Matrix(ho_p2_matrix(
-        L_right, right.beta, length(right.coefficients),
-    ))))
-    B_left = momentum_relativization_matrix(
-        masses.m1_GeV, masses.m2_GeV, side_exponent, left_p2,
-    )
-    B_right = momentum_relativization_matrix(
-        masses.m1_GeV, masses.m2_GeV, side_exponent, right_p2,
-    )
-    c_left = B_left * left.coefficients
-    c_right = B_right * right.coefficients
-    rmax = max(
-        _oscillator_coordinate_cutoff(left),
-        _oscillator_coordinate_cutoff(right),
-    )
-    value, _ = quadgk(
-        r -> _ho_expansion_value(L_left, left.beta, c_left, r) *
-             _ho_expansion_value(L_right, right.beta, c_right, r) * f(r, 0),
-        0.0,
-        rmax;
-        rtol = 1e-9,
-    )
-    return value / sqrt(wave_norm(left) * wave_norm(right))
+    return _ho_cross_sandwich(masses, left, right, epsilon, f)
 end
 
 _mass_pair(m1::Real, m2::Real) = ConstituentMasses(float(m1), float(m2))
@@ -654,7 +686,7 @@ fine_structure_grid_operator(args...; kwargs...) =
 
 Native HO matrices for the vector spin-orbit, scalar/Thomas spin-orbit, and
 tensor terms of one fixed `(L,S,J)` sector. Each radial kernel is enclosed by
-its own exact spectral momentum factor; no sampled grid operator is used.
+its own continuum-projected momentum factor; no sampled grid operator is used.
 """
 function ho_fine_structure_matrices(
     params::GIParameters,

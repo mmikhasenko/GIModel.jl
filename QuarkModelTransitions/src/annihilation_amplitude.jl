@@ -45,6 +45,8 @@ function _explicit_ann_flavor_coefficient(op, c)
     return op.terms[index].coefficient
 end
 
+_ann_components(op, initial) = initial.components
+
 function _ann_compose(final, op, initial, npoints)
     npoints > 0 || throw(ArgumentError("npoints must be positive"))
     terms = Tuple(begin
@@ -53,7 +55,7 @@ function _ann_compose(final, op, initial, npoints)
         (basis = c.basis, mixing = c.coefficient, flavor_coefficient = flavor,
          prefactor = c.coefficient * flavor,
          kernel = kernel, contribution = c.coefficient * flavor * kernel)
-    end for c in initial.components)
+    end for c in _ann_components(op, initial))
     photon = final isa TwoPhotonChannel
     return AnnihilationAmplitude(op, final, initial,
         ComplexF64(sum(t.contribution for t in terms)), terms,

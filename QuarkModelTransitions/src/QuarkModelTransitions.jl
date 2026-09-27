@@ -7,6 +7,7 @@ using Printf
 # Supported API. Undeclared implementation names are internal.
 export PhysicalState,
     physical_state,
+    superpose,
     TwoMesonChannel,
     PartialWave,
     matrix_element,

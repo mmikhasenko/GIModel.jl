@@ -139,13 +139,21 @@ eta_c = spectrum_state(four, BasisState(1, "S", 1, 0; flavors = (:c, :c)))
 
 ## Using isoscalar states in transitions
 
-The nonstrange channel is `Meson(mq, :q, :q)`, and its components carry the
-flavor label `:q`. Photon emission and leptonic currents need explicit `:u` and
-`:d` charges, so they currently refuse states from an isoscalar spectrum, even
-the $\phi$, which has a small $n\bar n$ component. Two-photon widths work,
-because [`AnnihilationTerm`](@ref) takes the effective charge of each flavor
-component explicitly (see [η and η′](@ref)). Radiative and leptonic decays of
-mixed isoscalars are not yet available through the public API.
+The isoscalar spectrum records that its nonstrange channel means
+$(u\bar u+d\bar d)/\sqrt{2}$. Photon emission and electromagnetic leptonic
+currents resolve this channel into explicit `:u` and `:d` contributions,
+including their relative signs and mixing coefficients:
+
+```{julia}
+using GIModel.QuarkModelTransitions
+phi = physical_state(iso, BasisState(1, "S", 3, 1; flavors = (:s, :s)))
+decay_width(MasslessLeptonPair(), LeptonicCurrent(:electromagnetic, mq), phi)
+```
+
+A standalone `compute_spectrum(..., Meson(mq, :q, :q))` remains ambiguous and
+is rejected by electromagnetic currents. Explicit `AnnihilationTerm`
+coefficients, including those for two-photon widths, still act on the original
+coarse flavor components, so effective charges are not counted twice.
 
 ## A calibrated alternative
 

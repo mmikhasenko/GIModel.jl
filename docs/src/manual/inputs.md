@@ -115,7 +115,7 @@ ConfinementPotential{Float64}(0.2, -0.253)
 
 Everything else in `steeper` is the same as in `params`. This is the recommended way to vary the model, because the result stays complete and consistent.
 
-**Building parameters from scratch.** The keyword constructor `GIParameters(; potential, smearing, ...)` fills unspecified fields with simple defaults: a pointwise central potential and no relativistic momentum factors. That is useful for studying a stripped-down model, but it is *not* the Godfrey–Isgur model. Start from the shipped file and override fields unless you want those defaults.
+When building parameters from scratch, the keyword constructor requires all six fields: `potential`, `central`, `smearing`, `factors`, `fine_structure`, and `annihilation`. Diagnostic choices such as `PointwiseCentral()` and `RelativisticFactors()` must therefore be explicit. Loading the shipped model and using its copy constructor is the simplest way to retain its prescription.
 
 ## Writing your own parameter file
 

@@ -6,7 +6,7 @@ mkpath(joinpath(dirname(@__DIR__), "reports"))
 using Pkg
 Pkg.activate(dirname(@__DIR__))
 using GIModel, GIModel.QuarkModelTransitions, GIPaper, Dates, Printf, Statistics
-using GIModel.QuarkModelTransitions: neutral_m1_charge, photon_momentum
+using GIModel.QuarkModelTransitions: photon_momentum
 
 const ROOT = dirname(@__DIR__)
 const G = GIModel
@@ -55,48 +55,35 @@ function resolved(id)
     spec = descriptor.mixed ? iso_spec : spectra[descriptor.flavors]
     return spec, spectrum_state(spec, descriptor.basis)
 end
-resolved_physical(id) = begin
-    spec, state = resolved(id)
-    physical_state(spec, state)
-end
 const TABLE_POLICY = load_table_policy()["table_vi"]
 const ISOVECTORS = Set(TABLE_POLICY["isovectors"])
-charge(flavor) = flavor in (:u, :c) ? 2 / 3 : -1 / 3
+
+function resolved_physical(id; charged = false)
+    spec, state = resolved(id)
+    native = physical_state(spec, state)
+    components = []
+    for c in native.components
+        b = c.basis
+        if b.flavors == (:q, :q)
+            flavors = charged ? ((:u, :d),) : ((:u, :u), (:d, :d))
+            for (i, pair) in enumerate(flavors)
+                phase = !charged && id in ISOVECTORS && i == 2 ? -1 : 1
+                coefficient = c.coefficient * phase / (charged ? 1 : sqrt(2))
+                push!(components, (basis = BasisState(b.n, b.L_label, b.multiplicity, b.J;
+                    label = b.label, flavors = pair), coefficient, wave = c.wave))
+            end
+        else
+            push!(components, c)
+        end
+    end
+    return PhysicalState(native.label, native.mass_GeV, components;
+                         provenance = (source = :TableVI_explicit_isospin,))
+end
 
 function kinematics(row)
     p, d = states[row.id[2]], states[row.id[3]]
     isnothing(p.mass_GeV) || isnothing(d.mass_GeV) ? nothing :
         photon_momentum(p.mass_GeV, d.mass_GeV)
-end
-
-function photon_emitters(parent, daughter, parent_id, daughter_id, multipole)
-    parent_flavors = Set(component.basis.flavors for component in parent.components)
-    daughter_flavors = Set(component.basis.flavors for component in daughter.components)
-    shared = sort!(collect(intersect(parent_flavors, daughter_flavors)); by = string)
-    emitters = QMT.PhotonEmitter[]
-    for flavors in shared
-        f1, f2 = flavors
-        p = first(component for component in parent.components if component.basis.flavors == flavors)
-        d = first(component for component in daughter.components if component.basis.flavors == flavors)
-        spin_flip_multipole = multipole != :M1 &&
-            p.basis.multiplicity != d.basis.multiplicity
-        if f1 == f2
-            coefficient = spin_flip_multipole ? 1.0 : neutral_m1_charge(f1;
-                isovector_left = parent_id in ISOVECTORS,
-                isovector_right = daughter_id in ISOVECTORS)
-            push!(emitters, QMT.PhotonEmitter(flavors, 1, coefficient))
-        elseif multipole == :M1
-            push!(emitters, QMT.PhotonEmitter(flavors, 1, charge(f1)))
-            push!(emitters, QMT.PhotonEmitter(flavors, 2, charge(f2)))
-        elseif spin_flip_multipole
-            push!(emitters, QMT.PhotonEmitter(flavors, 1, charge(f1)))
-            push!(emitters, QMT.PhotonEmitter(flavors, 2, -charge(f2)))
-        else
-            error("unexpected open-flavor E1 row")
-        end
-    end
-    isempty(emitters) && error("no shared flavor component for photon transition")
-    return emitters
 end
 
 # Table VI footnote c requests the paper's relative q^2 recoil correction.
@@ -110,15 +97,16 @@ function evaluate(row)
     if isnothing(q) && (multipole != :M1 || "c" in footnotes || "g" in footnotes)
         value, supplementary = NaN, 0.0
     else
-        parent_state = resolved_physical(parent)
-        daughter_state = resolved_physical(daughter)
-        emitters = photon_emitters(
-            parent_state, daughter_state, parent, daughter, multipole,
-        )
+        # The A1/A2 -> pi spin-flip rows are charged transitions. Their old
+        # single-emitter coefficient was 1; explicit u dbar gives e_u-e_d.
+        pdesc, ddesc = states[parent], states[daughter]
+        charged = pdesc.flavors == ddesc.flavors == (:q, :q) &&
+                  pdesc.basis.multiplicity != ddesc.basis.multiplicity && multipole != :M1
+        parent_state = resolved_physical(parent; charged)
+        daughter_state = resolved_physical(daughter; charged)
         operator = PhotonEmission(
             mq;
             recoil_order = table_vi_recoil_order(footnotes),
-            current = QMT.ResolvedPhotonCurrent(emitters),
             recoil_form_factor = "g" in footnotes,
         )
         amplitude = matrix_element(daughter_state, operator, parent_state)

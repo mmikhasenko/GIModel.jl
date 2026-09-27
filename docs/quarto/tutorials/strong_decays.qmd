@@ -55,19 +55,16 @@ K_star, K_plus, K_zero = physical_state(us, S1), physical_state(us, S0), physica
 (ρ = rho.mass_GeV, a₁ = a1.mass_GeV, b₁ = b1.mass_GeV, K⁺ = K_plus.mass_GeV)
 ```
 
-Neutral isospin states are superpositions of $u\bar u$ and $d\bar d$. A
-[`PhysicalState`](@ref) can be built from any signed components, so a small
-helper combines solved states:
+Neutral isospin states are superpositions of $u\bar u$ and $d\bar d$.
+[`superpose`](@ref) combines the solved states and normalizes their coherent
+wavefunction. The model has degenerate u and d masses, so the component masses
+are equal here; the resulting mass is supplied explicitly:
 
 ```{julia}
-function combine(label, parts)
-    components = [(basis = c.basis, coefficient = w * c.coefficient, wave = c.wave)
-                  for (state, w) in parts for c in state.components]
-    mass = sum(w^2 * state.mass_GeV for (state, w) in parts)
-    PhysicalState(label, mass, components; provenance = (source = :isospin_combination,))
-end
-pi_zero = combine("π⁰", [(physical_state(uu, S0), 1 / √2), (physical_state(dd, S0), -1 / √2)])
-omega = combine("ω", [(physical_state(uu, S1), 1 / √2), (physical_state(dd, S1), 1 / √2)])
+up0, down0 = physical_state(uu, S0), physical_state(dd, S0)
+up1, down1 = physical_state(uu, S1), physical_state(dd, S1)
+pi_zero = superpose([up0, down0], [1, -1]; label="π⁰", mass_GeV=up0.mass_GeV)
+omega = superpose([up1, down1], [1, 1]; label="ω", mass_GeV=up1.mass_GeV)
 pi_zero
 ```
 

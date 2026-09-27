@@ -286,3 +286,11 @@ end
     raw = deepcopy(original); raw["masses"]["m_c_MeV"] = -1
     @test_throws ArgumentError GIModel.quark_masses_from_raw(raw)
 end
+
+@testset "Parameter construction never supplies implicit physics" begin
+    p = load_parameters(default_parameters_path())
+    @test_throws UndefKeywordError GIParameters(; potential = p.potential, smearing = p.smearing)
+    rebuilt = GIParameters(; (name => getfield(p, name) for name in fieldnames(typeof(p)))...)
+    @test rebuilt == p
+    @test GIParameters(p; potential = ConfinementPotential(p.potential; b = 0.2)).factors == p.factors
+end
