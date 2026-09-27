@@ -28,15 +28,3 @@ jobs:
               with:
                   args: --offline --no-progress './**/*.md'
                   fail: true
-
-    paper-manifest:
-        name: Paper manifest
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v6
-            - uses: julia-actions/setup-julia@v3
-              with:
-                  version: "1"
-            # Stdlib-only anti-drift gate: every code symbol, test and report
-            # cited by docs/paper_manifest/*.toml must exist.
-            - run: julia --startup-file=no scripts/check_paper_manifest.jl

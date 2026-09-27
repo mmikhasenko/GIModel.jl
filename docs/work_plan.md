@@ -1,8 +1,7 @@
 # Table VI completion record
 
 The radiative-decay implementation now covers all **79 canonical rows**:
-42 M1, 35 E1, and 2 M2. The source of unit status is
-`docs/paper_manifest/*.toml`; numerical results are in
+42 M1, 35 E1, and 2 M2. Numerical results are in
 `GIPaper/reports/table_vi_photon_decays.md` and its CSV companion.
 
 Completed work:

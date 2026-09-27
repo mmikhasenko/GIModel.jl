@@ -1,10 +1,5 @@
 # Paper Navigation
 
-> **Detail layer.** The manifest/dashboard (`docs/paper_manifest/*.toml`;
-> `cd docs && make dashboard`) now anchors every equation, table, and figure to
-> its PDF page of the article (PDF page = journal page − 188) — use it to jump
-> from a unit to its page. This file stays as the human **reading map**.
-
 Use this as a fast map into the Godfrey-Isgur paper while coding or extracting
 tables: S. Godfrey and N. Isgur, *Phys. Rev. D* **32**, 189 (1985),
 [doi:10.1103/PhysRevD.32.189](https://doi.org/10.1103/PhysRevD.32.189). The

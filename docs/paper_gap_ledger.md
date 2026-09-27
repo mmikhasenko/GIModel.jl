@@ -2,8 +2,8 @@
 
 This is the concise physics-facing record of coverage relative to the 1985
 Godfrey–Isgur calculation. Table VI now has complete 79-row coverage, recorded in
-[`work_plan.md`](work_plan.md); equation/table status lives in
-`paper_manifest/*.toml`. This file does not duplicate that plan.
+[`work_plan.md`](work_plan.md). Numerical comparisons are recorded in
+[GIPaper reports](../GIPaper/reports/).
 
 For the full three-stage algorithm audit and object/method map, see
 [`original_1985_algorithm_audit.md`](original_1985_algorithm_audit.md).

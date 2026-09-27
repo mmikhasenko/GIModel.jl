@@ -91,8 +91,6 @@ Also in the repository:
   [paper navigation](docs/paper_navigation.md) — a page map of the article;
   [Appendix A](docs/appendix_a_from_paper.md) and its
   [equation audit](docs/appendix_a_equation_audit.md).
-- [Paper manifest](docs/paper_manifest/) — every equation, table and figure
-  with its implementation status, checked by `scripts/check_paper_manifest.jl`.
 - [Original 1985 algorithm audit](docs/original_1985_algorithm_audit.md) — the
   paper's mesh-free HO spectrum algorithm against the implementation.
 - [Paper gap ledger](docs/paper_gap_ledger.md) — what remains relative to the paper.

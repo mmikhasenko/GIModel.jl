@@ -1,12 +1,5 @@
 # Observable Ledger
 
-> **Detail layer.** Per-unit status for the decay/EM units (Eqs. 19-22, Tables
-> IV-VI, Appendices B-D) is the manifest/dashboard (`docs/paper_manifest/*.toml`;
-> `cd docs && make dashboard`). This file is the **conventions** detail behind
-> them: the Table IV class algebra, the `[PAPER]`/`[DERIVED]` provenance split,
-> the leading-S₀ convention, and the photon-decay overlap kernels — the
-> physics-convention reasoning the per-unit `notes` only summarize.
-
 Numerical input values and per-row records are in
 GIPaper’s rate input ledger (retired during GIPaper cleanup).
 

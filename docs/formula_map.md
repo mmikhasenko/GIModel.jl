@@ -1,13 +1,5 @@
 # Formula Map
 
-> **Detail layer.** *Which* code realizes each paper unit — with its status,
-> tests, and page image — is the machine-checked manifest/dashboard
-> (`docs/paper_manifest/*.toml`; `cd docs && make dashboard`). This file is the
-> complementary **how-it's-computed** ledger: the actual numerical conventions,
-> closed-form kernels, normalization choices, and diagnostic-vs-active guardrails
-> behind those code pointers. Nothing here is duplicated by the manifest, and the
-> manifest's `code` fields point back into the same `src/` symbols documented below.
-
 This file maps implemented local code to the Godfrey-Isgur paper. It is also a
 guardrail: when the code is only a diagnostic approximation, say so here.
 

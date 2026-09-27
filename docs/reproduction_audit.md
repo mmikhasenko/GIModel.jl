@@ -1,19 +1,7 @@
 # Reproduction Audit
 
-> **Retired into the manifest.** The per-unit inventory that used to live here —
-> every table, figure, and tagged equation with its status, code, tests, report,
-> and page image — is now the machine-checked source of truth in
-> `docs/paper_manifest/*.toml`, rendered as the drill-down dashboard
-> (`docs/paper_dashboard.qmd`; `cd docs && make dashboard`) and validated by
-> `scripts/check_paper_manifest.jl`. Go there for "is unit X done, and where is
-> the code?".
->
-> What stays in this file is the **cross-cutting synthesis** the per-unit manifest
-> can't hold: the provenance-tier honesty ledger for the fitted constants (§0),
-> where the residuals concentrate and why (§1), and the remaining-work costing
-> (§2). The granular per-row numbers behind every "reproduced" verdict live in the
-> residual reports under `GIPaper/docs/residual_reports/`, which the manifest units
-> link directly.
+Historical synthesis of fitted-input provenance, residuals and remaining work.
+Current numerical comparisons are in [GIPaper reports](../GIPaper/reports/).
 
 ## 0. Global scales and fitted constants (honesty ledger)
 

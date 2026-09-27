@@ -1,10 +1,5 @@
 # Conventions
 
-> **Detail layer.** For paper-unit status and where each is realized, use the
-> manifest/dashboard (`docs/paper_manifest/*.toml`; `cd docs && make dashboard`).
-> This file is the standing **code-and-data conventions** reference (parameter
-> loading, sector naming, quark ordering) that the whole codebase relies on.
-
 This document will record the conventions used by the cleaned data and model
 implementation.
 

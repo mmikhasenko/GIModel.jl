@@ -95,12 +95,11 @@ The surviving responsibilities are intentionally separated:
   rules; regression tests pin the numerical invariants that must not recur.
 - `docs/original_1985_algorithm_audit.md` records the completed paper-vs-code
   algorithm comparison, not task status.
-- `docs/paper_manifest/*.toml` records per-paper-unit reproduction status.
 - `scripts/verify_project.sh` is the repository integration gate, including
   report generation order and coverage.
 
 Do not create another planning file for each implementation slice. Update the
-one plan and the relevant manifest entry in the same change as code and tests.
+existing documentation and comparison reports in the same change as code and tests.
 
 ## Deliberately untouched history
 
