@@ -1,4 +1,6 @@
-<!-- Generated from docs/quarto/manual/inputs.qmd by docs/render.jl. Edit the .qmd file. source-sha256: d7d44a7cb00d5d5984994a1c2bc407e35c732737225c3fb02ed37a69be40036a -->
+```@meta
+EditURL = "../../quarto/manual/inputs.qmd"
+```
 
 
 

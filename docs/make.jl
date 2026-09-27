@@ -14,6 +14,7 @@
 
 using Documenter
 using SHA
+using TOML
 using DocumenterVitepress
 using GIModel
 using GIModel.QuarkModelTransitions
@@ -45,14 +46,15 @@ function copy_reports()
 # publish a page whose .qmd source changed after it was rendered.
 function check_rendered_pages()
     quarto = joinpath(DOCS, "quarto")
+    manifest_path = joinpath(quarto, "rendered.toml")
+    manifest = isfile(manifest_path) ? TOML.parsefile(manifest_path) : Dict{String,Any}()
     stale = String[]
     for (root, _, files) in walkdir(quarto), file in files
         endswith(file, ".qmd") && !occursin("_output", root) || continue
         source = relpath(joinpath(root, file), quarto)
         page = joinpath(DOCS, "src", splitext(source)[1] * ".md")
         digest = bytes2hex(sha256(read(joinpath(root, file))))
-        isfile(page) && occursin("source-sha256: $digest", read(page, String)) ||
-            push!(stale, source)
+        isfile(page) && get(manifest, source, "") == digest || push!(stale, source)
     end
     isempty(stale) || error("rendered pages are out of date: $(join(stale, ", ")); " *
                             "run `julia docs/render.jl` and commit docs/src")
@@ -82,14 +84,15 @@ copy_reports()
 # publish a page whose .qmd source changed after it was rendered.
 function check_rendered_pages()
     quarto = joinpath(DOCS, "quarto")
+    manifest_path = joinpath(quarto, "rendered.toml")
+    manifest = isfile(manifest_path) ? TOML.parsefile(manifest_path) : Dict{String,Any}()
     stale = String[]
     for (root, _, files) in walkdir(quarto), file in files
         endswith(file, ".qmd") && !occursin("_output", root) || continue
         source = relpath(joinpath(root, file), quarto)
         page = joinpath(DOCS, "src", splitext(source)[1] * ".md")
         digest = bytes2hex(sha256(read(joinpath(root, file))))
-        isfile(page) && occursin("source-sha256: $digest", read(page, String)) ||
-            push!(stale, source)
+        isfile(page) && get(manifest, source, "") == digest || push!(stale, source)
     end
     isempty(stale) || error("rendered pages are out of date: $(join(stale, ", ")); " *
                             "run `julia docs/render.jl` and commit docs/src")
@@ -106,7 +109,8 @@ makedocs(;
     modules = [GIModel, GIModel.QuarkModelTransitions],
     repo = Remotes.GitHub("mmikhasenko", "GIModel.jl"),
     format = DocumenterVitepress.MarkdownVitepress(;
-        repo = "https://github.com/mmikhasenko/GIModel.jl",
+        # Without a scheme: DocumenterVitepress prefixes https:// for the edit link.
+        repo = "github.com/mmikhasenko/GIModel.jl",
         devbranch = "main",
         devurl = "dev",
         deploy_url = "https://mmikhasenko.github.io/GIModel.jl",

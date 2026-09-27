@@ -1,4 +1,6 @@
-<!-- Generated from docs/quarto/manual/isoscalar.qmd by docs/render.jl. Edit the .qmd file. source-sha256: 41ad7f6275f8bc92bbe212acca06e1b6685893a181ba6890ded400e07233d835 -->
+```@meta
+EditURL = "../../quarto/manual/isoscalar.qmd"
+```
 
 
 

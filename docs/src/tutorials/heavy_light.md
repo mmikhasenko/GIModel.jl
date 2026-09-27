@@ -1,4 +1,6 @@
-<!-- Generated from docs/quarto/tutorials/heavy_light.qmd by docs/render.jl. Edit the .qmd file. source-sha256: 49e4a9a32e2045dd738a2571f50b2ca575f57952a23a79e1f49c3ba78f21e941 -->
+```@meta
+EditURL = "../../quarto/tutorials/heavy_light.qmd"
+```
 
 
 

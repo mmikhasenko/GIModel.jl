@@ -49,19 +49,21 @@ font-feature-settings: "calt" off;
   --julia-red: #CB3C33;
   --julia-green: #389826;
 
-  --vp-c-brand: #0087d7;
-  --vp-c-brand-1: #0890df;
-  --vp-c-brand-2: #0599ef;
-  --vp-c-brand-3: #0c9ff4;
-  --vp-c-brand-light: #0087d7;
-  --vp-c-brand-dark: #5fd7ff;
+  --vp-c-brand: #3f5ef0;
+  --vp-c-brand-1: #3f5ef0;
+  --vp-c-brand-2: #5570f5;
+  --vp-c-brand-3: #4d6bfa;
+  --vp-c-brand-light: #3f5ef0;
+  --vp-c-brand-dark: #8aa0ff;
   --vp-c-brand-dimm: #212425;
 
   /* Greens */
-  --vp-dark-green: #155f3e; /* Main accent green */
-  --vp-dark-green-dark: #2b855c;
-  --vp-dark-green-light: #42d392;
-  --vp-dark-green-lighter: #35eb9a;
+  /* Dark-mode accent, in the blue of the landing-page wavefunction cloud
+     (variable names kept from the DocumenterVitepress template). */
+  --vp-dark-green: #2f4fd6;
+  --vp-dark-green-dark: #4d6bfa;
+  --vp-dark-green-light: #8aa0ff;
+  --vp-dark-green-lighter: #a9baff;
     /* Complementary Colors */
   --vp-dark-gray: #1e1e1e;
   --vp-dark-gray-soft: #2a2a2a;
@@ -99,42 +101,28 @@ font-feature-settings: "calt" off;
   --vp-button-brand-hover-bg: var(--julia-blue);
 }
 
-/* Component: Home */
+/* Component: Home. Colours follow the landing-page wavefunction cloud:
+   blue and orange mark the two signs of the wavefunction. */
 :root {
+  --gi-blue: #4d6bfa;
+  --gi-orange: #ff8c26;
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: -webkit-linear-gradient(
-    120deg,
-    #9558B2 30%,
-    #CB3C33
-  );
-
-  --vp-home-hero-image-background-image: linear-gradient(
-    -145deg,
-    #9558b282 30%,
-    #3798269a 30%,
-    #cb3d33e3 
-  );
-  --vp-home-hero-image-filter: blur(40px);
-}
-
-/* Hero Section */
-:root.dark {
-  --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: -webkit-linear-gradient(
-    120deg,
-    var(--julia-purple) 15%,
-    var(--vp-dark-green-light),
-    var(--vp-dark-green)
-
-  );
-  --vp-home-hero-image-background-image: linear-gradient(
-    -45deg,
-    var(--vp-dark-green) 30%,
-    var(--vp-dark-green-light),
-    var(--vp-dark-gray) 30%
-  );
+  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, var(--gi-blue) 30%, var(--gi-orange));
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, #4d6bfa55 45%, #ff8c2655 55%);
   --vp-home-hero-image-filter: blur(56px);
 }
+
+:root.dark {
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, #4d6bfa40 45%, #ff8c2640 55%);
+}
+
+/* Showcase sections below the features on the landing page */
+.gi-showcase { max-width: 1152px; margin: 4rem auto 0; padding: 0 24px; }
+.gi-showcase h2 { font-size: 1.6rem; font-weight: 700; margin: 3rem 0 0.5rem; border: none; }
+.gi-showcase p { color: var(--vp-c-text-2); line-height: 1.7; }
+.gi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center; }
+.gi-row img { width: 100%; border-radius: 12px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12); }
+@media (max-width: 768px) { .gi-row { grid-template-columns: 1fr; } }
 
 :root.dark {
   /* custom tip */
@@ -333,4 +321,10 @@ mjx-container svg path {
   html.sidebar-drawer-collapsed .VPNavBar.has-sidebar > .wrapper > .container > .content {
     padding-left: 8px !important;
   }
+}
+
+/* A larger hero image: the wavefunction cloud is the page's main visual. */
+@media (min-width: 960px) {
+  .VPHero .image-src { max-width: 460px; max-height: 460px; }
+  .VPHero .image-container { width: 460px; height: 460px; }
 }

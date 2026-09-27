@@ -1,4 +1,6 @@
-<!-- Generated from docs/quarto/tutorials/strong_decays.qmd by docs/render.jl. Edit the .qmd file. source-sha256: 4bec698f55d9721d236fc4cc2e774bf7019b964445b5804958e17822fd6fa9be -->
+```@meta
+EditURL = "../../quarto/tutorials/strong_decays.qmd"
+```
 
 
 

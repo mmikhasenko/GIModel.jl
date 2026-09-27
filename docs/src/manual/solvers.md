@@ -1,4 +1,6 @@
-<!-- Generated from docs/quarto/manual/solvers.qmd by docs/render.jl. Edit the .qmd file. source-sha256: 1e50148ba9d8e9bff03bbaf4a551425c9c828b9409af5719fdb543e88e6b82ca -->
+```@meta
+EditURL = "../../quarto/manual/solvers.qmd"
+```
 
 
 

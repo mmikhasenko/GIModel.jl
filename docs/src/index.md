@@ -1,58 +1,129 @@
-<!-- Generated from docs/quarto/index.qmd by docs/render.jl. Edit the .qmd file. source-sha256: a3766e0d63e2d12226258eb5aaa337a65e5a391f3e4964036552b13aa8150e70 -->
+```@raw html
+---
+layout: home
 
+hero:
+  name: "GIModel.jl"
+  text: "Mesons from the Godfrey–Isgur quark model"
+  tagline: Masses, wavefunctions and decays of quark–antiquark mesons, from the relativized Hamiltonian of Phys. Rev. D 32, 189 (1985), in Julia.
+  image:
+    src: /home/wavefunction_cloud.png
+    alt: Charmonium 1¹D₂ wavefunction drawn as a cloud of points
+  actions:
+    - theme: brand
+      text: Get started
+      link: /getting_started
+    - theme: alt
+      text: Tutorials
+      link: /tutorials/charmonium
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/mmikhasenko/GIModel.jl
 
+features:
+  - icon: M
+    title: Masses
+    details: Every n ²ˢ⁺¹L_J level of any u, d, s, c, b pair, with its mass split into central, contact, spin-orbit and tensor parts, and the mixing between levels.
+    link: /manual/spectra
+  - icon: ψ
+    title: Wavefunctions
+    details: Position- and momentum-space wavefunctions for every state, including the signed flavor and spin components of mixed states.
+    link: /manual/wavefunctions
+  - icon: γ
+    title: Transitions
+    details: Radiative E1, M1 and M2, strong pseudoscalar emission, γγ, gg and ggg annihilation, and leptonic widths, all from the solved wavefunctions.
+    link: /manual/transitions
+  - icon: "85"
+    title: Checked against the paper
+    details: Spectra of all seven flavor sectors within a few MeV, and every table of the 1985 paper reproduced, with each difference documented.
+    link: /paper/results
+---
+```
 
-# GIModel.jl
+````@raw html
+<div class="gi-showcase">
 
-GIModel is a Julia implementation of the Godfrey–Isgur relativized quark model of mesons: S. Godfrey and N. Isgur, *Phys. Rev. D* **32**, 189 (1985), [doi:10.1103/PhysRevD.32.189](https://doi.org/10.1103/PhysRevD.32.189).
+<h2>Masses</h2>
+<div class="gi-row">
+<div>
 
-Given two quark flavors, it builds the relativized quark–antiquark Hamiltonian, solves it, and returns the meson spectrum. Each state comes with its mass, the contributions that make up that mass, its mixing with nearby states, and its wavefunction. The submodule `GIModel.QuarkModelTransitions` uses those wavefunctions to compute radiative, strong, leptonic and annihilation decays.
+One call solves the relativized Hamiltonian for a quark–antiquark pair and
+returns every requested level, with the paper's harmonic-oscillator method and
+an automatic convergence check. Here, the spectrum of the B<sub>c</sub> mesons:
 
 ```julia
 using GIModel
 params, mq = load_parameters_and_quark_masses(default_parameters_path())
-spectrum = compute_spectrum(params, Meson(mq, :c, :c); levels = spectrum_levels(1))
+Bc = compute_spectrum(params, Meson(mq, :b, :c);
+    levels = spectrum_levels(2), solver = OscillatorSolver())
+spectrum_state(Bc, "1^3S_1").mass_GeV     # 6.333
 ```
 
+The two J<sup>P</sup> = 1<sup>+</sup> states are superpositions of the spin
+singlet and triplet, because the quark masses differ.
+[Computing a spectrum →](/manual/spectra)
+
+</div>
+<img src="/home/bc_spectrum.png" alt="The B_c meson spectrum computed with GIModel">
+</div>
+
+<h2>Wavefunctions</h2>
+<div class="gi-row">
+<div>
+
+The cloud at the top of this page is the charmonium 1¹D₂ state: points drawn
+from |ψ(<b>r</b>)|², coloured by the sign of ψ. Every state carries its radial
+wavefunction in position and momentum space, and mixed states expose each
+signed component.
+
+[Wavefunctions →](/manual/wavefunctions)
+
+</div>
+<div>
+
+```julia
+spec = compute_spectrum(params, Meson(mq, :c, :c);
+    levels = spectrum_levels(2), solver = OscillatorSolver())
+wave = radial_wave(spec, "1^1D_2")
+sample_wave(wave, range(0, 12; length = 241))   # u(r) on a grid
+physical_components(spec, "1^3S_1")             # J/ψ: 1S with a small D admixture
 ```
-MixedSpectrum: cc, 10 levels — all values in GeV
-  level     central    contact   fine str     mixing       mass
-  1^1S_0     3.0784    -0.1117     0.0000     0.0000     2.9667
-  1^3S_1     3.0656     0.0256     0.0000    -0.0001     3.0911
-  1^1P_1     3.5232    -0.0082     0.0000     0.0000     3.5151
-  1^3P_0     3.5348     0.0037    -0.0957     0.0000     3.4428
-  1^3P_1     3.5238     0.0028    -0.0185     0.0000     3.5082
-  1^3P_2     3.5248     0.0022     0.0211     0.0000     3.5481
-  1^1D_2     3.8384    -0.0019     0.0000     0.0000     3.8366
-  1^3D_1     3.8405     0.0007    -0.0231     0.0001     3.8182
-  1^3D_2     3.8385     0.0006    -0.0018     0.0000     3.8373
-  1^3D_3     3.8391     0.0006     0.0081     0.0000     3.8477
-  (2 levels carry mixing; see `spec.states[i].mixings`)
+
+</div>
+</div>
+
+<h2>Transitions</h2>
+<div class="gi-row">
+<div>
+
+```julia
+using GIModel.QuarkModelTransitions
+psi, eta_c = physical_state(spec, "1^3S_1"), physical_state(spec, "1^1S_0")
+decay_width(matrix_element(eta_c, PhotonEmission(mq), psi))       # M1, MeV
+decay_width(MasslessLeptonPair(), LeptonicCurrent(:electromagnetic, mq), psi)
 ```
 
-Each row is one $n\,{}^{2S+1}L_J$ level of charmonium. The columns split its mass into the spin-independent part and the spin-dependent corrections; the [Getting started](@ref) page explains the whole table.
+</div>
+<div>
 
-## What the package does
+Decay amplitudes use the same solved states, so mixing and radial structure
+enter coherently: photon emission (E1, M1, M2), pseudoscalar emission with all
+partial waves, annihilation into γγ, gg and ggg, and leptonic decays.
+[Transitions and decays →](/manual/transitions)
 
-- **Spectra** for any $q_1\bar q_2$ pair of `u`, `d`, `s`, `c` and `b`, with all levels labeled by explicit quantum numbers.
-- **The paper’s algorithm**: a harmonic-oscillator expansion with a variationally chosen scale and automatic convergence, plus an independent finite-difference solver to cross-check it.
-- **Mixing** between states, following the paper’s stages: same-$J$ spin-orbit and tensor mixing inside a meson, and annihilation mixing between $n\bar n$, $s\bar s$, $c\bar c$ and $b\bar b$ isoscalars.
-- **Wavefunctions** in position and momentum space for every state, including the signed components of mixed states.
-- **Transitions** computed from those wavefunctions: E1/M1/M2 photon emission, pseudoscalar emission, leptonic and two-photon widths, and gluonic widths.
-- **A comparison with the 1985 paper** kept in a separate package, GIPaper, which records how each table is reproduced and where it differs.
+</div>
+</div>
 
-## How to read these pages
+<h2>Get it</h2>
 
-The documentation is ordered so that each page builds on the previous ones.
+```julia
+using Pkg
+Pkg.add(url = "https://github.com/mmikhasenko/GIModel.jl")
+```
 
-1.  [Getting started](@ref) installs the package and walks one calculation through from inputs to wavefunctions.
-2.  The **Manual** explains the concepts, one topic per page: the physics of the model, its inputs, the spectrum, the solvers, wavefunctions, flavor mixing, transitions and conventions.
-3.  The **Tutorials** are complete worked studies that combine those pieces: charmonium from start to finish, heavy-light mixing, the charm-to-bottom limit, η–η′ mixing, and strong decays.
-4.  **The 1985 paper** section describes how the package reproduces the original article, what agrees, and what differs.
-5.  The **API reference** lists every exported name with its docstring.
+Then follow [Getting started](/getting_started). If you use GIModel in
+published work, please cite S. Godfrey and N. Isgur, *Phys. Rev. D* **32**, 189
+(1985), and this repository.
 
-If you know quark models and want the code, read [Getting started](@ref) and then [Computing a spectrum](@ref). If you are new to the Godfrey–Isgur model, read [The model](@ref) first; the [Learning track](@ref) is a pen-and-paper course on the same material.
-
-## Citing
-
-If you use GIModel in published work, cite the original article: S. Godfrey and N. Isgur, *Phys. Rev. D* **32**, 189 (1985). Please also cite this repository.
+</div>
+````

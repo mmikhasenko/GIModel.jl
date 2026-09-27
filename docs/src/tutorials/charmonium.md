@@ -1,4 +1,6 @@
-<!-- Generated from docs/quarto/tutorials/charmonium.qmd by docs/render.jl. Edit the .qmd file. source-sha256: 40c151e162fef402e4f3eb951ca94967402e9ac0f6d946ef40a0f614a6532fe7 -->
+```@meta
+EditURL = "../../quarto/tutorials/charmonium.qmd"
+```
 
 
 

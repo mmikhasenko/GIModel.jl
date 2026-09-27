@@ -5,6 +5,7 @@ import { mathjaxPlugin } from './mathjax-plugin'
 import { juliaReplTransformer } from './julia-repl-transformer'
 import footnote from "markdown-it-footnote";
 import path from 'path'
+import fs from 'fs'
 
 const mathjax = mathjaxPlugin()
 
@@ -35,6 +36,15 @@ export default withMermaid(defineConfig({
   title: 'REPLACE_ME_DOCUMENTER_VITEPRESS',
   description: 'REPLACE_ME_DOCUMENTER_VITEPRESS',
   lastUpdated: true,
+  // Pages rendered from Quarto notebooks are edited in docs/quarto/*.qmd, so the
+  // "Edit this page" link (to docs/src) would open generated Markdown: hide it
+  // there. Runs at build time, from docs/build/.documenter.
+  transformPageData(pageData) {
+    const qmd = pageData.relativePath.replace(/\.md$/, '.qmd')
+    if (fs.existsSync(path.resolve(__dirname, '../../../quarto', qmd))) {
+      pageData.frontmatter.editLink = false
+    }
+  },
   cleanUrls: true,
   outDir: 'REPLACE_ME_DOCUMENTER_VITEPRESS', // This is required for MarkdownVitepress to work correctly...
   head: [

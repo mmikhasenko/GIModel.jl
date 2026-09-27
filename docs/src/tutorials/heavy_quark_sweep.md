@@ -1,4 +1,6 @@
-<!-- Generated from docs/quarto/tutorials/heavy_quark_sweep.qmd by docs/render.jl. Edit the .qmd file. source-sha256: ab9127aff65f2a5269a0934e4383a8faf7520277b2b348f75e5ff8978e467701 -->
+```@meta
+EditURL = "../../quarto/tutorials/heavy_quark_sweep.qmd"
+```
 
 
 

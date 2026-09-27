@@ -1,4 +1,6 @@
-<!-- Generated from docs/quarto/manual/spectra.qmd by docs/render.jl. Edit the .qmd file. source-sha256: 32f641673f4afed99baf6262ce08ad3e658e58f9bec03b83a73da34dd63adf7e -->
+```@meta
+EditURL = "../../quarto/manual/spectra.qmd"
+```
 
 
 

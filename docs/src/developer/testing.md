@@ -56,9 +56,12 @@ The site is built in two stages.
    `DOCS_MD_ONLY=true` stops after the Markdown stage. Preview a full build
    with `npm run docs:dev` from `docs/`.
 
-Edit the `.qmd` file, never the generated `.md` next to it. Each generated page
-records the hash of its source, and `make.jl` refuses to build when a source
-changed without re-rendering. **Before a release, re-render all pages** so the
+Edit the `.qmd` file, never the generated `.md` next to it; generated pages
+have no "Edit this page" link. `docs/quarto/rendered.toml` records the hash of
+each source when it was rendered, and `make.jl` refuses to build when a source
+changed without re-rendering. The landing-page figures in
+`docs/src/public/home/` come from `docs/quarto/home_figures.jl`, which a full
+render also runs. **Before a release, re-render all pages** so the
 published outputs match the released code.
 
 Pages under **Recorded reports** are copied from `GIPaper/reports/` at build

@@ -1,4 +1,6 @@
-<!-- Generated from docs/quarto/tutorials/eta_etaprime.qmd by docs/render.jl. Edit the .qmd file. source-sha256: 95781d6630bd24323f8129c1c2c0935deb21b2f065373c1d6571132c1419cdfa -->
+```@meta
+EditURL = "../../quarto/tutorials/eta_etaprime.qmd"
+```
 
 
 
