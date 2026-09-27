@@ -1,0 +1,339 @@
+    _?/-_h~Q")                                                                                                                                                                 CALT-68-J 741
+                                                                                                                                                                        DOE RESEARCH AND
+             .::c· ..... r :"< ~::n ~-~?-- _3-!
+    \
+            d·.Ll ;__,._ . . ~ :·-: :~. 1~                                                                                                                           DEVELOPMENT REPORT
+                                                                                                                                                                                CEBAF-TH-91-16
+
+
+
+
+The Continuous Electron Beam Accelerator Facility
+Theory Group Preprint Series                                                                                          Heavy Quark Symmetry and DI(2420) -1 v·1r Decay t
+
+
+
+
+                     Additional copies are available from the authors.
+                                                                                                                                        Ming Lu and Mark B. Wise
+                                                                                                                         California In~titute of Technology, Pa8adena, CA 911 !,5
+The Southeastern Universities Research Association (SURA) operates the
+                                                                                                                                                    and
+Continuous Electron Beam Accelerator Facility for the United States De-
+partment of Energy under contract DE-AC05-84ER4015:J
+                                                                                                                                               Nathan Isgur
+                                                                                                                              Continuou8 Electron Beam Accelerator Facility,
+                                                                                                                                        Newport New~, VA 23606
+
+
+
+
+                                                                                                                                                  Abstract
+
+                                                                                                              Heavy quark symmetry relates the D-wave amplitude for Di(2420) ___,. n•1r to the am-
+                                                  DISCLAIMER                                             plitudes for the decays Di(2460) --1 n·tr and Di(2460)-+ Dtr. We discuss the extraction
+        Thio repon • - P"'P~ u an account of •orlr oponoor<d by ~he Uni~ed State. so..,rn·
+                                                                                                         of the S and D partial wave amplitudes for D 1 --1 v• rr and their significance as tests of
+        ""'nt. Nei~her the United S<at,. nor ~he United S~a<e. Deparimenl of Enero-, nor any of          the applicability of heavy quark symmetry for charm quarks.
+        <heir employ""", m&ke. any ,..arr~y. upr ... or implied, or &~o~umea any lesalliabitity or
+        reoponoibility for the ""curacy, completeneu. or uaduln.,.. of any info~<ion, appan.tuo,
+        product, or proceu diocla.ed, or ~p,..nt• that ito u.e would not infrin~ pri¥ately o,.ned
+        rishto. Reference herein to any op«ific cornmeric.ol. product, procea, or oer¥ice by trade
+        name, marlr, m£nuf&ct....,r, or oth!r-..ioe, doe. not neceoo.arily corutltute Dr imply ito en-
+        dD...,menl, recDmmend.o.tiDn, Dr fa..,rins by the United S<at.. so...,nunen< Dr any Af!•ncy
+        the1"1:10f. The vi••• and opinio,. of authon uprnaed herem do not nece...,.ily ltate or
+        re8ect tho.e of the United State. sovonunent or any aser>ey thereoC.
+     The physics of hadron.s containing a single heavy quark Q (by "heavy", we mean                 the light degrees of freedom will be a degenerate doublet. of hadrons wil.h total spin parity
+
+mq   » Aqco) is greatly simplified by going over l.o an effective theory where the mass
+                                                                                                                                           • = ( 3( ± -l )..-~
+                                                                                                                                          "±                                                    (!)
+                                                                 1
+of the heavy quark goes to infiuil.y with its four-velocity fixed -
+                                                                      12 )_   For N heavy quarks,                                                      2
+
+this effedive tht>ory has an SU(2N) .spin-flavor symmetry group that acts on heavy quarks           unless .~l = 0 in which case a single spin-1/2 state is obtained. Since the state of the light
+
+with the same four velocity. 1 •2 ) The heavy quark symmel.ry can be used to predict many           degrees of freedom is independent of the heavy quark mass, the spectrum is identical for
+
+nonperturbativt> properties of hadrons containing a heavy quark. The most important of              eac.h heavy quark flavor, up to an overall shift associated with the mass of the heavy qu&rk.
+
+these predictions are for exdusive semilepl.onic B-meson dec.ays. They are expected to                  Since the heavy quark flavor symmetry applies to the complete set of n-point functions
+
+play an important role .in determining the magnitudes of the elements V ... b and Vcb of the        of the theory, not only mass spliltings but also all strong dec.ay amplitudes arising from
+
+CRhibho-Kobayashi-Ma. skawa matrix.                                                                                                                                                             13
+                                                                                                    emission of light states like tr, 7J, p, 1rrr, de., are independent of the heavy-quark Ravor l.
+
+     The weakest feature of this approach to determining IV.. b) and jV.,~I is treating the         For a given fl&vor, because Sq generates a symmetry, the two states with spin"± must have
+
+charm quark as heavy. In this paper we examine a system which bears on the issue of                 the same total widths. This equality between total widths typically arises in a non\ riviR.l
+
+whelht>r the charm quark mass is sufficiently large for the limit me --1 oo to be a good            way: the two states of a given multiplet can dec.ay to both slates of every &vailahle mult.iplet
+
+approximation.                                                                                      with distinct partial widths whose sum must be identical. The spin symmetry predicts the
+
+     In additioH to prediding weak matrix elements, heavy quark symmetry relates the                ratios of these partial widths.
+
+masses and strong decay amplitudes of excited hadrons containing a single heavy quark Q                  At the present time, only for Q = c have excited hadrons containing H. single heavy
+
+(Ref. 13). In the limit mQ --1 oo tl1e spin Sq ofthc heavy quark and the spin St       = S-SQ of    quark been observed. They are the charmed mesons Di(2460) and DJ(2420). For mesons
+
+the light degrees of freedom are separately conserved by the strong interactions; hadrons           containing a single heavy quark both the constituent quark model and experiment !.ell
+
+containing a single heavy quark can t.hef({ore he simultaneously assigned the quantum               us that the ground states have ,,;•-    = 1/2- giving ..,:_ = o- and ..,+ = 1- stales.        In
+
+numbers .!IQ,m.Q,trq,llt,mt, and trt, where trq =+I and 1rt R.re the parities of the heavy          the case Q = c these are the D and D~ mesons. The constituent quark model suggests
+
+quark and light degref's of freedom, respedively. Since the dynamics of the light degrees of        that the lowest-lying exdted states are likely to be those that c.orrespond to the spin 1/2
+
+freedom are iJ1depenclent. of 1.\w mass and spin of tht> heavy quark it is convenient, in lhe       conslit.uent a.nliquark having a unit of orbital angular momf'nlum, giving .~;-       1/2+ and
+
+limit tnQ ___. ')0 1 to classify s1alt>s by -~land rr,. Then associated with each such state of     3/2+ multiplets.
+
+                                               2                                                                                                     3
+    Heavy quark spin symmdry predicts 13 •14 l that l.he -'f- = 2-f state of the _,;•- = 3/2-'~       While heavy quark symmelry does not relate S~wave to D-wave decay amplitudes,
+
+charm meson multiplet has decay amplitudes in the proportion       J'il5: .j3f5 to the states     the constituent quark model suggests that the S-wave decay amplitudes are very strong l.
+                                                                                                                                                                                             16
+
+
+
+[D1r]o aud [D•1r]o, respectively, while its mulliplel partner with J:':: = t+ denys at the        This may explain the difficulty so far in seeing the members of the ,;' = 1/2+ mulliplet
+
+same total rate exclusively to [D•1r]o- Note that in the heavy quark limit, me ___. oo, this      which consequently are expected to have large widths. This observation suggests that the
+
+latter slate does not decay to [D•1r]s even though this is an allowed channel. (Here the          D-wave decay of D 1 (2420) may be contaminated via Aqco/mc corrections by an S-wave
+
+subscript S or D denotes the partial wave of the pion.) For the _,;•        = 1/2+ multiplet      component. (For example, such corrections could mix the _,;• = 3/2+ and        a;• = 1/2+ D 1
+or c.harmed mesons heavy quark symmdry predicts 13 •14 > that the       J+ - 1+ state decays      states. Since the quark model predicts that the S-wave widths are an order of magnitude
+
+exdusively to [D•1r]s (even though [D•1r]o is an allowed channel) and that its J:':: = o+         larger than the D-wave widths, even a weak mixing could produce a substantial effect.)
+
+partner deuys to [D1r]s with the same amplitude.                                                  To rigorously test the predictions of heavy quark symmetry, it will therefore be necessary
+
+                                                                                  15
+     These predictions are not inconsistent wiLh existing experimental information l. If          to separately determine the D- and S-wave amplitudes of the decay D 1 (2420) ___. v•-rr.
+
+one interprets the two confirmed stales Di(2460) and D 1 (2420) as members of the _,;•            Heavy quark symmetry must then pass two tests: the D-wave amplitude must be correctly
+
+3/2+ multiplet., then their mass difference is consistent with being a. AQco/me correction        related to those of the Di(2460), and the S-wave amplitude must be small compared t.o
+
+to the limiting theory.   Moreover, the D; ___. D1r and D; ___. D"'" decays (which are            other "typical" S-wave amplitudes ,e.g., the decay amplitudes for the members of the
+
+ner:e.~Jurily D-wRves) have amplitudes that are in the ratio 0.8 ± 0.1, which is dose to          _,;•- = 1/2+ multiplet.   (Note, however, that it need not be small compared with the
+
+the predid.ion   .J273. (Here, and in what follows, we quote amplitudes with a phase              D 1 ___, [D•1r]o decay amplitude: a sma.l.l grapefruit can be larger than a typical apple.) ll
+
+                                                     2           2      2    2
+space and "typical" barrier" penetration factor of [p L+i exp( -p /(1GeV ))p/ removed.            already seems likely that the second test will be met. The total width of the D1 (2420) is
+
+This amounts to including the effects of those AQco/mc corrections which are enhanced             only about 20 MeV, and this is much smaller than typical S-wave widths (e.g., a1 ___, [p7r]s,
+
+in importance because p, tlw magnil.ude of tlw pion lhree-momf'nhun, is not very large            which is the light quark analog of the D1 decays, has a width of about. 3-50 MeV).
+
+compared with the v· - D mass splitting.)          The ratio of the DJ(2420) ___. v•1r and             The D 1 ___. D .. 1r decay matrix element can be written, in the rest frame of the D 1 , as
+
+Di(2460) _____. D•rr decay amplitudes is 2.3 ± 0.6. Given the substantial error, it is not
+                                                                                                              M(D,    ~ D'•) ~ ( Se'''" -~D)···<,+ -~D('' · p)(i', · p).                       (2)
+clear whether this rf'sult. is iu d1sagreement wil.h the Inc ------> = prediction of j5/3. The
+
+examination of the D1 ___. D•rr decay in more delail is the main purpose of lhis paper.            In Eq. (2), Sand D =: iJ(p/J3) 2 are real cons\.ants corresponding to the S-and D-wave
+
+                                               4                                                                                                 5
+amplitudes, .Psn is their relative phase,    r is a unit vector in the dirert.ion of the pion's    can eliminate dependence on P, thereby reducin!l; t.he requirl.'d numlwr of Ulea~••n•mi.'His
+
+l.hree moment.um jJ, {3 is a momentum scale characteristic of lhe decay, fis the polarization      to three, by concentrating on unpola.rized rates and polarization effects involving hehcity
+
+vector for the D~ state, and ft is the polarization vector for the D 1 state. A factor of 3/ J2    zero D•'s (or ones longitudinally polarized with respect to Z). See Eq. (4) with i = -P
+
+and the centrifugal barrier factor (p/ j3) 2 have been inserted into the definition of D for       (or i= Z).
+
+convenience (see, e.g., Eq. ( 5) ). Since the polarization of the D, depends on its production           We first sum over the possible polarizations of the v• (using L>•ifj = 6ii). Eq. (4)
+                                                                                                                                                                              '
+mechanism (i.e., in general it will be a mixed state), we use the density matrix formalism         then yields
+
+to deseribe il.. We assume that the density mat.rix depends only on the direction of the                                               r~4•p(D'+S'J                                           (5)
+
+D 1 , which we call i (Ref. 17). Then
+                                                                                                   and
+                         p'i = ( 1- h-)6ii + (3h- I )ziz.J- ipf.ii"z."
+                                  2              2             2         '
+                                                                                            (3)
+                                                                                                                 4• df ~I
+                                                                                                                 fdfi       +
+                                                                                                                                (3/L -I)
+                                                                                                                                   2
+                                                                                                                                           [D' + 2/?.DSca.~sD] (k••'9 -I) .
+                                                                                                                                                 D 2 +S 2                         2
+                                                                                                                                                                                               (6)
+
+
+where h is the probability that the D 1 is in a state with zero helidty (0 S h S 1) &nd
+                                                                                                   Here(} is the angle between the direction of the D1 and the direction of t.he pion (in the
+-1 + ]L S P S 1 ·-· h is the nel polarization of the D 1 with respect to the direction i.
+                                                                                                   D 1 rest frame). Note that if {L = 1/3, the distribution is isotropic., whilr if h    '"' 0 th("
+Combining Eqs. (2) and (3) yields
+                                                                                                   angular distribution for a pure D-wave is proportional to 5- 3co., 6. lnsl.("ad of avera~ing
+                                                                                                                                                                          2
+
+
+
+         S +1
+  dr- = (,
+  -           ,
+            ·-D-                 [(1-h)
+                 v2SDcosr/JsD ) p -
+                  "'                -                         - ! · i I' - -iP
+                                                          (3/L-Ill-
+                                                         + -                  €•• · ("tXz·l]
+  d!l            2                                   2       2               2                     over the v• spins, we can also easily calculate from Eq. (4) the rate for v·•s wit.h zero
+
+        + 3/?.R, { n(s,·•""     -[fD)p [( 1 -/L W· rl' + (3\ - 1 )(1 •. i)('· PJ(f · iJ            helidty, i.e., with£= -p. This gives
+
+                                                               - iP •• (" ")("E·p·)]}
+                                                                 2 € • pxz                                4• dfL = (I+
+                                                                                                           fdfi
+                                                                                                                            [D' + 2/?.DSoo•~so]) [(I-
+                                                                                                                                   D 2 +S2                  2
+                                                                                                                                                                fL) + ( 3/L- I )oo,'o]
+                                                                                                                                                                          2
+                                                                                                                                                                                              (7a)
+          9          1                       1
+                                                  p·z·1']
+                                           E·p·1'1·
+                                     --~ )1"
+                         - !·p·1' + (Jh-
+                     -h)l-
+        +- D' p [( - - -
+          2              2               2
+                                                                                            ( 4)    Note that (or h = 1/3 the angular distribution is once again isotropic, while now for
+
+W(" can derive 18 l from Eq. (4) all of the results we need to determineD and S. Several            h = 0 it is proportional to sin 2 6, independent of the D/S ratio. The total rate for D 1
+disl.ind. types of measureme-nts are required because in addition to the magnitudes of              decay to zero helicity D*'s is independent of fL;
+
+S and D, which art' of immediate int.('re.~t, n!('asnrt"tnf"nl.s typically will de-pend on the
+                                                                                                                             fL ~~(I+[[)'+ 2/?.IJ_Sw,~so])                                    (ib)
+relative phast' <PsD as well as !.he paramel.t"rs fL and P describing l.he density matrix. We                                 r   3        (D' + S')
+
+                                                 6                                                                                                7
+Since Eqs, (6) and (7) all depend on the same mmbinal.ion [ D'H(~~~'lj"'hn ], additional                helicity. Thus, if necessary, a selection of D1 's can he made which will have h        i- 1/3.
+constraints are required. We therefore turn to the (P-imlependent) decay rate to D~'s                   Of course in practice the optimal strategy will depeud on experimental conditions and so
+
+polarized longitudinally along i, which is                                                              must be devised by those doing these measurements.
+
+             4;rr df'z       2J2Jr,SDcmHfsv (3co., 8 -1)
+                                                         2
+                       _                                                                                                                                                     D;;r, such measurements
+                                                                                                             In this comment we have seen how, in the decay D 1 --->
+                  dll - /L +     S +D2      2      2
+                                                                                                (Sa)
+                             D'       [         7/L- 3      2     3h- 1         4 ]                     as the angular distribution of the pion with respect to the D 1 direction, the longiludiua.l
+                           ( S 2 + Dl) h   + 3( - -- . )co_, 8 - 9( - -
+                                                                      2
+                                                                       -   )co.5' 8
+                       2                           2
+
+Tlte total decay rate to n· 's polarized longitudinally along i is                                      helicity of the   v·, and the longitudinal polarization of the D* along lhe direction of the Dl   I
+
+
+
+
+                               r,
+                              r~h-5(D'+S') - 2 -
+                                                w'     [3/L-1]     .                            (Bb)
+                                                                                                        allow a. determination of the fraction of the D1 width that arises from the Dt ---> [D.7r]D
+
+                                                                                                        amplitude. This can be used to test a prediction based on heavy quark symmetry that
+
+     The measurements (5)-(8) overdeternllne D, S, q,sv, and /L, so that many strategies                relates the D 1 ---> [D•11"]D decay amplitude to the D-wave Di ___, D11" and Di---> D•1r decay
+
+can be dt"vised for extracting the interesting amplitudes D and S from them. As an extreme              amplitudes. Such tests are important for defining the extent to which a charm quark may
+
+example, we note that a fit to the single angular distribution in (Sa) can in principle                 be sufficiently heavy for lhe predictions of heavy quark symmetry to be applicable not only
+
+simultaneously determine /L, S/ D, and q,so, so that il and the total rate determine aH                 in hadron spectroscopy, but also in the prediction of weak matrix elements.
+
+four parn.meters. A more realistic strH.tegy might be to use the angular distribution in (7a)
+                                                                                                                                                   References
+to determine h, (8b) to determine SjD, and then (5) to determineD and S sepa.rak:ly.
+
+This sl.rategy avoids ¢so-                                                                                   Research supported in part by the U.S. Depl. of Energy under Contacts DE-AC03-
+
+
+     It should be noted that no strategy based on these mea.surements will work if the                       S1ER40050 and DE-AC05-84ER401 50 and by the Natural Sc.ieiH"es and Engineering
+
+
+D 1 's are produced with h = 1/3: in this r.ase Eqs. (6) and (Sb) are independent of S/D,                    Research Council of Canada.
+
+
+while Eqs. (7a), (7b), and (Sa.) depend only on [ D'+yf{:t~;~~··hn]. This limitation is                   1. N. Isgur and M.B. Wise, Phys. Lell. 8232, 113 (19S9); 237, 527 (1990).
+
+not, however, a serious one since there are specific production meehanisms for which the                  2. H. Georgi, Phys. Lett. 8240, 447 (1990).
+
+D 1 's are aligned. For example, a D 1 produced in the decay iJ __, D 1 11" is in a zero helicity         3. E. Eichten and B. Hill, Phys. Lelt. 8234,511 (1990).
+
+                                                                                  111
+state, /I,    I, to conserve angular momentum. Also, assuming fadorization              l of the weak     4. B. Grinstein, Nucl. Phys. B339, 253 (1990).
+
+nonleptonir decay amplitude, in iJ ---> D 1 p- decay the D1 is mostly emitted with zero                   5. E. Eichten, in ProceediiJgs of the International Symposium on Field Theory on the
+
+                                                 8                                                                                                       9
+    Lal.t.ice, Seillac, France, 19R7, ('dill."d by A. Billoirc, et. al., [Nud. Phys. B (Pror.
+                                                                                                   duccd in the decay of fi's from the T(4S) it is a safe assumption.
+
+    Suppl.) 4, 170 (1988)J.
+                                                                                                18. To average over p, the diredion of the pion, one may use
+
+ 6. G.P. Lepage and B.A. Thacker, in Proceedings of the Internatione.l Symposium on
+
+    Field Theory on the Latlire, Seillac France, 1987, edited by A. Billoire, et a!., [Nud.
+                                                                                                                           u.) 1 dfli>'i>' ~ ~6''
+
+
+    Phy,. B (Pwc. Suppl.) 4, 199 (1988)J.
+                                                                                                                    ( _l_) Jdnp'pip"pl = _!_
+                                                                                                                      4~                 15
+                                                                                                                                             16 6r.t + 6 6 + 6;t 6i-"J .
+                                                                                                                                                    ;j   i ..   jt
+
+
+
+
+                                                                                                19. J.D. Bjorken, Nucl. Phys. 84 (Proc. Suppl.)ll, 325 (1989); M.J. Dugan and B.
+ 7. M.B. Voloshin and M.A. Shifman, Yad. Fiz. 45, 463 (1987) [Sov. J. Nud. Phys. 46,
+                                                                                                    Grinslein, Phys. Lett. 8266, 583 (1991).
+    292 (1987)J.
+
+ 8. H.D. Politzer and M.B. Wise, Phys. Lett. 8206, 681 {1988); 208, 504 (1988).
+
+ 9. A.F. Falk, H. Georgi, B. Grinstein and M.B. Wise, Nucl. Phy11. 8343, I (1990).
+
+10. S. Nussinov and W. Wetzel, Phys. Rev. D36, 130 {1987).
+
+11. M.B. Voloshin and M.A. Shifman, Yad. Fiz. 47,801 (1988) [Sov. J. Nucl. Phya. 47,
+
+    511 (1988)J.
+
+12. J.D. Bjorken, in Proceedings of the Rencontre de Physique de Ia Vallee D'Aosle 1 La
+
+    Thuile, Italy [SLAC Report No. SLAC-PUB 5278, 1990 (to be published)].
+
+13 N. Isgur and M.B. Wise, Phys. Rev. Letl. 66, 1130 (1991).
+
+14. This re11ult. was oblaint"d earlier by J. Rosner, Comments Nucl. Part. Phys. 16,
+
+    109 (19A6) by taking them.~ --+ oo limit of a constitu~nt quark model ca.l.culation.
+
+    Heavy qHark symmetry shows that. these n'SHits are model-independent. consequenc.ea
+
+    of QCD in that limit..
+
+15. Tht' Partide Data Group, .l..l. Hernandez, cl al., Phys. Rev. Lett. 8239,] (1990).
+
+16. See for l."lffUll[.llf", R. Kokoski ami N. lsp;ur, Pity~. Rev. D35, 907 (1987).
+
+17. This assumption must. lw examined on a rase-by-case basis. However, for D 1 's pro-
+
+                                               10                                                                                          11
+

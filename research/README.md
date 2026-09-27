@@ -3,6 +3,14 @@
 This directory holds exploratory studies that use GIModel but are not yet part
 of the package API, reproduction layer, or polished report.
 
+## Reference history
+
+- [What the GI model says about J=L mixing, 1985 → 2016](gi-later-papers/README.md)
+  traces the singlet–triplet mixing angles through Godfrey's later papers and
+  an independent reimplementation. From 1991 on, all of them give the small
+  angles GIModel reproduces, not the 1985 captions. It ends with a compact
+  paragraph for the report.
+
 ## Decays and resonances
 
 - [Quark-model strong decays: from width tables to resonance poles](decays/quark_model_resonances.md)

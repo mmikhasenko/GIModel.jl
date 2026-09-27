@@ -38,8 +38,9 @@ Every numerical study here should:
 - [Why the mixing compositions failed](mixing_composition_investigation.md) —
   demonstrates the missing L>0 smeared contact term as the cause of the wrong
   singlet–triplet diagonal gaps (fixed in core), certifies both mixing stages,
-  independently re-derives the antisymmetric element, and bounds the remaining
-  ground-state off-diagonal deficit. Numbers: [results](mixing_composition_results.md).
+  independently re-derives the antisymmetric element, and shows the remaining
+  ground-state off-diagonal difference is in the 1985 captions: Godfrey's later
+  GI-model papers agree with GIModel. Numbers: [results](mixing_composition_results.md).
 - [Quantitative mixing-layer review](mixing_layer_review.md) (numbers predate
   the contact fix) — inventories the
   ten-panel spectrum, reports all mixing-only shifts and projected angles,

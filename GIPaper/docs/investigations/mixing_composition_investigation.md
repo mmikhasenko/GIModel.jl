@@ -62,9 +62,70 @@ compensating errors: gap −5.7 instead of −12.2, and V −3.2 instead of −1
 
 The operator itself is not the problem as printed. A15/A16 coefficients, signs,
 smearing σ_ii, momentum factors and cross-radial elements are reproduced
-independently to 1e-4. What remains is the difference between A15/A16 as
-printed and whatever GI actually evaluated for this element. That is bounded,
-not identified (see below).
+independently to 1e-4.
+
+**Update 2026-09-27: the remainder is a property of the 1985 captions, not of
+GIModel.** Two new tests settle where the off-diagonal disagreement lives.
+
+1. *V is the only disagreeing quantity.* Invert GI Eqs. (23)–(26) for
+   (M, S, T, L, V) in every P-wave multiplet GI print: uū, ss̄, cc̄, bb̄ (1P, 2P),
+   K 1P/2P, D, Ds. Apply the identical inversion to our final masses and angles.
+   S, T and L agree within 1–4 MeV in all 11 multiplets, including unequal-mass
+   K, D and Ds (e.g. Ds: S 15.4/15.4, T 14.2/14.2, L 28.3/28.2). Only V differs,
+   in three sets: K 1P, D 1P, Ds 1P.
+   ([`investigate_multiplet_parameters.jl`](../../scripts/investigate_multiplet_parameters.jl),
+   [CSV](mixing_composition/multiplet_parameters.csv).)
+   No rescaling of the vector-ii, Thomas and vector-cross kernels fits all 11 L
+   and 4 V together: the best fit leaves K 1P at 5.6σ and K 2P at 2.6σ. No
+   sign or omission pattern of the four per-quark pieces fits either (best
+   χ² = 35 on 4 values). A15/A16-type kernels cannot give GI's V while
+   keeping GI's S, T and L.
+2. *Godfrey's own later GI-model calculations agree with us, not with the 1985
+   captions.* These use the same Table II parameters (b = 0.18 GeV²,
+   m_q = 0.220, m_s = 0.419, m_c = 1.628, m_b = 4.977 GeV):
+   [Godfrey–Moats 2016](https://arxiv.org/abs/1510.08305) (D, Ds),
+   [Godfrey–Moats–Swanson 2016](https://arxiv.org/abs/1607.02169) (B, Bs),
+   [Godfrey 2004](https://arxiv.org/abs/hep-ph/0406228) (Bc) and
+   [Blundell–Godfrey–Phelps 1996](https://arxiv.org/abs/hep-ph/9510245) (K, citing
+   Godfrey–Kokoski 1991). Lower-state singlet probability, which does not depend
+   on sign conventions:
+
+   | State | GI 1985 caption | Godfrey later | GIModel (fixed) |
+   |---|---:|---:|---:|
+   | K 1P | 0.687 | ≈ 0.99 (θ_K = −5°) | 0.994 |
+   | D 1P | 0.570 | 0.812 (−25.68°) | 0.811 (−25.77°) |
+   | Ds 1P | 0.517 | 0.630 (−37.48°) | 0.594 (−39.57°) |
+   | D 1D | 0.604 | 0.618 (−38.17°) | 0.619 (−38.14°) |
+   | Ds 1D | 0.604 | 0.614 (−38.47°) | 0.613 (−38.45°) |
+   | B 1P | 0.535 | 0.746 (\|θ\| = 30.28°) | 0.781 (\|θ\| = 27.9°) |
+   | Bs 1P | 0.500 | 0.602 (\|θ\| = 39.12°) | 0.567 (\|θ\| = 41.1°) |
+   | Bc 1P | 0.362 | 0.146 | 0.127 |
+
+   All twenty 1P masses (3P₀, J=1 pair, 3P₂) for D, Ds, B, Bs and Bc agree with
+   those tables within 0–4 MeV. Ours are systematically 2–4 MeV low in 3P₀.
+   Blundell et al. quote unmixed K₁ masses of 1.37/1.35 GeV and a θ_K = −5° that
+   leaves the masses unchanged. Ours: 1.366/1.352 GeV, 4.3°, shifts ≈ 0.1 MeV.
+   Their contact expectation ⟨H_cont⟩ = 33 MeV matches our inverted K 1P
+   S = 33.9 MeV. Godfrey's later implementation therefore includes the P-wave
+   contact term (independent confirmation of the fix), and it produces the same
+   small ground-state V we find.
+
+So the 1985 caption angles for K/D/Ds/B/Bs/Bc 1P and K 1D/1F/1G, and the matching
+40–50 MeV J=1 splittings, cannot be reproduced by the GI model as its first
+author later implemented it. GIModel now agrees with that implementation to
+≲ 2° in the D/1D cases and ≲ 3.5° elsewhere. The historical reason for the 1985
+numbers (an earlier code version, a different treatment of the antisymmetric
+term, or a transcription error) is not recoverable from the publications.
+Neither of Godfrey's later papers comments on the difference.
+
+**Earliest follow-up (added 2026-09-27).** Godfrey & Kokoski (draft July 1986,
+PRD 43, 1679 (1991)) use the GI85 convention and present their table as the GI85
+calculation. They give θ = −5° (K as sū), −26° (D), −38° (Ds), −31° (B), −40° (Bs)
+and +68° (Bc). These match GIModel in magnitude and in sign, including Bc, where
+the GI85 caption has −53°. Their P-wave ⟨H_cont⟩, ⟨H⁺_so⟩ and ⟨H_ten⟩ match our
+inverted S, L and 2T to about 1 MeV. They also call the model's spin–orbit mixing
+amplitude small. Full timeline:
+[research/gi-later-papers](../../../research/gi-later-papers/README.md).
 
 ## Hypothesis ledger
 
@@ -78,7 +139,12 @@ not identified (see below).
 | H6 | **Missing L>0 contact term in fixed-sector diagonals** | Source text; 8 two-state gaps; spectrum-wide L>0 bias; independent S | **Demonstrated; fixed** |
 | H7 | GI's historical small HO basis (A17 truncated intermediate sums) | Native HO at nbasis = 6, unconverged | Ruled out: shrinking the basis makes V slightly smaller, not 4–18× larger |
 | H8 | GI evaluated the antisymmetric element with a different relativization or smearing | σ₁₂ smearing; f₁₂ factor for 11/22 terms; no factor on either or both terms | No single variant gives V_GI/V ≈ 1 across the 8 rows; ratios scatter from 0.03 to 3 |
-| H9 | Radial-ground-state V (and spin-dependent cross-radial elements) differ from GI | Pattern: ground-state V 4–18× small, 2P/2D ≈ right. Fig. 6 ψ(3.82) 2S/3S admixtures 0.008/0.001 vs GI 0.03/0.01, while 1S (0.013 vs 0.01) and Figs. 3/4 (0.045, 0.039 vs 0.04) agree. Charmonium T = 10.3 vs GI's calculated +13 MeV, L = 29.2 vs +28 | **Open** |
+| H9 | Charmonium T disagrees (10.3 vs GI's calculated +13 MeV) | Define T, L as GI do, from the three ³P_J masses (Eqs. 23–25), not as a first-order expectation on the ³P₁ wave | Ruled out: T = 12.6, L = 27.6 vs +13, +28 |
+| H10 | Some other diagonal ingredient is also off in unequal-mass sectors | Like-for-like (M, S, T, L, V) inversion of all 11 printed P-wave multiplets | Ruled out at 1–4 MeV: only V disagrees |
+| H11 | Any vector/Thomas/cross kernel rescaling, or a sign/omission error among the four per-quark antisymmetric pieces, reproduces GI | Weighted fit to 11 L + 4 V; exhaustive sign/omission enumeration | Ruled out: best fits leave K 1P at 5.6σ / χ² = 35 |
+| H12 | GIModel's small ground-state V is itself an implementation error | Godfrey's later GI-model papers with identical parameters | Ruled out: same angles (D 0.1°, D/Ds 1D 0.03°, others ≤ 3.5°) and masses (0–4 MeV) |
+| H13 | The 1985 caption angles (ground-state 1P, K 1D/1F/1G) are not what the GI model as later implemented produces | All of the above | **Supported**. The historical cause in 1985 cannot be identified from the publications |
+| H14 | Fig. 6 ψ(3.82) 2S/3S tensor admixtures (0.008/0.001 vs 0.03/0.01) | No independent GI-model S–D amplitude found; 1S amplitude and Figs. 3/4 agree | **Open**, low weight (probabilities ≤ 0.1 %) |
 
 ## Tensor compositions
 
@@ -94,17 +160,20 @@ radial nodes; its sign is not a robust target.
 - GI's V and gap come from a two-state inversion of masses printed to 10 MeV.
   The resulting |V_GI| uncertainty is ≈ 25 %, which cannot explain factors of
   4–18. The angles alone already require the larger V, given the matched gap.
-- The three open signals share one feature: spin-dependent matrix elements whose
-  1/r³-type short-distance kernels are strongly suppressed by (m/E)^{1+2ε}
-  sandwiches and cancellations. These are the ground-state antisymmetric V, the
-  2S–1D tensor element, and the charmonium diagonal T.
-- **Next experiment:** charmonium T is equal-mass, free of both mixing and the
-  contact term, and GI print its calculated value (+13 MeV). Decompose it by
-  operator ordering (B K B vs √(B²) K √(B²) vs K evaluated between (m/E)-weighted
-  waves) and by kernel smearing. Accept an alternative only if it moves T to 13
-  **and** V to V_GI simultaneously, without spoiling the 3P_J multiplets that now
-  agree. Any prescription found this way must then be justified from the paper
-  text, not adopted per state.
+- The earlier "charmonium T" lead was an artefact of comparing a first-order
+  ³P₁ expectation with GI's mass-defined T. Defined consistently, T and L agree.
+- For the 13 angles, the reproduction target should be recorded as
+  "GI 1985 caption" and "GI model (Godfrey later)" side by side. Matching the
+  1985 caption would require a Hamiltonian that contradicts GI's own printed
+  S, T and L. We found no such Hamiltonian, and Godfrey's later implementation
+  does not have one either. We do not tune toward the caption.
+- Small residues against Godfrey's later tables: 3P₀ is 2–4 MeV low, and the
+  Ds/B/Bs angles differ by 2–3.5°. Next check: our HO path at the basis size
+  and β choice of A17 (one β per sector, set by the last state). HO already
+  moves B 1P by 1.1°.
+- ψ(3.82) S–D admixtures: evaluate the ⟨2S|T|1D⟩ element independently, as was
+  done for the antisymmetric element, before treating it as anything more than
+  a caption-rounding or 1985-code issue.
 
 ## What changed
 
