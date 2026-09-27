@@ -23,9 +23,6 @@ __pycache__/
 /tmp/
 /examples/figures/density_cloud_*.png
 /examples/figures/density_candidates/
-# Quarto build artifacts in docs/ (the .qmd sources are tracked; render locally).
-docs/*_files/
-docs/*.html
 
 # The report is a separate repository, checked out here for local builds.
 /report/

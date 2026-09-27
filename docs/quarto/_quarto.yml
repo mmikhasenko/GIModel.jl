@@ -1,0 +1,18 @@
+# Executed documentation pages. `docs/render.sh` renders them to Markdown in
+# docs/src/, which is committed; CI only assembles the site from it.
+project:
+  type: default
+  output-dir: _output
+
+
+julia:
+  exeflags: ["--project=@."]
+
+execute:
+  echo: true
+  warning: false
+
+format:
+  gfm:
+    wrap: none
+    variant: +tex_math_dollars
