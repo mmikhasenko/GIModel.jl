@@ -12,21 +12,18 @@ In the paper's convention (lower state
 ``\cos\theta\,|{}^1L_L\rangle + \sin\theta\,|{}^3L_L\rangle``; see
 [Conventions and units](@ref)), the ground-state P-wave angles are:
 
-| system | GIModel (FD) | GI 1985 caption | Godfrey–Kokoski 1991 |
+| system | GIModel | GI 1985 caption | Godfrey–Kokoski 1991 |
 |---|---:|---:|---:|
 | ``u\bar s`` | +4.3° | +34° | +5° |
 | ``c\bar u`` | −25.8° | −41° | −26° |
 | ``c\bar s`` | −39.6° | −44° | −38° |
-| ``b\bar u`` | −27.9° | −43° | −31° |
+| ``b\bar u`` | −28.0° | −43° | −31° |
 | ``b\bar s`` | −41.1° | −45° | −40° |
-| ``b\bar c`` | +69.1° | −53° | +68° |
+| ``b\bar c`` | +69.2° | −53° | +68° |
 
-The GIModel column is from the recorded report, computed with the
-finite-difference solver and retained here as a historical cross-check. New
-paper comparisons use `OscillatorSolver()` explicitly. After correcting the
-HO momentum operators, the ground-state P-wave regression agrees with FD
-within 0.1° for the tested light–strange, charm–light, and bottom–light systems
-(see [Heavy-light mesons and mixing](@ref)). Most higher states (``1D``,
+The GIModel column is from the recorded report, computed with the paper's
+oscillator method (`OscillatorSolver()`). The finite-difference solver agrees
+within 0.1° (see [Heavy-light mesons and mixing](@ref)). Most higher states (``1D``,
 ``2P``, ``1F``, ``2D``, ``1G``) show the same pattern; the [mixing-angle report](reports/mixing_angles.md) lists all thirteen
 caption angles.
 

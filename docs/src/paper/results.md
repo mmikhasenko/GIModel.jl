@@ -10,15 +10,16 @@ reproduced within a few MeV on average:
 
 | sector | states | mean \|Δ\| (MeV) | max \|Δ\| (MeV) |
 |---|---:|---:|---:|
-| isoscalar | 48 | 2.6 | 5.6 |
-| charmonium | 28 | 3.0 | 8.8 |
-| ``b``-flavored | 21 | 3.2 | 7.1 |
-| isovector | 30 | 3.3 | 8.4 |
-| bottomonium | 30 | 3.6 | 8.8 |
+| isoscalar | 48 | 2.6 | 5.5 |
+| charmonium | 28 | 2.9 | 8.6 |
+| ``b``-flavored | 21 | 3.2 | 6.9 |
+| isovector | 30 | 3.3 | 8.0 |
+| bottomonium | 30 | 3.5 | 7.7 |
 | strange | 30 | 4.8 | 14.4 |
 | charmed | 22 | 6.1 | 24.8 |
 
-Δ is the model mass minus the paper's value, read from its figures. The
+Δ is the model mass minus the paper's value, read from its figures, computed
+with the paper's oscillator method. The
 figures are printed as level diagrams, so the reference values carry a
 digitization uncertainty of a few MeV, comparable to the mean residuals. The
 largest residuals are in states whose mass depends on singlet–triplet mixing
