@@ -23,9 +23,16 @@ phase} is the arbitrary choice of multiplying any basis ket by $-1$ (or, more
 generally, by a complex phase); observables cannot depend on that choice.
 
 \begin{problem}{Problem 1 ★ — Solve the universal mixing matrix}
-Diagonalize
-$M=\begin{pmatrix}M_a&V\\V&M_b\end{pmatrix}$. Give the eigenvalues and a
-mixing-angle convention with $\ket-=\cos\theta\ket a-\sin\theta\ket b$.
+In an orthonormal basis $\ket a,\ket b$, the mass matrix is
+$M=\begin{pmatrix}M_a&V\\V&M_b\end{pmatrix}$, with real energies
+$M_a,M_b,V$. Find its ordered eigenvalues $M_-\le M_+$ and normalized
+states in the convention
+$\ket-=\cos\theta\ket a-\sin\theta\ket b$,
+$\ket+=\sin\theta\ket a+\cos\theta\ket b$.
+Specify the angle branch, including $V=0$ and $M_a=M_b$.
+
+\textbf{Hint:} Solve $\det(M-\lambda I)=0$, then require
+$\bra- M\ket+=0$ and check which diagonal entry is lower.
 \end{problem}
 \begin{solution}
 \[
@@ -33,6 +40,12 @@ M_\pm=\frac{M_a+M_b}{2}\pm
 \sqrt{\left(\frac{M_a-M_b}{2}\right)^2+V^2},\qquad
 \tan2\theta=\frac{2V}{M_b-M_a}.
 \]
+One branch that assigns $\ket-$ to the lower eigenvalue is
+$2\theta=\operatorname{atan2}(2V,M_b-M_a)$, where $\operatorname{atan2}(y,x)$
+is the quadrant-aware angle of $(x,y)$. For $V=0$, take $\theta=0$ if
+$M_a<M_b$ and $\theta=\pi/2$ if $M_a>M_b$. If $M_a=M_b$ and $V\ne0$,
+take $\theta=\operatorname{sgn}(V)\pi/4$. When both $V=0$ and $M_a=M_b$,
+any orthonormal pair is an eigenbasis.
 The sign of $\theta$ depends on basis phases; eigenvalues and squared component
 magnitudes do not.
 \end{solution}
@@ -42,8 +55,14 @@ $\theta$ change sign together, while masses and probabilities remain fixed.
 \end{quiz}
 
 \begin{problem}{Problem 2 ★★ — Prove level repulsion}
-Show that for $V\ne0$, $M_-<\min(M_a,M_b)$ and
-$M_+>\max(M_a,M_b)$. Obtain the weak-mixing shift for $|V|\ll|M_b-M_a|$.
+Use the eigenvalues of Problem 1 to prove that $V\ne0$ implies
+$M_-<\min(M_a,M_b)$ and $M_+>\max(M_a,M_b)$.
+For $M_a<M_b$, define $\Delta=M_b-M_a>0$ and obtain
+$M_--M_a$ and $M_+-M_b$ through order $V^2/\Delta$
+when $|V|\ll\Delta$.
+
+\textbf{Hint:} Factor $\Delta/2$ out of the square root and expand in
+$4V^2/\Delta^2$.
 \end{problem}
 \begin{solution}
 The square root exceeds $|M_a-M_b|/2$, proving both inequalities. If
@@ -57,9 +76,14 @@ depends on the ratio $2V/(M_b-M_a)$; near degeneracy the denominator is small.
 \end{quiz}
 
 \begin{problem}{Problem 3 ★★ — Locate antisymmetric spin--orbit mixing}
-Write
-$\bm S_1\cdot\bm L/m_1^2+\bm S_2\cdot\bm L/m_2^2$ as symmetric and
-antisymmetric combinations. Show which coefficient vanishes for equal masses.
+For positive constituent masses $m_1,m_2$, express
+$\bm S_1\cdot\bm L/m_1^2+\bm S_2\cdot\bm L/m_2^2$ as
+$C_+(\bm S_1+\bm S_2)\cdot\bm L+C_-(\bm S_1-\bm S_2)\cdot\bm L$.
+Find $C_+,C_-$ and evaluate them at $m_1=m_2$.
+Identify which spin operator can connect a singlet to a triplet.
+
+\textbf{Hint:} Match the coefficients of $\bm S_1\cdot\bm L$ and
+$\bm S_2\cdot\bm L$. Singlets and triplets have opposite spin-exchange symmetry.
 \end{problem}
 \begin{solution}
 \[
@@ -78,9 +102,14 @@ conjugation is not a prohibiting quantum number.
 \end{quiz}
 
 \begin{problem}{Problem 4 ★★ — Build the isoscalar flavor basis}
-Define $\ket n=(\ket{u\bar u}+\ket{d\bar d})/\sqrt2$ and $\ket s=\ket{s\bar s}$.
-If a flavor-blind annihilation amplitude is $A$ per light-flavor pair, compute
-the matrix of $H_A$ in the $(n,s)$ basis, ignoring mass and wavefunction factors.
+The states $\ket{u\bar u},\ket{d\bar d},\ket{s\bar s}$ are orthonormal.
+Assume $\bra{f\bar f}H_A\ket{g\bar g}=A$ for every
+$f,g\in\{u,d,s\}$, where $A$ is a real energy.
+With $\ket n=(\ket{u\bar u}+\ket{d\bar d})/\sqrt2$ and
+$\ket s=\ket{s\bar s}$, compute all four entries of $H_A$ in the $(n,s)$
+basis. Mass and radial-wave factors are omitted.
+
+\textbf{Hint:} Expand each $n$ bra and ket before summing amplitudes.
 \end{problem}
 \begin{solution}
 Every elementary flavor transition has amplitude $A$. Coherent sums give
@@ -103,6 +132,9 @@ $A_{ji}\propto A_0[\alpha_s(M_j^2)\alpha_s(M_i^2)]^{n/2}
 S_L(\Psi_j)S_L(\Psi_i)/(m_im_j)$, suppose
 $[S_L]=E^{L+3/2}$. Here $S_L(\Psi)$ is a linear operation that turns the whole
 wavefunction into one number by weighting its short-distance momentum content.
+The coupling $\alpha_s$ and exponent $n$ are dimensionless;
+$M_i,m_i$ have energy dimension, and the omitted proportionality factor
+is dimensionless. The two states have the same $L$.
 Determine the dimension required for $A_0$ so that
 $A_{ji}$ is an energy. Explain why the near-origin wave is decisive.
 \end{problem}
@@ -124,6 +156,11 @@ origin and therefore magnifies local errors there.
 Let $\ket\Psi=c_a\ket{a,\psi_a}+c_b\ket{b,\psi_b}$ and let $O$ be diagonal in
 the discrete labels. Derive $\expect O$. Why is assigning one ``representative
 wave'' to $\ket\Psi$ generally wrong?
+
+\textbf{Hint:} Take orthogonal discrete states $\ket a,\ket b$,
+normalized radial waves, and $|c_a|^2+|c_b|^2=1$.
+Write $O=\ket a\bra a\otimes O_a+\ket b\bra b\otimes O_b$.
+The radial functions need not be equal or mutually orthogonal.
 \end{problem}
 \begin{solution}
 If $O$ has no cross-label element,

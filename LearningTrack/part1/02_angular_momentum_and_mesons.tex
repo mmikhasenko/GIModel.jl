@@ -21,8 +21,13 @@ $0,1,2,3,\ldots$.
 
 
 \begin{problem}{Problem 1 ★ — Enumerate allowed $J$ values}
-Prove that coupling orbital $L$ and total spin $S$ permits
-$J=|L-S|,\ldots,L+S$. List the $S$- and $P$-wave $q\bar q$ multiplets.
+Each quark has spin $1/2$. Define $\bm S=\bm S_1+\bm S_2$ and
+$\bm J=\bm L+\bm S$, with $\hbar=1$.
+For a fixed radial level, find the possible total spins $S$, then list every
+allowed $n^{2S+1}L_J$ state for $L=0$ and $L=1$.
+
+\textbf{Hint:} Adding $j_1$ and $j_2$ permits
+$j=|j_1-j_2|,|j_1-j_2|+1,\ldots,j_1+j_2$. Apply this rule twice.
 \end{problem}
 \begin{solution}
 The triangle rule for addition of angular momenta gives the range. For $L=0$:
@@ -36,10 +41,19 @@ rotational scalar Hamiltonian preserves $J$.
 \end{quiz}
 
 \begin{problem}{Problem 2 ★★ — Derive $P$ and $C$}
-For a fermion--antifermion state, derive $P=(-1)^{L+1}$. For a neutral
-self-conjugate flavor state, let charge conjugation interchange the quark and
-antiquark and derive $C=(-1)^{L+S}$ by keeping track of the orbital, spin, and
-fermionic exchange signs. Compute $J^{PC}$ for the six multiplets above.
+For a quark--antiquark state, use the following supplied transformation rules:
+\begin{itemize}
+\item Spatial inversion gives $Y_{Lm}(-\widehat{\bm r})=(-1)^LY_{Lm}(\widehat{\bm r})$.
+\item The intrinsic parity product is $\eta_q\eta_{\bar q}=-1$.
+\item Exchanging spin labels gives $+1$ for a triplet and $-1$ for a singlet.
+\item Charge conjugation exchanges the quark and antiquark; restoring their
+standard fermionic ordering contributes an additional minus sign.
+\end{itemize}
+Derive $P=(-1)^{L+1}$ and, for a self-conjugate flavor state,
+$C=(-1)^{L+S}$. Tabulate $J^{PC}$ for the six states in Problem 1.
+
+\textbf{Hint:} Multiply the orbital and intrinsic signs for $P$;
+multiply the orbital, spin-exchange, and fermionic-ordering signs for $C$.
 \end{problem}
 \begin{solution}
 Spatial inversion gives $Y_{Lm}(-\widehat{\bm r})=(-1)^LY_{Lm}$, while the
@@ -80,6 +94,9 @@ $\expect O_\psi\equiv\bra\psi O\ket\psi$ means the expectation value, or mean
 result of repeated measurements, of $O$. Compute
 $\expect{\bm S_1\cdot\bm S_2}_{S=0}$ and
 $\expect{\bm S_1\cdot\bm S_2}_{S=1}$.
+
+\textbf{Hint:} Angular momentum squared has eigenvalue $j(j+1)$.
+Expand $(\bm S_1+\bm S_2)^2$ and use $S_1=S_2=1/2$.
 \end{problem}
 \begin{solution}
 The coupled spin states are
@@ -107,8 +124,13 @@ corrected energy is larger than the uncorrected energy.
 \end{quiz}
 
 \begin{problem}{Problem 4 ★ — Compute $\bm L\cdot\bm S$}
-Derive its diagonal expectation in a state $\ket{LSJM}$ and tabulate the
-$^3P_J$ values.
+Let $\ket{LSJM}$ be normalized, with $\bm J=\bm L+\bm S$ and eigenvalues
+$L(L+1)$, $S(S+1)$, $J(J+1)$, and $M$ for
+$\bm L^2$, $\bm S^2$, $\bm J^2$, and $J_z$.
+Derive $\expect{\bm L\cdot\bm S}$ in terms of $L,S,J$.
+Tabulate the result for $^3P_J$ at $J=0,1,2$.
+
+\textbf{Hint:} Expand $(\bm L+\bm S)^2$.
 \end{problem}
 \begin{solution}
 $2\bm L\cdot\bm S=\bm J^2-\bm L^2-\bm S^2$, hence
@@ -130,6 +152,11 @@ magnetic substates. The centroid of a multiplet is the energy average weighted
 by this number of states. Show that
 $\sum_J(2J+1)\expect{\bm L\cdot\bm S}_J=0$ for fixed $L,S$. Verify it for
 $^3P_J$.
+
+\textbf{Hint:} A trace is unchanged by a unitary change of basis.
+In $\ket{Lm_L}\otimes\ket{Sm_S}$ use
+$\bm L\cdot\bm S=L_zS_z+(L_+S_-+L_-S_+)/2$; the ladder terms have no
+diagonal entries. Compare this trace with the coupled-basis trace.
 \end{problem}
 \begin{solution}
 Before coupling $\bm L$ and $\bm S$, the relevant Hilbert space has basis
@@ -159,9 +186,20 @@ wavefunction cannot repair it.
 \end{quiz}
 
 \begin{problem}{Problem 6 ★★★ — Decide which GI mixings are allowed}
-Using only $J$, parity, charge conjugation, and flavor, decide whether each pair
-can mix: (a) $^1P_1$--$^3P_1$ in $c\bar q$; (b) the same pair in $c\bar c$;
-(c) $^3S_1$--$^3D_1$; (d) $n\bar n$--$s\bar s$ pseudoscalars.
+Assume a strong Hamiltonian that conserves rotations, parity, and charge
+conjugation. Quark--antiquark annihilation is allowed.
+For each pair below, decide whether these symmetries forbid mixing and name
+the relevant conserved labels:
+\begin{enumerate}[label=(\alph*)]
+\item $^1P_1$ and $^3P_1$ in $c\bar q$, with $q=u$ or $d$;
+\item the same pair in $c\bar c$;
+\item $^3S_1$ and $^3D_1$ of the same flavor;
+\item pseudoscalars $\ket{n\bar n}=(\ket{u\bar u}+\ket{d\bar d})/\sqrt2$
+and $\ket{s\bar s}$.
+\end{enumerate}
+An allowed coupling need not be nonzero; no mixing strength is requested.
+
+\textbf{Hint:} Use Problem 2. An open-flavor meson is not a $C$ eigenstate.
 \end{problem}
 \begin{solution}
 (a) Yes: equal $J^P$ and no good $C$; unequal masses allow antisymmetric

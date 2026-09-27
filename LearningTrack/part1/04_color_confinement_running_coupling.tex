@@ -25,9 +25,12 @@ V(r)=br+c-\frac{4\alpha_s(r)}{3r},\qquad
 \]
 
 \begin{problem}{Problem 1 ★ — Recover the singlet potential}
-Starting from
-$-[\tfrac34c+\tfrac34br-\alpha_s(r)/r]\bm F_1\cdot\bm F_2$, insert the
-singlet color factor and simplify.
+The color interaction is
+$V_{\rm color}=-[\tfrac34c+\tfrac34br-\alpha_s(r)/r]\bm F_1\cdot\bm F_2$.
+For a singlet, $\expect{\bm F_1\cdot\bm F_2}=-4/3$.
+Compute $V(r)=\expect{V_{\rm color}}$, then identify its constant,
+confining, and Coulomb pieces. Take $b>0$ and $\alpha_s(r)>0$;
+state which piece is attractive and which grows at large separation.
 \end{problem}
 \begin{solution}
 Multiplication by $-(-4/3)=4/3$ gives
@@ -45,6 +48,13 @@ $\int \dd^3q\,(2\pi)^{-3}4\pi e^{-q^2/(4\gamma^2)}e^{i\bm q\cdot\bm r}/q^2$
 to show that a Gaussian-regulated Coulomb kernel is
 $\operatorname{erf}(\gamma r)/r$. You may differentiate the radial integral
 with respect to $r$.
+
+\textbf{Hint:} Take $\gamma>0$ and the polar axis along $\bm r$.
+Use $\int\dd\Omega_q\,e^{iqr\cos\theta}=4\pi\sin(qr)/(qr)$,
+$\operatorname{erf}(x)=2\pi^{-1/2}\int_0^x e^{-t^2}\dd t$, and
+$\int_0^\infty e^{-aq^2}\cos(qr)\dd q=\sqrt\pi e^{-r^2/(4a)}/(2\sqrt a)$.
+Differentiate $I(r)=\int_0^\infty e^{-q^2/(4\gamma^2)}\sin(qr)\dd q/q$,
+then integrate back using $I(0)=0$.
 \end{problem}
 \begin{solution}
 Angular integration reduces the transform to
@@ -62,6 +72,11 @@ $\operatorname{erf}(x)\sim2x/\sqrt\pi$, cancelling the explicit $1/r$.
 \begin{problem}{Problem 3 ★ — Compute both distance limits}
 Find the $r\to0$ and $r\to\infty$ limits of $\alpha_s(r)$ and of the Coulomb
 piece $G(r)=-4\alpha_s(r)/(3r)$.
+
+\textbf{Hint:} Assume finite $a_k$ and $\gamma_k>0$.
+Use $\operatorname{erf}(x)=2x/\sqrt\pi+O(x^3)$ near zero and
+$\operatorname{erf}(x)\to1$ as $x\to+\infty$. Give the leading behavior
+as well as the limiting value of $G$.
 \end{problem}
 \begin{solution}
 At small $r$,
@@ -77,14 +92,22 @@ the coupling freezes while its Coulomb potential still falls as $1/r$.
 \end{quiz}
 
 \begin{problem}{Problem 4 ★★ — Derive a virial scale}
-For a nonrelativistic trial estimate $E(R)\sim1/(2\mu R^2)+bR-\kappa/R$,
-derive the stationary equation for $R$. Discuss how the size changes as $\mu$
-increases.
+Model the energy of a state of size $R>0$ by
+$E(R)=1/(2\mu R^2)+bR-\kappa/R$, with $\mu,b,\kappa>0$.
+Here $R$ is a trial size, not a radial wavefunction. Find the stationary
+equation and show it has exactly one positive solution, which is a minimum.
+Holding $b,\kappa$ fixed, determine whether that size increases or decreases
+with $\mu$. No explicit cubic-root solution is required.
+
+\textbf{Hint:} Multiply $E'(R)=0$ by $R^3$, then differentiate implicitly.
 \end{problem}
 \begin{solution}
 $E'(R)=-1/(\mu R^3)+b+\kappa/R^2=0$, or
-$bR^3+\kappa R=1/\mu$. The positive solution decreases with increasing
-$\mu$: heavy quarkonia are more compact and probe shorter-distance physics.
+$bR^3+\kappa R=1/\mu$. The function $bR^3+\kappa R$ increases strictly from zero to infinity,
+so there is one positive solution. The sign of $E'$ changes there from
+negative to positive, giving a minimum. Implicit differentiation gives
+$dR/d\mu=-1/[\mu^2(3bR^2+\kappa)]<0$: the estimated state shrinks as
+its reduced mass increases.
 \end{solution}
 \begin{quiz}
 Why does compactness make heavy quarkonium a clean test of the model? \answer

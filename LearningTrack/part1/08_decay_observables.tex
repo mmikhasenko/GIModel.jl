@@ -22,6 +22,14 @@ For $A\to B+C$, derive
 $k=\sqrt{[M_A^2-(M_B+M_C)^2][M_A^2-(M_B-M_C)^2]}/(2M_A)$.
 If the final relative partial wave is $\ell$, show why
 $\Gamma\propto k^{2\ell+1}$ near threshold.
+
+\textbf{Hint:} Work in the rest frame of $A$, with positive masses and
+$M_A\ge M_B+M_C$. Use $\bm p_B=-\bm p_C$,
+$E_i^2=M_i^2+k^2$, and $M_A=E_B+E_C$.
+For the threshold law take a smooth short-range amplitude with a nonzero
+leading coefficient: $\mathcal M_\ell\propto k^\ell$.
+Two-body phase space contributes one factor of $k$; hold other smooth
+factors finite. The power law is not a claim about long-range threshold effects.
 \end{problem}
 \begin{solution}
 In the parent rest frame, energy conservation and on-shell conditions give the
@@ -38,6 +46,12 @@ the available momentum is small and enters with a positive odd power.
 For the E1 operator $\bm r$, use parity and angular momentum to show
 $\Delta L=\pm1$ and no spin flip at leading order. Express the radial factor in
 terms of reduced waves.
+
+\textbf{Hint:} The leading E1 operator acts only on position and has spatial
+rank 1 and odd parity. Use $|L_f-L_i|\le1\le L_f+L_i$ and opposite
+orbital parities. With $\int|u_i|^2\dd r=\int|u_f|^2\dd r=1$,
+separate the angular coefficient from the radial overlap; no numerical waves
+are supplied.
 \end{problem}
 \begin{solution}
 $\bm r$ is a rank-1 odd-parity tensor, giving the triangle rule
@@ -52,14 +66,20 @@ wavefunction overlap.
 \end{quiz}
 
 \begin{problem}{Problem 3 ★★ — Explain origin sensitivity}
-For a normalized $S$ wave show $|\Psi(0)|^2=|R(0)|^2/(4\pi)$ and relate
-$R(0)$ to $u'(0)$. Why is using $u(h)/h$ only first-order safe without further
-analysis?
+A normalized regular $S$ wave has $\Psi(\bm r)=R(r)Y_{00}$,
+$Y_{00}=1/\sqrt{4\pi}$, and $u(r)=rR(r)$ with $u(0)=0$.
+Assume a one-sided Taylor expansion through $r^2$ exists for $u$.
+Show that $|\Psi(0)|^2=|R(0)|^2/(4\pi)$ and express $R(0)$ in terms of $u$.
+If the first sampled radius is $h>0$, find the leading error in $u(h)/h$.
+Which Taylor coefficient must vanish for an $O(h^2)$ error instead of $O(h)$?
+
+\textbf{Hint:} Write $u(r)=ar+br^2+O(r^3)$ and divide by $r$.
 \end{problem}
 \begin{solution}
 $Y_{00}=1/\sqrt{4\pi}$ and regularity gives $u(r)=R(0)r+O(r^2)$, so
 $R(0)=u'(0)$. If values are known only at radii separated by $h$, then
-$u(h)/h=R(0)+O(h)$ in general. One must study the limit as $h$ decreases, or
+$u(h)/h=R(0)+\tfrac12u''(0)h+O(h^2)$.
+Thus the error is generally $O(h)$; it becomes $O(h^2)$ if $u''(0)=0$. One must study the limit as $h$ decreases, or
 evaluate the derivative directly in a basis representation, before treating it
 as an accurate value of $R(0)$.
 \end{solution}
@@ -69,9 +89,16 @@ the origin density, because it depends on local derivative information.
 \end{quiz}
 
 \begin{problem}{Problem 4 ★★ — Propagate mixing into a decay amplitude}
-If $\ket i=\cos\theta\ket a+\sin\theta\ket b$, derive the decay width to a fixed
-final channel in terms of amplitudes $\mathcal M_a,\mathcal M_b$. Identify the
-interference term.
+Let $\ket i=\cos\theta\ket a+\sin\theta\ket b$, with orthonormal
+$\ket a,\ket b$ and real $\theta$. For a fixed final channel define
+$\mathcal M_a=\bra f T\ket a$ and $\mathcal M_b=\bra f T\ket b$.
+Both amplitudes are evaluated at the physical initial mass and the same
+final kinematics. Take $\Gamma_i=\Phi|\bra f T\ket i|^2$ with a common
+phase-space factor $\Phi$.
+Express $\Gamma_i$ in terms of the two complex amplitudes and identify the
+interference term. Any unresolved quantum numbers are summed after squaring.
+
+\textbf{Hint:} Apply linearity to the amplitude before taking its modulus squared.
 \end{problem}
 \begin{solution}
 $\mathcal M_i=\cos\theta\mathcal M_a+\sin\theta\mathcal M_b$, hence
@@ -80,6 +107,7 @@ $\mathcal M_i=\cos\theta\mathcal M_a+\sin\theta\mathcal M_b$, hence
 \sin^2\theta|\mathcal M_b|^2+2\sin\theta\cos\theta
 \operatorname{Re}(\mathcal M_a^*\mathcal M_b).
 \]
+Multiplying by the common factor $\Phi$ gives $\Gamma_i$.
 Adding component widths would omit the last term.
 \end{solution}
 \begin{quiz}
@@ -89,11 +117,16 @@ together.
 \end{quiz}
 
 \begin{problem}{Problem 5 ★★★ — Separate spin algebra from wave distortion}
-Suppose two annihilation widths have
-$\Gamma_0/\Gamma_2=(15/4)\,|D_0/D_2|^2$, where $15/4$ is the short-distance
-spin-color factor and $D_J$ is a number obtained by applying a specified linear
-integral or derivative to the entire wavefunction. What conclusion follows if
-the ratio differs from $15/4$? Design two controlled comparisons.
+Assume $\Gamma_0/\Gamma_2=(15/4)|D_0/D_2|^2$ with $D_2\ne0$.
+Here $D_J=\mathcal D[\psi_J]$ is the same linear radial functional applied
+to the wave for spin $J$; all remaining factors are fixed, including the
+short-distance spin-color factor $15/4$.
+If the width ratio differs from $15/4$, what does that imply for
+$|D_0|/|D_2|$? Design two comparisons that separate the fixed spin factor
+from the effect of using different radial waves. State what is held fixed
+and what is varied in each. No numerical $\mathcal D$ is needed.
+
+\textbf{Hint:} Compare a common radial wave with separately calculated waves.
 \end{problem}
 \begin{solution}
 The deviation need not mean wrong spin algebra; it measures $J$-dependent wave
@@ -107,6 +140,56 @@ and is more informative than fitting one overall constant.
 What does a decay calculation validate that a spectrum fit cannot? \answer wave
 normalization, local/overlap structure, mixing phases, and operator selection
 rules.
+\end{quiz}
+
+\begin{problem}{Problem 6 ★★ — Turn meson sizes into an effective decay $\beta$}
+For the Appendix-B oscillator convention
+$\psi_{nL}\propto e^{-\beta^2r^2/2}$, use the diagonal matrix elements from
+Sheet 3, Problem 6 to derive $\expect{r^2}$ and $\expect{p^2}$. Invert each
+relation to define an effective $\beta_r$ and $\beta_p$ for a realistic
+wavefunction. Evaluate the $1S$ rms separation and rms momentum at
+$\beta=0.40\,\mathrm{GeV}$. Why need $\beta_r$ and $\beta_p$ not agree, and why
+is this decay-model $\beta$ distinct from the variational oscillator-basis
+scale used to solve the Hamiltonian?
+
+\textbf{Hint:} The oscillator radial index here starts at $n=0$, so the
+spectroscopic $1S$ state has $n=L=0$. Use the full Laguerre oscillator
+functions of Sheet 3; the displayed Gaussian is only their envelope.
+Report $r_{\rm rms}=\sqrt{\expect{r^2}}$ in both $\mathrm{GeV}^{-1}$ and
+fm, with $\hbar c=0.19733\,\mathrm{GeV\,fm}$.
+\end{problem}
+\begin{solution}
+Writing $C_{nL}=2n+L+\tfrac32$, the oscillator moments are
+\[
+ \expect{r^2}_{\rm SHO}=\frac{C_{nL}}{\beta^2},\qquad
+ \expect{p^2}_{\rm SHO}=C_{nL}\beta^2 .
+\]
+Thus a realistic wave defines two generally different one-moment fits,
+\[
+ \beta_r=\sqrt{\frac{C_{nL}}{\expect{r^2}}},\qquad
+ \beta_p=\sqrt{\frac{\expect{p^2}}{C_{nL}}}.
+\]
+For $1S$, $C_{00}=3/2$. At $\beta=0.40\,\mathrm{GeV}$,
+\[
+ r_{\rm rms}=\frac{\sqrt{3/2}}{0.40}=3.06\,\mathrm{GeV}^{-1}
+              \simeq0.604\,\mathrm{fm},\qquad
+ p_{\rm rms}=0.40\sqrt{3/2}=0.490\,\mathrm{GeV},
+\]
+where $\hbar c=0.19733\,\mathrm{GeV\,fm}$. Equality $\beta_r=\beta_p$ means that the two moments satisfy
+$\expect{r^2}\expect{p^2}=C_{nL}^2$. The corresponding SHO state satisfies
+this relation; for general excited states, matching two moments alone does not
+establish the full wave shape. Disagreement means that one oscillator scale
+cannot reproduce both moments. In the paper, $0.40\,\mathrm{GeV}$ is a common physical scale for the
+surrogate SU(6)/SHO decay wavefunctions. By contrast, the solver's basis
+$\beta$ is a numerical representation parameter whose effect must disappear
+as the basis converges.
+\end{solution}
+\begin{quiz}
+May a native-wave decay calculation refit a new SHO $\beta$ without changing
+its model? \answer no. Once the calculated wavefunction is used directly, a
+second physical size parameter would replace or double-model its spatial
+information; a fitted SHO $\beta$ belongs only to an explicit surrogate-wave
+approximation.
 \end{quiz}
 
 \begin{paperbridge}

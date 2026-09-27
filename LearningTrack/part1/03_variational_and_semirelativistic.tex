@@ -20,9 +20,13 @@ the sheet develops the required argument directly.
 
 
 \begin{problem}{Problem 1 ★ — Derive Rayleigh--Ritz}
-For $\ket\psi=\sum_{i=1}^N c_i\ket{i}$ in an orthonormal basis, impose
-$\braket\psi\psi=1$ and derive the stationary equation for
-$\expect H$.
+A fixed orthonormal basis $\{\ket i\}_{i=1}^N$ and a Hermitian matrix
+$H_{ij}=\bra iH\ket j$ are given. Write $\ket\psi=\sum_i c_i\ket i$
+with complex coefficients. Find the stationary equation for
+$\expect H=c^\dagger Hc$ subject to $c^\dagger c=1$,
+and identify the meaning of the Lagrange multiplier.
+
+\textbf{Hint:} Vary $c^\dagger Hc-E(c^\dagger c-1)$ with respect to $c_i^*$.
 \end{problem}
 \begin{solution}
 Stationarity of $c^\dagger Hc-E(c^\dagger c-1)$ with respect to $c_i^*$ gives
@@ -37,9 +41,15 @@ solves that projected problem exactly up to arithmetic error.
 \end{quiz}
 
 \begin{problem}{Problem 2 ★★ — Prove monotone upper bounds}
-Let $V_N\subset V_{N+1}$. Prove that the lowest variational energy (also called
-the lowest Ritz value) obeys
+For one self-adjoint Hamiltonian bounded below, take nested trial spaces
+$V_N\subset V_{N+1}$ in its domain. Define
+\[
+E_0^{(N)}=\min_{\psi\in V_N,\,\|\psi\|=1}\bra\psi H\ket\psi,
+\]
+and let $E_0$ be the exact ground energy. Prove
 $E_0^{(N+1)}\le E_0^{(N)}$ and $E_0^{(N)}\ge E_0$.
+
+\textbf{Hint:} Compare the sets of normalized states being minimized over.
 \end{problem}
 \begin{solution}
 The minimum of the Rayleigh quotient over a larger set cannot increase, giving
@@ -57,8 +67,12 @@ varied.
 \end{quiz}
 
 \begin{problem}{Problem 3 ★ — Expand the relativistic kinetic energy}
-Expand $T(p)=\sqrt{p^2+m_1^2}+\sqrt{p^2+m_2^2}$ through $p^4$. Identify the
-nonrelativistic reduced-mass term and state the expansion parameter.
+For positive masses $m_1,m_2$ and $p\ll\min(m_1,m_2)$, expand
+$T(p)=\sqrt{p^2+m_1^2}+\sqrt{p^2+m_2^2}$ through order $p^4$.
+Keep the rest energies, identify the reduced mass in the quadratic term,
+and state the dimensionless expansion parameters.
+
+\textbf{Hint:} Use $(1+x)^{1/2}=1+x/2-x^2/8+O(x^3)$.
 \end{problem}
 \begin{solution}
 \[
@@ -77,6 +91,12 @@ there is no uniformly small light-quark expansion parameter.
 For the normalized three-dimensional Gaussian
 $\psi_\beta=(\beta^3/\pi^{3/2})^{1/2}e^{-\beta^2r^2/2}$, compute
 $\expect{r}$, $\expect{1/r}$, and $\expect{p^2}$.
+
+\textbf{Hint:} Take $\beta>0$, $p^2=-\nabla^2$, and
+$\expect O=\int\psi_\beta^*O\psi_\beta\dd^3r$.
+You may use $\int_0^\infty r^k e^{-ar^2}\dd r=
+\Gamma((k+1)/2)/(2a^{(k+1)/2})$ for $a>0,k>-1$, with
+$\Gamma(1/2)=\sqrt\pi$ and $\Gamma(z+1)=z\Gamma(z)$.
 \end{problem}
 \begin{solution}
 Radial Gaussian integrals give
@@ -106,8 +126,9 @@ where $L_n^\alpha$ is an associated Laguerre polynomial. Using only
 =\frac{\Gamma(n+\alpha+1)}{n!}\,\delta_{nm},
 \]
 fix $N_{nL}$ from $\int_0^\infty u_{nL}u_{mL}\dd r=\delta_{nm}$, and write
-$u_{0L}$ and $u_{1L}$ out explicitly. Which two conventions does normalization
-leave unfixed?
+$u_{0L}$ and $u_{1L}$ out explicitly. Take $\beta>0$, $L_0^\alpha(x)=1$ and
+$L_1^\alpha(x)=1+\alpha-x$. Does normalization fix the sign of each real
+basis function or the scale $\beta$? Choose $N_{nL}>0$ for subsequent problems.
 \end{problem}
 \begin{solution}
 Substitute $x=(\beta r)^2$, so that $\dd r=\dd x/(2\beta\sqrt x)$ and
@@ -130,9 +151,10 @@ u_{0L}=\sqrt{\frac{2\beta}{\Gamma(L+\tfrac32)}}\,(\beta r)^{L+1}e^{-x/2},
 u_{1L}=\sqrt{\frac{2\beta}{\Gamma(L+\tfrac52)}}\,(\beta r)^{L+1}e^{-x/2}
 \left(L+\tfrac32-x\right).
 \]
-Normalization fixes $|N_{nL}|$ but not its sign, and it does not record whether
-the polynomial argument is $\beta r$ or $(\beta r)^2$. Both conventions must be
-stated before any analytic matrix element is written down.
+Normalization fixes $|N_{nL}|$ but not its sign or the positive scale
+$\beta$; a normalized family exists for every $\beta>0$. The polynomial
+argument $(\beta r)^2$ is already fixed by the given definition. We choose
+the positive normalization constants displayed above.
 \end{solution}
 \begin{quiz}
 The textbook oscillator carries a mass $\mu$ and a frequency $\omega$, yet
@@ -153,6 +175,11 @@ $\bra{n}r^2\ket{m}$ in that basis.
 that $H_{\rm osc}=p^2/(2\mu)+\tfrac12\mu\omega^2r^2$ is diagonal in this basis
 with eigenvalue $(2n+L+\tfrac32)\omega$.
 (c) How many independent numbers does each $N\times N$ matrix contain?
+
+\textbf{Hint:} Use $\alpha=L+1/2$, $\beta^2=\mu\omega$, and the positive
+phases chosen in Problem 5. At $m=0$ omit the $L_{-1}^\alpha$ term.
+In (c) count the matrix entries that must be stored using symmetry and
+sparsity, not the number of free physical parameters.
 \end{problem}
 \begin{solution}
 (a) Write $h_n=\Gamma(n+\alpha+1)/n!$, so $N_{nL}^2=2\beta/h_n$, and use
@@ -195,10 +222,17 @@ analytic formula is being combined with a differently phased basis. Compare
 \end{quiz}
 
 \begin{problem}{Problem 7 ★★★ — Explain the order of the calculation in the paper}
-Suppose $H(\beta,N)$ is the GI matrix for one fixed choice of $(L,S,J)$ in an $N$-function HO
-basis, built from the functions of Problem 5. Design a pen-and-paper convergence logic using $N$, $N+\Delta N$, and
-$\beta$. Why must mixing between different $(L,S,J)$ choices be applied only
-after these separately calculated states converge?
+Suppose $H(\beta,N)$ is the GI matrix in one fixed $(L,S,J)$ sector,
+using $N$ oscillator functions from Problem 5. Its ordered eigenvalues
+are $E_j(\beta,N)$. All physical parameters are held fixed.
+Design a convergence procedure for the lowest $k$ levels: specify a positive
+energy tolerance $\delta E$, a basis increment $\Delta N$, a scan interval
+for $\beta$, and a stopping rule. State what must be checked if an optimum
+lies at the edge of the scan. Give the procedure in words or pseudocode;
+no numerical matrix is needed.
+Explain why the paper's later mixing calculation needs converged input states.
+
+\textbf{Hint:} Vary $N$ and $\beta$ independently, and test every retained level.
 \end{problem}
 \begin{solution}
 For each $N$, minimize the target variational energy over a chosen interval of

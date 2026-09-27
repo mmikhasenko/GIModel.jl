@@ -28,7 +28,12 @@ product $B(p)V(r)B(p)$: the same momentum-dependent factor is placed on both
 sides of a position-dependent interaction.
 
 \begin{problem}{Problem 1 ★★ — Normalize and measure the smearing kernel}
-Prove $\int\rho_\sigma\dd^3r=1$ and compute $\expect{r^2}_\rho$.
+For $\sigma>0$, use the kernel $\rho_\sigma$ defined above to prove
+$\int_{\mathbb R^3}\rho_\sigma\dd^3r=1$. Compute its mean-square radius
+$\expect{r^2}_\rho=\int_{\mathbb R^3}r^2\rho_\sigma\dd^3r$
+and explain how the spatial width changes with $\sigma$.
+
+\textbf{Hint:} Use the Gaussian moments in Sheet 3, Problem 4.
 \end{problem}
 \begin{solution}
 The three Cartesian Gaussian integrals give
@@ -42,8 +47,14 @@ $\rho_\sigma$ approaches $\delta^3(\bm r)$.
 \end{quiz}
 
 \begin{problem}{Problem 2 ★★ — Smear a Gaussian}
-For $f(r)=e^{-\gamma^2r^2}$, compute $\widetilde f(r)$ and identify the combined
-width.
+Take $\sigma,\gamma>0$ and $f(r)=e^{-\gamma^2r^2}$.
+Using the convolution defined above, express $\widetilde f(r)$ as
+$C e^{-\tau^2r^2}$ and determine both $C$ and $\tau$.
+You may use $\int_{\mathbb R^3}e^{-a|\bm x-\bm b|^2}\dd^3x=(\pi/a)^{3/2}$
+for $a>0$.
+
+\textbf{Hint:} Complete the square in $\bm r'$ in
+$\sigma^2|\bm r-\bm r'|^2+\gamma^2r'^2$.
 \end{problem}
 \begin{solution}
 Completing the square in the convolution gives
@@ -74,6 +85,12 @@ $\alpha_s(r)=\sum_k\alpha_k\operatorname{erf}(\gamma_kr)$.
 (b) Now smear $G$ with $\rho_\sigma$ in one line, without evaluating a new
 integral.
 (c) Evaluate $\widetilde G(0)$.
+
+\textbf{Hint:} For (a) reuse Sheet 4, Problem 2. For (b), with
+$\widehat f(\bm Q)=\int e^{-i\bm Q\cdot\bm r}f(\bm r)\dd^3r$,
+the convolution theorem gives $\widehat{\rho_\sigma*f}=\widehat\rho_\sigma\widehat f$.
+Here $\widehat\rho_\sigma=e^{-Q^2/(4\sigma^2)}$.
+For (c) use the small-argument expansion of $\operatorname{erf}$ from Sheet 4.
 \end{problem}
 \begin{solution}
 (a) The angular integral gives
@@ -109,8 +126,8 @@ defined at all in Sheet 6. Compare
 \begin{quiz}
 What does the model gain by building $\alpha_s$ from three Gaussians instead of
 a one-loop logarithm? \answer two things. Physically, it saturates at low $Q^2$
-with no Landau pole. Computationally --- the property this sheet is exploiting
---- Gaussians are closed under both Fourier transformation and Gaussian
+with no Landau pole. For the calculations in this sheet,
+Gaussians are closed under both Fourier transformation and Gaussian
 convolution, so every smeared Appendix-A potential comes out as an elementary
 $\operatorname{erf}$, leaving only the basis integrals to be done.
 \end{quiz}
@@ -126,7 +143,13 @@ Apply it to $S(r)=br+c$ and show that, with $z=\sigma R$,
 \widetilde S(R)=bR\left[\frac{e^{-z^2}}{\sqrt\pi z}
 +\left(1+\frac1{2z^2}\right)\operatorname{erf}(z)\right]+c .
 \]
-Check the constant separately, and give $\widetilde S(0)$.
+Here $R=|\bm r|>0$, $\sigma>0$, and $b,c$ are fixed constants.
+Check the constant separately, and obtain the finite limit $\widetilde S(0)$.
+
+\textbf{Hint:} Set $t=\sigma(r'\mp R)$ in the two terms. Use
+$\int e^{-t^2}\dd t=(\sqrt\pi/2)\operatorname{erf}(t)$ and integration
+by parts for higher moments. At the origin use
+$\operatorname{erf}(z)=2(z-z^3/3+\cdots)/\sqrt\pi$.
 \end{problem}
 \begin{solution}
 Substituting $u=\sigma r'$ and $Z=\sigma R$ reduces everything to two shifted
@@ -167,10 +190,22 @@ the operator set internally inconsistent.
 $u_{00}(r)\propto re^{-\beta^2r^2/2}$ has radial transform
 $\widetilde u_{00}(p)=\sqrt{2/\pi}\int_0^\infty u_{00}(r)\sin(pr)\dd r
 \propto pe^{-p^2/2\beta^2}$, and state the general pattern.
-(b) What does that buy for a sandwich $B(p)V(r)B(p)$?
-(c) $\sqrt{p^2+m^2}$ is a function of $p^2$, but no $\operatorname{erf}$ or
-Gamma function will produce its matrix elements in closed form. Given Sheet 3
-Problem 6, how would you build it anyway, without a single new integral?
+(b) Given oscillator-basis matrix elements of $B(p)$ and $V(r)$,
+write the double sum for $\bra n BVB\ket m$. Explain how the Fourier property
+lets you evaluate the momentum factors in the same basis.
+(c) Given the finite matrix $K_{nm}=\bra n p^2\ket m$ from Sheet 3,
+Problem 6, construct a spectral approximation to $\sqrt{p^2+m^2}$ without
+new integrals. Explain why convergence with matrix size must still be checked.
+
+\textbf{Hint:} For (a), differentiate
+$\int_0^\infty e^{-ar^2}\cos(pr)\dd r=\sqrt\pi e^{-p^2/(4a)}/(2\sqrt a)$.
+You may use the general oscillator Fourier property: the shape is preserved
+under $\beta\to1/\beta$, up to phase $(-1)^n i^{-L}$ for the
+$e^{-i\bm p\cdot\bm r}$ convention. For (b), describe the matrix construction
+in one common basis. For (c), use $K=Q\Lambda Q^\dagger$ with unitary $Q$;
+a function acts on the eigenvalues, not on individual matrix entries.
+Here $P_N$ projects onto the first $N$ basis functions;
+$f(P_Np^2P_N)$ need not equal $P_Nf(p^2)P_N$.
 \end{problem}
 \begin{solution}
 (a) $\int_0^\infty re^{-ar^2}\sin(pr)\dd r=\tfrac{\sqrt\pi p}{4a^{3/2}}e^{-p^2/4a}$
@@ -181,7 +216,10 @@ $(-1)^n i^{-L}$ and the replacement $\beta\to1/\beta$ --- the transform commutes
 with $H_{\rm osc}$, which is symmetric under $r\leftrightarrow p$ at that
 substitution.
 
-(b) Momentum-space matrix elements $\bra{n'}f(p)\ket{n}$ therefore have exactly
+(b) In a complete basis,
+$\bra nBVB\ket m=\sum_{k,l}B_{nk}V_{kl}B_{lm}$.
+A finite intermediate sum must be checked for convergence.
+Momentum-space matrix elements $\bra{n'}f(p)\ket{n}$ therefore have exactly
 the same structure as the position-space ones, a Laguerre--Laguerre--Gaussian
 integral in one variable. One technique --- in 1985, one table --- serves both
 halves of Eq. (A17), and the sandwich requires no mixed $r$--$p$ integral at
@@ -190,9 +228,10 @@ all: it is a product of three matrices in a single basis.
 (c) $p^2$ is the exactly known symmetric tridiagonal matrix of Sheet 3
 Problem 6. Diagonalize it once, $p^2=Q\Lambda Q^{\!\top}$, and set
 $\sqrt{p^2+m^2}=Q\sqrt{\Lambda+m^2}\,Q^{\!\top}$: the square root acts on $N$
-eigenvalues rather than on any integrand. This is the only place in the central
-Hamiltonian where a genuinely numerical step cannot be avoided, and it costs one
-$N\times N$ eigendecomposition. See also C1, Level 3.
+eigenvalues rather than on any integrand. This defines the function of the
+finite matrix $K$, not necessarily the exact projection of the continuum
+square-root operator. Enlarge the intermediate basis and check convergence of
+the retained matrix elements and energies. See also C1, Level 3.
 \end{solution}
 \begin{quiz}
 Is applying $\sqrt{\cdot}$ elementwise to the $p^2$ matrix ever the same thing?
@@ -209,6 +248,10 @@ GI uses
 +s^2\left(\frac{2m_1m_2}{m_1+m_2}\right)^2.
 \]
 Compute the equal-mass form and the $m_1\gg m_2$ limit. Interpret both.
+
+\textbf{Hint:} Take positive masses, $\sigma_0$ with dimensions of energy,
+and dimensionless $s$. In the heavy-mass limit hold $m_2,\sigma_0,s$ fixed
+and take $m_1\to\infty$.
 \end{problem}
 \begin{solution}
 For $m_1=m_2=m$, the bracket equals one and the reduced combination equals $m$,
@@ -224,9 +267,13 @@ resolve short distances differently.
 \end{quiz}
 
 \begin{problem}{Problem 7 ★★ — Prove a momentum sandwich is Hermitian}
-Let $B=B(p)$ be a real function of the self-adjoint $p^2$, and $V=V(r)$ a real
-multiplication operator. Prove $BVB$ is Hermitian and show
-$\bra\psi BVB\ket\psi=\bra{B\psi}V\ket{B\psi}$.
+Work in a finite orthonormal basis. Let $K$ be a Hermitian $p^2$ matrix,
+$B=f(K)$ for a real function $f$ on its spectrum, and let $V$ be the
+Hermitian matrix of a real potential. Prove that $BVB$ is Hermitian and that
+$\bra\psi BVB\ket\psi=\bra{B\psi}V\ket{B\psi}$ for any vector $\psi$.
+
+\textbf{Hint:} Use $B^\dagger=B$, $V^\dagger=V$, and reverse the order
+when taking the adjoint of a product.
 \end{problem}
 \begin{solution}
 $B^\dagger=B$ and $V^\dagger=V$, so
@@ -244,13 +291,18 @@ For $E_i(p)=\sqrt{p^2+m_i^2}$, consider
 $B_i(p)=[m_1m_2/(E_1E_2)]^{1/2+\epsilon_i}$ and
 $A(p)=[1+p^2/(E_1E_2)]^{1/2}$. Compute their $p\to0$ and $p\to\infty$ limits
 for positive masses and explain their different roles.
+
+\textbf{Hint:} Treat $\epsilon_i$ as a fixed real parameter. Distinguish
+$1/2+\epsilon_i>0$, $=0$, and $<0$ in the high-momentum limit.
 \end{problem}
 \begin{solution}
 At $p=0$, $B_i=A=1$. At large $p$, $E_1E_2\sim p^2$, so
 $A\to\sqrt2$, whereas
 $B_i\sim(m_1m_2/p^2)^{1/2+\epsilon_i}$. $A$ dresses the central vector
 interaction without suppressing high momentum; $B_i$ relativizes inverse-mass
-spin operators and softens their high-momentum action. The exponent is attached
+spin operators. For $1/2+\epsilon_i>0$, $B_i\to0$ and suppresses high
+momentum; for $1/2+\epsilon_i=0$, $B_i=1$; for $1/2+\epsilon_i<0$,
+$B_i$ grows without bound. The exponent is attached
 to each side of the Hermitian sandwich.
 \end{solution}
 \begin{quiz}

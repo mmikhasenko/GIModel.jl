@@ -25,6 +25,13 @@ fixed-channel diagonalization, momentum sandwiches, spectroscopic mixing,
 flavor annihilation, decay quantities, and reference comparison. Justify every
 arrow. A dependency graph is a diagram in which an arrow $A\to B$ means that
 $A$ must be known before $B$ can be constructed.
+
+\textbf{Hint:} Use the definitions in Sheets 3--8; $a_k$ and $\alpha_k$
+name the same coupling coefficients. This is a symbolic dependency exercise,
+not a numerical fit. Include the annihilation strengths of Sheet 7 and the
+chosen decay operators, charges/couplings, and final-state masses as additional
+inputs where needed. Label the outputs of each stage and the separate source
+of published comparison data.
 \end{problem}
 \begin{solution}
 Parameters define $\alpha_s$, mass-dependent $\sigma$, smeared kernels, and
@@ -48,6 +55,12 @@ residuals belong to a separate comparison layer.
 Let $U$ be a unitary map from an HO coefficient representation to another
 complete representation. Show how $\ket\psi$, $H$, and $O$ transform and prove
 that eigenvalues and expectations are invariant.
+
+\textbf{Hint:} Use $U^\dagger U=UU^\dagger=I$ and
+$\ket{\psi'}=U\ket\psi$. Require the transformed operators to act on the
+transformed domain. An arbitrary pair of finite grid and HO truncations need
+not be related by an exact unitary map; this proof concerns equivalent complete
+representations.
 \end{problem}
 \begin{solution}
 $\ket{\psi'}=U\ket\psi$, $H'=UHU^\dagger$, and $O'=UOU^\dagger$. Then
@@ -63,19 +76,35 @@ the internal array layout used by one existing method.
 \end{quiz}
 
 \begin{problem}{Problem 3 ★★★ — Design a layered validation suite}
-Give at least one test for each layer: analytic radial interaction, angular
-algebra, operator assembly, eigenvalue problem, mixing, and final paper
-comparison. A residual is the difference between a calculated and published
-number. State why one final root-mean-square residual is insufficient.
+Using the identities and examples in Sheets 1--8, propose one test for each
+layer: radial interactions, angular algebra, operator assembly, eigenvalue
+solution, mixing, and comparison with published results.
+Present a six-row table with columns: input or toy case, quantity checked,
+expected result, and likely error detected. Give exact identities where
+available and state which numerical control is varied for convergence tests.
+A residual is a calculated value minus its published reference.
+Explain why one overall root-mean-square residual cannot replace these tests.
+
+\textbf{Hint:} Start with an analytic limit or invariant for each layer.
 \end{problem}
 \begin{solution}
-Examples: normalize the Gaussian and check analytic $G'$; test spin centroids;
-verify $BVB$ Hermiticity and that normalizing the same vector in two equivalent
-ways does not change its expectation; demand convergence as the basis is enlarged
-or the radial spacing is reduced, and demand HO--FD agreement; test equal-mass antisymmetric mixing is zero
-and $2\times2$ trace/determinant invariance; finally report residuals by flavor
-and state. A final scalar score can hide compensating errors and cannot localize
-which conceptual layer failed.
+One possible suite is below. Numerical tolerances must reflect the units and
+accuracy target of each quantity.
+
+{\small
+\begin{tabular}{@{}p{0.20\linewidth}p{0.25\linewidth}p{0.23\linewidth}p{0.23\linewidth}@{}}
+\textbf{Input / case} & \textbf{Quantity checked} & \textbf{Expected result} & \textbf{Error detected} \\[3pt]
+Gaussian kernel & $\int\rho_\sigma\dd^3r$ & $1$ & Missing prefactor or volume factor \\[5pt]
+Common-wave $^3P_J$ & Weighted spin--orbit sum & $0$ & Wrong angular or degeneracy factor \\[5pt]
+Hermitian $B,V$ & $(BVB)^\dagger-BVB$ & Zero matrix & Wrong operator order or adjoint \\[5pt]
+Fixed physical $H$ & Energies under $N,\beta$ refinement & Stable within $\delta E$ & Basis truncation \\[5pt]
+Real $2\times2$ block & Eigenvalue sum and product & $\operatorname{tr}M$, $\det M$ & Incorrect diagonalization \\[5pt]
+Published mass rows & Signed residual by state and flavor & Matches declared reproduction tolerance & Wrong inputs or row assignment
+\end{tabular}}
+
+A single RMS value can hide a failing sector among many accurate states,
+and cannot identify which layer caused the discrepancy. Analytic and
+convergence checks remain necessary even when the final mass residuals are small.
 \end{solution}
 \begin{quiz}
 Which test most directly detects a stray $4\pi$ in radial normalization?
@@ -84,18 +113,35 @@ known normalized reduced radial wave and a scale-invariance check.
 \end{quiz}
 
 \begin{problem}{Problem 4 ★★★ — Diagnose three disagreements}
-For each symptom propose the first physics or numerical hypothesis to test:
-(a) all central masses move with grid spacing; (b) $^3P_J$ centroid is stable
-but splittings are compressed; (c) isoscalar masses fail while nonmixing sectors
-agree.
+All physical model parameters are held fixed. For each symptom below,
+propose one initial hypothesis, one controlled check, and the outcome that
+would support or weaken your hypothesis:
+\begin{enumerate}[label=(\alph*)]
+\item All central masses change when the grid spacing is reduced at fixed box size.
+\item The $^3P_J$ centroid agrees with a reference but the splittings are smaller.
+\item Nonmixing masses agree with a reference while isoscalar masses disagree.
+\end{enumerate}
+These symptoms need not have a unique cause; justify your first check.
+
+\textbf{Hint:} Follow the dependencies in Problem 1 and vary one ingredient at a time.
 \end{problem}
 \begin{solution}
-(a) Test box size and derivative/kinetic discretization, then compare with the
-HO basis. (b) The spin-independent backbone is likely sound; inspect tensor and
-spin--orbit kernels, ordering factors, and angular conventions. (c) Inspect the
-annihilation block, flavor basis, the specified integral that measures the wave
-near the origin, and reference-row
-assignment. This is a dependency-guided diagnosis, not parameter retuning.
+(a) Suspect the derivative or kinetic discretization. Halve the spacing at
+fixed box size and compare with an independently converged HO result.
+Systematic approach to a common energy supports a discretization explanation;
+a persistent discrepancy calls for checks of operator assembly and box size.
+
+(b) Suspect the tensor or spin--orbit contributions. First compare their
+angular coefficients with Sheet 6, then compare their radial matrix elements
+using one common normalized wave. Incorrect angular values support an algebra
+error; correct angular values with smaller radial contributions point to the
+kernels or momentum factors. A stable centroid alone cannot decide between them.
+
+(c) Suspect the flavor-annihilation block or reference assignment.
+Hold the converged nonmixing states fixed and compare the block entries with
+the Sheet-7 construction, including flavor factors and wave functionals.
+A mismatch localizes the problem to this stage; agreement shifts attention
+to the physical inputs and state-to-reference matching.
 \end{solution}
 \begin{quiz}
 Why is retuning the first response scientifically weak? \answer it can absorb

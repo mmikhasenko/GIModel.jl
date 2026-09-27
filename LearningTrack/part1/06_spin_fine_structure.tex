@@ -25,6 +25,10 @@ spectroscopic channels is postponed to Sheet 7.
 \begin{problem}{Problem 1 ★ — Prove the unsmeared contact selection rule}
 Show that a regular $L>0$ wave has zero expectation of $\delta^3(\bm r)$, while
 an $S$ wave gives $|\Psi(0)|^2$.
+
+\textbf{Hint:} Use the regular branch $R_L(r)\sim r^L$ from Sheet 1 and
+the defining identity $\int f(\bm r)\delta^3(\bm r)\dd^3r=f(0)$
+for a continuous density $f$.
 \end{problem}
 \begin{solution}
 $\int|\Psi|^2\delta^3(\bm r)\dd^3r=|\Psi(0)|^2$. Regularity gives
@@ -38,11 +42,18 @@ Why may a smeared contact term give a small nonzero $P$-wave contribution?
 \end{quiz}
 
 \begin{problem}{Problem 2 ★ — Derive the hyperfine ratio}
-If $H_c=C\bm S_1\cdot\bm S_2$ and both spin states use the same radial wave,
-compute the singlet and triplet shifts and their spin-weighted centroid.
+Two spin-$1/2$ constituents share the same normalized radial wave.
+Let $H_c=C\bm S_1\cdot\bm S_2$, where the fixed real energy $C$ already
+includes the radial matrix element. Compute the first-order singlet and
+triplet shifts $\Delta E_0,\Delta E_1$, their ratio for $C\ne0$, and the
+centroid shift $(\Delta E_0+3\Delta E_1)/4$.
+
+\textbf{Hint:} Use the spin expectations from Sheet 2, Problem 3;
+the weights are $2S+1$.
 \end{problem}
 \begin{solution}
-$\Delta E_{S=0}=-3C/4$ and $\Delta E_{S=1}=C/4$. Weighting by spin
+$\Delta E_{S=0}=-3C/4$ and $\Delta E_{S=1}=C/4$,
+so $\Delta E_0/\Delta E_1=-3$ for $C\ne0$. Weighting by spin
 degeneracies gives $1(-3C/4)+3(C/4)=0$. Radial distortion in a full
 diagonalization can modify the simple ratio.
 \end{solution}
@@ -53,11 +64,21 @@ separately and acquired different radial waves.
 \end{quiz}
 
 \begin{problem}{Problem 3 ★★ — Separate vector and scalar spin--orbit physics}
-For equal masses, write the most general diagonal form as
-$H_{LS}=C_{LS}(r)\bm L\cdot\bm S$. Explain why a Lorentz-vector Coulomb term and
-a Lorentz-scalar confining term can contribute with opposite signs.
+For equal constituent masses $m$, take as input the leading
+nonrelativistic vector/scalar spin--orbit reduction
+\[
+H_{LS}=\frac{3V_V'(r)-V_S'(r)}{2m^2r}\bm L\cdot\bm S.
+\]
+Use a Lorentz-vector potential $V_V=-\kappa/r$ and a Lorentz-scalar potential
+$V_S=br+c$, with $\kappa,b>0$. Define $H_{LS}=C_{LS}(r)\bm L\cdot\bm S$.
+Find the two contributions to $C_{LS}(r)$
+and compare their signs and radial dependence. The reduction formula is
+supplied; deriving it from relativistic dynamics is not required. Smearing
+and momentum factors are omitted in this exercise.
 \end{problem}
 \begin{solution}
+Differentiating gives $C_{LS}^{(V)}=3\kappa/(2m^2r^3)>0$ and
+$C_{LS}^{(S)}=-b/(2m^2r)<0$.
 The color-magnetic vector interaction generates a direct spin--orbit coupling,
 whereas scalar confinement contributes through Thomas precession of the
 accelerating rest frame. Their radial derivatives enter with different signs.
@@ -74,6 +95,12 @@ information.
 For $^3P_J$, the conventional tensor expectations are
 $t_J=(-4,2,-2/5)$ for $J=(0,1,2)$. Verify
 $\sum_J(2J+1)t_J=0$ and combine this with the Sheet-2 spin--orbit sum rule.
+
+\textbf{Hint:} Assume a common radial wave and first-order shifts
+$\Delta E_J=A\expect{\bm L\cdot\bm S}_J+Bt_J$, with $A,B$ independent
+of $J$. Determine the shift of $\overline E=\sum_J(2J+1)E_J/9$.
+Here $t_J$ uses $S_{12}=12(\bm S_1\cdot\widehat{\bm r})
+(\bm S_2\cdot\widehat{\bm r})-4\bm S_1\cdot\bm S_2$.
 \end{problem}
 \begin{solution}
 $1(-4)+3(2)+5(-2/5)=0$. Since the spin--orbit weighted sum also vanishes,
@@ -91,6 +118,12 @@ scale all shifts while preserving the angular identity.
 Treat the tensor interaction as the scalar coupling of a rank-2 spatial tensor
 and a rank-2 spin tensor. Use the triangle rule and parity to derive
 $\Delta L=0,\pm2$ for nonzero matrix elements.
+
+\textbf{Hint:} A spatial tensor of rank $k$ has a nonzero angular matrix
+element only if $|L-L'|\le k\le L+L'$. For $Y_{2q}$ parity requires
+$L+L'+2$ even. State these as necessary conditions, including the restriction
+on $L+L'$; $\Delta L=0$ alone does not permit an $L=L'=0$ matrix element.
+The full scalar interaction conserves $J$.
 \end{problem}
 \begin{solution}
 A rank-2 spherical harmonic permits $|L-L'|\le2\le L+L'$. Parity conservation
@@ -104,9 +137,17 @@ $S=0$ cannot support a rank-2 spin tensor.
 \end{quiz}
 
 \begin{problem}{Problem 6 ★★★ — Compare perturbation and fixed-channel solution}
-Let $H(\lambda)=H_0+\lambda V_s$ in one fixed $(L,S,J)$ channel. Derive the
-first-order shift, then explain what is gained by diagonalizing $H(1)$ before
-forming later mixing blocks.
+In one fixed $(L,S,J)$ channel, let $H(\lambda)=H_0+\lambda V_s$,
+where $V_s$ is Hermitian and independent of the dimensionless parameter
+$\lambda$. A normalized, nondegenerate state satisfies
+$H_0\ket n=E_n^{(0)}\ket n$.
+Derive the coefficient $E_n^{(1)}$ in
+$E_n(\lambda)=E_n^{(0)}+\lambda E_n^{(1)}+O(\lambda^2)$.
+Then explain what a direct diagonalization of $H(1)$ can change in both
+the energy and the radial wave used for later mixing.
+
+\textbf{Hint:} Differentiate the eigenvalue equation at $\lambda=0$
+and multiply on the left by $\bra n$.
 \end{problem}
 \begin{solution}
 For a nondegenerate normalized eigenstate of $H_0$,

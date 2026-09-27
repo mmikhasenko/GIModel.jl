@@ -18,20 +18,53 @@ is self-contained and does not follow the book chapter by chapter.
 \end{reading}
 
 
-We use $\hbar=c=1$. In the meson rest frame $\bm p_1=-\bm p_2\equiv\bm p$ and
-$\bm r=\bm r_1-\bm r_2$. Write
-$\Psi(\bm r)=R_L(r)Y_{Lm}(\Omega)=u_L(r)Y_{Lm}(\Omega)/r$.
+We use $\hbar=c=1$. Bold symbols denote three-dimensional vectors.
+In position representation the momentum of particle $i$ is the operator
+$\bm p_i=-i\nabla_{\bm r_i}$, where the derivative holds the other particle's
+coordinate fixed; hence $\bm p_i^2=-\nabla_{\bm r_i}^2$.
+Problem 1 starts in an arbitrary inertial frame and then specializes to the
+center-of-mass rest frame. For Problems 2--5, $\Psi(\bm r)$ denotes the relative
+wavefunction, with $r=|\bm r|$, $\Omega=(\theta,\phi)$, and
+\[
+\Psi(\bm r)=R_L(r)Y_{Lm}(\Omega)=\frac{u_L(r)}rY_{Lm}(\Omega),
+\qquad L=0,1,\ldots,\quad m=-L,\ldots,L.
+\]
+Here $R_L$ is the radial wave and $u_L=rR_L$ is the reduced radial wave;
+$Y_{Lm}$ is a spherical harmonic normalized by
+$\int |Y_{Lm}|^2\dd\Omega=1$.
 
 \begin{problem}{Problem 1 ★ — Separate the two-body Hamiltonian}
-For $H=\bm p_1^2/(2m_1)+\bm p_2^2/(2m_2)+V(|\bm r_1-\bm r_2|)$, define
-$\bm R=(m_1\bm r_1+m_2\bm r_2)/(m_1+m_2)$. Derive
-$H=\bm P^2/(2M)+\bm p^2/(2\mu)+V(r)$ and compute $M,\mu$.
-Then repeat the rest-frame step for relativistic free-particle energies
-$E_i=\sqrt{\bm p_i^2+m_i^2}$ and write the exact GI kinetic term.
+\textbf{Given.} Two particles have positive masses $m_1,m_2$, positions
+$\bm r_1,\bm r_2$, and a central interaction $V(|\bm r_1-\bm r_2|)$.
+The nonrelativistic Hamiltonian is
+\[
+H=\frac{\bm p_1^2}{2m_1}+\frac{\bm p_2^2}{2m_2}
+ +V(|\bm r_1-\bm r_2|).
+\]
+Introduce $\bm R=(m_1\bm r_1+m_2\bm r_2)/(m_1+m_2)$ and
+$\bm r=\bm r_1-\bm r_2$. Define their conjugate operators by
+$\bm P=-i\nabla_{\bm R}$ and $\bm p=-i\nabla_{\bm r}$, with the other new
+coordinate held fixed in each derivative.
+
+\textbf{Find.} (a) Invert the coordinate change and use the chain rule to
+express $\bm p_1,\bm p_2$ in terms of $\bm P,\bm p$.
+(b) Show that the Hamiltonian takes the form
+$H=P^2/(2M)+p^2/(2\mu)+V(r)$, identifying $M$ and $\mu$ from its coefficients.
+(c) Set the total momentum $\bm P=0$ and identify the constituent momenta.
+For the supplied relativistic energies $E_i=\sqrt{\bm p_i^2+m_i^2}$,
+write $T_{\mathrm{GI}}=E_1+E_2$ in this frame, including the rest energies.
+No potential model or numerical masses are needed.
+
+\textbf{Hint:} Apply the chain rule to a test wavefunction
+$\Phi(\bm R,\bm r)$ before squaring the momentum operators.
 \end{problem}
 \begin{solution}
 The inverse transformation is $\bm r_1=\bm R+(m_2/M)\bm r$ and
-$\bm r_2=\bm R-(m_1/M)\bm r$. The conjugate momenta may be chosen as
+$\bm r_2=\bm R-(m_1/M)\bm r$. The chain rule gives
+$\nabla_{\bm r_1}=(m_1/M)\nabla_{\bm R}+\nabla_{\bm r}$ and
+$\nabla_{\bm r_2}=(m_2/M)\nabla_{\bm R}-\nabla_{\bm r}$, so
+$\bm p_1=(m_1/M)\bm P+\bm p$ and
+$\bm p_2=(m_2/M)\bm P-\bm p$. Equivalently,
 $\bm P=\bm p_1+\bm p_2$ and
 $\bm p=(m_2\bm p_1-m_1\bm p_2)/M$. Substitution cancels the cross term and gives
 \[
@@ -58,6 +91,21 @@ independent parameter of the exact relativistic energies.
 \begin{problem}{Problem 2 ★ — Derive the reduced radial equation}
 Starting from $[-\nabla^2/(2\mu)+V(r)]\Psi=E\Psi$, derive the equation obeyed by
 $u_L(r)$.
+
+\textbf{Hint:} The input is the relative Schr\"odinger equation, a specified
+central $V(r)$, the reduced mass $\mu$ from Problem 1, and the separated wave
+above. Obtain a one-dimensional differential eigenvalue equation for $u_L$,
+including its centrifugal term; do not solve for $E$ for an unspecified $V$.
+You may use the spherical-coordinate Laplacian without deriving it:
+\[
+\nabla^2=\frac1{r^2}\partial_r(r^2\partial_r)+\frac1{r^2}\Delta_\Omega,
+\qquad
+\Delta_\Omega=\frac1{\sin\theta}\partial_\theta(\sin\theta\partial_\theta)
+ +\frac1{\sin^2\theta}\partial_\phi^2,
+\]
+with $\Delta_\Omega Y_{Lm}=-L(L+1)Y_{Lm}$. Substitute $R_L=u_L/r$
+only after applying the radial derivatives.
+See also \href{https://en.wikipedia.org/wiki/Del_in_cylindrical_and_spherical_coordinates}{Wikipedia: differential operators in spherical coordinates}.
 \end{problem}
 \begin{solution}
 The spherical Laplacian gives
@@ -81,6 +129,10 @@ against the $1/r^2$ in $|R|^2=|u|^2/r^2$.
 \begin{problem}{Problem 3 ★ — Prove the normalization conversion}
 Prove that $\int |\Psi|^2\dd^3r=1$ is equivalent to
 $\int_0^\infty |u_L(r)|^2\dd r=1$ when $Y_{Lm}$ is normalized.
+
+\textbf{Hint:} Use $\dd^3r=r^2\dd r\dd\Omega$ with
+$\dd\Omega=\sin\theta\dd\theta\dd\phi$, $0\le\theta\le\pi$ and
+$0\le\phi<2\pi$. Show the cancellation of the radial Jacobian explicitly.
 \end{problem}
 \begin{solution}
 Use $\dd^3r=r^2\dd r\dd\Omega$ and $R=u/r$:
@@ -100,14 +152,20 @@ $\int|u|^2f(r)\dd r$; inserting them again would count the geometry twice.
 \end{quiz}
 
 \begin{problem}{Problem 4 ★★ — Determine the origin boundary condition}
-Assume $V(r)$ is less singular than $1/r^2$. Find the two local powers of
-$u_L\sim r^a$ near $r=0$, and select the physical one.
+Use the radial equation from Problem 2, with $r^2V(r)\to0$ as $r\to0$.
+Find the two leading powers $u_L\sim r^a$ near the origin by substituting this
+ansatz into the leading equation. Select the usual regular three-dimensional
+solution, with no point interaction at the origin, and state its boundary
+condition on $u_L$. Check $L=0$ separately: is square integrability alone enough
+to choose the physical branch?
 \end{problem}
 \begin{solution}
 The dominant equation is $-u''+L(L+1)u/r^2=0$. Hence
-$a(a-1)=L(L+1)$, so $a=L+1$ or $a=-L$. The second solution makes
-$R=u/r$ singular and is non-normalizable for the relevant cases. Thus
-$u_L(r)\sim r^{L+1}$ and $u_L(0)=0$.
+$a(a-1)=L(L+1)$, so $a=L+1$ or $a=-L$. For $L\ge1$, the second branch is not square integrable in $\dd r$.
+For $L=0$, however, $u\sim\mathrm{constant}$ is locally square integrable;
+it gives $R\sim1/r$ and is excluded by the regular three-dimensional domain,
+not by normalization alone. With no point interaction at the origin, the
+physical branch is $u_L(r)\sim r^{L+1}$ and $u_L(0)=0$.
 \end{solution}
 \begin{quiz}
 To solve the differential equation numerically, choose radii
@@ -122,6 +180,14 @@ An operator $A$ is symmetric on a stated set of functions if
 $\braket{u}{Av}=\braket{Au}{v}$ for every pair $u,v$ in that set. Show by
 integration by parts that $A=-d^2/dr^2$ has this property for radial functions
 obeying $u(0)=u(\infty)=0$. State what fails if the origin condition is omitted.
+
+\textbf{Hint:} The inner product is
+$\braket uv=\int_0^\infty u^*(r)v(r)\dd r$. Take $u,v$ and their first
+derivatives sufficiently regular for two integrations by parts, with the
+functions and derivatives decaying at infinity. Keep the endpoint term
+explicit. Prove symmetry on this domain; a proof of self-adjointness is not
+requested. Ask whether the term vanishes for arbitrary endpoint values if no
+origin condition is imposed (other consistent boundary conditions are possible).
 \end{problem}
 \begin{solution}
 For $u,v$ in the domain,

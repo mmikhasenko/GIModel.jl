@@ -2,7 +2,7 @@
 \newcommand{\SheetCode}{Computation C1}
 \input{../course-common.tex}
 \begin{document}
-\sheettitle{Computational discovery map}{Questions before implementation}{Prerequisite: Theory 01--06; Theory 09 recommended. \difficulty{★/★★★} \quad \timebox{2 hours reading + exploration}}
+\sheettitle{Computational discovery map}{Questions before implementation}{Prerequisite: Theory 01--08; Theory 09 recommended. \difficulty{★/★★★} \quad \timebox{2 hours reading + exploration}}
 
 \begin{goals}
 Turn the theoretical dependency graph into numerical questions; recognize the
@@ -12,7 +12,10 @@ Julia course without coupling the physics to one representation.
 
 \begin{checkpoint}
 This is intentionally a question-led sheet, not a coding recipe. First answer
-each question in plain language. Then locate the named repository component.
+each question in plain language. For a proposed test, give its input,
+expected result, and failure criterion; for a procedure, give brief pseudocode.
+Numerical choices below are toy inputs, not GI parameter fits.
+Then locate the named repository component.
 In the later hands-on course, implement the smallest version from scratch before
 reading the production implementation.
 \end{checkpoint}
@@ -20,26 +23,42 @@ reading the production implementation.
 \section*{Level 1 — Numbers and units}
 \begin{enumerate}
 \item ★ In natural units, what are the dimensions of $r$, $b$, $\sigma$, and a
-radial reduced wave $u(r)$? Which invalid expression could a unit-aware type
+radial reduced wave $u(r)$? Use $\hbar=c=1$, $V(r)=br$,
+$\rho_\sigma\propto e^{-\sigma^2r^2}$, and $\int|u|^2\dd r=1$.
+Which invalid expression could a unit-aware type
 system reject?
 \item ★ How many decimal digits are lost when subtracting two nearly equal
-energies to report a fine-structure splitting? When should the working precision
-exceed the output precision?
+energies to report a fine-structure splitting? Use $E_1=3.100000\,\mathrm{GeV}$
+and $E_2=3.100010\,\mathrm{GeV}$ as an example, and compare
+$\max(|E_1|,|E_2|)/|E_2-E_1|$. Assume comparable absolute input errors.
+When should the working precision exceed the output precision?
 \item ★ Why should the normalization use quadrature weights instead of the raw
-Euclidean norm of a sample vector? Inspect the contracts in
+Euclidean norm of a sample vector? Let $u_i=u(r_i)$, with positive weights
+$w_i$ approximating $\int f(r)\dd r$ by $\sum_iw_if(r_i)$.
+Write the discrete norm and its normalization factor. Inspect the contracts in
 \texttt{src/model\_objects.jl}.
 \item ★ What absolute and relative tolerances are sensible for a quantity that
-can legitimately cross zero? Why is one global tolerance dangerous?
+can legitimately cross zero? Use the comparison
+$|x-y|\le a_{\rm tol}+r_{\rm tol}\max(|x|,|y|)$.
+For a splitting with target accuracy $10^{-5}\,\mathrm{GeV}$, propose
+$a_{\rm tol}$ with units and a dimensionless $r_{\rm tol}$; explain their roles
+near zero and near $1\,\mathrm{GeV}$. Why is one global tolerance dangerous?
 \end{enumerate}
 
 \section*{Level 2 — Two representations of one radial problem}
 \begin{enumerate}[resume]
 \item ★ Derive the three-point discretization of $-u''$ on $r_i=ih$. Where do
-the boundary conditions enter? Compare with \texttt{src/radial\_grid.jl}.
+the boundary conditions enter? Take $i=1,\ldots,N$,
+$u_0=u_{N+1}=0$, and $r_{\max}=(N+1)h$; expand $u(r_i\pm h)$ through
+fourth order and state the truncation error. Compare with \texttt{src/radial\_grid.jl}.
 \item ★★ If the discrete $p^2$ matrix is diagonalized as $Q\Lambda Q^T$, how do
 you compute $\sqrt{p^2+m^2}$ without taking elementwise square roots?
+Assume a real symmetric nonnegative $p^2$ matrix in an orthonormal
+representation, $Q^TQ=I$, and $m>0$. Write the matrix expression.
 \item ★ Write the first three radial HO basis functions for fixed $L$. Which
 normalization and phase tests would you require before using them in mixing?
+Use Sheet 3, Problem 5, with $n=0,1,2$ and
+$L_2^\alpha(x)=[x^2-2(\alpha+2)x+(\alpha+1)(\alpha+2)]/2$.
 Inspect \texttt{src/harmonic\_oscillator\_basis.jl}.
 \item ★★ Design independent refinement paths for a grid $(h,r_{\max})$ and an
 HO basis $(N,\beta)$. What false plateau can occur if only one control changes?
@@ -54,6 +73,9 @@ one stored wave into the other's array type? Use the interface described in
 properties of $f$ and $p^2$ make the result real symmetric?
 \item ★★ Given matrices $B$ and $V$, how would you test $BVB$ for Hermiticity,
 scale-invariant expectations, and convergence separately?
+Assume $B,V$ are Hermitian in an orthonormal basis. For a nonzero vector $v$,
+use $\langle O\rangle_v=v^\dagger Ov/(v^\dagger v)$; compare $v$ and $3v$.
+For convergence, specify a sequence of increasing basis sizes.
 \item ★★ Why should analytic derivatives of $\alpha_s(r)$ be tested against,
 but not replaced by, finite differences? Inspect
 \texttt{src/running\_coupling.jl} and \texttt{src/spin\_fine\_structure.jl}.
@@ -67,7 +89,12 @@ even if all eigenvectors were normalized to one.
 eigenvalues and vectors? What additional label distinguishes two equal-$J$
 states before mixing?
 \item ★★ Near an avoided crossing, why can ``state number 1'' cease to track the
-same physical component? Propose an overlap-based tracking rule.
+same physical component? Consider the toy matrix
+$H(t)=\begin{pmatrix}t&v\\v&-t\end{pmatrix}$ with fixed $v>0$,
+where $t,v$ have energy units. Compare ordered energies and basis-component
+weights as $t$ crosses zero. Propose a rule using overlaps between normalized
+eigenvectors at neighboring $t$, and distinguish following an eigenstate
+continuously from following its dominant basis component.
 \item ★★ What must a convergence certificate record so another person can audit
 why a solve stopped? Inspect \texttt{src/solver\_options.jl}.
 \item ★★★ Why should a fixed-sector Hamiltonian be solved once, with all its
@@ -80,12 +107,15 @@ slightly different Hamiltonians?
 \item ★ Implement the analytic checks $\operatorname{tr}M=\sum\lambda_i$ and
 $\det M=\prod\lambda_i$ for every $2\times2$ mixing block. What do they not test?
 \item ★★ How will you make eigenvector phases deterministic for display while
-keeping tests phase-invariant? Inspect \texttt{src/state\_mixing.jl}.
+keeping tests phase-invariant? For a normalized complex vector $c$, propose
+a phase choice based on a nonzero component and a rule for ties or nearly zero
+components. Which overlap or projector would you compare in a test? Inspect \texttt{src/state\_mixing.jl}.
 \item ★★★ Design a data structure for a physical state mixed first in
 spectroscopic space and then in flavor space. How do you retain each component
 wave without inventing a representative wave?
 \item ★★ Which observables stress the tail, the bulk, and the origin of a wave?
-Choose one convergence test for each.
+Consider $\expect{r^2}$, the energy, and $|R(0)|^2$.
+Assign each to the region it emphasizes and choose one convergence test for each.
 \end{enumerate}
 
 \section*{Level 6 — Reproducibility as an algorithm}
@@ -93,7 +123,9 @@ Choose one convergence test for each.
 \item ★ Why must digitized paper values live outside the pure model package?
 Inspect the boundary between \texttt{src/} and \texttt{GIPaper/}.
 \item ★★ Design a residual table that cannot hide one bad flavor sector behind
-a good global average.
+a good global average. Specify the columns for state labels, flavor,
+calculated and reference masses, signed residuals, and source; state how missing
+reference values are recorded. A blank reference must not count as zero residual.
 \item ★★ Which inputs require provenance, units, confidence, and an explicit
 ``unknown'' state rather than a guessed fallback?
 \item ★★★ Draft the smallest continuous-integration gate that tests data,
