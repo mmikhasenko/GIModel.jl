@@ -489,3 +489,37 @@ end
         params, masses, "S", 1, 2; solver = OscillatorSolver())
     @test abs(sol_ho.eigenvalues_GeV[1] - sol1.eigenvalues_GeV[1]) < 1e-3
 end
+
+@testset "state accessors take labels and BasisStates alike" begin
+    params, mq = load_parameters_and_quark_masses(default_parameters_path())
+    spec = compute_spectrum(params, Meson(mq, :c, :c);
+        levels = spectrum_levels(1; L_labels = ("S", "D")))
+    level = BasisState(1, "S", 1, 0)
+    @test radial_wave(spec, level).u == radial_wave(spec, "1^1S_0").u
+    @test [c.coefficient for c in physical_components(spec, BasisState(1, "S", 3, 1))] ==
+          [c.coefficient for c in physical_components(spec, "1^3S_1")]
+    @test physical_state_amplitude(c -> 1.0, spec, level) ==
+          physical_state_amplitude(c -> 1.0, spec, "1^1S_0")
+end
+
+@testset "helpful errors and compact displays" begin
+    params, mq = load_parameters_and_quark_masses(default_parameters_path())
+    err = try
+        compute_isoscalar_spectrum(params, Meson(mq, :q, :q), Meson(mq, :s, :s);
+            levels = [BasisState(1, "S", 1, 0)], pseudoscalar = PaperP1Annihilation())
+        nothing
+    catch e
+        e
+    end
+    @test err isa ArgumentError && occursin("pseudoscalar_basis", err.msg)
+
+    spec = compute_spectrum(params, Meson(mq, :c, :s);
+        levels = spectrum_levels(1; L_labels = ("P",)), solver = OscillatorSolver())
+    state = spectrum_state(spec, "1^1P_1")
+    shown = sprint(show, MIME"text/plain"(), state)
+    @test occursin("antisymmetric_spin_orbit", shown) && length(shown) < 1000
+    @test length(sprint(show, MIME"text/plain"(), fixed_spectrum(params, Meson(mq, :c, :s);
+        levels = spectrum_levels(1; L_labels = ("P",))))) < 1000
+    @test length(sprint(show, first(values(spec.computation.channel_cache)))) < 200
+    @test length(sprint(show, MIME"text/plain"(), params)) < 1000
+end

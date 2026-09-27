@@ -33,6 +33,9 @@ struct ConstituentMasses{T<:Real}
     m2_GeV::T
     function ConstituentMasses(m1::Real, m2::Real)
         promoted = promote(m1, m2)
+        all(m -> isfinite(m) && m > 0, promoted) || throw(ArgumentError(
+            "ConstituentMasses: masses must be positive and finite, got ($m1, $m2) GeV",
+        ))
         new{typeof(first(promoted))}(promoted...)
     end
 end

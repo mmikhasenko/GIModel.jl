@@ -497,3 +497,25 @@ replace `path` with your own TOML file for a parameter scan.
 function load_parameters(path::AbstractString)
     return gi_parameters_from_raw(TOML.parsefile(path))
 end
+
+# The parametric type name alone is several lines long; show the model instead.
+Base.show(io::IO, p::GIParameters) = print(
+    io, "GIParameters(b = ", p.potential.b, " GeV², c = ", p.potential.c, " GeV, ",
+    nameof(typeof(p.central)), ")",
+)
+
+function Base.show(io::IO, ::MIME"text/plain", p::GIParameters)
+    f, a = p.factors, p.annihilation
+    println(io, "GIParameters")
+    println(io, "  potential       b = ", p.potential.b, " GeV², c = ", p.potential.c, " GeV")
+    println(io, "  central         ", nameof(typeof(p.central)))
+    println(io, "  smearing        σ₀ = ", p.smearing.sigma0, " GeV, s = ", p.smearing.s)
+    println(io, "  ε factors       contact ", f.epsilon_c, ", tensor ", f.epsilon_t,
+        ", spin-orbit vector ", f.epsilon_so_vector, ", scalar ", f.epsilon_so_scalar)
+    println(io, "  sandwiches      contact ", f.contact_momentum_sandwich,
+        ", fine structure ", f.fine_structure_momentum_sandwich,
+        ", smeared kernels ", f.fine_structure_smeared_kernels)
+    println(io, "  fine structure  ", p.fine_structure.enabled ? "enabled" : "disabled")
+    print(io, "  annihilation    P1 A = ", a.p1_A_np, ", P2 A = ", a.p2_A_np,
+        ", A(³S₁) = ", a.s1_A, ", A(³P₂) = ", a.a_3p2)
+end
