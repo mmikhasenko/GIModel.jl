@@ -34,9 +34,9 @@ Pkg.activate(@__DIR__; io = devnull)
 using Printf
 using LinearAlgebra
 using GIModel
-using QuarkModelTransitions
+using GIModel.QuarkModelTransitions
 # Internal kernels for reference calculations.
-using QuarkModelTransitions: gluonic_annihilation_amplitude, wavefunction_origin_smearing
+using GIModel.QuarkModelTransitions: gluonic_annihilation_amplitude, wavefunction_origin_smearing
 
 const ROOT = dirname(@__DIR__)                                  # GIPaper/
 const PARAMS_PATH = default_parameters_path()

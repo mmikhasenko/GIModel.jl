@@ -1,5 +1,4 @@
 [deps]
-QuarkModelTransitions = "87282b95-dd94-4373-9910-f2158c0f9e5e"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 GIModel = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
@@ -8,4 +7,3 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [sources]
 GIModel = {path = ".."}
-QuarkModelTransitions = {path = "../QuarkModelTransitions"}

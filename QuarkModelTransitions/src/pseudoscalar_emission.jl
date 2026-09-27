@@ -32,8 +32,8 @@ that partial-wave amplitude; it excludes the width's separate phase-space factor
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 a1, vector, pion_basis = BasisState(1, "P", 3, 1), BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)
 # A modest grid for this example; check convergence for quantitative widths.

@@ -7,8 +7,8 @@ numerical tolerances. Individual functions accept keyword overrides.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 operator = PhotonEmission(QuarkMassTable("c" => 1.628))
 @assert operator.magnetic_exponent == QMT.ELECTROMAGNETIC_DEFAULTS.magnetic_exponent
 ```
@@ -30,8 +30,8 @@ Calibration defaults for the frozen Table IV/V model (amplitudes in MeV^1/2).
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QMT.STRONG_DECAY_DEFAULTS.beta_GeV == 0.4
 ```
 
@@ -51,7 +51,7 @@ Number of MeV in one GeV; used by the generic width interface.
 ## Example
 
 ```julia
-import QuarkModelTransitions as QMT
+import GIModel.QuarkModelTransitions as QMT
 @assert 0.001 * QMT.GEV_TO_MEV == 1.0
 ```
 

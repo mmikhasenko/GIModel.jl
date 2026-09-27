@@ -23,8 +23,8 @@ It excludes the width's separate mass and leptonic phase-space factors.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
 # A modest grid for this example; check convergence for quantitative widths.
@@ -101,8 +101,8 @@ are ambiguous and rejected. Charges are in units of e (no extra antiquark charge
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 basis = BasisState(1, "S", 3, 1; flavors=(:c, :c))
 @assert QMT.vector_current_prefactor(basis) ≈ sqrt(16/3)
 ```

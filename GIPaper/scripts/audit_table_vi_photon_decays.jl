@@ -3,8 +3,8 @@
 # operators belong to QuarkModelTransitions; states and waves belong to GIModel.
 using Pkg
 Pkg.activate(dirname(@__DIR__))
-using GIModel, QuarkModelTransitions, GIPaper, Dates, Printf, Statistics
-using QuarkModelTransitions: neutral_m1_charge, photon_momentum
+using GIModel, GIModel.QuarkModelTransitions, GIPaper, Dates, Printf, Statistics
+using GIModel.QuarkModelTransitions: neutral_m1_charge, photon_momentum
 
 const ROOT = dirname(@__DIR__)
 const G = GIModel

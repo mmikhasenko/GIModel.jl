@@ -1,9 +1,9 @@
 using Test
 using LinearAlgebra
 using GIModel
-using QuarkModelTransitions
+using GIModel.QuarkModelTransitions
 # Internal implementation imports used only by the reference/kernel audit.
-using QuarkModelTransitions: ALPHA_EM,
+using GIModel.QuarkModelTransitions: ALPHA_EM,
     GEV_TO_MEV,
     GLUONIC_CHANNELS,
     HBARC_FM2,
@@ -51,7 +51,6 @@ const root = REPOSITORY_ROOT
     include("radiative_decays.jl")
     include("strong_decays.jl")
     include("transition_amplitudes.jl")
-    include("aqua.jl")
 end
 
 include("../scripts/audit_documentation.jl")

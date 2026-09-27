@@ -1,9 +1,21 @@
 # Numerical test coverage
 
-Run from the repository root:
+All QMT tests run unconditionally in GIModel’s default (quick) `Pkg.test()`
+suite. The root `test/runtests.jl` includes this folder’s `runtests.jl` in an
+isolated module. CI runs that root suite for relevant pull requests and pushes
+to main; QMT source, test, script, and README changes trigger the PR workflow.
+There is no separate QMT package test job or opt-in heavy QMT suite.
+
+Run the combined solver and transition suite from the repository root:
 
 ```sh
-julia --project=QuarkModelTransitions QuarkModelTransitions/test/runtests.jl
+julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+To run just the transitions (including their documentation audit):
+
+```sh
+julia --project=. QuarkModelTransitions/test/runtests.jl
 ```
 
 Tests protect calculated amplitudes and widths, their normalization and units,
@@ -36,9 +48,32 @@ output as an independent expected value.
 
 Keep solver eigenvalue and mixing-diagonalization tests in GIModel. This suite
 checks the transition integrals that consume those waves. Keep paper data loading
-and report validation in GIPaper. The documentation audit remains a separate
-final check: it executes copyable examples and validates help links dynamically,
-without a frozen list of public names.
+and report validation in GIPaper. The QMT test entry point automatically runs
+`scripts/audit_documentation.jl` after the numerical tests, including in CI.
+It executes all public docstring and README examples, checks public help
+coverage, and validates help links and their connectivity dynamically.
+
+## Larger repository checks
+
+`GI_HEAVY_TESTS=true` adds GIModel solver-convergence sweeps from `test/heavy/`;
+it does not enable additional QMT tests:
+
+```sh
+GI_HEAVY_TESTS=true julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+For both packages plus convergence and paper-reproduction audits, run:
+
+```sh
+bash scripts/verify_project.sh
+```
+
+This broader gate also regenerates reports and paper tables, including
+transition-rate input traces for Tables V–VII. It can modify generated files
+and is not part of the default quick CI suite. See the
+[verification script](../../scripts/verify_project.sh) for the complete list.
+The shorter `bash scripts/verify_packages.sh` runs the default GIModel
+(including QMT) and GIPaper suites.
 
 For a new regression, prefer one case that distinguishes the incorrect numerical
 result from the correct one. Reuse existing fixtures and remove a superseded

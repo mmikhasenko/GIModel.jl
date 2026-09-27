@@ -7,7 +7,7 @@ Every entry reaches every other entry through explicit help links. GIModel links
 Regenerate and execute the examples from the repository root:
 
 ```sh
-julia --project=QuarkModelTransitions QuarkModelTransitions/scripts/audit_documentation.jl
+julia --project=. QuarkModelTransitions/scripts/audit_documentation.jl
 ```
 
 The graph describes help navigation, not function calls or numerical dependencies.

@@ -6,9 +6,9 @@ using Test
 using CSV
 using TOML
 using GIModel
-using QuarkModelTransitions
+using GIModel.QuarkModelTransitions
 # Internal kernels for reference calculations.
-using QuarkModelTransitions: DecayChannel
+using GIModel.QuarkModelTransitions: DecayChannel
 using GIPaper
 
 const GIPAPER_ROOT = dirname(@__DIR__)

@@ -24,7 +24,6 @@ jobs:
             matrix:
                 project:
                     - "."
-                    - QuarkModelTransitions
                     - GIPaper
                 version:
                     - "1.11"

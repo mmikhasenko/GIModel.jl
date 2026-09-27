@@ -40,12 +40,12 @@ jobs:
                   version = "3"
                   Pkg.add(; name, uuid, version)
               shell: julia --color=yes {0}
-            # One repository, three packages; the application environments
+            # One repository, two packages; the application environments
             # (GIPaper/scripts, examples) are refreshed by hand.
             - name: "Run CompatHelper"
               run: |
                   import CompatHelper
-                  CompatHelper.main(; subdirs = ["", "QuarkModelTransitions", "GIPaper"])
+                  CompatHelper.main(; subdirs = ["", "GIPaper"])
               shell: julia --color=yes {0}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

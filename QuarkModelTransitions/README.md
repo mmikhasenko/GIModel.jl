@@ -3,10 +3,11 @@
 Bare quark-model transition amplitudes built from solved states and wave
 functions supplied by `GIModel.jl`.
 
-This package owns transition operators, external-state adapters, channels,
+This submodule owns transition operators, external-state adapters, channels,
 helicity and partial-wave representations, amplitude composition, and width
-normalizations. `GIModel.jl` remains the Schrödinger solver and overlap engine;
-it does not depend on this package.
+normalizations. `GIModel.jl` provides the Schrödinger solver and overlap engine and includes
+this module. Dependencies are managed by the repository-root `Project.toml`;
+this folder has no separate package environment.
 
 ## Start with states calculated by GIModel
 
@@ -15,7 +16,9 @@ The primary workflow is `compute_spectrum` → `physical_state` → `matrix_elem
 wavefunctions, and the components/mixing retained by that spectrum. No Gaussian
 replacement of the solved waves is made.
 
-Run each self-contained block in the `QuarkModelTransitions` project environment.
+Run each self-contained block in the GIModel environment (`julia --project=.`
+from the repository root). Load the transition API with
+`using GIModel.QuarkModelTransitions`.
 The finite-difference grids below keep the examples quick; refine the solver and
 check the observable's convergence before quoting quantitative predictions.
 The parameter file and selected spectrum treatment remain model assumptions.
@@ -23,8 +26,8 @@ The parameter file and selected spectrum treatment remain model assumptions.
 ### Photon transition with calculated charmonium waves
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
 # A modest grid for this example; check convergence for quantitative widths.
@@ -52,8 +55,8 @@ quantitative study must state how the couplings were calibrated with its chosen
 wavefunctions and external masses.
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 a1, vector, pion_basis = BasisState(1, "P", 3, 1), BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)
 # A modest grid for this example; check convergence for quantitative widths.
@@ -92,7 +95,7 @@ objects with chosen waves and masses instead. Here both states use a single
 oscillator function with an assumed width of 0.5 GeV; no GI spectrum is solved.
 
 ```julia
-using GIModel, QuarkModelTransitions
+using GIModel, GIModel.QuarkModelTransitions
 wave = OscillatorWave(0, 0.5, [1.0])
 initial = PhysicalState("psi", 3.10, [(
     basis=BasisState(1, "S", 3, 1; flavors=(:c, :c)),
@@ -155,8 +158,8 @@ operator accepting `ReferenceState`/`TwoMesonChannel` inputs and returning a
 ### Leptonic decay from a calculated state
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
 # A modest grid for this example; check convergence for quantitative widths.
@@ -191,8 +194,8 @@ masses, and operator settings fixed. This does not recompute a spectrum.
 | `GluonicAnnihilation` | `target_mass` in GeV | Integrated width |
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
 # A modest grid for this example; check convergence for quantitative widths.
@@ -238,7 +241,7 @@ continuum-induced mixing/coupled-channel pole dressing. In particular,
 `PseudoscalarEmission` is an elementary one-pseudoscalar emission operator,
 not a `3P0` pair-creation model.
 
-The package also contains the frozen Godfrey--Isgur Table IV/V reproduction
+The submodule also contains the frozen Godfrey--Isgur Table IV/V reproduction
 backend. Its `StrongDecayModel`, `DecayChannel`, and scalar factorization
 helpers are compatibility/research-audit concepts, not a second recommended
 user workflow.
@@ -262,10 +265,10 @@ IV/V backend remains a reference calculation and is never selected by
 
 ## Radiative and annihilation observables
 
-These APIs moved from GIModel into this package: M1/E1/M2 amplitudes and recoil,
+These APIs live in the transition submodule: M1/E1/M2 amplitudes and recoil,
 gluonic and two-photon annihilation, leptonic factors and widths, mock-meson
 operator overlaps, and charge radii. Existing callers now add
-`using QuarkModelTransitions`; qualified calls use `QuarkModelTransitions`.
+`using GIModel.QuarkModelTransitions`; qualified calls use `QuarkModelTransitions`.
 Generic radial/momentum transforms and overlaps, physical-state composition,
 and annihilation mixing of the mass spectrum remain in GIModel.
 

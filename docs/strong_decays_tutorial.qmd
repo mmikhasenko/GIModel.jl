@@ -54,9 +54,9 @@ We work in the `GIPaper` project, which has `GIModel`,
 using Pkg
 Pkg.activate(joinpath("..", "GIPaper"))
 using GIModel
-using QuarkModelTransitions
+using GIModel.QuarkModelTransitions
 # Qualified public API used by this reference/kernel audit.
-using QuarkModelTransitions: DecayChannel,
+using GIModel.QuarkModelTransitions: DecayChannel,
     LeadingS0,
     MesonMasses,
     ReferenceState,

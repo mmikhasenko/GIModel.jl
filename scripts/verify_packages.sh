@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fast GIModel/GIPaper gate; full operator and reproduction gate: verify_project.sh.
+# Fast GIModel/GIPaper gate; full convergence and reproduction gate: verify_project.sh.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"

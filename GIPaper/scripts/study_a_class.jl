@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 # julia --project=GIPaper/scripts GIPaper/scripts/study_a_class.jl [--pilot]
-using GIModel, QuarkModelTransitions, CSV, SHA, TOML, LinearAlgebra, Printf
+using GIModel, GIModel.QuarkModelTransitions, CSV, SHA, TOML, LinearAlgebra, Printf
 include("a_class_kernels.jl")
 using .AClassKernels
 BLAS.set_num_threads(1)

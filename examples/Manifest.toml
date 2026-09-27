@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.6"
+julia_version = "1.11.5"
 manifest_format = "2.0"
-project_hash = "52efb8025aab6f0ad12c418e2717300bb47cb3a8"
+project_hash = "d672cb0f40515f7a46f6a866181e18efe07c79bf"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -479,7 +479,7 @@ uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.17+0"
 
 [[deps.GIModel]]
-deps = ["KrylovKit", "LinearAlgebra", "Printf", "QuadGK", "SpecialFunctions", "TOML"]
+deps = ["KrylovKit", "LinearAlgebra", "PartialWaveFunctions", "Printf", "QuadGK", "SpecialFunctions", "TOML"]
 path = ".."
 uuid = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
 version = "0.4.0"
@@ -1208,12 +1208,6 @@ version = "2.11.3"
 
     [deps.QuadGK.weakdeps]
     Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
-
-[[deps.QuarkModelTransitions]]
-deps = ["GIModel", "PartialWaveFunctions", "Printf"]
-path = "../QuarkModelTransitions"
-uuid = "87282b95-dd94-4373-9910-f2158c0f9e5e"
-version = "0.2.0"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "StyledStrings", "Unicode"]

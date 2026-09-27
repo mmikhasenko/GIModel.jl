@@ -8,8 +8,8 @@ Abstract supertype of operators evaluated by `matrix_element`. Implementations d
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert PhotonEmission <: QMT.TransitionOperator
 ```
 
@@ -25,8 +25,8 @@ Abstract transition operator for an ordered two-meson final channel.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert PseudoscalarEmission <: QMT.StrongDecayOperator
 ```
 
@@ -58,8 +58,8 @@ constructing this object does not solve a Hamiltonian or certify those inputs.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
 # A modest grid for this example; check convergence for quantitative widths.
@@ -156,8 +156,8 @@ Resolve a solver state, `BasisState`, or label into a `PhysicalState`, retaining
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 basis = BasisState(1, "S", 3, 1; flavors=(:c, :c))
 spectrum = compute_spectrum(params, Meson(masses, :c, :c); levels=[basis], solver=FiniteDifferenceSolver(ngrid=90, rmax=12.0, nlevels_per_channel=1))
@@ -200,8 +200,8 @@ encoded. Solver-native operators must reject this state kind.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 initial = QMT.ReferenceState("rho", 0.77; J=1, parity=-1)
 final = TwoMesonChannel(QMT.ReferenceState("pi+", 0.14; J=0, parity=-1), QMT.ReferenceState("pi-", 0.14; J=0, parity=-1))
 @assert initial.mass_GeV == 0.77
@@ -287,8 +287,8 @@ sorting.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 a1, vector, pion_basis = BasisState(1, "P", 3, 1), BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)
 # A modest grid for this example; check convergence for quantitative widths.
@@ -332,8 +332,8 @@ Relative orbital angular momentum `L` and coupled daughter spin `S`.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = PartialWave(1, 0)
 @assert wave.relative_L == 1
 ```
@@ -388,8 +388,8 @@ exchange symmetry. The external states must carry `J^P` metadata.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 initial = QMT.ReferenceState("rho", 0.77; J=1, parity=-1)
 final = TwoMesonChannel(QMT.ReferenceState("pi+", 0.14; J=0, parity=-1), QMT.ReferenceState("pi-", 0.14; J=0, parity=-1))
 @assert QuarkModelTransitions.allowed_partial_waves(final, initial) == [PartialWave(1, 0)]
@@ -441,8 +441,8 @@ XI. Higher-spin compression remains gated on its own phase audit.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 initial = QMT.ReferenceState("rho", 0.77; J=1, parity=-1)
 final = TwoMesonChannel(QMT.ReferenceState("pi+", 0.14; J=0, parity=-1), QMT.ReferenceState("pi-", 0.14; J=0, parity=-1))
 projection = QMT.partial_wave_projection(final, initial)
@@ -595,8 +595,8 @@ Native Eq. (C2) normalization. For strong amplitudes, the partial width in MeV i
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 a1, vector, pion_basis = BasisState(1, "P", 3, 1), BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)
 # A modest grid for this example; check convergence for quantitative widths.
@@ -631,8 +631,8 @@ Frozen Table V normalization: each amplitude has units MeV^(1/2), and its square
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
 channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
 initial = QMT.ReferenceState("rho", 0.77; J=1, parity=-1)
@@ -669,8 +669,8 @@ Collections are tuples so no field erases its element type.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 a1, vector, pion_basis = BasisState(1, "P", 3, 1), BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)
 # A modest grid for this example; check convergence for quantitative widths.
@@ -720,8 +720,8 @@ Return the available `PartialWave` keys of a strong transition. Read each value 
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 a1, vector, pion_basis = BasisState(1, "P", 3, 1), BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)
 # A modest grid for this example; check convergence for quantitative widths.
@@ -821,8 +821,8 @@ must be resolved; an averaged `:q` label alone does not specify that information
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
 # A modest grid for this example; check convergence for quantitative widths.
@@ -929,8 +929,8 @@ space. Gluonic correction factors multiply the width directly.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
 # A modest grid for this example; check convergence for quantitative widths.

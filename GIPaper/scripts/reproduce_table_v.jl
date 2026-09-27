@@ -17,11 +17,11 @@ Pkg.activate(@__DIR__)
 using CSV
 using Printf
 using GIModel
-using QuarkModelTransitions
+using GIModel.QuarkModelTransitions
 # Internal kernels for reference calculations.
-using QuarkModelTransitions: LeadingS0, calibrate_strong_decay_model, decay_amplitude, decay_momentum, spatial_overlap
+using GIModel.QuarkModelTransitions: LeadingS0, calibrate_strong_decay_model, decay_amplitude, decay_momentum, spatial_overlap
 # Qualified public API used by this reference/kernel audit.
-using QuarkModelTransitions: LeadingS0,
+using GIModel.QuarkModelTransitions: LeadingS0,
     calibrate_strong_decay_model,
     decay_amplitude,
     decay_momentum,

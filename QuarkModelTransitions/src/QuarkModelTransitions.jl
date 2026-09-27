@@ -1,6 +1,6 @@
 module QuarkModelTransitions
 
-using GIModel
+using ..GIModel
 using PartialWaveFunctions: CG
 using Printf
 

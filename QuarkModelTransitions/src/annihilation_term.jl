@@ -7,7 +7,7 @@ belong to the PhysicalState and must not be included here a second time.
 ## Example
 
 ```julia
-using QuarkModelTransitions
+using GIModel.QuarkModelTransitions
 term = AnnihilationTerm((:c, :c), 4/9)
 @assert term.coefficient == 4/9
 ```

@@ -45,5 +45,4 @@ jobs:
             matrix:
                 project:
                     - "."
-                    - QuarkModelTransitions
                     - GIPaper

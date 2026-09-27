@@ -6,8 +6,8 @@ A spectroscopically selected photon-transition kernel.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
 # A modest grid for this example; check convergence for quantitative widths.
@@ -31,8 +31,8 @@ Leading M1 transition between states with the same radial quantum number.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 initial_wave = OscillatorWave(0, 0.5, [1.0])
 initial = PhysicalState("parent", 3.5, [(
     basis=BasisState(1, "S", 3, 1; flavors=(:c, :c)),
@@ -57,8 +57,8 @@ M1 transition between states with different radial quantum numbers.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 initial_wave = OscillatorWave(0, 0.5, [0.0, 1.0])
 initial = PhysicalState("parent", 3.5, [(
     basis=BasisState(2, "S", 3, 1; flavors=(:c, :c)),
@@ -83,8 +83,8 @@ Spin-conserving electric-dipole transition between S and P states.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 initial_wave = OscillatorWave(1, 0.5, [1.0])
 initial = PhysicalState("parent", 3.5, [(
     basis=BasisState(1, "P", 3, 1; flavors=(:c, :c)),
@@ -109,8 +109,8 @@ Spin-flip electric-dipole transition from a triplet P1 to a singlet S0 state.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 initial_wave = OscillatorWave(1, 0.5, [1.0])
 initial = PhysicalState("parent", 3.5, [(
     basis=BasisState(1, "P", 3, 1; flavors=(:c, :c)),
@@ -135,8 +135,8 @@ Spin-flip magnetic-quadrupole transition from a triplet P2 to a singlet S0 state
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 initial_wave = OscillatorWave(1, 0.5, [1.0])
 initial = PhysicalState("parent", 3.5, [(
     basis=BasisState(1, "P", 3, 2; flavors=(:c, :c)),
@@ -174,8 +174,8 @@ flavor information to derive isospin charges automatically.
 ## Example
 
 ```julia
-using QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 emitter = QMT.PhotonEmitter((:c, :c), 1, 4/3)
 @assert emitter.coefficient == 4/3
 ```
@@ -235,8 +235,8 @@ Use [`mass_correction_factor`](@ref) for comparisons at another photon momentum.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
 # A modest grid for this example; check convergence for quantitative widths.
@@ -313,8 +313,8 @@ The computed photon momentum is stored directly as `momentum_GeV`.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
 # A modest grid for this example; check convergence for quantitative widths.
@@ -401,8 +401,8 @@ components must select one compatible class.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
 # A modest grid for this example; check convergence for quantitative widths.

@@ -2,8 +2,9 @@
 
 This document describes the current `GIModel` runtime. Bare transition
 operators and amplitudes live in `QuarkModelTransitions/`; paper-specific CSV
-loading, comparisons, plots, and residual reports live in `GIPaper/`. Both are
-downstream packages and are not part of the core module.
+loading, comparisons, plots, and residual reports live in `GIPaper/`.
+Transitions are loaded as `GIModel.QuarkModelTransitions`, sharing GIModel’s
+project and test suite. GIPaper remains a separate downstream package.
 
 ## The central contract
 
@@ -123,8 +124,9 @@ recursively composes spectroscopic and flavor mixing, with flavor carried by
 - `QuarkModelTransitions/src/photon_emission.jl` and `radiative_decays.jl`:
   typed photon-current dispatch plus its M1/E1/M2 and recoil primitives.
 - `QuarkModelTransitions/`: transition domain objects, strong and
-  electromagnetic operators, matrix elements, partial waves, and widths. It
-  depends on GIModel; GIModel never depends on it.
+  electromagnetic operators, matrix elements, partial waves, and widths. This
+  submodule is included after the solver definitions and imports its parent
+  with `using ..GIModel`.
 - `GIPaper/`: reference-data interpretation and reproducibility reports.
 
 ## Input ownership

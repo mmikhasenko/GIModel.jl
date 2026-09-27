@@ -18,8 +18,8 @@ Mean relativistic quark energy `⟨E⟩ = ∫ p² Φ² √(m²+p²) dp` over a m
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 mw = momentum_wave(wave, 0)
 @assert QMT.mock_mean_energy(mw, 1.628) > 1.628
@@ -38,8 +38,8 @@ Mock mass `M̃ = ⟨E₁⟩ + ⟨E₂⟩` of a mock wave with constituent masses
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 mw = momentum_wave(wave, 0)
 @assert QMT.mock_wave_mass(mw, 1.628, 1.628) > 2 * 1.628
@@ -63,8 +63,8 @@ with `Mx`, `My` the mock masses of the two states (see `mock_wave_mass`):
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 mw = momentum_wave(wave, 0)
 mass = QMT.mock_wave_mass(mw, 1.628, 1.628)
@@ -98,8 +98,8 @@ with `Ex`, `Ey` the mean quark energies (see `mock_mean_energy`):
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 mw = momentum_wave(wave, 0)
 energy = QMT.mock_mean_energy(mw, 1.628)
@@ -133,8 +133,8 @@ Proton mass in GeV — the unit of the M1 moments, which Table VI prints as μ/�
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QMT.NUCLEON_MASS_GEV ≈ 0.93827
 ```
 
@@ -153,8 +153,8 @@ Photon momentum `q = (M² - M'²) / 2M` for the radiative transition
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QMT.photon_momentum(3.10, 2.98) > 0
 ```
 
@@ -179,8 +179,8 @@ charmonium is `+4/3 I_c` and bottomonium `-2/3 I_b`.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 mw = momentum_wave(wave, 0)
 moment = QMT.m1_transition_moment(mw, mw, 1.628, 1.628, [(4/3, 1.628)])
@@ -233,8 +233,8 @@ e.g. to use model rather than measured masses.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 mw = momentum_wave(wave, 0)
 pw = OscillatorWave(1, 0.5, [1.0])

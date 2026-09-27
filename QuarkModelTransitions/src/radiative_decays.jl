@@ -11,8 +11,8 @@ both the direct and recoil terms.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 excited = OscillatorWave(0, 0.5, [0.0, 1.0])
 @assert isfinite(QMT.m1_recoil_moment(wave, excited, 1.628, 4/3, 0.2))
@@ -50,8 +50,8 @@ light-quark system (Table VI footnote g). Both q and beta are in GeV.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QMT.photon_recoil_form_factor(0.0) == 1.0
 ```
 
@@ -75,8 +75,8 @@ times that for P -> V gamma.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QMT.m1_radiative_width(1.0, 0.1) > 0 # GeV
 ```
 
@@ -103,8 +103,8 @@ physical-state composition supplies them.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QMT.neutral_m1_charge(:c) == 4/3
 ```
 
@@ -135,8 +135,8 @@ S -> P direction. The singlet P1 -> S0 factor is sqrt(2).
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QMT.e1_angular_coefficient(1; singlet=true) == sqrt(2.0)
 ```
 
@@ -166,8 +166,8 @@ include the relative sign of antiquark emission for this multipole.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 pw = OscillatorWave(1, 0.5, [1.0])
 @assert isfinite(QMT.spin_flip_photon_amplitude(wave, pw, [(4/3, 1.628)], 2, 0.2))

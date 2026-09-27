@@ -13,8 +13,8 @@ No differential or helicity matrix element is exposed.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 params, masses = load_parameters_and_quark_masses(default_parameters_path())
 levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
 # A modest grid for this example; check convergence for quantitative widths.

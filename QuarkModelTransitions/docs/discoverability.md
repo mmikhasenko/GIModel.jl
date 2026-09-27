@@ -38,8 +38,8 @@ The [generated inventory](discoverability_graph.md) lists the supported names.
 From the repository root:
 
 ```sh
-julia --project=QuarkModelTransitions QuarkModelTransitions/scripts/audit_documentation.jl
-julia --project=QuarkModelTransitions -e 'using Pkg; Pkg.test()'
+julia --project=. QuarkModelTransitions/scripts/audit_documentation.jl
+julia --project=. -e 'using Pkg; Pkg.test()'
 ```
 
 The first command regenerates the inventory and graph. The same audit runs in

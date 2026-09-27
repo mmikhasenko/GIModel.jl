@@ -154,4 +154,8 @@ include("flavor_mixing.jl")
 export mock_momentum_wave
 include("momentum_waves.jl")
 
+# Transition operators share this package's environment while keeping their own namespace.
+include("../QuarkModelTransitions/src/QuarkModelTransitions.jl")
+export QuarkModelTransitions
+
 end

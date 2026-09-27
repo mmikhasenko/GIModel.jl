@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.6"
+julia_version = "1.11.5"
 manifest_format = "2.0"
-project_hash = "e7cb69b21294f991c335dc9dbe394cc7a96a4e72"
+project_hash = "4420e5c6a5886b982df766c1cb97a47ad7bafcb4"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -497,13 +497,13 @@ uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 version = "1.11.0"
 
 [[deps.GIModel]]
-deps = ["KrylovKit", "LinearAlgebra", "Printf", "QuadGK", "SpecialFunctions", "TOML"]
+deps = ["KrylovKit", "LinearAlgebra", "PartialWaveFunctions", "Printf", "QuadGK", "SpecialFunctions", "TOML"]
 path = "../.."
 uuid = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
 version = "0.4.0"
 
 [[deps.GIPaper]]
-deps = ["CSV", "GIModel", "LinearAlgebra", "Printf", "QuarkModelTransitions", "TOML"]
+deps = ["CSV", "GIModel", "LinearAlgebra", "Printf", "TOML"]
 path = ".."
 uuid = "49ec1c8d-b0ea-4dff-ad2d-05293f1534fc"
 version = "0.1.0"
@@ -1215,12 +1215,6 @@ version = "2.11.3"
 
     [deps.QuadGK.weakdeps]
     Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
-
-[[deps.QuarkModelTransitions]]
-deps = ["GIModel", "PartialWaveFunctions", "Printf"]
-path = "../../QuarkModelTransitions"
-uuid = "87282b95-dd94-4373-9910-f2158c0f9e5e"
-version = "0.2.0"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "StyledStrings", "Unicode"]

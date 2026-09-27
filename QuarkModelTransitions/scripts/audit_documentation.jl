@@ -1,6 +1,6 @@
 # Run from the repository root:
-# julia --project=QuarkModelTransitions QuarkModelTransitions/scripts/audit_documentation.jl
-using GIModel, QuarkModelTransitions
+# julia --project=. QuarkModelTransitions/scripts/audit_documentation.jl
+using GIModel, GIModel.QuarkModelTransitions
 using Test
 
 const PACKAGE_ROOT = dirname(@__DIR__)
@@ -98,7 +98,7 @@ function audit_documentation(; write_graph=false)
             "All $(length(entries)) public docstrings have independently executable examples ($example_count blocks).",
             "Every entry reaches every other entry through explicit help links. GIModel links are validated separately.",
             "", "Regenerate and execute the examples from the repository root:", "",
-            "```sh", "julia --project=QuarkModelTransitions QuarkModelTransitions/scripts/audit_documentation.jl", "```", "",
+            "```sh", "julia --project=. QuarkModelTransitions/scripts/audit_documentation.jl", "```", "",
             "The graph describes help navigation, not function calls or numerical dependencies.", "",
             "| Entry | Access | Incoming | Outgoing |", "|---|---|---:|---:|"]
         for name in sort(collect(PUBLIC_NAMES))

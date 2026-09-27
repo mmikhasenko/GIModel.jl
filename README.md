@@ -28,19 +28,20 @@ worked examples, see [examples](examples/README.md).
 
 ## Packages
 
-The repository holds three Julia packages with a one-way dependency chain,
-GIPaper → QuarkModelTransitions → GIModel (GIPaper also uses GIModel directly).
+The repository holds two Julia packages: GIModel and GIPaper.
+QuarkModelTransitions is a submodule of GIModel, kept in its own folder.
+The package dependency is GIPaper → GIModel.
 
 - **GIModel** (repository root) — pure computation. Mesons are specified by
   quark flavors (`Meson(mq, :c, :b)`), levels by explicit `n^{2S+1}L_J`
   multiplets (`spectrum_levels`), and `compute_spectrum` returns an organized
   `Spectrum` with contribution breakdowns and intra-meson mixing. It owns the
   Schrödinger solvers, physical-state components, wave representations, and
-  generic radial/momentum overlap operations. It knows nothing about decay
-  operators or the paper comparison. Isoscalar annihilation mixing remains here
+  generic radial/momentum overlap operations. It includes transition operators in a separate submodule and knows nothing
+  about the paper comparison. Isoscalar annihilation mixing remains here
   because it changes the mass spectrum.
 - **QuarkModelTransitions** ([`QuarkModelTransitions/`](QuarkModelTransitions/README.md))
-  — quark-model transition operators and observables consuming GIModel states
+  — the `GIModel.QuarkModelTransitions` submodule: quark-model transition operators and observables consuming GIModel states
   and waves: channels, helicities, partial waves, coherent state composition,
   matrix elements, radiative and annihilation observables, charge radii,
   widths, and the frozen Table IV/V reference backend.
@@ -51,15 +52,28 @@ GIPaper → QuarkModelTransitions → GIModel (GIPaper also uses GIModel directl
   [paper tables](GIPaper/docs/paper_tables/README.md) recompute every numbered
   table and spectrum figure of the 1985 paper in the paper's own layout.
 
-To install all three into one environment:
+To install both packages into one environment:
 
 ```julia
 using Pkg
 root = "/absolute/path/to/GIModel.jl"
 Pkg.develop([PackageSpec(path=root),
-    PackageSpec(path=joinpath(root, "QuarkModelTransitions")),
     PackageSpec(path=joinpath(root, "GIPaper"))])
 ```
+
+For spectra and transitions, activate only the repository root:
+
+```julia
+using Pkg
+Pkg.activate("/absolute/path/to/GIModel.jl")
+Pkg.instantiate()
+using GIModel
+using GIModel.QuarkModelTransitions
+```
+
+The second `using` brings transition functions such as `physical_state`,
+`matrix_element`, and `decay_width` into scope. The transition source stays in
+`QuarkModelTransitions/`, with dependencies and tests managed by GIModel.
 
 Also in the repository:
 
@@ -121,7 +135,6 @@ emission, leptonic currents, annihilation, units, and correction factors.
 
 ```bash
 julia --project=. -e 'using Pkg; Pkg.test()'
-julia --project=QuarkModelTransitions -e 'using Pkg; Pkg.test()'
 julia --project=GIPaper -e 'using Pkg; Pkg.test()'
 julia GIPaper/scripts/run_all_spectrum_checks.jl
 julia GIPaper/scripts/paper_tables/generate.jl
@@ -129,15 +142,18 @@ julia GIPaper/scripts/paper_tables/generate.jl
 
 `Pkg.test()` runs each package's quick suite, including
 [Aqua.jl](https://github.com/JuliaTesting/Aqua.jl) quality checks; this is what
-CI runs on every push and pull request. GIModel's solver-convergence sweeps
+CI runs on pushes to main and relevant pull requests. GIModel’s default suite
+also includes all QMT numerical tests and its executable documentation audit;
+see [QMT test coverage](QuarkModelTransitions/test/README.md). There is no
+separate heavy QMT suite. GIModel's solver-convergence sweeps
 (`test/heavy/`, a few minutes) run only on request:
 
 ```bash
 GI_HEAVY_TESTS=true julia --project=. -e 'using Pkg; Pkg.test()'
 ```
 
-Fast GIModel/GIPaper check: `bash scripts/verify_packages.sh`. Full gate, all
-three packages with the heavy tests plus every generated report:
+Fast GIModel/GIPaper check: `bash scripts/verify_packages.sh`. Full gate,
+both packages with the heavy tests plus every generated report:
 
 ```bash
 bash scripts/verify_project.sh

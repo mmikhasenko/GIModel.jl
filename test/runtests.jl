@@ -37,3 +37,8 @@ if lowercase(get(ENV, "GI_HEAVY_TESTS", "false")) in ("1", "true", "yes")
         include(joinpath("heavy", "fixed_channel_solvers.jl"))
     end
 end
+
+# Isolate the transition test globals from the solver suite.
+module TransitionTests
+include("../QuarkModelTransitions/test/runtests.jl")
+end

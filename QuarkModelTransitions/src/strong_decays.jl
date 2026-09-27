@@ -54,8 +54,8 @@ in the paper).
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
 channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
 @assert model.beta_GeV == 0.4
@@ -82,8 +82,8 @@ Use the full polynomial printed in Table IV.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
 channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
 @assert QMT.reduced_decay_amplitude(model, :S, 1.0; convention=QMT.TableIVPolynomial()) ≈ 2.77
@@ -101,8 +101,8 @@ Use only the leading `S0` term employed for the paper's numeric column.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
 channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
 @assert QMT.reduced_decay_amplitude(model, :S, 1.0; convention=QMT.LeadingS0()) == model.S0
@@ -123,8 +123,8 @@ threshold. Pure Kallen two-body momentum, no paper input.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QMT.decay_momentum(0.77, 0.14, 0.14) > 0
 @assert QMT.decay_momentum(0.2, 0.14, 0.14) == 0
 ```
@@ -167,8 +167,8 @@ factor. Both therefore take `k = heavy_fraction`, which defaults to `0.5`.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
 channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
 @assert QMT.reduced_decay_amplitude(model, :A, 0.9) == model.A
@@ -234,8 +234,8 @@ additionally carry the unequal-mass recoil multiplier
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QMT.spatial_overlap(0.36, 1, 0.4) > 0
 ```
 
@@ -277,8 +277,8 @@ separate charm entry point — the mass ratio is the only difference.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
 channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
 @assert QMT.strong_decay_amplitude(model, sqrt(4/3), :A, 1, 0.36) > 0
@@ -323,8 +323,8 @@ given the breakup momenta of the two fit decays. `A` is convention-independent.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 model = QMT.calibrate_strong_decay_model(0.36, 0.35; convention=QMT.LeadingS0())
 @assert model.A > 0
 ```
@@ -378,8 +378,8 @@ flavor content. The A_c P-wave recoil multiplier is still keyed on `class`.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
 channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
 @assert channel.qbar_power == 1
@@ -446,8 +446,8 @@ See `reduced_matrix_element` (`= coefficient*reduced`) and
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
 channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
 amplitude = QMT.decay_amplitude(model, channel, 0.36)
@@ -476,8 +476,8 @@ The dimensionless flavor-spin/reduced interaction factor
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
 channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
 amplitude = QMT.decay_amplitude(model, channel, 0.36)
@@ -510,8 +510,8 @@ Table IV formula.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
 channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
 amplitude = QMT.decay_amplitude(model, channel, 0.36)
@@ -547,8 +547,8 @@ used by solver-native operators, which derive all allowed waves together.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
 channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
 initial = QMT.ReferenceState("rho", 0.77; J=1, parity=-1)
@@ -677,8 +677,8 @@ masses (`compute_spectrum`). Access with `meson_mass` or indexing.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 masses = QMT.MesonMasses(Dict("rho" => 0.77, "pi" => 0.14))
 @assert masses["rho"] == 0.77
 ```
@@ -701,8 +701,8 @@ registered.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 masses = QMT.MesonMasses(Dict("rho" => 0.77))
 @assert QMT.meson_mass(masses, "rho") == 0.77
 ```

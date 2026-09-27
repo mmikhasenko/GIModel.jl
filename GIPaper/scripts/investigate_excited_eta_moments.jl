@@ -1,8 +1,8 @@
 #!/usr/bin/env julia
 # Replay recorded native waves; replace only the parent mixing coefficients.
 # Run trace_rate_inputs.jl first when refreshing the underlying spectra.
-using GIModel, QuarkModelTransitions, CSV, TOML, Printf, LinearAlgebra, SHA
-using QuarkModelTransitions: m1_transition_moment, neutral_m1_charge
+using GIModel, GIModel.QuarkModelTransitions, CSV, TOML, Printf, LinearAlgebra, SHA
+using GIModel.QuarkModelTransitions: m1_transition_moment, neutral_m1_charge
 
 root = dirname(@__DIR__)
 tracepath = joinpath(root, "docs/input_traces/table_vi.toml")

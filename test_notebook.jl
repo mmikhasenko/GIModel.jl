@@ -8,10 +8,10 @@ using InteractiveUtils
 # ╠═╡ show_logs = false
 begin
 	using Pkg
-	Pkg.activate(joinpath(@__DIR__, "QuarkModelTransitions"))
+	Pkg.activate(@__DIR__)
 	# 
-	using QuarkModelTransitions
-	using QuarkModelTransitions.GIModel
+	using GIModel.QuarkModelTransitions
+	using GIModel
 end
 
 # ╔═╡ f1f369b1-954a-4ba9-91f9-87d0032d2f80

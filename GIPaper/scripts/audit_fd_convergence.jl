@@ -6,11 +6,11 @@ using Pkg
 Pkg.activate(@__DIR__; io = devnull)
 
 using GIModel
-using QuarkModelTransitions
+using GIModel.QuarkModelTransitions
 # Internal kernels for reference calculations.
-using QuarkModelTransitions: m1_transition_moment, observable_momentum_wave, wavefunction_origin_smearing
+using GIModel.QuarkModelTransitions: m1_transition_moment, observable_momentum_wave, wavefunction_origin_smearing
 # Qualified public API used by this reference/kernel audit.
-using QuarkModelTransitions: m1_transition_moment,
+using GIModel.QuarkModelTransitions: m1_transition_moment,
     observable_momentum_wave
 using LinearAlgebra
 using Printf

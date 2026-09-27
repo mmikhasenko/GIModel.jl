@@ -28,8 +28,8 @@ radial nodes, matching the Table VII sign pattern within a quarkonium family).
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 @assert isfinite(QuarkModelTransitions.wavefunction_origin_smearing(wave, 1.628))
 ```
@@ -68,8 +68,8 @@ Supported lowest-order annihilation channels: `:S0_2g`, `:S1_3g`, `:P2_2g`, and 
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert :S0_2g in QMT.GLUONIC_CHANNELS
 ```
 
@@ -102,8 +102,8 @@ which tabulates √Γ with the sign of `S_L`). `channel` ∈ `GLUONIC_CHANNELS`;
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 smearing = QuarkModelTransitions.wavefunction_origin_smearing(wave, 1.628)
 amplitude = QuarkModelTransitions.gluonic_annihilation_amplitude(:S0_2g, smearing, 0.3, 1.628)
@@ -126,8 +126,8 @@ Lowest-order gluonic annihilation width Γ (GeV) = amplitude². See
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 smearing = QuarkModelTransitions.wavefunction_origin_smearing(wave, 1.628)
 @assert QuarkModelTransitions.gluonic_annihilation_width(:S0_2g, smearing, 0.3, 1.628) > 0
@@ -169,8 +169,8 @@ retain their exact infinite-domain representation.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 mw = QMT.observable_momentum_wave(wave, 0)
 @assert momentum_expect(mw, p -> 1.0) ≈ 1
@@ -209,8 +209,8 @@ This is the `M̃` appearing in the Table VII(a) leptonic-factor prefactors.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 @assert QMT.mock_meson_mass(wave, 1.628, 1.628) > 2 * 1.628
 ```
@@ -244,8 +244,8 @@ Map each leptonic factor symbol to `(orbital_L, equal_masses_required)`. Use thi
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QMT.LEPTONIC_FACTOR_KINDS[:P_P] == (0, false)
 ```
 
@@ -281,8 +281,8 @@ factor (fix a phase convention upstream for sign comparisons).
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 factor = QuarkModelTransitions.leptonic_decay_factor(:V_V, wave, 1.628, 1.628, 3.10)
 f_V = sqrt(16/3) * factor
@@ -338,8 +338,8 @@ Electromagnetic fine-structure constant used in the Table VII(b) γγ formulas.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QMT.ALPHA_EM ≈ 1/137.036
 ```
 
@@ -373,8 +373,8 @@ The sign follows `q_eff` and the wave's phase convention.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 amplitude = QuarkModelTransitions.two_photon_amplitude(:P, wave, 1.628, 2.98, 4/9)
 width_GeV = abs2(amplitude)
@@ -430,8 +430,8 @@ Conversion (ħc)² : an r² in GeV⁻² is `HBARC_FM2 · r²` in fm².
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert 1.0 * QMT.HBARC_FM2 ≈ 0.19733^2 # 1 GeV^-2 in fm^2
 ```
 
@@ -458,8 +458,8 @@ quark-position operator, `f` the fit exponent (0.2, fitted to the π⁺). `e1`,
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 wave = OscillatorWave(0, 0.5, [1.0])
 radius_GeV2 = charge_radius_squared(wave, 0.22, 2/3, 0.22, 1/3)
 radius_fm2 = QMT.HBARC_FM2 * radius_GeV2
@@ -507,8 +507,8 @@ Fermi coupling G_F in GeV⁻² (the `G` of Eqs. D7/D9).
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QMT.G_FERMI_GEV > 0
 ```
 
@@ -533,8 +533,8 @@ by `|V_CKM|²` for a specific quark transition. Returns 0 if `m_ℓ ≥ M_P`.
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QuarkModelTransitions.leptonic_pseudoscalar_width(0.130/0.140, 0.140, 0.106) > 0
 ```
 
@@ -568,8 +568,8 @@ value). The lepton mass is neglected (massless-lepton limit, as written).
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QuarkModelTransitions.dilepton_vector_width(0.13, 3.10) > 0
 ```
 
@@ -597,8 +597,8 @@ included (reduced `G²`). Returns 0 if `M_A1 ≥ m_τ` (channel closed).
 ## Example
 
 ```julia
-using GIModel, QuarkModelTransitions
-import QuarkModelTransitions as QMT
+using GIModel, GIModel.QuarkModelTransitions
+import GIModel.QuarkModelTransitions as QMT
 @assert QuarkModelTransitions.axial_tau_width(0.1, 1.23, 1.777) > 0
 ```
 

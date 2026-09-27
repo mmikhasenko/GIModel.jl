@@ -4,7 +4,7 @@ GIPaper is the paper-reproduction and comparison layer for GIModel.
 
 - `GIModel` owns model parameters, physics types, numerical solvers, spectra,
   wave operations and mass-spectrum mixing.
-- `QuarkModelTransitions` owns decay operators, radiative/annihilation
+- `GIModel.QuarkModelTransitions` owns decay operators, radiative/annihilation
   amplitudes, widths, charge radii and the frozen Table IV/V backend.
 - `GIPaper` owns digitized 1985-paper data, paper-row adapters, reference-state
   matching, residual reports, and reproduction audits.
@@ -13,14 +13,13 @@ GIPaper is the paper-reproduction and comparison layer for GIModel.
 - `GIPaper/extraction/` contains the isolated Python OCR/data-provenance tools;
   neither Julia package depends on them.
 
-For a downstream Julia 1.11+ environment, develop the three local packages
+For a downstream Julia 1.11+ environment, develop the two local packages
 in one operation (replace the path with your checkout):
 
 ```julia
 using Pkg
 root = "/absolute/path/to/GIModel.jl"
 Pkg.develop([PackageSpec(path=root),
-    PackageSpec(path=joinpath(root, "QuarkModelTransitions")),
     PackageSpec(path=joinpath(root, "GIPaper"))])
 using GIModel, GIPaper
 params, mq = load_parameters_and_quark_masses(model_parameters_path())
