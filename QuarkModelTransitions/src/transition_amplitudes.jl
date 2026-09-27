@@ -489,7 +489,8 @@ The implemented operator classes are:
 - [`TableVReference`](@ref): one frozen GI Table V row with its already selected
   partial wave, intended for paper reproduction and audit.
 - [`PhotonEmission`](@ref): the published Appendix-D mock-meson realization of
-  M1, E1, or M2 photon emission, with explicit electromagnetic-current terms.
+  M1, E1, or M2 photon emission. Spectroscopy selects the typed kernel and
+  explicit flavor components determine the standard electromagnetic current.
 
 Annihilation and leptonic observables still use their specialized exported
 functions. General quark-pair creation (including `s sbar` creation),

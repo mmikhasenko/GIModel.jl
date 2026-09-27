@@ -4,7 +4,13 @@
         :StrongDecayOperator,
         :PseudoscalarEmission,
         :PhotonEmission,
-        :PhotonEmitter,
+        :PhotonTransitionClass,
+        :DirectM1,
+        :HinderedM1,
+        :AllowedE1,
+        :SpinFlipE1,
+        :SpinFlipM2,
+        :photon_transition_class,
         :RadiativeAmplitude,
         :PhysicalState,
         :TwoMesonChannel,
@@ -18,6 +24,8 @@
     )
     @test all(name -> Base.isexported(QuarkModelTransitions, name), transition_names)
     @test all(name -> !Base.isexported(GIModel, name), transition_names)
+    @test !Base.isexported(QuarkModelTransitions, :PhotonEmitter)
+    @test !Base.isexported(QuarkModelTransitions, :ResolvedPhotonCurrent)
 
     @test all(name -> !isdefined(GIModel, name), transition_names)
     for name in (:radial_overlap, :momentum_overlap, :momentum_functional,

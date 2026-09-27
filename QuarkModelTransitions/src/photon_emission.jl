@@ -1,15 +1,38 @@
 # High-level photon-emission operator for the common matrix_element API.
 
+"""A spectroscopically selected photon-transition kernel."""
+abstract type PhotonTransitionClass end
+
+"""Leading M1 transition between states with the same radial quantum number."""
+struct DirectM1 <: PhotonTransitionClass end
+
+"""M1 transition between states with different radial quantum numbers."""
+struct HinderedM1 <: PhotonTransitionClass end
+
+"""Spin-conserving electric-dipole transition between S and P states."""
+struct AllowedE1 <: PhotonTransitionClass end
+
+"""Spin-flip electric-dipole transition from a triplet P1 to a singlet S0 state."""
+struct SpinFlipE1 <: PhotonTransitionClass end
+
+"""Spin-flip magnetic-quadrupole transition from a triplet P2 to a singlet S0 state."""
+struct SpinFlipM2 <: PhotonTransitionClass end
+
+_photon_multipole(::Union{DirectM1,HinderedM1}) = :M1
+_photon_multipole(::Union{AllowedE1,SpinFlipE1}) = :E1
+_photon_multipole(::SpinFlipM2) = :M2
+
+abstract type PhotonCurrent end
+
+"""Derive the electromagnetic current from explicit quark flavors."""
+struct StandardPhotonCurrent <: PhotonCurrent end
+
 """
     PhotonEmitter(flavors, constituent, coefficient)
 
-One explicitly resolved term in the electromagnetic current. `flavors` is the
-ordered `(quark, antiquark)` pair to which the term applies, `constituent` is
-`1` or `2`, and `coefficient` contains the charge and flavor/isospin factor.
-
-Keeping this information explicit is intentional: a coarse `(:q, :q)` radial
-component does not say whether a physical transition contains `e_u + e_d` or
-`e_u - e_d`.
+One resolved term in an electromagnetic current. This technical adapter is
+used by paper-reproduction code whose legacy `:q` states do not retain enough
+flavor information to derive isospin charges automatically.
 """
 struct PhotonEmitter
     flavors::Tuple{Symbol,Symbol}
@@ -29,26 +52,35 @@ struct PhotonEmitter
     end
 end
 
-"""
-    PhotonEmission(multipole, quark_masses, emitters;
-                   recoil=false, recoil_form_factor=false,
-                   magnetic_exponent=0.7, electric_exponent=0.5,
-                   recoil_beta_GeV=0.40)
-
-The Godfrey--Isgur photon-emission operator in the published Appendix-D
-mock-meson prescription. `multipole` is `:M1`, `:E1`, or `:M2`; `emitters` is
-an iterable of [`PhotonEmitter`](@ref) terms.
-
-This is the paper's hybrid realization of the one-body current introduced by
-Eq. (22), not a literal unsmeared evaluation of Eq. (22). The two `m/E`
-exponents and optional recoil form factor are stored in the operator and
-therefore retained in result provenance.
-"""
-struct PhotonEmission{E<:Tuple} <: TransitionOperator
-    multipole::Symbol
-    quark_masses::QuarkMassTable
+"""A pre-resolved current for reproducing a source with coarse flavor states."""
+struct ResolvedPhotonCurrent{E<:Tuple} <: PhotonCurrent
     emitters::E
-    recoil::Bool
+    function ResolvedPhotonCurrent(emitters)
+        resolved = Tuple(emitters)
+        isempty(resolved) && throw(ArgumentError("resolved photon current cannot be empty"))
+        all(term -> term isa PhotonEmitter, resolved) || throw(ArgumentError(
+            "every resolved photon-current term must be a PhotonEmitter",
+        ))
+        return new{typeof(resolved)}(resolved)
+    end
+end
+
+"""
+    PhotonEmission(quark_masses; recoil_order=0, ...)
+
+The Godfrey--Isgur photon-emission operator in the Appendix-D mock-meson
+prescription. The transition class and multipole are inferred from the final
+and initial states by [`photon_transition_class`](@ref).
+
+`recoil_order=0` selects the class-specific leading expression. Order `2`
+adds the relative `(qr)^2` correction where that correction is implemented;
+currently this is the published M1 `E_2` term. Unsupported combinations fail
+explicitly rather than silently dropping a requested correction.
+"""
+struct PhotonEmission{C<:PhotonCurrent} <: TransitionOperator
+    quark_masses::QuarkMassTable
+    recoil_order::Int
+    current::C
     recoil_form_factor::Bool
     magnetic_exponent::Float64
     electric_exponent::Float64
@@ -56,22 +88,16 @@ struct PhotonEmission{E<:Tuple} <: TransitionOperator
 end
 
 function PhotonEmission(
-    multipole::Symbol,
-    quark_masses::QuarkMassTable,
-    emitters;
-    recoil::Bool = false,
+    quark_masses::QuarkMassTable;
+    recoil_order::Integer = 0,
+    current::PhotonCurrent = StandardPhotonCurrent(),
     recoil_form_factor::Bool = false,
     magnetic_exponent::Real = ELECTROMAGNETIC_DEFAULTS.magnetic_exponent,
     electric_exponent::Real = ELECTROMAGNETIC_DEFAULTS.electric_exponent,
     recoil_beta_GeV::Real = ELECTROMAGNETIC_DEFAULTS.recoil_beta_GeV,
 )
-    multipole in (:M1, :E1, :M2) || throw(ArgumentError(
-        "photon multipole must be :M1, :E1, or :M2",
-    ))
-    resolved = Tuple(emitters)
-    isempty(resolved) && throw(ArgumentError("PhotonEmission needs at least one emitter term"))
-    all(term -> term isa PhotonEmitter, resolved) || throw(ArgumentError(
-        "every photon-current term must be a PhotonEmitter",
+    recoil_order in (0, 2) || throw(ArgumentError(
+        "recoil_order must be 0 (leading expression) or 2 (relative (qr)^2 correction)",
     ))
     all(isfinite(mass) && mass > 0 for mass in values(quark_masses)) ||
         throw(ArgumentError("constituent masses must be finite and positive"))
@@ -86,28 +112,19 @@ function PhotonEmission(
     isfinite(beta) && beta > 0 || throw(ArgumentError(
         "photon recoil beta must be finite and positive",
     ))
-    recoil && multipole != :M1 && throw(ArgumentError(
-        "the implemented hindered-transition recoil term applies only to M1",
-    ))
-    return PhotonEmission{typeof(resolved)}(
-        multipole, copy(quark_masses), resolved, recoil, recoil_form_factor,
+    return PhotonEmission{typeof(current)}(
+        copy(quark_masses), Int(recoil_order), current, recoil_form_factor,
         fm, fe, beta,
     )
 end
 
-PhotonEmission(
-    multipole::Symbol,
-    quark_masses::QuarkMassTable,
-    emitter::PhotonEmitter;
-    kwargs...,
-) = PhotonEmission(multipole, quark_masses, (emitter,); kwargs...)
-
 """A photon matrix element and its complete coherent component decomposition."""
-struct RadiativeAmplitude{O,I,F,K,V<:Number,T<:Tuple,P}
+struct RadiativeAmplitude{O,I,F,K,C<:PhotonTransitionClass,V<:Number,T<:Tuple,P}
     operator::O
     initial::I
     final::F
     kinematics::K
+    transition_class::C
     multipole::Symbol
     value::V
     terms::T
@@ -115,7 +132,7 @@ struct RadiativeAmplitude{O,I,F,K,V<:Number,T<:Tuple,P}
 end
 
 function _photon_mass(operator::PhotonEmission, flavor::Symbol)
-    canonical = flavor === :n ? :q : flavor
+    canonical = flavor in (:u, :d, :n) ? :q : flavor
     key = String(canonical)
     haskey(operator.quark_masses, key) || throw(ArgumentError(
         "PhotonEmission has no constituent mass for flavor :$flavor",
@@ -134,143 +151,199 @@ end
 _resolve_kinematics(final::TransitionState, initial::TransitionState, ::OnShell) =
     CMKinematics(_on_shell_photon_momentum(final, initial))
 
-function _photon_component_kind(
-    multipole::Symbol,
-    daughter::StateComponent,
-    parent::StateComponent,
-)
+function _component_transition_class(daughter::StateComponent, parent::StateComponent)
     Ld = orbital_angular_momentum(daughter.basis.L_label)
     Lp = orbital_angular_momentum(parent.basis.L_label)
-    if multipole == :M1
-        Ld == Lp || throw(ArgumentError("M1 requires equal internal orbital angular momentum"))
-        daughter.basis.multiplicity != parent.basis.multiplicity || throw(ArgumentError(
-            "the implemented M1 kernel requires a singlet--triplet transition",
-        ))
-        Set((daughter.basis.multiplicity, parent.basis.multiplicity)) == Set((1, 3)) ||
-            throw(ArgumentError("M1 requires spin multiplicities 1 and 3"))
-        Ld == 0 || throw(ArgumentError("the implemented M1 mock-meson kernel is S-wave only"))
-        return :magnetic
+    md, mp = daughter.basis.multiplicity, parent.basis.multiplicity
+    if Ld == 0 && Lp == 0 && Set((md, mp)) == Set((1, 3))
+        return daughter.basis.n == parent.basis.n ? DirectM1() : HinderedM1()
     end
     Set((Ld, Lp)) == Set((0, 1)) || throw(ArgumentError(
-        "$multipole requires an S--P transition in the implemented Table-VI kernel",
+        "photon kernel supports S--S spin flips and S--P transitions; got L=$Lp -> L=$Ld",
     ))
-    sw = Ld == 0 ? daughter : parent
-    pw = Ld == 1 ? daughter : parent
+    sw, pw = Ld == 0 ? (daughter, parent) : (parent, daughter)
     if sw.basis.multiplicity == pw.basis.multiplicity
-        multipole == :E1 || throw(ArgumentError("spin-conserving S--P emission is E1"))
-        return :electric
+        return AllowedE1()
     end
     (sw.basis.multiplicity, pw.basis.multiplicity) == (1, 3) || throw(ArgumentError(
-        "the implemented spin-flip kernel requires 1S0 and 3P_J states",
-    ))
-    expected = pw.basis.J == 2 ? :M2 : pw.basis.J == 1 ? :E1 : nothing
-    multipole == expected || throw(ArgumentError(
-        "3P$(pw.basis.J) -> 1S0 spin flip requires $(something(expected, :unsupported))",
+        "spin-flip photon kernel requires 3P_J -> 1S0",
     ))
     Lp == 1 || throw(ArgumentError(
-        "the implemented spin-flip Table-VI kernel is for P-wave parent emission",
+        "the implemented spin-flip photon kernel requires the P wave to be the parent",
     ))
-    return :spin_flip
+    pw.basis.J == 1 && return SpinFlipE1()
+    pw.basis.J == 2 && return SpinFlipM2()
+    throw(ArgumentError("3P$(pw.basis.J) -> 1S0 has no implemented photon kernel"))
+end
+
+_same_photon_family(a::PhotonTransitionClass, b::PhotonTransitionClass) =
+    (a isa Union{DirectM1,HinderedM1} && b isa Union{DirectM1,HinderedM1}) ||
+    typeof(a) == typeof(b)
+
+"""
+    photon_transition_class(final, initial)
+
+Infer the photon kernel from the states' orbital angular momentum, spin,
+total angular momentum, and radial quantum numbers. All coherently mixed
+components must select one compatible class.
+"""
+function photon_transition_class(final::PhysicalState, initial::PhysicalState)
+    classes = PhotonTransitionClass[]
+    for parent in initial.components, daughter in final.components
+        daughter.basis.flavors == parent.basis.flavors || continue
+        push!(classes, _component_transition_class(daughter, parent))
+    end
+    isempty(classes) && throw(ArgumentError(
+        "initial and final states have no shared pure-flavor component",
+    ))
+    selected = first(classes)
+    all(candidate -> _same_photon_family(selected, candidate), classes) ||
+        throw(ArgumentError("mixed-state components imply incompatible photon-transition classes"))
+    if selected isa Union{DirectM1,HinderedM1}
+        return any(candidate -> candidate isa HinderedM1, classes) ? HinderedM1() : DirectM1()
+    end
+    return selected
+end
+
+function _quark_charge(flavor::Symbol)
+    flavor in (:u, :c) && return 2 / 3
+    flavor in (:d, :s, :b) && return -1 / 3
+    flavor in (:q, :n) && throw(ArgumentError(
+        "flavor :$flavor does not determine an electromagnetic current; " *
+        "use explicit :u/:d flavor components",
+    ))
+    throw(ArgumentError("unsupported electromagnetic flavor :$flavor"))
+end
+
+function _photon_emitters(
+    ::StandardPhotonCurrent,
+    class::PhotonTransitionClass,
+    flavors::Tuple{Symbol,Symbol},
+)
+    f1, f2 = flavors
+    c1, c2 = _quark_charge(f1), _quark_charge(f2)
+    class isa Union{SpinFlipE1,SpinFlipM2} && (c2 = -c2)
+    return (PhotonEmitter(flavors, 1, c1), PhotonEmitter(flavors, 2, c2))
+end
+
+function _photon_emitters(
+    current::ResolvedPhotonCurrent,
+    ::PhotonTransitionClass,
+    flavors::Tuple{Symbol,Symbol},
+)
+    return filter(emitter -> emitter.flavors == flavors, current.emitters)
 end
 
 function _photon_pure_component(
     operator::PhotonEmission,
+    class::Union{DirectM1,HinderedM1},
     emitter::PhotonEmitter,
     daughter::StateComponent,
     parent::StateComponent,
     q::Real,
 )
-    flavors = parent.basis.flavors
-    daughter.basis.flavors == flavors || return nothing
-    emitter.flavors == flavors || return nothing
-    kind = _photon_component_kind(operator.multipole, daughter, parent)
-    masses = (_photon_mass(operator, flavors[1]), _photon_mass(operator, flavors[2]))
-    m_emit = masses[emitter.constituent]
-    coefficient = emitter.coefficient
-    value = if kind == :magnetic
-        singlet, triplet = parent.basis.multiplicity == 1 ?
-            (parent, daughter) : (daughter, parent)
-        if operator.recoil
-            masses[1] == masses[2] || throw(ArgumentError(
-                "the published hindered-M1 recoil prescription is equal-flavor only",
-            ))
-            m1_recoil_moment(
-                singlet.wave, triplet.wave, m_emit, coefficient, q;
-                magnetic_exponent = operator.magnetic_exponent,
-                electric_exponent = operator.electric_exponent,
-            )
-        else
-            m1_transition_moment(
-                momentum_wave(singlet.wave, 0), momentum_wave(triplet.wave, 0),
-                masses[1], masses[2], [(coefficient, m_emit)];
-                exponent = operator.magnetic_exponent,
-            )
-        end
-    else
-        Ld = orbital_angular_momentum(daughter.basis.L_label)
-        sw, pw = Ld == 0 ? (daughter, parent) : (parent, daughter)
-        if kind == :spin_flip
-            spin_flip_photon_amplitude(
-                sw.wave, pw.wave, [(coefficient, m_emit)], pw.basis.J, q;
-                exponent = operator.electric_exponent,
-            )
-        else
-            angular = e1_angular_coefficient(
-                pw.basis.J;
-                singlet = sw.basis.multiplicity == 1,
-                parent_is_S = orbital_angular_momentum(parent.basis.L_label) == 0,
-            )
-            e1_transition_amplitude(
-                sw.wave, momentum_wave(sw.wave, 0),
-                pw.wave, momentum_wave(pw.wave, 1), m_emit,
-                qvalue -> coefficient * angular * qvalue,
-                1.0, 0.0; q = q, exponent = operator.electric_exponent,
-            )
-        end
+    masses = (_photon_mass(operator, parent.basis.flavors[1]),
+              _photon_mass(operator, parent.basis.flavors[2]))
+    singlet, triplet = parent.basis.multiplicity == 1 ?
+        (parent, daughter) : (daughter, parent)
+    if operator.recoil_order == 2
+        masses[1] == masses[2] || throw(ArgumentError(
+            "the published order-2 M1 recoil prescription is equal-mass only",
+        ))
+        return m1_recoil_moment(
+            singlet.wave, triplet.wave, masses[emitter.constituent],
+            emitter.coefficient, q;
+            magnetic_exponent = operator.magnetic_exponent,
+            electric_exponent = operator.electric_exponent,
+        )
     end
-    operator.recoil_form_factor &&
-        (value *= photon_recoil_form_factor(q; beta = operator.recoil_beta_GeV))
-    return value
+    return m1_transition_moment(
+        momentum_wave(singlet.wave, 0), momentum_wave(triplet.wave, 0),
+        masses[1], masses[2],
+        [(emitter.coefficient, masses[emitter.constituent])];
+        exponent = operator.magnetic_exponent,
+    )
 end
 
-"""
-    matrix_element(final, operator::PhotonEmission, initial; kinematics=OnShell())
+function _photon_pure_component(
+    operator::PhotonEmission,
+    class::AllowedE1,
+    emitter::PhotonEmitter,
+    daughter::StateComponent,
+    parent::StateComponent,
+    q::Real,
+)
+    operator.recoil_order == 0 || throw(ArgumentError(
+        "recoil_order=2 is not implemented for AllowedE1",
+    ))
+    Ld = orbital_angular_momentum(daughter.basis.L_label)
+    sw, pw = Ld == 0 ? (daughter, parent) : (parent, daughter)
+    angular = e1_angular_coefficient(
+        pw.basis.J;
+        singlet = sw.basis.multiplicity == 1,
+        parent_is_S = orbital_angular_momentum(parent.basis.L_label) == 0,
+    )
+    m_emit = _photon_mass(operator, parent.basis.flavors[emitter.constituent])
+    return e1_transition_amplitude(
+        sw.wave, momentum_wave(sw.wave, 0), pw.wave, momentum_wave(pw.wave, 1),
+        m_emit, qvalue -> emitter.coefficient * angular * qvalue,
+        1.0, 0.0; q = q, exponent = operator.electric_exponent,
+    )
+end
 
-Evaluate a radiative matrix element between resolved physical mesons. The
-result coherently composes their pure flavor components and records each
-emitter contribution. M1 values are magnetic moments in nuclear magnetons;
-E1/M2 values are Table-VI amplitudes in `MeV^(1/2)`.
-"""
-function matrix_element(
+function _photon_pure_component(
+    operator::PhotonEmission,
+    class::Union{SpinFlipE1,SpinFlipM2},
+    emitter::PhotonEmitter,
+    daughter::StateComponent,
+    parent::StateComponent,
+    q::Real,
+)
+    operator.recoil_order == 0 || throw(ArgumentError(
+        "recoil_order=2 is not implemented for $(nameof(typeof(class)))",
+    ))
+    Ld = orbital_angular_momentum(daughter.basis.L_label)
+    sw, pw = Ld == 0 ? (daughter, parent) : (parent, daughter)
+    m_emit = _photon_mass(operator, parent.basis.flavors[emitter.constituent])
+    return spin_flip_photon_amplitude(
+        sw.wave, pw.wave, [(emitter.coefficient, m_emit)], pw.basis.J, q;
+        exponent = operator.electric_exponent,
+    )
+end
+
+function _assemble_photon_amplitude(
+    class::PhotonTransitionClass,
     final::PhysicalState,
     operator::PhotonEmission,
-    initial::PhysicalState;
-    kinematics::TransitionKinematics = OnShell(),
+    initial::PhysicalState,
+    resolved::CMKinematics,
 )
-    resolved = _resolve_kinematics(final, initial, kinematics)
     q = resolved.momentum_GeV
-    q isa Real && q >= 0 || throw(ArgumentError(
-        "PhotonEmission requires a real non-negative photon momentum",
-    ))
     terms = TransitionTerm[]
     total = 0.0 + 0.0im
     matched = false
     for parent in initial.components, daughter in final.components
+        flavors = parent.basis.flavors
+        daughter.basis.flavors == flavors || continue
+        component_class = _component_transition_class(daughter, parent)
+        _same_photon_family(class, component_class) || continue
         mixing = parent.coefficient * conj(daughter.coefficient)
-        for emitter in operator.emitters
-            pure = _photon_pure_component(operator, emitter, daughter, parent, q)
-            isnothing(pure) && continue
+        for emitter in _photon_emitters(operator.current, class, flavors)
             matched = true
+            pure = _photon_pure_component(operator, component_class, emitter, daughter, parent, q)
+            operator.recoil_form_factor &&
+                (pure *= photon_recoil_form_factor(q; beta = operator.recoil_beta_GeV))
             contribution = mixing * pure
             total += contribution
             T = ComplexF64
             push!(terms, TransitionTerm(
-                "$(parent.basis.label) -> $(daughter.basis.label), " *
-                "emitter=$(emitter.constituent)",
+                "$(parent.basis.label) -> $(daughter.basis.label), emitter=$(emitter.constituent)",
                 T(mixing), one(T), T(pure), T(contribution),
                 (
                     source = :GI1985_AppendixD,
-                    multipole = operator.multipole,
+                    transition_class = nameof(typeof(component_class)),
+                    multipole = _photon_multipole(component_class),
+                    recoil_order = operator.recoil_order,
                     flavors = emitter.flavors,
                     constituent = emitter.constituent,
                     charge_coefficient = emitter.coefficient,
@@ -279,26 +352,65 @@ function matrix_element(
         end
     end
     matched || throw(ArgumentError(
-        "no PhotonEmitter term matches a shared pure-flavor component of " *
-        "$(initial.label) and $(final.label)",
+        "the photon current has no term matching a shared pure-flavor component",
     ))
-    units = operator.multipole == :M1 ? :nuclear_magnetons : :MeV_sqrt
+    multipole = _photon_multipole(class)
+    units = multipole == :M1 ? :nuclear_magnetons : :MeV_sqrt
     provenance = (
         backend = :mock_meson_appendix_d,
-        source = (:GI1985_Eq22, :GI1985_AppendixD, :GI1985_TableVI),
+        source = (:GI1985_Eq22, :GI1985_AppendixD),
         prescription = :hybrid_mock_meson,
+        transition_class = nameof(typeof(class)),
+        recoil_order = operator.recoil_order,
         magnetic_exponent = operator.magnetic_exponent,
         electric_exponent = operator.electric_exponent,
-        hindered_m1_recoil = operator.recoil,
         recoil_form_factor = operator.recoil_form_factor,
         recoil_beta_GeV = operator.recoil_beta_GeV,
         amplitude_units = units,
         width_units = :MeV,
     )
     return RadiativeAmplitude(
-        operator, initial, final, resolved, operator.multipole,
+        operator, initial, final, resolved, class, multipole,
         total, Tuple(terms), provenance,
     )
+end
+
+photon_emission_matrix_element(
+    class::Union{DirectM1,HinderedM1}, final, operator, initial, resolved,
+) = _assemble_photon_amplitude(class, final, operator, initial, resolved)
+
+photon_emission_matrix_element(
+    class::AllowedE1, final, operator, initial, resolved,
+) = _assemble_photon_amplitude(class, final, operator, initial, resolved)
+
+photon_emission_matrix_element(
+    class::Union{SpinFlipE1,SpinFlipM2}, final, operator, initial, resolved,
+) = _assemble_photon_amplitude(class, final, operator, initial, resolved)
+
+"""
+    matrix_element(final, operator::PhotonEmission, initial;
+                   kinematics=OnShell(), verbose=false)
+
+Infer the radiative transition class, evaluate the corresponding mock-meson
+kernel, and coherently compose all physical-state flavor components.
+"""
+function matrix_element(
+    final::PhysicalState,
+    operator::PhotonEmission,
+    initial::PhysicalState;
+    kinematics::TransitionKinematics = OnShell(),
+    verbose::Bool = false,
+)
+    resolved = _resolve_kinematics(final, initial, kinematics)
+    q = resolved.momentum_GeV
+    q isa Real && q >= 0 || throw(ArgumentError(
+        "PhotonEmission requires a real non-negative photon momentum",
+    ))
+    class = photon_transition_class(final, initial)
+    if verbose
+        @info "photon transition selected" initial=initial.label final=final.label transition_class=nameof(typeof(class)) multipole=_photon_multipole(class) recoil_order=operator.recoil_order q_GeV=q
+    end
+    return photon_emission_matrix_element(class, final, operator, initial, resolved)
 end
 
 function matrix_element(
@@ -306,6 +418,7 @@ function matrix_element(
     ::PhotonEmission,
     initial::TransitionState;
     kinematics::TransitionKinematics = OnShell(),
+    verbose::Bool = false,
 )
     throw(ArgumentError(
         "PhotonEmission requires resolved PhysicalState inputs; got " *
@@ -334,6 +447,6 @@ end
 
 function Base.show(io::IO, amplitude::RadiativeAmplitude)
     print(io, "RadiativeAmplitude(", amplitude.initial.label, " -> ",
-        amplitude.final.label, " + gamma, ", amplitude.multipole, ", ",
-        amplitude.value, ")")
+        amplitude.final.label, " + gamma, ", nameof(typeof(amplitude.transition_class)),
+        ", recoil_order=", amplitude.operator.recoil_order, ", ", amplitude.value, ")")
 end

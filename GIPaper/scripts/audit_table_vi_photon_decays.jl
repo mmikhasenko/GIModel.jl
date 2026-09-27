@@ -7,6 +7,7 @@ using GIModel, QuarkModelTransitions, GIPaper, Dates, Printf, Statistics
 
 const ROOT = dirname(@__DIR__)
 const G = GIModel
+const QMT = QuarkModelTransitions
 params, mq = load_parameters_and_quark_masses(default_parameters_path())
 references = load_table_vi()
 states = load_table_vi_states()
@@ -69,7 +70,7 @@ function photon_emitters(parent, daughter, parent_id, daughter_id, multipole)
     parent_flavors = Set(component.basis.flavors for component in parent.components)
     daughter_flavors = Set(component.basis.flavors for component in daughter.components)
     shared = sort!(collect(intersect(parent_flavors, daughter_flavors)); by = string)
-    emitters = PhotonEmitter[]
+    emitters = QMT.PhotonEmitter[]
     for flavors in shared
         f1, f2 = flavors
         p = first(component for component in parent.components if component.basis.flavors == flavors)
@@ -80,13 +81,13 @@ function photon_emitters(parent, daughter, parent_id, daughter_id, multipole)
             coefficient = spin_flip_multipole ? 1.0 : neutral_m1_charge(f1;
                 isovector_left = parent_id in ISOVECTORS,
                 isovector_right = daughter_id in ISOVECTORS)
-            push!(emitters, PhotonEmitter(flavors, 1, coefficient))
+            push!(emitters, QMT.PhotonEmitter(flavors, 1, coefficient))
         elseif multipole == :M1
-            push!(emitters, PhotonEmitter(flavors, 1, charge(f1)))
-            push!(emitters, PhotonEmitter(flavors, 2, charge(f2)))
+            push!(emitters, QMT.PhotonEmitter(flavors, 1, charge(f1)))
+            push!(emitters, QMT.PhotonEmitter(flavors, 2, charge(f2)))
         elseif spin_flip_multipole
-            push!(emitters, PhotonEmitter(flavors, 1, charge(f1)))
-            push!(emitters, PhotonEmitter(flavors, 2, -charge(f2)))
+            push!(emitters, QMT.PhotonEmitter(flavors, 1, charge(f1)))
+            push!(emitters, QMT.PhotonEmitter(flavors, 2, -charge(f2)))
         else
             error("unexpected open-flavor E1 row")
         end
@@ -94,6 +95,10 @@ function photon_emitters(parent, daughter, parent_id, daughter_id, multipole)
     isempty(emitters) && error("no shared flavor component for photon transition")
     return emitters
 end
+
+# Table VI footnote c requests the paper's relative q^2 recoil correction.
+# This lookup is audit policy, not transition-package behavior.
+table_vi_recoil_order(footnotes) = "c" in footnotes ? 2 : 0
 
 function evaluate(row)
     multipole, parent, daughter = row.id
@@ -108,15 +113,21 @@ function evaluate(row)
             parent_state, daughter_state, parent, daughter, multipole,
         )
         operator = PhotonEmission(
-            multipole, mq, emitters;
-            recoil = "c" in footnotes,
+            mq;
+            recoil_order = table_vi_recoil_order(footnotes),
+            current = QMT.ResolvedPhotonCurrent(emitters),
             recoil_form_factor = "g" in footnotes,
         )
         q_operator = something(q, 0.0)
-        value = real(matrix_element(
+        amplitude = matrix_element(
             daughter_state, operator, parent_state;
             kinematics = CMKinematics(q_operator),
-        ).value)
+        )
+        amplitude.multipole == multipole || error(
+            "Table VI labels $(parent) -> $(daughter) as $multipole, " *
+            "but spectroscopy selects $(amplitude.multipole)",
+        )
+        value = real(amplitude.value)
         # Explicit paper input, not fitted here: page 26 footnote a attributes
         # this additive moment to pi0-eta mixing.
         supplementary = multipole == :M1 &&

@@ -18,7 +18,8 @@ export ConstituentMasses, reduced_mass, FineStructureMultiplet
 export RadialWave, MeshWave, OscillatorWave, sample_wave
 export radial_expect, radial_overlap, radial_derivative_overlap, wave_norm
 export MomentumWave, MeshMomentumWave, OscillatorMomentumWave,
-    momentum_wave, momentum_expect, momentum_overlap, momentum_functional
+    momentum_wave, momentum_expect, momentum_overlap, momentum_functional,
+    wave_mean_squares
 include("model_objects.jl")
 
 # =============================================================================

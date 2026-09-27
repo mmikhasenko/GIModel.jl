@@ -33,6 +33,23 @@
     @test radial_overlap(ho_ground, ho_ground, _ -> 1 + 2im) ≈
           1 + 2im atol = 1e-10
 
+    # One discoverable call exposes the two size diagnostics used to motivate
+    # the paper's surrogate decay beta. Native HO dispatch remains exact.
+    for L in 0:2
+        beta = 0.4
+        oscillator = OscillatorWave(L, beta, [1.0])
+        moments = @inferred wave_mean_squares(oscillator)
+        C = L + 1.5
+        @test moments.r2 ≈ C / beta^2 atol = 1e-12
+        @test moments.p2 ≈ C * beta^2 atol = 1e-12
+        @test wave_mean_squares(oscillator, L) == moments
+    end
+    @test_throws ArgumentError wave_mean_squares(ho_ground, -1)
+
+    mesh_moments = wave_mean_squares(w, 0; pmax = 30.0, npoints = 3001)
+    @test mesh_moments.r2 ≈ 3.0 rtol = 1e-5
+    @test mesh_moments.p2 ≈ 1.0 rtol = 2e-3
+
     # Two different waves: overlap is symmetric and bounded by 1 (Cauchy-Schwarz).
     v = r .* exp.(-0.7 .* r)
     wv = MeshWave(v ./ sqrt(sum(abs2, v) * h), r)

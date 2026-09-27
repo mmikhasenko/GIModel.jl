@@ -82,6 +82,7 @@ for operations and never touch its representation:
 | `radial_derivative_overlap(wx, wy, f)` | integral of (du_x/dr) u_y f(r) dr |
 | `momentum_wave(w, L)` | the momentum-space wave Phi(p) |
 | `momentum_expect(mw, g)` | integral of p^2 |Phi|^2 g(p) dp |
+| `wave_mean_squares(w, L)` | both mean-square radius and momentum |
 | [`wave_norm`](@ref)`(w)` | integral of u^2 dr, guaranteed 1 |
 
 Two implementations, in separate files, that never refer to each other:

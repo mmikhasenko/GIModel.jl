@@ -135,9 +135,10 @@ three-state composer. A pure-component kernel must not repeat that factor.
 3. "Realistic factor" column (SHO -> realistic wavefunction ratios) is recorded
    in the CSV but not applied (the leading-S0 finding superseded the earlier
    "realistic factor folded in" hypothesis).
-4. Applying Eq. (19) directly to the calculated physical waves would be a
-   beyond-paper extension. The original numerical single-beta SHO treatment is
-   reproduced by the Table IV/V path above.
+4. Applying Eq. (19) directly to resolved physical waves is implemented as the
+   native `PseudoscalarEmission` workflow in `QuarkModelTransitions`. The
+   original numerical single-beta SHO treatment remains isolated in the Table
+   IV/V reference path above.
 
 ## Photon Decays `M* -> M gamma` (Sec. IV B, Table VI, Appendix D)
 
@@ -160,6 +161,16 @@ three-state composer. A pure-component kernel must not repeat that factor.
 
 ### Encoded so far
 
+- `PhotonEmission <: TransitionOperator` exposes M1, E1, and M2 through the
+  common `matrix_element(final_state, operator, initial_state)` API. The state
+  quantum numbers select `DirectM1`, `HinderedM1`, `AllowedE1`, `SpinFlipE1`,
+  or `SpinFlipM2`, and explicit flavor components determine the current. The
+  result retains the selected class, recoil order, coherent component terms,
+  and all mock-meson settings as provenance. The lower-level overlap functions
+  remain public inspection and validation kernels.
+- The transition package contains no Table VI row lookup. The audit script
+  maps the paper's footnotes to `recoil_order` and supplies a resolved current
+  only for legacy `(:q,:q)` states whose isospin was discarded.
 - `GIPaper/scripts/audit_table_vi_photon_decays.jl` writes the complete
   79-row report and a machine-readable CSV: 42 M1, 35 E1, and 2 M2.
   Every state uses the shared native fixed-channel solver, including the

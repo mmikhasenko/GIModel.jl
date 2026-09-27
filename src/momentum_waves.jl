@@ -114,6 +114,41 @@ function momentum_expect(mw::OscillatorMomentumWave, g)
     return dot(w.coefficients, op * w.coefficients) / wave_norm(w)
 end
 
+"""
+    wave_mean_squares(wave, L; momentum_kwargs...) -> (r2, p2)
+    wave_mean_squares(wave::OscillatorWave; momentum_kwargs...) -> (r2, p2)
+
+Return the mean-square relative radius `r2 = <r^2>` in `GeV^-2` and
+mean-square relative momentum `p2 = <p^2>` in `GeV^2` for one radial wave.
+The calculation composes the representation-independent [`radial_expect`](@ref),
+[`momentum_wave`](@ref), and [`momentum_expect`](@ref) operations.
+
+`L` is required for a [`MeshWave`](@ref), whose sampled reduced radial function
+does not itself store the orbital label. An [`OscillatorWave`](@ref) already
+stores `L`, so the one-argument form is available. Keywords such as `pmax` and
+`npoints` are forwarded to the numerical momentum transform of a mesh wave.
+
+## Example
+
+```julia
+moments = wave_mean_squares(wave, 0)
+moments.r2
+moments.p2
+```
+"""
+function wave_mean_squares(wave::RadialWave, L::Integer; momentum_kwargs...)
+    L >= 0 || throw(ArgumentError("wave_mean_squares: L must be non-negative"))
+    radial = radial_expect(wave, r -> r^2)
+    momentum = momentum_expect(
+        momentum_wave(wave, L; momentum_kwargs...),
+        p -> p^2,
+    )
+    return (r2 = radial, p2 = momentum)
+end
+
+wave_mean_squares(wave::OscillatorWave; momentum_kwargs...) =
+    wave_mean_squares(wave, wave.L; momentum_kwargs...)
+
 """`integral p^2 Phi_x(p) Phi_y(p) g(p) dp`, with both waves normalized."""
 function momentum_overlap(left::MeshMomentumWave, right::MeshMomentumWave, g)
     length(left.p) == length(right.p) || throw(ArgumentError(

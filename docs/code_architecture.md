@@ -31,8 +31,10 @@ The current representations are:
   representations returned by `momentum_wave`.
 
 Shared operations are `wave_norm`, `radial_expect`, `radial_overlap`,
-`momentum_expect`, `momentum_overlap`, and `momentum_functional`. Plotting or a
-genuinely grid-defined operator may explicitly sample a native wave with
+`momentum_expect`, `momentum_overlap`, and `momentum_functional`.
+`wave_mean_squares(wave, L)` is the convenience composition returning
+`(r2, p2)` without exposing either representation. Plotting or a genuinely
+grid-defined operator may explicitly sample a native wave with
 `sample_wave(wave, r)`; that conversion belongs at that boundary, not in the
 solution object.
 
@@ -116,13 +118,13 @@ recursively composes spectroscopic and flavor mixing, with flavor carried by
   stages, and state-level accessors.
 - `flavor_mixing.jl`, `pseudoscalar_annihilation.jl`: annihilation block builders
   and the reference-free final isoscalar spectrum stage.
-- `mock_meson_overlaps.jl`: generic mock-meson overlap kernels consuming
-  `RadialWave`/`MomentumWave`.
-- `annihilation_widths.jl`, `radiative_decays.jl`: existing observable code
-  whose final package ownership remains under boundary audit.
-- `QuarkModelTransitions/`: transition domain objects, strong-decay operators,
-  matrix elements, partial waves, and widths. It depends on GIModel; GIModel
-  never depends on it.
+- `QuarkModelTransitions/src/mock_meson_overlaps.jl`: generic mock-meson overlap
+  kernels consuming `RadialWave`/`MomentumWave`.
+- `QuarkModelTransitions/src/photon_emission.jl` and `radiative_decays.jl`:
+  typed photon-current dispatch plus its M1/E1/M2 and recoil primitives.
+- `QuarkModelTransitions/`: transition domain objects, strong and
+  electromagnetic operators, matrix elements, partial waves, and widths. It
+  depends on GIModel; GIModel never depends on it.
 - `GIPaper/`: reference-data interpretation and reproducibility reports.
 
 ## Input ownership

@@ -129,7 +129,7 @@ end
         basis = BasisState(1, "S", 1, 0; flavors = (:c, :c)),
         coefficient = 1.0, wave = sw2,
     )])
-    m1 = PhotonEmission(:M1, mq, PhotonEmitter((:c, :c), 1, 4 / 3))
+    m1 = PhotonEmission(mq)
     amplitude = matrix_element(pseudoscalar, m1, vector)
     q = photon_momentum(vector.mass_GeV, pseudoscalar.mass_GeV)
     expected = m1_transition_moment(
@@ -137,9 +137,12 @@ end
         [(4 / 3, mq["c"])],
     )
     @test amplitude isa RadiativeAmplitude
+    @test amplitude.transition_class isa DirectM1
+    @test photon_transition_class(pseudoscalar, vector) isa DirectM1
     @test amplitude.multipole == :M1
     @test amplitude.value ≈ expected
-    @test length(amplitude.terms) == 1
+    @test length(amplitude.terms) == 2
+    @test amplitude.provenance.recoil_order == 0
     @test amplitude.provenance.prescription == :hybrid_mock_meson
     @test decay_width(amplitude) ≈
           1000m1_radiative_width(expected, q; parent_spin = 1)
@@ -150,7 +153,7 @@ end
         basis = BasisState(1, "P", 3, 2; flavors = (:c, :c)),
         coefficient = 1.0, wave = pw,
     )])
-    e1 = PhotonEmission(:E1, mq, [PhotonEmitter((:c, :c), 1, 4 / 3)])
+    e1 = PhotonEmission(mq)
     e1_amplitude = matrix_element(vector, e1, tensor)
     qe = photon_momentum(tensor.mass_GeV, vector.mass_GeV)
     expected_e1 = e1_transition_amplitude(
@@ -158,23 +161,55 @@ end
         qvalue -> (4 / 3) * e1_angular_coefficient(2) * qvalue,
         1.0, 0.0; q = qe,
     )
+    @test e1_amplitude.transition_class isa AllowedE1
     @test e1_amplitude.value ≈ expected_e1
     @test decay_width(e1_amplitude) ≈ abs2(expected_e1)
 
-    singlet = PhysicalState("eta_c", 2.98, [(
-        basis = BasisState(1, "S", 1, 0; flavors = (:c, :c)),
+    singlet = PhysicalState("pi", 2.98, [(
+        basis = BasisState(1, "S", 1, 0; flavors = (:u, :d)),
         coefficient = 1.0, wave = sw,
     )])
-    m2 = PhotonEmission(:M2, mq, [PhotonEmitter((:c, :c), 1, 4 / 3)])
-    m2_amplitude = matrix_element(singlet, m2, tensor)
+    light_tensor = PhysicalState("a2", 3.56, [(
+        basis = BasisState(1, "P", 3, 2; flavors = (:u, :d)),
+        coefficient = 1.0, wave = pw,
+    )])
+    m2 = PhotonEmission(mq)
+    m2_amplitude = matrix_element(singlet, m2, light_tensor)
+    @test m2_amplitude.transition_class isa SpinFlipM2
     @test m2_amplitude.value ≈ spin_flip_photon_amplitude(
-        sw, pw, [(4 / 3, mq["c"])], 2,
-        photon_momentum(tensor.mass_GeV, singlet.mass_GeV),
+        sw, pw, [(2 / 3, mq["q"]), (1 / 3, mq["q"])], 2,
+        photon_momentum(light_tensor.mass_GeV, singlet.mass_GeV),
     )
 
-    @test_throws ArgumentError PhotonEmitter((:c, :c), 3, 1.0)
-    @test_throws ArgumentError PhotonEmission(:E2, mq,
-        [PhotonEmitter((:c, :c), 1, 1.0)])
+    light_axial = PhysicalState("a1", 3.40, [(
+        basis = BasisState(1, "P", 3, 1; flavors = (:u, :d)),
+        coefficient = 1.0, wave = pw,
+    )])
+    spin_flip_e1 = matrix_element(singlet, PhotonEmission(mq), light_axial)
+    @test spin_flip_e1.transition_class isa SpinFlipE1
+    @test spin_flip_e1.multipole == :E1
+
+    excited_vector = PhysicalState("psi(2S)", 3.68, [(
+        basis = BasisState(2, "S", 3, 1; flavors = (:c, :c)),
+        coefficient = 1.0, wave = sw2,
+    )])
+    @test photon_transition_class(pseudoscalar, excited_vector) isa HinderedM1
+    recoil = PhotonEmission(mq; recoil_order = 2)
+    recoil_amplitude = matrix_element(pseudoscalar, recoil, excited_vector)
+    @test recoil_amplitude.transition_class isa HinderedM1
+    @test recoil_amplitude.provenance.recoil_order == 2
+
+    unresolved = PhysicalState("qbarq", 2.0, [(
+        basis = BasisState(1, "S", 3, 1; flavors = (:q, :q)),
+        coefficient = 1.0, wave = sw,
+    )])
+    unresolved_final = PhysicalState("qbarq0", 1.0, [(
+        basis = BasisState(1, "S", 1, 0; flavors = (:q, :q)),
+        coefficient = 1.0, wave = sw,
+    )])
+    @test_throws ArgumentError matrix_element(unresolved_final, m1, unresolved)
+    @test_throws ArgumentError matrix_element(vector, PhotonEmission(mq; recoil_order = 2), tensor)
+    @test_throws ArgumentError PhotonEmission(mq; recoil_order = 1)
     @test_throws ArgumentError matrix_element(
         ReferenceState("eta_c", 2.98; J = 0, parity = -1), m1, vector,
     )

@@ -39,18 +39,23 @@ The radiative primitives remain public for inspecting individual overlap
 kernels. The generic photon path is:
 
 ```julia
-current = PhotonEmitter((:c, :c), 1, 4 / 3)
-operator = PhotonEmission(:M1, quark_masses, current)
+operator = PhotonEmission(quark_masses; recoil_order = 0)
 amplitude = matrix_element(final_state, operator, initial_state)
 decay_width(amplitude)
 ```
 
-`PhotonEmitter` keeps the ordered flavor pair, emitting constituent, and
-charge/isospin coefficient visible. This is necessary because a solver's
-averaged `(:q,:q)` radial component does not by itself distinguish `e_u+e_d`
-from `e_u-e_d`. The operator provenance distinguishes the Appendix-D hybrid
-from a literal unsmeared Eq. (22) current and records both fitted `m/E`
-exponents, hindered-M1 recoil, and the optional recoil form factor.
+The initial and final spectroscopic states select `DirectM1`, `HinderedM1`,
+`AllowedE1`, `SpinFlipE1`, or `SpinFlipM2`; the user does not separately name
+the multipole. Explicit `:u` and `:d` flavor components determine the current.
+An averaged `(:q,:q)` component is intentionally rejected because it cannot
+distinguish `e_u+e_d` from `e_u-e_d`. `recoil_order=0` means the leading term
+for the selected class; order 2 adds the implemented relative `(qr)^2` M1
+correction. The returned amplitude records the selected class and order, and
+`verbose=true` reports that selection while evaluating it.
+
+Paper-reproduction scripts may supply a package-internal resolved current for
+legacy coarse flavor states. Such row-specific information belongs to the
+paper audit and is not part of the ordinary transition API.
 
 The package also computes the following observables through specialized
 functions; these have not yet been adapted to `matrix_element`:
