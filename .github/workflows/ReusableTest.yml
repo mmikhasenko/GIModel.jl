@@ -59,7 +59,7 @@ jobs:
               if: ${{ inputs.run_codecov }}
               with:
                   directories: ${{ inputs.project == '.' && 'src,QuarkModelTransitions/src' || 'GIPaper/src' }}
-            - uses: codecov/codecov-action@v5
+            - uses: codecov/codecov-action@v7
               if: ${{ inputs.run_codecov }}
               with:
                   files: lcov.info
