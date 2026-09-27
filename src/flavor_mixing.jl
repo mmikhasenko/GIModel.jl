@@ -160,6 +160,13 @@ function isoscalar_annihilation_block(
 end
 
 function _pseudoscalar_block_basis(nn::SpinResolvedSpectrum, ss::SpinResolvedSpectrum)
+    has(spec, n) = any(s -> s.n == n && s.L == "S" && s.multiplicity == 1 && s.J == 0, spec.states)
+    all(has(spec, n) for spec in (nn, ss), n in (1, 2)) || throw(ArgumentError(
+        "the two-channel pseudoscalar annihilation block uses the paper's basis " *
+        "[1 nn̄, 1 ss̄, 2 nn̄, 2 ss̄]; request both 1^1S_0 and 2^1S_0 in `levels`, or " *
+        "solve the channels yourself and pass an explicit `pseudoscalar_basis` to " *
+        "add_isoscalar_annihilation(params, spectra; ...)",
+    ))
     return [
         annihilation_basis_input(nn, BasisState(1, "S", 1, 0)),
         annihilation_basis_input(ss, BasisState(1, "S", 1, 0)),

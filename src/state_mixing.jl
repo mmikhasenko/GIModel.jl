@@ -73,6 +73,16 @@ struct BasisState
             "BasisState: multiplicity must be 1 or 3",
         ))
         jf >= 0 || throw(ArgumentError("BasisState: J must be non-negative"))
+        haskey(L_SYMBOLS, lf) || throw(ArgumentError(
+            "BasisState: unknown orbital label `$lf`; expected one of S, P, D, F, G",
+        ))
+        # J must be reachable by coupling L and S = (multiplicity - 1)/2; otherwise
+        # the fixed-sector Hamiltonian would silently use meaningless angular factors.
+        lnum, snum = L_SYMBOLS[lf], (mf - 1) ÷ 2
+        abs(lnum - snum) <= jf <= lnum + snum || throw(ArgumentError(
+            "BasisState: J = $jf cannot be formed from L = $lnum and S = $snum " *
+            "(allowed: $(abs(lnum - snum)):$(lnum + snum))",
+        ))
         label_s = isempty(label) ? @sprintf("%d^%d%s_%d", nf, mf, lf, jf) : String(label)
         flavor_pair = if isnothing(flavors)
             nothing

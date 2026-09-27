@@ -124,6 +124,15 @@ end
     @test_throws ArgumentError GIModel.BasisState(0, "S", 3, 1)
     @test_throws ArgumentError GIModel.BasisState(1, "S", 2, 1)
     @test_throws ArgumentError GIModel.BasisState(1, "S", 3, -1)
+    # Quantum numbers that angular-momentum coupling cannot produce are rejected
+    # instead of being solved with meaningless angular factors.
+    @test_throws ArgumentError BasisState(1, "P", 3, 3)
+    @test_throws ArgumentError BasisState(1, "S", 3, 0)
+    @test_throws ArgumentError BasisState(1, "P", 1, 0)
+    @test_throws ArgumentError BasisState(1, "s", 1, 0)
+    @test BasisState(1, "P", 3, 0).J == 0
+    @test_throws ArgumentError ConstituentMasses(-1.0, 1.0)
+    @test_throws ArgumentError ConstituentMasses(0.2, Inf)
     @test_throws ArgumentError GIModel.MixingBlock(
         "empty block", GIModel.BasisState[], zeros(0, 0),
     )

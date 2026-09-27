@@ -1008,8 +1008,12 @@ function physical_components(
     return merged
 end
 
-physical_components(spec::Spectrum, label::AbstractString) =
-    physical_components(spec, spectrum_state(spec, label))
+# Every state accessor takes what `spectrum_state` takes: a state, a label or a
+# (possibly flavor-qualified) BasisState.
+const StateSelector = Union{AbstractString,BasisState}
+
+physical_components(spec::Spectrum, selector::StateSelector) =
+    physical_components(spec, spectrum_state(spec, selector))
 
 """
     physical_state_amplitude(kernel, spec, state_or_label)
@@ -1034,8 +1038,8 @@ function physical_state_amplitude(
     )
 end
 
-physical_state_amplitude(kernel, spec::Spectrum, label::AbstractString) =
-    physical_state_amplitude(kernel, spec, spectrum_state(spec, label))
+physical_state_amplitude(kernel, spec::Spectrum, selector::StateSelector) =
+    physical_state_amplitude(kernel, spec, spectrum_state(spec, selector))
 
 """
     physical_transition_amplitude(kernel, spec, left, right)
@@ -1063,8 +1067,8 @@ end
 physical_transition_amplitude(
     kernel,
     spec::Spectrum,
-    left::AbstractString,
-    right::AbstractString,
+    left::StateSelector,
+    right::StateSelector,
 ) = physical_transition_amplitude(
     kernel, spec, spectrum_state(spec, left), spectrum_state(spec, right),
 )
@@ -1089,8 +1093,8 @@ function radial_expect(
     )
 end
 
-function radial_wave(spec::Spectrum, label::AbstractString)
-    state = spectrum_state(spec, label)
+function radial_wave(spec::Spectrum, selector::StateSelector)
+    state = spectrum_state(spec, selector)
     return radial_wave(spec, state)
 end
 
@@ -1152,3 +1156,54 @@ Base.show(io::IO, spec::Spectrum{S}) where {S} = print(
     io, _stage_name(S), "(", join((flavor_label(m) for m in spec.channels), "+"), ", ",
     length(spec.states), " levels)",
 )
+
+# Compact displays for the objects a user inspects most. The default struct dump
+# prints every eigenvector or mesh sample; these print what the object *is*.
+
+_flavor_text(basis::BasisState) =
+    isnothing(basis.flavors) ? "" : string(" (", basis.flavors[1], " ", basis.flavors[2], "bar)")
+
+Base.show(io::IO, s::Union{CentralState,CorrectedState,MixedState}) = print(
+    io, nameof(typeof(s)), "(", s.label, _flavor_text(s.basis), ", ",
+    @sprintf("%.4f", s isa CentralState ? s.central_GeV : s.mass_GeV), " GeV)",
+)
+
+function Base.show(io::IO, ::MIME"text/plain", s::Union{CorrectedState,MixedState})
+    println(io, nameof(typeof(s)), ": ", s.label, _flavor_text(s.basis), " — values in GeV")
+    @printf(io, "  mass        %.4f\n", s.mass_GeV)
+    @printf(io, "  central     %.4f\n", s.central_GeV)
+    @printf(io, "  contact     %+.4f\n", s.contact_shift_GeV)
+    @printf(io, "  spin-orbit  %+.4f  (vector %+.4f, Thomas %+.4f)\n",
+        s.spin_orbit_shift_GeV, s.spin_orbit_vector_shift_GeV, s.spin_orbit_thomas_shift_GeV)
+    @printf(io, "  tensor      %+.4f", s.tensor_shift_GeV)
+    if s isa MixedState
+        @printf(io, "\n  mixing      %+.4f", s.mass_GeV - s.corrected.mass_GeV)
+        for m in s.mixings
+            print(io, "\n    ", m)
+        end
+    end
+    return nothing
+end
+
+Base.show(io::IO, m::StateMixing) = print(
+    io, "StateMixing(", m.mechanism, ": ",
+    join((string(l, " => ", @sprintf("%+.4f", c)) for (l, c) in zip(m.partner_labels, m.components)), ", "),
+    ")",
+)
+
+Base.show(io::IO, w::OscillatorWave) = print(
+    io, "OscillatorWave(L = ", w.L, ", β = ", @sprintf("%.4f", w.beta), " GeV, ",
+    length(w.coefficients), " coefficients)",
+)
+
+Base.show(io::IO, w::MeshWave) = print(
+    io, "MeshWave(", length(w.u), " points, h = ", @sprintf("%.4g", w.h),
+    " GeV⁻¹, r ≤ ", @sprintf("%.4g", w.r[end]), " GeV⁻¹)",
+)
+
+function Base.show(io::IO, sol::ChannelRadialSolution{W}) where {W}
+    print(io, "ChannelRadialSolution{", nameof(W), "}(",
+        join((@sprintf("%.4f", e) for e in sol.eigenvalues_GeV), ", "), " GeV")
+    isnothing(sol.convergence) || print(io, "; ", sol.convergence.status)
+    print(io, ")")
+end
