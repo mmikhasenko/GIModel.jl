@@ -169,10 +169,20 @@ end
     # beta_grid is a solver field, not a module constant to edit in source. A
     # bracket that excludes the minimum now fails rather than returning a
     # warned-but-usable under-resolved result.
-    narrow = OscillatorSolver(beta_grid = 0.9:0.1:1.2)
-    @test narrow.beta_grid == [0.9, 1.0, 1.1, 1.2]
+    # The charmonium S-wave optimum is near 1.05 GeV, so a bracket on either side
+    # rails at its endpoint. (A 0.9:0.1:1.2 bracket used to rail too, but only
+    # because the uncorrected momentum projection made the optimum grid-dependent.)
+    narrow = OscillatorSolver(beta_grid = 0.5:0.1:0.8)
+    @test narrow.beta_grid == [0.5, 0.6, 0.7, 0.8]
     @test_throws ErrorException channel_solution(
         params, meson.constituent_masses, 0; solver = narrow, nlevels = 2)
+    @test_throws ErrorException channel_solution(params, meson.constituent_masses, 0;
+        solver = OscillatorSolver(beta_grid = 1.5:0.1:1.8), nlevels = 2)
+    # A bracket that contains the optimum finds the same β as the default grid.
+    @test channel_solution(params, meson.constituent_masses, 0;
+        solver = OscillatorSolver(beta_grid = 0.9:0.1:1.2), nlevels = 2).convergence.beta_GeV ≈
+          channel_solution(params, meson.constituent_masses, 0;
+        solver = OscillatorSolver(), nlevels = 2).convergence.beta_GeV atol = 5e-3
 
     @testset "PA-12 adaptive HO convergence is certified or fails loudly" begin
         # Explicit fixed-size mode is available only as an unchecked convergence
