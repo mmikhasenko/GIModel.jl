@@ -47,6 +47,8 @@ const root = REPOSITORY_ROOT
     include("pseudoscalar_emission.jl")
     include("observables.jl")
     include("annihilation.jl")
+    include("isoscalar_currents.jl")
+    include("state_helpers.jl")
     include("mass_correction.jl")
     include("radiative_decays.jl")
     include("strong_decays.jl")

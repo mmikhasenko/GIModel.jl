@@ -117,15 +117,16 @@ $L$, so pass it explicitly:
 momentum_expect(Φ, p -> p^2)             # ⟨p²⟩ in GeV²
 ```
 
-To plot, transform a sampled wave, which gives values on a momentum grid:
+For an oscillator wave, evaluate the analytic momentum wave directly to plot it:
 
 ```{julia}
 fig = Figure(size = (450, 300))
 ax = Axis(fig[1, 1]; xlabel = "p  [GeV]", ylabel = "p Φ(p)")
 for label in ("1^1S_0", "2^1S_0", "1^1P_1")
     w = radial_wave(spec, label)
-    Φs = momentum_wave(sample_wave(w, range(0, 20; length = 801)), w.L; pmax = 4.0, npoints = 400)
-    lines!(ax, Φs.p, Φs.p .* Φs.phi; label)
+    Φs = momentum_wave(w)
+    p = range(0, 4; length = 400)
+    lines!(ax, p, p .* Φs.(p); label)
 end
 axislegend(ax)
 fig

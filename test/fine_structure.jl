@@ -426,3 +426,54 @@ end
         @test scaled_lo.tensor ≈ base.tensor rtol = 1e-12 atol = 0.0
     end
 end
+
+@testset "HO spin sandwiches converge independently of wave basis" begin
+    params, _ = load_parameters_and_quark_masses(default_parameters_path())
+    masses = ConstituentMasses(0.22, 0.419)
+    left = OscillatorWave(1, 0.85, [1.0])
+    right = OscillatorWave(1, 1.05, [1.0])
+    epsilon = params.factors.epsilon_so_scalar
+    cross(a, b, f) = GIModel.radial_cross_expect_momentum_sandwich(
+        params, masses, a.L, a, b.L, b, epsilon, f,
+    )
+    # For K=1, Parseval reduces B K B to a single, independent momentum
+    # integral. Even one-term analytic waves need a resolved operator basis.
+    expected, _ = quadgk(0.0, 15.0; rtol = 1e-11) do p
+        ul = GIModel.ho_reduced_radial(0, 1, inv(left.beta), p)
+        ur = GIModel.ho_reduced_radial(0, 1, inv(right.beta), p)
+        factor = (masses.m1_GeV * masses.m2_GeV /
+                  sqrt((p^2 + masses.m1_GeV^2) * (p^2 + masses.m2_GeV^2)))^(1 + 2epsilon)
+        ul * ur * factor
+    end
+    @test cross(left, right, (_, _) -> 1.0) ≈ expected rtol = 2e-6
+    kernel = (r, _) -> exp(-r)
+    value = cross(left, right, kernel)
+    @test cross(right, left, kernel) ≈ value rtol = 1e-10
+    padded = OscillatorWave(1, left.beta, vcat(left.coefficients, zeros(79)))
+    @test cross(padded, right, kernel) ≈ value rtol = 2e-6
+    @test GIModel.radial_expect_momentum_sandwich(
+        params, masses, 1, left, epsilon, kernel,
+    ) ≈ cross(left, left, kernel) rtol = 1e-10
+    r, h = GIModel.radial_grid(600, 30.0)
+    mesh_left = sample_wave(left, r)
+    mesh_right = sample_wave(right, r)
+    mesh_value = GIModel.radial_cross_expect_momentum_sandwich(
+        params, masses, 1, mesh_left, 1, mesh_right, epsilon, kernel,
+    )
+    @test mesh_value ≈ value rtol = 2e-3
+end
+
+@testset "Every mixing mechanism anchors to its assigned precursor" begin
+    basis = [BasisState(1, "S", 3, 1), BasisState(1, "D", 3, 1)]
+    for matrix in ([3.0 -0.1; -0.1 3.2], [3.2 0.1; 0.1 3.0])
+        block = MixingBlock("phase regression", basis, matrix)
+        result = diagonalize_mixing_block(block)
+        assigned = sortperm(diag(matrix))
+        @test all(result.vectors[assigned[col], col] > 0 for col in 1:2)
+        @test matrix * result.vectors ≈ result.vectors * Diagonal(result.masses)
+        legacy = diagonalize_mixing_block(block; phase_anchor = 1)
+        @test abs2.(legacy.vectors) ≈ abs2.(result.vectors)
+        @test legacy.masses ≈ result.masses
+    end
+    @test_throws ArgumentError diagonalize_mixing_block(MixingBlock("bad", basis, [1. 0.; 0. 2.]); phase_anchor = :unknown)
+end

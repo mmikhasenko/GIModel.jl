@@ -18,8 +18,9 @@ report_dir = joinpath(dirname(@__DIR__), "reports")
 mkpath(report_dir)
 
 # The one place the production solver settings are chosen; every report below
-# records it verbatim, so a residual can be checked against the mesh that made it.
-solver = FiniteDifferenceSolver()
+# records it verbatim, so a residual can be checked against the basis that made it.
+# Paper reproductions use the original investigation's oscillator method.
+solver = OscillatorSolver()
 
 score_rows = NamedTuple[]
 

@@ -124,8 +124,10 @@ own method, Eq. (A17). The Hamiltonian is a finite `nbasis × nbasis` matrix, an
 the oscillator scale `β` is a variational parameter scanned over `beta_grid`.
 
 **There is no mesh on this path.** `p²` has closed-form oscillator
-matrix elements ([`ho_p2_matrix`](@ref)) and the smeared potential is integrated
-by Gauss–Laguerre quadrature ([`ho_operator_matrix`](@ref)), so accuracy is set
+matrix elements ([`ho_p2_matrix`](@ref)). Non-polynomial momentum factors and
+smeared coordinate potentials are independently integrated by Gauss–Laguerre
+quadrature ([`ho_operator_matrix`](@ref)); sandwiches retain a larger
+intermediate basis before projection. Accuracy of the solved wave is set
 by the basis/beta refinement controls below. Plotting or export code may
 explicitly sample the returned [`OscillatorWave`](@ref); sampling settings are
 not solver state.

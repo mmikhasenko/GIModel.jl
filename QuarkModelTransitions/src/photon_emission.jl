@@ -369,9 +369,9 @@ function _component_transition_class(daughter::StateComponent, parent::StateComp
     if Ld == 0 && Lp == 0 && Set((md, mp)) == Set((1, 3))
         return daughter.basis.n == parent.basis.n ? DirectM1() : HinderedM1()
     end
-    Set((Ld, Lp)) == Set((0, 1)) || throw(ArgumentError(
-        "photon kernel supports S--S spin flips and S--P transitions; got L=$Lp -> L=$Ld",
-    ))
+    Set((Ld, Lp)) == Set((0, 1)) || error(
+        "Not implemented yet. Please submit issue if needed, and/or PR with implementation.",
+    )
     sw, pw = Ld == 0 ? (daughter, parent) : (parent, daughter)
     if sw.basis.multiplicity == pw.basis.multiplicity
         return AllowedE1()
@@ -421,7 +421,7 @@ operator = PhotonEmission(masses)
 """
 function photon_transition_class(final::PhysicalState, initial::PhysicalState)
     classes = PhotonTransitionClass[]
-    for parent in initial.components, daughter in final.components
+    for parent in _electromagnetic_components(initial), daughter in _electromagnetic_components(final)
         daughter.basis.flavors == parent.basis.flavors || continue
         push!(classes, _component_transition_class(daughter, parent))
     end
@@ -553,7 +553,11 @@ function _assemble_photon_amplitude(
     terms = TransitionTerm[]
     total = 0.0 + 0.0im
     matched = false
-    for parent in initial.components, daughter in final.components
+    parents = operator.current isa StandardPhotonCurrent ?
+              _electromagnetic_components(initial) : initial.components
+    daughters = operator.current isa StandardPhotonCurrent ?
+                _electromagnetic_components(final) : final.components
+    for parent in parents, daughter in daughters
         flavors = parent.basis.flavors
         daughter.basis.flavors == flavors || continue
         component_class = _component_transition_class(daughter, parent)

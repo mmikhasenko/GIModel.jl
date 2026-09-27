@@ -13,6 +13,7 @@ CurrentModule = GIModel.QuarkModelTransitions
 ```@docs
 PhysicalState
 physical_state
+superpose
 TwoMesonChannel
 Vacuum
 TwoPhotonChannel

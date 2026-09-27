@@ -123,13 +123,10 @@ end
 GIModel agrees with the later calculation to within a few degrees, while the
 1985 captions differ, in one case with the opposite sign.
 
-The angles above come from the oscillator solver. The finite-difference solver
-gives angles 1–2° larger in magnitude (for example $+4.3°$ for $u\bar s$
-and $-27.9°$ for $b\bar u$); each value is stable under refinement of its
-own solver, while the masses agree to well below an MeV. Because the
-off-diagonal element is a small difference of two larger terms, this is where
-the two implementations differ most. The recorded reports use the
-finite-difference values. The spectrum masses
+The angles above come from the oscillator solver; the finite-difference solver
+agrees within 0.1°. Because the off-diagonal element is a small difference of
+two larger terms, the angle is a sensitive test of both implementations, and
+the heavy test suite compares them. The spectrum masses
 agree with the 1985 figures throughout. [Mixing angles: a paper erratum](@ref)
 explains how this was traced to the 1985 caption values rather than to the
 implementation.

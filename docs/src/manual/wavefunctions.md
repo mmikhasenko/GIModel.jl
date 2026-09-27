@@ -39,7 +39,7 @@ eta_c = radial_wave(spec, "1^1S_0")
 ```
 
 ```
-(OscillatorWave, 0, 1.1146264602468243, 40)
+(OscillatorWave, 0, 1.126393202250021, 40)
 ```
 
 Code that uses a wave should not depend on which form it has. The operations below work for both, so the same analysis runs with either solver.
@@ -62,7 +62,7 @@ radial_expect(eta_c, r -> r^2)          # ⟨r²⟩ in GeV⁻²
 ```
 
 ```
-2.1260097242008693
+2.1260095433986588
 ```
 
 ```julia
@@ -71,7 +71,7 @@ radial_overlap(eta_c, psi2S, r -> 1.0)  # orthogonal radial states
 ```
 
 ```
--6.427880256879021e-16
+-4.878912886550984e-16
 ```
 
 ```julia
@@ -79,7 +79,7 @@ wave_mean_squares(eta_c)                # (r2 in GeV⁻², p2 in GeV²)
 ```
 
 ```
-(r2 = 2.1260097242008693, p2 = 1.286903453345401)
+(r2 = 2.1260095433986588, p2 = 1.2869039978250068)
 ```
 
 Convert with $\hbar c = 0.1973$ GeV fm: the root-mean-square separation of the $\eta_c$ is $\sqrt{2.13}\times0.197 \approx 0.29$ fm.
@@ -126,18 +126,19 @@ momentum_expect(Φ, p -> p^2)             # ⟨p²⟩ in GeV²
 ```
 
 ```
-1.286903453345401
+1.2869039978250068
 ```
 
-To plot, transform a sampled wave, which gives values on a momentum grid:
+For an oscillator wave, evaluate the analytic momentum wave directly to plot it:
 
 ```julia
 fig = Figure(size = (450, 300))
 ax = Axis(fig[1, 1]; xlabel = "p  [GeV]", ylabel = "p Φ(p)")
 for label in ("1^1S_0", "2^1S_0", "1^1P_1")
     w = radial_wave(spec, label)
-    Φs = momentum_wave(sample_wave(w, range(0, 20; length = 801)), w.L; pmax = 4.0, npoints = 400)
-    lines!(ax, Φs.p, Φs.p .* Φs.phi; label)
+    Φs = momentum_wave(w)
+    p = range(0, 4; length = 400)
+    lines!(ax, p, p .* Φs.(p); label)
 end
 axislegend(ax)
 fig
@@ -203,7 +204,7 @@ physical_state_amplitude(kernel, spec, "1^3S_1")
 ```
 
 ```
-2.4267853186103885
+2.426785248375888
 ```
 
 Transition matrix elements in [Transitions and decays](@ref) are built this way, so interference between components is always kept.

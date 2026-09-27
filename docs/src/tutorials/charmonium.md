@@ -203,7 +203,7 @@ The tensor force admixes ${}^3D_1$ components with amplitudes of about 0.01, a p
 
 ## 4. Radiative transitions
 
-The photon operators of the paper connect S waves with S waves (M1) and with P waves (E1, M2). In the spectrum above, the $J/\psi$ and $\psi(2S)$ carry small ${}^3D_1$ components from tensor mixing, which these operators do not cover, so `PhotonEmission` would refuse them. For radiative transitions we therefore solve the S and P waves only, as the paper does for its Table VI:
+The photon operators of the paper connect S waves with S waves (M1) and with P waves (E1, M2). In the spectrum above, the $J/\psi$ and $\psi(2S)$ carry small ${}^3D_1$ components from tensor mixing, which these operators do not cover, so `PhotonEmission` would refuse them. For radiative transitions we therefore solve the S and P waves only, as the paper does for its Table VI. Here we use a separate S/P spectrum:
 
 ```julia
 radiative = compute_spectrum(params, charmonium;
@@ -268,7 +268,7 @@ gluons = GluonicAnnihilation(mq, M -> alpha_s_q(M))
 ```
 
 ```
-(ψ_ee = 10.510973030961113, ψ2S_ee = 3.5329232079836452, ηc_γγ = 7.524797649227821, ηc_gg = 24.582739970564347)
+(ψ_ee = 10.511053477744904, ψ2S_ee = 3.5329994712630834, ηc_γγ = 7.525020971568651, ηc_gg = 24.583472509534875)
 ```
 
 The first three are in keV, the last in MeV. The ratio $\Gamma_{ee}(\psi(2S))/\Gamma_{ee}(J/\psi) \approx 0.34$ reflects the smaller wavefunction at the origin of the radially excited state.

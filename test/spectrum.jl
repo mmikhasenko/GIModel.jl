@@ -523,3 +523,27 @@ end
     @test length(sprint(show, first(values(spec.computation.channel_cache)))) < 200
     @test length(sprint(show, MIME"text/plain"(), params)) < 1000
 end
+
+@testset "Single-channel and isoscalar defaults use the same solver" begin
+    params, mq = load_parameters_and_quark_masses(default_parameters_path())
+    levels = [BasisState(1, "S", 1, 0)]
+    nn, ss = Meson(mq, :q, :q), Meson(mq, :s, :s)
+    iso = compute_isoscalar_spectrum(params, nn, ss; levels)
+    ordinary = compute_spectrum(params, nn; levels)
+    @test iso.computation.solver == ordinary.computation.solver == FiniteDifferenceSolver()
+    @test spectrum_state(iso, BasisState(1, "S", 1, 0; flavors = (:q, :q))).mass_GeV ==
+          only(ordinary.states).mass_GeV
+end
+
+@testset "Public convergence records retain source-channel scope" begin
+    params, mq = load_parameters_and_quark_masses(default_parameters_path())
+    levels = [BasisState(1, "S", 1, 0)]
+    for solver in (FiniteDifferenceSolver(ngrid=40), OscillatorSolver(nbasis=12, beta_grid=[0.6], converge=false))
+        spec = compute_spectrum(params, Meson(mq,:c,:c); levels, solver)
+        records = convergence(spec, "1^1S_0")
+        @test length(records) == 1
+        @test records == convergence(spec, only(spec.states))
+        @test records[1].basis == only(spec.states).basis
+        @test solver isa OscillatorSolver ? records[1].certificate.status == :unchecked : isnothing(records[1].certificate)
+    end
+end

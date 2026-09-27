@@ -460,6 +460,7 @@ function _comparison_solver(solver; ngrid, rmax, kinetic, eigensolver)
         ))
         return solver
     end
+    isempty(loose) && return OscillatorSolver()
     return FiniteDifferenceSolver(;
         ngrid = isnothing(ngrid) ? 450 : ngrid,
         rmax = isnothing(rmax) ? 24.0 : rmax,
@@ -484,6 +485,10 @@ Compare the model to a vector of [`ReferenceState`](@ref) rows:
  4. optionally apply the isoscalar annihilation `scheme`
     (`:calibrated_p1`, `:p1`/`:paper_p1`, `:p2`/`:paper_p2`, `:general_s1`,
     `:p1_and_s1`, `:table_iii`) — requires `strange_mass_GeV`.
+
+Paper comparisons default to `OscillatorSolver()`, following the original
+investigation. Pass an explicit FD solver (or legacy mesh keywords) for an
+independent numerical cross-check.
 
 Rows with `n > 6` are skipped with a warning. The output rows feed
 [`write_residual_report`](@ref) / [`nonmixing_deviation_summary`](@ref).

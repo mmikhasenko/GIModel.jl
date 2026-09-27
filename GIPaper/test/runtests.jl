@@ -15,12 +15,21 @@ const QMT = GIModel.QuarkModelTransitions
         @test Set(keys(load_table_policy())) ⊇ Set(["table_v", "table_vi", "table_vii"])
     end
 
+    @testset "Paper solver policy" begin
+        select(solver=nothing; ngrid=nothing) = GIPaper._comparison_solver(
+            solver; ngrid, rmax=nothing, kinetic=nothing, eigensolver=nothing)
+        @test select() isa OscillatorSolver
+        fd = FiniteDifferenceSolver(ngrid=80)
+        @test select(fd) === fd
+        @test select(; ngrid=80) isa FiniteDifferenceSolver
+        @test_throws ArgumentError select(OscillatorSolver(); ngrid=80)
+    end
+
     @testset "Charmonium spectrum versus Fig. 6" begin
         reference = filter(r -> r.n == 1 && r.L == "S",
             load_reference_spectrum(reference_spectrum_path("charmonium")))
         rows = compare_reference(params, mq, reference;
-            contact_hyperfine = true, use_fine_structure = true,
-            ngrid = 400, rmax = 15.0)
+            contact_hyperfine = true, use_fine_structure = true)
         @test length(rows) == 2
         # A coarse smoke-test envelope, not a claim of paper-level precision.
         # Full per-state residuals are produced by checks/run_all_spectrum_checks.jl.

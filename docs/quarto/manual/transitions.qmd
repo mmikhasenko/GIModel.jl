@@ -94,6 +94,13 @@ is implemented (currently M1).
 The photon couples to the quark charges, so flavor must be explicit. States
 built from `:u` and `:d` work; the averaged `:q` is rejected for photon
 emission because it cannot distinguish $e_u + e_d$ from $e_u - e_d$.
+States obtained from an isoscalar spectrum carry this information and are
+resolved into coherent u and d contributions automatically.
+
+Nonzero D-wave admixtures are rejected by these Appendix-D kernels with:
+“Not implemented yet. Please submit issue if needed, and/or PR with implementation.”
+No components are silently discarded. General D→P radiative transitions need
+a separately derived and validated implementation.
 
 ## Pseudoscalar emission
 

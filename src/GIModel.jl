@@ -15,7 +15,7 @@ include("constants.jl")
 
 export orbital_angular_momentum, orbital_label
 export ConstituentMasses, reduced_mass, FineStructureMultiplet
-export RadialWave, MeshWave, OscillatorWave, sample_wave
+export RadialWave, MeshWave, OscillatorWave, sample_wave, convergence
 export radial_expect, radial_overlap, radial_derivative_overlap, wave_norm
 export MomentumWave, MeshMomentumWave, OscillatorMomentumWave,
     momentum_wave, momentum_expect, momentum_overlap, momentum_functional,

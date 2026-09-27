@@ -43,14 +43,14 @@ iso = compute_isoscalar_spectrum(params, nn, ss;
 ```
 MixedSpectrum: qq + ss, 8 levels — all values in GeV
   level        central    contact   fine str     mixing       mass
-  1^1S_0 qq     0.7630    -0.6141     0.0000     0.3826     0.5315
-  1^3S_1 qq     0.6669     0.1040     0.0000     0.0099     0.7808
-  2^1S_0 qq     1.3965    -0.1052     0.0000     0.2043     1.4956
-  2^3S_1 qq     1.4112     0.0443     0.0000     0.0013     1.4569
-  1^1S_0 ss     0.9949    -0.3398     0.0000     0.3447     0.9999
+  1^1S_0 qq     0.7637    -0.6151     0.0000     0.3828     0.5313
+  1^3S_1 qq     0.6671     0.1041     0.0000     0.0099     0.7810
+  2^1S_0 qq     1.3966    -0.1050     0.0000     0.2040     1.4957
+  2^3S_1 qq     1.4113     0.0443     0.0000     0.0013     1.4569
+  1^1S_0 ss     0.9950    -0.3402     0.0000     0.3456     1.0004
   1^3S_1 ss     0.9491     0.0679     0.0000     0.0033     1.0203
-  2^1S_0 ss     1.6533    -0.0760     0.0000     0.2222     1.7994
-  2^3S_1 ss     1.6597     0.0293     0.0000     0.0006     1.6896
+  2^1S_0 ss     1.6531    -0.0761     0.0000     0.2229     1.7999
+  2^3S_1 ss     1.6596     0.0293     0.0000     0.0006     1.6895
   (8 levels carry mixing; see `spec.states[i].mixings`)
 ```
 
@@ -65,7 +65,7 @@ eta_prime = spectrum_state(iso, BasisState(1, "S", 1, 0; flavors = (:s, :s)))
 ```
 
 ```
-(0.5314772345311842, 0.9998502326820864)
+(0.5313070518403085, 1.0004316903836472)
 ```
 
 ### Flavor and radial composition
@@ -79,9 +79,9 @@ The annihilation block contains every ${}^1S_0$ level that was requested, so the
 
 ```
 4-element Vector{Tuple{String, String, Float64}}:
- ("qq", "1^1S_0", 0.625)
+ ("qq", "1^1S_0", 0.624)
  ("ss", "1^1S_0", -0.772)
- ("qq", "2^1S_0", 0.111)
+ ("qq", "2^1S_0", 0.11)
  ("ss", "2^1S_0", 0.041)
 ```
 
@@ -96,8 +96,8 @@ The $\eta$ is octet-like, with $n\bar n$ and $s\bar s$ of opposite sign. The $\e
 4-element Vector{Tuple{String, String, Float64}}:
  ("qq", "1^1S_0", 0.568)
  ("ss", "1^1S_0", 0.552)
- ("qq", "2^1S_0", 0.591)
- ("ss", "2^1S_0", 0.152)
+ ("qq", "2^1S_0", 0.592)
+ ("ss", "2^1S_0", 0.153)
 ```
 
 The vectors stay close to ideal mixing: the $\omega$ is nearly pure $n\bar n$ and the $\phi$ nearly pure $s\bar s$:
@@ -111,7 +111,7 @@ omega = spectrum_state(iso, BasisState(1, "S", 3, 1; flavors = (:q, :q)))
 ```
 2-element Vector{Tuple{String, String, Float64}}:
  ("qq", "1^3S_1", 1.0)
- ("ss", "1^3S_1", -0.023)
+ ("ss", "1^3S_1", -0.024)
 ```
 
 ## Choosing the radial content
@@ -140,8 +140,8 @@ four = add_isoscalar_annihilation(params, spectra;
 ```
 MixedSpectrum: qq + ss + cc, 3 levels — all values in GeV
   level        central    contact   fine str     mixing       mass
-  1^1S_0 qq     0.7627    -0.6138     0.0000     0.3929     0.5417
-  1^1S_0 ss     0.9939    -0.3394     0.0000     0.6226     1.2771
+  1^1S_0 qq     0.7635    -0.6145     0.0000     0.3932     0.5423
+  1^1S_0 ss     0.9950    -0.3398     0.0000     0.6226     1.2777
   1^1S_0 cc     3.0785    -0.1114     0.0000    -0.0023     2.9648
   (3 levels carry mixing; see `spec.states[i].mixings`)
 ```
@@ -155,14 +155,26 @@ eta_c = spectrum_state(four, BasisState(1, "S", 1, 0; flavors = (:c, :c)))
 
 ```
 3-element Vector{Tuple{String, Float64}}:
- ("qq", -0.0068)
+ ("qq", -0.0069)
  ("ss", -0.004)
  ("cc", 1.0)
 ```
 
 ## Using isoscalar states in transitions
 
-The nonstrange channel is `Meson(mq, :q, :q)`, and its components carry the flavor label `:q`. Photon emission and leptonic currents need explicit `:u` and `:d` charges, so they currently refuse states from an isoscalar spectrum, even the $\phi$, which has a small $n\bar n$ component. Two-photon widths work, because [`AnnihilationTerm`](@ref) takes the effective charge of each flavor component explicitly (see [η and η′](@ref)). Radiative and leptonic decays of mixed isoscalars are not yet available through the public API.
+The isoscalar spectrum records that its nonstrange channel means $(u\bar u+d\bar d)/\sqrt{2}$. Photon emission and electromagnetic leptonic currents resolve this channel into explicit `:u` and `:d` contributions, including their relative signs and mixing coefficients:
+
+```julia
+using GIModel.QuarkModelTransitions
+phi = physical_state(iso, BasisState(1, "S", 3, 1; flavors = (:s, :s)))
+decay_width(MasslessLeptonPair(), LeptonicCurrent(:electromagnetic, mq), phi)
+```
+
+```
+0.002844628833069689
+```
+
+A standalone `compute_spectrum(..., Meson(mq, :q, :q))` remains ambiguous and is rejected by electromagnetic currents. Explicit `AnnihilationTerm` coefficients, including those for two-photon widths, still act on the original coarse flavor components, so effective charges are not counted twice.
 
 ## A calibrated alternative
 

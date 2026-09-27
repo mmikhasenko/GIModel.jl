@@ -25,7 +25,7 @@ levels = spectrum_levels(1; L_labels = ("S", "P"))
 | accuracy set by | basis size and oscillator scale $\beta$ (chosen automatically) | mesh spacing and box size (chosen by you) |
 | convergence check | built in, with a certificate | your own refinement study |
 | wave type | [`OscillatorWave`](@ref) | [`MeshWave`](@ref) |
-| default in | [`compute_isoscalar_spectrum`](@ref) | [`compute_spectrum`](@ref) |
+| default in | explicitly selected | [`compute_spectrum`](@ref), [`compute_isoscalar_spectrum`](@ref) |
 
 Both solvers produce the same kind of result, and everything downstream
 (mixing, wavefunctions, transitions) works with either. The two are separate
@@ -132,6 +132,9 @@ and `eigensolver = :krylov` uses an iterative eigensolver for large meshes.
 
 ## Which one to use
 
+- For **comparisons with GIPaper**, use `OscillatorSolver()` explicitly.
+  GIPaper comparison functions and production audits select HO independently
+  of the general package default.
 - For **results to quote**, use `OscillatorSolver()`. It is the paper's method
   and certifies its own energies.
 - For **quick exploration**, the default `FiniteDifferenceSolver()` is fast and
@@ -167,3 +170,10 @@ The result is a [`ChannelRadialSolution`](@ref): eigenvalues, one wave per
 level (`radial_wave(sol, n)`), and for the oscillator solver a convergence
 certificate. [`fixed_channel_solution`](@ref) does the same for a complete
 fixed $(L, S, J)$ Hamiltonian including spin terms.
+
+## Inspecting a state's convergence
+
+Use `convergence(spec, "1^1S_0")` to obtain `(basis, certificate)` records.
+A mixed state can have several records. HO certificates report convergence
+of radial energies; FD returns `nothing` and requires a mesh refinement study.
+Neither is a certificate for the final mixed-state amplitude or decay width.

@@ -113,20 +113,6 @@ function _rank_one_annihilation_weights(
     return weights
 end
 
-# Use the same ascending-unmixed-mass assignment as Spectrum. Each physical
-# state keeps a positive overlap with its assigned precursor. Anchoring every
-# state to the first nn entry instead reverses a heavy state whose tiny nn
-# admixture is negative, and reverses all its transition amplitudes.
-function _phase_fix_state_columns!(vectors::AbstractMatrix{<:Real}, diagonal)
-    anchors = sortperm(diagonal)
-    length(anchors) == size(vectors, 2) || throw(ArgumentError("phase basis size mismatch"))
-    for (col, anchor) in enumerate(anchors)
-        # A zero overlap cannot define a phase; use the largest component.
-        index = iszero(vectors[anchor, col]) ? argmax(abs.(vectors[:, col])) : anchor
-        vectors[index, col] < 0 && (vectors[:, col] .*= -1)
-    end
-    return vectors
-end
 
 function _alpha_s_mass_scale(mass_GeV::Real)
     q = max(float(mass_GeV), 1.0e-9)

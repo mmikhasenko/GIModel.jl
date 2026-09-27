@@ -24,7 +24,7 @@ levels = spectrum_levels(1; L_labels = ("S", "P"))
 | accuracy set by | basis size and oscillator scale $\beta$ (chosen automatically) | mesh spacing and box size (chosen by you) |
 | convergence check | built in, with a certificate | your own refinement study |
 | wave type | [`OscillatorWave`](@ref) | [`MeshWave`](@ref) |
-| default in | [`compute_isoscalar_spectrum`](@ref) | [`compute_spectrum`](@ref) |
+| default in | explicitly selected | [`compute_spectrum`](@ref), [`compute_isoscalar_spectrum`](@ref) |
 
 Both solvers produce the same kind of result, and everything downstream (mixing, wavefunctions, transitions) works with either. The two are separate implementations of the same operators, so their agreement is a strong check.
 
@@ -82,12 +82,12 @@ end
 ```
 
 ```
-P 2S+1=3 J=0      converged  β = 1.094 GeV  N = 40  ΔE = 3.5e-5 MeV
-P 2S+1=3 J=1      converged  β = 1.056 GeV  N = 40  ΔE = 2.9e-5 MeV
-S 2S+1=1 J=0      converged  β = 1.353 GeV  N = 40  ΔE = 8.9e-5 MeV
-S 2S+1=3 J=1      converged  β = 1.163 GeV  N = 40  ΔE = 2.9e-6 MeV
-P 2S+1=1 J=1      converged  β = 1.102 GeV  N = 40  ΔE = 0.00013 MeV
-P 2S+1=3 J=2      converged  β = 1.0 GeV  N = 40  ΔE = 3.9e-6 MeV
+P 2S+1=3 J=2      converged  β = 0.991 GeV  N = 40  ΔE = 1.1e-6 MeV
+P 2S+1=3 J=0      converged  β = 1.098 GeV  N = 40  ΔE = 3.1e-5 MeV
+P 2S+1=3 J=1      converged  β = 1.064 GeV  N = 40  ΔE = 2.5e-5 MeV
+S 2S+1=3 J=1      converged  β = 1.111 GeV  N = 40  ΔE = 1.4e-6 MeV
+S 2S+1=1 J=0      converged  β = 1.348 GeV  N = 40  ΔE = 8.2e-5 MeV
+P 2S+1=1 J=1      converged  β = 1.114 GeV  N = 40  ΔE = 0.00011 MeV
 ```
 
 Each sector gets its own $\beta$, because each has a different size.
@@ -144,6 +144,7 @@ The finite-difference solver has two extra options: `kinetic = :nonrelativistic`
 
 ## Which one to use
 
+- For **comparisons with GIPaper**, use `OscillatorSolver()` explicitly. GIPaper comparison functions and production audits select HO independently of the general package default.
 - For **results to quote**, use `OscillatorSolver()`. It is the paper’s method and certifies its own energies.
 - For **quick exploration**, the default `FiniteDifferenceSolver()` is fast and accurate to a fraction of an MeV for most states.
 - For a **cross-check**, compute with both. A difference larger than the tolerances points to a convergence problem, not to physics.
@@ -175,9 +176,13 @@ sol.eigenvalues_GeV[1:3]
 
 ```
 3-element Vector{Float64}:
- 3.0645237923656308
- 3.666192238050535
- 4.0909574961787625
+ 3.0645236910656135
+ 3.666192134948986
+ 4.090957384190697
 ```
 
 The result is a [`ChannelRadialSolution`](@ref): eigenvalues, one wave per level (`radial_wave(sol, n)`), and for the oscillator solver a convergence certificate. [`fixed_channel_solution`](@ref) does the same for a complete fixed $(L, S, J)$ Hamiltonian including spin terms.
+
+## Inspecting a state’s convergence
+
+Use `convergence(spec, "1^1S_0")` to obtain `(basis, certificate)` records. A mixed state can have several records. HO certificates report convergence of radial energies; FD returns `nothing` and requires a mesh refinement study. Neither is a certificate for the final mixed-state amplitude or decay width.

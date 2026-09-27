@@ -262,7 +262,9 @@ Staged model spectrum over one or more flavor `channels`, the `states` (in the
 request order), and the underlying [`SectorComputation`](@ref). Ordinary
 spectra contain one channel; the final isoscalar spectrum contains the
 nonstrange and strange channels whose native solves participate in flavor
-mixing. The stage is the element type `S` of `states`:
+mixing. `nonstrange_isoscalar` records when the light flavor channel has the
+coherent `(uū+dd̄)/√2` interpretation; ordinary spectra leave this false.
+The stage is the element type `S` of `states`:
 
   - [`CentralSpectrum`](@ref)` = Spectrum{CentralState}` — [`central_spectrum`](@ref)
   - [`CorrectedSpectrum`](@ref)` = Spectrum{CorrectedState}` — [`fixed_spectrum`](@ref)
@@ -276,10 +278,12 @@ struct Spectrum{S,C<:SectorComputation}
     channels::Vector{Meson}
     states::Vector{S}
     computation::C
+    nonstrange_isoscalar::Bool
     function Spectrum(
         channels::AbstractVector{<:Meson},
         states::AbstractVector{S},
-        computation::C,
+        computation::C;
+        nonstrange_isoscalar::Bool = false,
     ) where {S,C<:SectorComputation}
         isempty(channels) && throw(ArgumentError("Spectrum needs at least one flavor channel"))
         unique_channels = collect(Meson, channels)
@@ -302,7 +306,7 @@ struct Spectrum{S,C<:SectorComputation}
                 "which is absent from the spectrum channels",
             ))
         end
-        return new{S,C}(unique_channels, owned_states, computation)
+        return new{S,C}(unique_channels, owned_states, computation, nonstrange_isoscalar)
     end
 end
 
@@ -594,7 +598,8 @@ function add_intra_meson_mixing(
     if tensor_mixing && fine_structure_applied
         _apply_tensor_mixing!(states, params, masses, channel_cache)
     end
-    return Spectrum(spec.channels, states, spec.computation)
+    return Spectrum(spec.channels, states, spec.computation;
+                    nonstrange_isoscalar = spec.nonstrange_isoscalar)
 end
 
 """
@@ -1207,3 +1212,42 @@ function Base.show(io::IO, sol::ChannelRadialSolution{W}) where {W}
     isnothing(sol.convergence) || print(io, "; ", sol.convergence.status)
     print(io, ")")
 end
+
+"""
+    convergence(solution::ChannelRadialSolution)
+    convergence(spectrum, state_or_label)
+
+Return a radial solution's HO energy-convergence certificate (`nothing` for
+FD), or a vector of `(basis, certificate)` records for every component of a
+spectrum state. Mixed states can depend on several independently solved
+channels; no single certificate covers the entire mixed state or a decay
+observable. Certificates describe the original radial energy solves.
+
+## Example
+
+```julia
+using GIModel
+params, mq = load_parameters_and_quark_masses(default_parameters_path())
+spec = compute_spectrum(params, Meson(mq, :c, :c);
+    levels=[BasisState(1,"S",1,0)], solver=OscillatorSolver())
+convergence(spec, "1^1S_0")[1].certificate.status
+```
+
+## Related
+
+[`OscillatorConvergence`](@ref), [`physical_components`](@ref), [`compute_spectrum`](@ref).
+"""
+convergence(solution::ChannelRadialSolution) = solution.convergence
+
+function convergence(spec::Spectrum, state::Union{CentralState,CorrectedState,MixedState})
+    return map(physical_components(spec, state)) do component
+        basis = component.basis
+        meson = _channel_for(spec, basis)
+        cache = spec.computation.channel_cache
+        fixed = RadialChannelKey(meson.constituent_masses, basis.L_label, basis.multiplicity, basis.J)
+        key = haskey(cache, fixed) ? fixed : RadialChannelKey(meson.constituent_masses, basis.L_label)
+        (basis = basis, certificate = convergence(cache[key]))
+    end
+end
+
+convergence(spec::Spectrum, selector::StateSelector) = convergence(spec, spectrum_state(spec, selector))

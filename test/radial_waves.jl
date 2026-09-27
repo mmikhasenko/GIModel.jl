@@ -148,3 +148,14 @@
     @test all(iszero, sample_wave(w, wide).u[wide .>= w.r[end] + w.h])
 end
 
+
+@testset "Oscillator momentum waves are directly callable" begin
+    beta = 0.5
+    phi = momentum_wave(OscillatorWave(0, beta, [1.0]))
+    for p in (0.0, 0.1, 0.7, 2.0)
+        @test phi(p) ≈ 2 / (pi^0.25 * beta^1.5) * exp(-p^2 / (2beta^2)) rtol = 1e-12
+    end
+    @test momentum_wave(OscillatorWave(1, beta, [1.0]))(0.0) == 0.0
+    @test_throws ArgumentError phi(-0.1)
+    @test_throws ArgumentError phi(Inf)
+end

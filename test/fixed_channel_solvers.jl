@@ -1,4 +1,4 @@
-@testset "Native spin matrices equal wave-interface expectations" begin
+@testset "Native spin matrices approach wave-interface expectations" begin
     params, mq = load_parameters_and_quark_masses(joinpath(root, "data", "parameters.provisional.toml"))
     masses = ConstituentMasses(mq["c"], mq["c"])
     beta, nbasis = 0.75, 12
@@ -15,9 +15,13 @@
           ) rtol = 1e-5 atol = 1e-9
 
     cP = [sin(i) + 0.2cos(2i) for i in 1:nbasis]
-    wP = OscillatorWave(1, beta, cP)
+    # The wave-interface observable now resolves the continuum momentum
+    # factor independently. Compare against an enlarged Galerkin operator,
+    # not the deliberately truncated twelve-function Hamiltonian.
+    fine_nbasis = 96
+    wP = OscillatorWave(1, beta, vcat(cP, zeros(fine_nbasis - nbasis)))
     matrices = GIModel.ho_fine_structure_matrices(
-        params, masses, 1, 3, 2, beta, nbasis,
+        params, masses, 1, 3, 2, beta, fine_nbasis,
     )
     components = fine_structure_components(
         params, masses, FineStructureMultiplet("P", 3, 2), wP,

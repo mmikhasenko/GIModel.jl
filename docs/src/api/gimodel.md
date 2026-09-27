@@ -210,3 +210,7 @@ GIModel.fine_structure_grid_matrices
 GIModel.ho_fine_structure_matrices
 GIModel.orthonormalize_physical_basis
 ```
+
+```@docs
+convergence
+```

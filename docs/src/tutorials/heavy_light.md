@@ -23,9 +23,9 @@ Ds = compute_spectrum(params, Meson(mq, :c, :s); levels = P_levels, solver = Osc
 ```
 MixedSpectrum: cs, 4 levels — all values in GeV
   level     central    contact   fine str     mixing       mass
-  1^1P_1     2.5650    -0.0147     0.0000    -0.0028     2.5475
+  1^1P_1     2.5650    -0.0147     0.0000    -0.0029     2.5474
   1^3P_0     2.5756     0.0062    -0.1011     0.0000     2.4807
-  1^3P_1     2.5656     0.0050    -0.0190     0.0028     2.5545
+  1^3P_1     2.5655     0.0050    -0.0189     0.0029     2.5545
   1^3P_2     2.5672     0.0037     0.0202     0.0000     2.5911
   (2 levels carry mixing; see `spec.states[i].mixings`)
 ```
@@ -78,10 +78,10 @@ end
 ```
 
 ```
-u sbar    θ =    2.3°   P(¹P₁) = 0.998
-c ubar    θ =  -25.0°   P(¹P₁) = 0.821
+u sbar    θ =    4.3°   P(¹P₁) = 0.994
+c ubar    θ =  -25.8°   P(¹P₁) = 0.811
 c sbar    θ =  -39.6°   P(¹P₁) = 0.594
-b ubar    θ =  -26.8°   P(¹P₁) = 0.796
+b ubar    θ =  -28.0°   P(¹P₁) = 0.78
 b sbar    θ =  -41.1°   P(¹P₁) = 0.567
 b cbar    θ =   69.2°   P(¹P₁) = 0.127
 c cbar    θ =   90.0°   P(¹P₁) = 0.0
@@ -110,10 +110,10 @@ end
 ```
 
 ```
-u sbar    (vector_MeV = 7.8, thomas_MeV = -8.3, total_MeV = -0.6, diagonal_gap_MeV = 13.5)
-c ubar    (vector_MeV = -25.3, thomas_MeV = 28.8, total_MeV = 3.5, diagonal_gap_MeV = 5.8)
-c sbar    (vector_MeV = -18.0, thomas_MeV = 21.4, total_MeV = 3.4, diagonal_gap_MeV = 1.3)
-b ubar    (vector_MeV = -31.6, thomas_MeV = 33.2, total_MeV = 1.5, diagonal_gap_MeV = 2.2)
+u sbar    (vector_MeV = 7.9, thomas_MeV = -8.9, total_MeV = -1.1, diagonal_gap_MeV = 13.9)
+c ubar    (vector_MeV = -25.3, thomas_MeV = 29.1, total_MeV = 3.7, diagonal_gap_MeV = 5.9)
+c sbar    (vector_MeV = -18.0, thomas_MeV = 21.5, total_MeV = 3.5, diagonal_gap_MeV = 1.3)
+b ubar    (vector_MeV = -31.7, thomas_MeV = 33.4, total_MeV = 1.7, diagonal_gap_MeV = 2.3)
 b sbar    (vector_MeV = -24.9, thomas_MeV = 26.6, total_MeV = 1.6, diagonal_gap_MeV = 0.4)
 b cbar    (vector_MeV = -9.4, thomas_MeV = 6.8, total_MeV = -2.6, diagonal_gap_MeV = -5.9)
 ```
@@ -137,17 +137,17 @@ end
 
 ```
 system      GIModel  GI 1985  GK 1991
-u sbar          2.3       34        5
-c ubar        -25.0      -41      -26
+u sbar          4.3       34        5
+c ubar        -25.8      -41      -26
 c sbar        -39.6      -44      -38
-b ubar        -26.8      -43      -31
+b ubar        -28.0      -43      -31
 b sbar        -41.1      -45      -40
 b cbar         69.2      -53       68
 ```
 
 GIModel agrees with the later calculation to within a few degrees, while the 1985 captions differ, in one case with the opposite sign.
 
-The angles above come from the oscillator solver. The finite-difference solver gives angles 1–2° larger in magnitude (for example $+4.3°$ for $u\bar s$ and $-27.9°$ for $b\bar u$); each value is stable under refinement of its own solver, while the masses agree to well below an MeV. Because the off-diagonal element is a small difference of two larger terms, this is where the two implementations differ most. The recorded reports use the finite-difference values. The spectrum masses agree with the 1985 figures throughout. [Mixing angles: a paper erratum](@ref) explains how this was traced to the 1985 caption values rather than to the implementation.
+The angles above come from the oscillator solver; the finite-difference solver agrees within 0.1°. Because the off-diagonal element is a small difference of two larger terms, the angle is a sensitive test of both implementations, and the heavy test suite compares them. The spectrum masses agree with the 1985 figures throughout. [Mixing angles: a paper erratum](@ref) explains how this was traced to the 1985 caption values rather than to the implementation.
 
 ## What to take away
 

@@ -83,11 +83,9 @@ quark, heavier antiquark) and negative angles for ``c\bar u``, ``c\bar s``,
 - **Spin and flavor wavefunctions.** Singlet and triplet spin states follow
   Eqs. (B26)–(B29), and flavor states follow Eqs. (B1)–(B15), including the
   signs of charged and heavy-light mesons.
-- **Mixed states.** An eigenstate of an annihilation block is chosen to have
-  a positive overlap with the basis state it is assigned to, so a small
-  admixture with a negative sign does not flip the whole state. Eigenstates of
-  spectroscopic (spin-orbit and tensor) blocks keep the sign returned by the
-  diagonalization; only relative signs within a state are meaningful there.
+- **Mixed states.** Every mixing eigenstate, spectroscopic or annihilation, is
+  chosen to have a positive overlap with the basis state it is assigned to, so
+  a small admixture with a negative sign does not flip the whole state.
 
 An overall phase of an external state changes the sign of an amplitude but
 never a width. Relative signs between interfering amplitudes are fixed by the
@@ -120,3 +118,9 @@ waves and the allowed ones carry a factor ``1/\sqrt2``. The width is
 ```
 
 in GeV, returned in MeV by [`decay_width`](@ref).
+
+All mass-mixing eigenvectors use positive overlap with their assigned unmixed
+state, ordered by unmixed mass. If that overlap is zero, the largest component
+sets the phase. This convention is shared by spin-orbit, tensor, and annihilation
+mixing. `diagonalize_mixing_block(...; phase_anchor=1)` explicitly requests a
+common first-row anchor when comparison with another convention requires it.

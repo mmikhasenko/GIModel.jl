@@ -35,6 +35,7 @@ if lowercase(get(ENV, "GI_HEAVY_TESTS", "false")) in ("1", "true", "yes")
     @testset "GIModel heavy" begin
         include(joinpath("heavy", "radial_waves.jl"))
         include(joinpath("heavy", "fixed_channel_solvers.jl"))
+        include(joinpath("heavy", "mixing_convergence.jl"))
     end
 end
 

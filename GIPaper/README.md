@@ -24,6 +24,13 @@ julia GIPaper/checks/audit_table_vi_photon_decays.jl
 julia GIPaper/checks/audit_table_vii.jl
 ```
 
+Paper comparisons use `OscillatorSolver()`, following the original
+investigation. This is independent of GIModel's faster finite-difference
+default for general calculations. `compare_reference` defaults to HO; an
+explicit FD solver or legacy mesh keywords select an independent cross-check.
+Report headers must name the solver actually used. Existing FD reports remain
+historical cross-checks until regenerated with HO.
+
 Each comparison writes its results under `reports/`. These are comparisons,
 not a claim that every paper value is reproduced: residuals, unavailable inputs
 and historical conventions remain explicit. The full checks can take longer

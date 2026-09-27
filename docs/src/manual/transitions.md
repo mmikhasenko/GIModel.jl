@@ -32,7 +32,7 @@ amplitude = matrix_element(eta_c, PhotonEmission(mq), psi)
 ```
 
 ```
-RadiativeAmplitude(1^3S_1 -> 1^1S_0 + gamma, DirectM1, recoil_order=0, 0.6881204808481701 + 0.0im)
+RadiativeAmplitude(1^3S_1 -> 1^1S_0 + gamma, DirectM1, recoil_order=0, 0.6881204742164155 + 0.0im)
 ```
 
 ```julia
@@ -40,7 +40,7 @@ decay_width(amplitude)       # MeV
 ```
 
 ```
-0.0023635536354373863
+0.0023635549674362938
 ```
 
 The argument order is always `(final, operator, initial)`, like $\langle f|\,O\,|i\rangle$.
@@ -54,7 +54,7 @@ psi
 ```
 
 ```
-PhysicalState("1^3S_1", 3.09137300669168 GeV, 1 component)
+PhysicalState("1^3S_1", 3.0913730064733147 GeV, 1 component)
 ```
 
 Because it holds all components, a mixed parent or daughter contributes coherently, with interference, and nothing needs to be re-assembled by hand. Masses come from the spectrum, so decay momenta follow from the model masses. [Comparing at other masses](@ref) shows how to use different masses.
@@ -96,14 +96,16 @@ decay_width(e1)
 │   transition_class = :AllowedE1
 │   multipole = :E1
 │   recoil_order = 0
-└   q_GeV = 0.3920878352633258
+└   q_GeV = 0.39208783378512374
 
-0.21042114594063696
+0.21042114059605502
 ```
 
 The classes are `DirectM1` (same radial level), `HinderedM1` (different radial levels), `AllowedE1` (spin-conserving S–P), `SpinFlipE1` and `SpinFlipM2`. `PhotonEmission(mq; recoil_order = 2)` adds the $(qr)^2$ correction where it is implemented (currently M1).
 
-The photon couples to the quark charges, so flavor must be explicit. States built from `:u` and `:d` work; the averaged `:q` is rejected for photon emission because it cannot distinguish $e_u + e_d$ from $e_u - e_d$.
+The photon couples to the quark charges, so flavor must be explicit. States built from `:u` and `:d` work; the averaged `:q` is rejected for photon emission because it cannot distinguish $e_u + e_d$ from $e_u - e_d$. States obtained from an isoscalar spectrum carry this information and are resolved into coherent u and d contributions automatically.
+
+Nonzero D-wave admixtures are rejected by these Appendix-D kernels with: “Not implemented yet. Please submit issue if needed, and/or PR with implementation.” No components are silently discarded. General D→P radiative transitions need a separately derived and validated implementation.
 
 ## Pseudoscalar emission
 
@@ -132,11 +134,11 @@ strong = matrix_element(TwoMesonChannel(K_zero, pion), PseudoscalarEmission(1.0,
 TransitionAmplitude
   transition     1^3S_1 -> 1^1S_0 + 1^1S_0
   operator       PseudoscalarEmission
-  momentum       0.31144899400849513 GeV
+  momentum       0.31207606274646865 GeV
   normalization  RelativisticTwoBodyNormalization
   helicities     1
   partial waves  1
-    (L,S)=(1,0)  -0.4032476435523322 + 0.0im
+    (L,S)=(1,0)  -0.40378226230698816 + 0.0im
   terms          1
 ```
 
@@ -146,7 +148,7 @@ TransitionAmplitude
 
 ```
 1-element Vector{Pair{PartialWave, ComplexF64}}:
- PartialWave(1, 0) => -0.4032476435523322 + 0.0im
+ PartialWave(1, 0) => -0.40378226230698816 + 0.0im
 ```
 
 A vector decaying to two pseudoscalars has one P-wave amplitude. The flavor algebra is exact: a channel that violates charge or flavor, such as $K^{*+} \to K^+\pi^+$, gives exactly zero. See [Strong decays beyond the paper](@ref) for neutral isospin states, axial mesons with two partial waves, and a calibration of `g` and `h`.
@@ -163,7 +165,7 @@ decay_width(MasslessLeptonPair(), current, psi)     # Γ(J/ψ → e⁺e⁻) in M
 ```
 
 ```
-0.010510973030961112
+0.010511053477744904
 ```
 
 `matrix_element(Vacuum(), current, psi)` returns the dimensionless reduced current instead of a width. Weak decays of pseudoscalars use a [`LeptonNeutrinoChannel`](@ref) with an explicit CKM element.
@@ -178,7 +180,7 @@ decay_width(TwoPhotonChannel(), two_photon, eta_c)  # Γ(η_c → γγ) in MeV
 ```
 
 ```
-0.007524797649227821
+0.0075250209715686505
 ```
 
 [`GluonicAnnihilation`](@ref) takes the strong coupling, either as a number or as a function of the meson mass:
@@ -190,7 +192,7 @@ gluonic = GluonicAnnihilation(mq, M -> alpha_s_q(M))
 ```
 
 ```
-(eta_c = 24.582739970564347, psi = 0.18977434624861286)
+(eta_c = 24.583472509534875, psi = 0.1897757984435488)
 ```
 
 These annihilation widths depend on the smeared wavefunction at the origin (Eq. (17)), which is sensitive to the short-distance part of the wave. Check their convergence when you quote them.
@@ -204,7 +206,7 @@ factor = mass_correction_factor(TwoPhotonChannel(), two_photon, eta_c; target_ma
 ```
 
 ```
-1.0085644082821885 + 0.0im
+1.0085644209633375 + 0.0im
 ```
 
 The factor multiplies the *amplitude* (`.value`), not the width, except for gluonic annihilation, where no amplitude exists. The required keyword depends on the operator:
@@ -243,7 +245,7 @@ r2 * 0.1973^2            # fm²
 ```
 
 ```
-0.42320138455771644
+0.42333886261382325
 ```
 
 ## What is not covered

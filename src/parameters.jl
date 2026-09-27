@@ -304,8 +304,10 @@ Model parameters grouped by aspect, one field per TOML section:
   - `fine_structure::FineStructure` — spin-orbit/tensor master switch and scales.
   - `annihilation::AnnihilationAmplitudes` — Table III constants.
 
-Construct via [`load_parameters`](@ref) (TOML) or keywords:
-`GIParameters(potential = ConfinementPotential(b = 0.18, c = -0.253), ...)`.
+Construct via [`load_parameters`](@ref) (TOML), or use the copy constructor
+`GIParameters(params; potential = ConfinementPotential(params.potential; b = 0.20))`.
+Construction from scratch requires all six keyword fields explicitly; no
+simplified model or fitted constants are silently supplied.
 
 This is the **model**, and nothing more: every field is a number the paper
 quotes. How the resulting Schrödinger equation gets solved is a separate choice,
@@ -343,11 +345,11 @@ end
 
 function GIParameters(;
     potential::ConfinementPotential,
-    central::CentralPotentialMethod = PointwiseCentral(),
+    central::CentralPotentialMethod,
     smearing::RelativisticSmearing,
-    factors::RelativisticFactors = RelativisticFactors(),
-    fine_structure::FineStructure = FineStructure(),
-    annihilation::AnnihilationAmplitudes = AnnihilationAmplitudes(),
+    factors::RelativisticFactors,
+    fine_structure::FineStructure,
+    annihilation::AnnihilationAmplitudes,
 )
     return GIParameters(
         potential,
