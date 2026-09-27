@@ -174,6 +174,42 @@ bash scripts/verify_project.sh
 - Raw extraction and clean physics data stay separate.
 - Every promoted numerical value retains provenance and confidence.
 
+## Citation
+
+If you use GIModel.jl, please cite the original work:
+S. Godfrey and N. Isgur, *Phys. Rev. D* **32**, 189 (1985),
+[doi:10.1103/PhysRevD.32.189](https://doi.org/10.1103/PhysRevD.32.189).
+
+This project can be cited as [arXiv preprint 1/10] (placeholder for the
+preprint planned for Thursday, 1 October 2026; arXiv link to follow).
+
+BibTeX entries are provided below. The project entry is provisional;
+`2610.XXXXX` is a placeholder and will be replaced when the preprint is available.
+
+```bibtex
+% original work
+@article{Godfrey:1985xj,
+    author = "Godfrey, S. and Isgur, Nathan",
+    title = "{Mesons in a Relativized Quark Model with Chromodynamics}",
+    doi = "10.1103/PhysRevD.32.189",
+    journal = "Phys. Rev. D",
+    volume = "32",
+    pages = "189--231",
+    year = "1985"
+}
+
+% this project (provisional; arXiv identifier to follow)
+@article{Mikhasenko:2026xyz,
+    author = "Mikhasenko, M.",
+    title = "{Agentic Godfrey Isgur}",
+    eprint = "2610.XXXXX",
+    archivePrefix = "arXiv",
+    primaryClass = "physics.ph",
+    month = "10",
+    year = "2026"
+}
+```
+
 ## License
 
 MIT — see [LICENSE](LICENSE). Each package directory carries the same license
