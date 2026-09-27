@@ -9,12 +9,10 @@ The Appendix A (A9) universal smearing width ``\\sigma(m_1, m_2)`` in GeV,
 
     σ² = σ₀² (1/2 + 1/2 [4 m₁m₂/(m₁+m₂)²]⁴) + s² (2 m₁m₂/(m₁+m₂))²
 
-built from the Table II inputs `σ₀` and `s`. Together with the relativistic
-weight ``(m_1 m_2 / E_1 E_2)^{1/2 + \\epsilon_i}`` this is **the entire route by
-which quark mass enters the model** — the potential parameters (`b`, `c`) and
-[`alpha_s_q`](@ref) never see a mass or a flavor. σ grows monotonically with the
-constituent masses, which is why the smeared contact term (and with it the
-hyperfine splitting) collapses toward heavy quarkonium.
+built from the Table II inputs `σ₀` and `s`. It specifies the mass dependence
+of the smearing; the interaction also carries explicit mass denominators and
+relativistic momentum factors. The potential parameters (`b`, `c`) and
+[`alpha_s_q`](@ref) are flavor independent.
 """
 contact_smearing_sigma(params::GIParameters, m::ConstituentMasses) =
     contact_smearing_sigma(params, m.m1_GeV, m.m2_GeV)
@@ -100,108 +98,98 @@ function euclidean_expectation(vector::AbstractVector, operator::AbstractMatrix)
     dot(v, operator * v) / norm2
 end
 
-function contact_hyperfine_operator(
-    params::GIParameters,
-    masses::ConstituentMasses,
-    L::AbstractString,
-    multiplicity::Integer,
-    r::AbstractVector,
-)
-    m1 = masses.m1_GeV
-    m2 = masses.m2_GeV
-    n = length(r)
-    # A15 carries no L restriction: the smeared ∇²G̃ is nonzero at r > 0, so the
-    # contact term shifts L > 0 levels too (GI Eqs. 23-26, "small but nonzero
-    # due to relativistic smearing").
-    if !(multiplicity in (1, 3)) || n < 2
-        return Symmetric(zeros(Float64, n, n))
+"""
+Internal definition of the smeared spin-spin interaction. Orbital momentum is
+an input to its representation, never a selection rule: A15 acts for every L.
+The explicit `sandwich` override supports the historical local approximation
+without duplicating its strength or kernel in solvers and observables.
+"""
+struct ContactHyperfine{P<:GIParameters}
+    params::P
+    masses::ConstituentMasses
+    multiplicity::Int
+    sandwich::Bool
+    function ContactHyperfine(params, masses, multiplicity;
+                              sandwich = params.factors.contact_momentum_sandwich)
+        multiplicity in (1, 3) || throw(ArgumentError(
+            "contact hyperfine requires q-qbar spin multiplicity 1 or 3",
+        ))
+        new{typeof(params)}(params, masses, multiplicity, sandwich)
     end
-    h = r[2] - r[1]
-    p2_fact = eigen(p2_operator(params, m1, L_SYMBOLS[L], r, h))
-    side_exponent = gi_spin_dependent_side_exponent(params.factors.epsilon_c)
-    B = momentum_relativization_matrix(m1, m2, side_exponent, p2_fact)
-    kernel = Diagonal([smeared_contact_kernel(params, masses, ri) for ri in r])
-    strength = (32 * π / (9 * m1 * m2)) * spin_dot(multiplicity)
-    return Symmetric(strength * (B * kernel * B))
 end
 
-"""
-    ho_contact_hyperfine_matrix(params, masses, L, multiplicity, beta, nbasis)
+contact_kernel(op::ContactHyperfine, r) = smeared_contact_kernel(op.params, op.masses, r)
+contact_strength(op::ContactHyperfine) =
+    (32pi / (9 * op.masses.m1_GeV * op.masses.m2_GeV)) *
+    spin_dot(op.multiplicity) * (op.sandwich ? 1.0 : 1 + op.params.factors.epsilon_c)
 
-Native oscillator-basis contact-hyperfine matrix from Appendix A. The Gaussian
-contact kernel, running coupling, and both relativistic momentum factors are
-assembled directly in the HO basis.
-"""
-function ho_contact_hyperfine_matrix(
-    params::GIParameters,
-    masses::ConstituentMasses,
-    L::Integer,
-    multiplicity::Integer,
-    beta::Real,
-    nbasis::Integer,
-)
-    multiplicity in (1, 3) ||
-        return Symmetric(zeros(Float64, nbasis, nbasis))
-    params.factors.contact_momentum_sandwich || throw(ArgumentError(
-        "native HO contact requires the Appendix-A momentum-sandwich prescription",
-    ))
-    radial = ho_momentum_sandwich_matrix(
-        L,
-        beta,
-        nbasis,
-        masses,
-        params.factors.epsilon_c,
-        r -> smeared_contact_kernel(params, masses, r),
-        # The adaptive beta scan includes deliberately diffuse endpoints. A
-        # 1e-8 radial-matrix tolerance keeps their narrow heavy-quark Gaussian
-        # finite while remaining safely below the solver's 0.1 MeV energy gate
-        # after the A15 mass prefactor; the accepted beta is tighter in practice.
-        rtol = 1e-8,
+# Representation adapters contain numerical operations only. Neither may
+# suppress an orbital sector or supply an implicit L=0.
+function contact_matrix(op::ContactHyperfine, L::Integer, r::AbstractVector)
+    L >= 0 || throw(ArgumentError("contact matrix requires L >= 0"))
+    length(r) >= 2 || throw(ArgumentError("contact matrix requires at least two mesh points"))
+    h = r[2] - r[1]
+    physical_u_norm(r, h, ones(length(r))) # validates the uniform radial mesh
+    K = Diagonal([contact_kernel(op, ri) for ri in r])
+    if !op.sandwich
+        return Symmetric(Matrix(contact_strength(op) * K))
+    end
+    masses = op.masses
+    p2_fact = eigen(p2_operator(op.params, masses.m1_GeV, L, r, h))
+    B = momentum_relativization_matrix(
+        masses.m1_GeV, masses.m2_GeV,
+        gi_spin_dependent_side_exponent(op.params.factors.epsilon_c), p2_fact,
     )
-    strength = (32pi / (9 * masses.m1_GeV * masses.m2_GeV)) *
-               spin_dot(multiplicity)
-    return Symmetric(strength * radial)
+    return Symmetric(contact_strength(op) * (B * K * B))
 end
 
-function _contact_hyperfine_shift_diagonal(
-    params::GIParameters,
-    masses::ConstituentMasses,
-    L::AbstractString,
-    multiplicity::Integer,
-    vector::AbstractVector,
-    r::AbstractVector,
-)
-    m1 = masses.m1_GeV
-    m2 = masses.m2_GeV
-    multiplicity in (1, 3) || return 0.0
-    length(r) >= 2 || return 0.0
-    h = r[2] - r[1]
-    expectation = radial_expect_udr(
-        vector,
-        r,
-        h,
-        (ri, i) -> begin
-            smeared_contact_kernel(params, masses, ri)
-        end,
+function contact_matrix(op::ContactHyperfine, L::Integer, beta::Real, nbasis::Integer)
+    L >= 0 || throw(ArgumentError("contact matrix requires L >= 0"))
+    kernel = r -> contact_kernel(op, r)
+    # Diffuse beta-scan endpoints need 1e-8 matrix accuracy; the accepted
+    # basis is tighter in practice. Solving and reporting use the same rule.
+    radial = op.sandwich ? ho_momentum_sandwich_matrix(
+        L, beta, nbasis, op.masses, op.params.factors.epsilon_c, kernel; rtol = 1e-8,
+    ) : ho_operator_matrix(L, beta, nbasis, kernel; rtol = 1e-8)
+    return Symmetric(contact_strength(op) * radial)
+end
+
+function contact_expectation(op::ContactHyperfine, L::Integer, wave::MeshWave)
+    return euclidean_expectation(wave.u, contact_matrix(op, L, wave.r))
+end
+
+function contact_expectation(op::ContactHyperfine, L::Integer, wave::OscillatorWave)
+    L == wave.L || throw(ArgumentError("contact expectation: sector L does not match wave L"))
+    return euclidean_expectation(
+        wave.coefficients, contact_matrix(op, L, wave.beta, length(wave.coefficients)),
     )
-    (1.0 + params.factors.epsilon_c) *
-    (32 * π / (9 * m1 * m2)) *
-    expectation *
-    spin_dot(multiplicity)
+end
+
+# Compatibility entry points delegate to the same definition and adapters.
+function contact_hyperfine_operator(params::GIParameters, masses::ConstituentMasses,
+                                    L::AbstractString, multiplicity::Integer, r::AbstractVector)
+    return contact_matrix(ContactHyperfine(params, masses, multiplicity; sandwich = true),
+                          L_SYMBOLS[L], r)
+end
+
+function ho_contact_hyperfine_matrix(params::GIParameters, masses::ConstituentMasses,
+                                     L::Integer, multiplicity::Integer, beta::Real, nbasis::Integer)
+    return contact_matrix(ContactHyperfine(params, masses, multiplicity), L, beta, nbasis)
+end
+
+function _contact_hyperfine_shift_diagonal(params::GIParameters, masses::ConstituentMasses,
+                                          L::AbstractString, multiplicity::Integer,
+                                          vector::AbstractVector, r::AbstractVector)
+    return contact_expectation(ContactHyperfine(params, masses, multiplicity; sandwich = false),
+                               L_SYMBOLS[L], MeshWave(vector, r))
 end
 
 function _contact_hyperfine_shift_momentum_sandwich_diagonal(
-    params::GIParameters,
-    masses::ConstituentMasses,
-    L::AbstractString,
-    multiplicity::Integer,
-    vector::AbstractVector,
-    r::AbstractVector,
+    params::GIParameters, masses::ConstituentMasses, L::AbstractString,
+    multiplicity::Integer, vector::AbstractVector, r::AbstractVector,
 )
-    multiplicity in (1, 3) || return 0.0
-    length(r) >= 2 || return 0.0
-    operator = contact_hyperfine_operator(params, masses, L, multiplicity, r)
-    euclidean_expectation(vector, operator)
+    return contact_expectation(ContactHyperfine(params, masses, multiplicity; sandwich = true),
+                               L_SYMBOLS[L], MeshWave(vector, r))
 end
 
 """
@@ -256,13 +244,9 @@ function contact_hyperfine_nonperturbative_levels(
     nlevels::Integer;
     solver::RadialSolver = FiniteDifferenceSolver(),
 )
-    solver isa FiniteDifferenceSolver || throw(ArgumentError(
-        "the overload carrying r is FD-only; omit r for native solver dispatch",
-    ))
-    if !params.factors.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
-        return Float64[]
-    end
-    solution = _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels, solver)
+    solution = contact_hyperfine_nonperturbative_states(
+        params, masses, L, multiplicity, r, nlevels; solver,
+    )
     return solution.eigenvalues_GeV
 end
 
@@ -278,19 +262,20 @@ function contact_hyperfine_nonperturbative_levels(
     solution = contact_hyperfine_nonperturbative_states(
         params, masses, L, multiplicity, nlevels; solver = solver,
     )
-    return isnothing(solution) ? Float64[] : solution.eigenvalues_GeV
+    return solution.eigenvalues_GeV
 end
 
 """
     contact_hyperfine_nonperturbative_states(params, masses, L, multiplicity, r, nlevels)
-        -> Union{Nothing,ChannelRadialSolution}
+        -> ChannelRadialSolution
 
 Like [`contact_hyperfine_nonperturbative_levels`](@ref) but retains the native
-radial waves of the S-wave Hamiltonian with the contact-hyperfine operator added
+radial waves of the fixed-L Hamiltonian with the contact-hyperfine operator added
 non-perturbatively. The singlet/triplet split of these waves is what makes the
 `^1S_0` (e.g. `pi`) more compact than the `^3S_1` (e.g. `rho`) and drives the
-Eq. (20)/(21) realistic-factor ratios. Returns `nothing` when the
-non-perturbative contact path is inactive.
+Eq. (20)/(21) realistic-factor ratios. All orbital partial waves use the
+same fixed-sector solve. Invalid spins or meshes throw instead of returning
+an empty result that could trigger a silent fallback.
 """
 function contact_hyperfine_nonperturbative_states(
     params::GIParameters,
@@ -304,10 +289,18 @@ function contact_hyperfine_nonperturbative_states(
     solver isa FiniteDifferenceSolver || throw(ArgumentError(
         "the overload carrying r is FD-only; omit r for native solver dispatch",
     ))
-    if !params.factors.contact_momentum_sandwich || L != "S" || !(multiplicity in (1, 3)) || length(r) < 2
-        return nothing
-    end
-    return _resummed_contact_solve(params, masses, L, multiplicity, r, nlevels, solver)
+    length(r) >= 2 || throw(ArgumentError("contact solve requires at least two mesh points"))
+    h = r[2] - r[1]
+    physical_u_norm(r, h, ones(length(r)))
+    rmax = h * (length(r) + 1)
+    rebuilt_r, _ = radial_grid(length(r), rmax)
+    isapprox(r, rebuilt_r; rtol = 1e-10, atol = 1e-12) || throw(ArgumentError(
+        "contact solve requires the interior Dirichlet grid r[i] = i*h",
+    ))
+    return contact_hyperfine_nonperturbative_states(
+        params, masses, L, multiplicity, nlevels;
+        solver = with_mesh(solver, length(r), rmax),
+    )
 end
 
 function contact_hyperfine_nonperturbative_states(
@@ -318,11 +311,10 @@ function contact_hyperfine_nonperturbative_states(
     nlevels::Integer;
     solver::RadialSolver = FiniteDifferenceSolver(),
 )
-    if !params.factors.contact_momentum_sandwich || L != "S" ||
-       !(multiplicity in (1, 3))
-        return nothing
-    end
-    J = multiplicity == 1 ? 0 : 1
+    ContactHyperfine(params, masses, multiplicity) # validate before solving
+    orbital = L_SYMBOLS[String(L)]
+    # Contact is independent of J; choose one allowed representative channel.
+    J = multiplicity == 1 ? orbital : orbital + 1
     return fixed_channel_solution(
         params,
         masses,
@@ -338,32 +330,14 @@ function contact_hyperfine_nonperturbative_states(
     )
 end
 
-# FD-only body for callers that already own an explicit operator grid.
-function _resummed_contact_solve(
-    params, masses, L, multiplicity, r, nlevels, solver::FiniteDifferenceSolver,
-)
-    h = r[2] - r[1]
-    rmax = h * (length(r) + 1)
-    rebuilt_r, _ = radial_grid(length(r), rmax)
-    length(rebuilt_r) == length(r) || error("rebuilt S-wave grid changed length")
-    V = contact_hyperfine_operator(params, masses, L, multiplicity, rebuilt_r)
-    return resummed_channel_solution(
-        params, masses, 0, Matrix(V);
-        solver = with_mesh(solver, length(r), rmax), nlevels = nlevels,
-    )
-end
-
 """
-First-order smeared contact hyperfine shift, for any `L`.
+First-order local contact approximation, for any `L`. This explicit diagnostic
+uses the historical `(1 + epsilon_c)` coefficient; production callers use
+`contact_hyperfine_shift_active` to select the configured prescription.
 
-Convention: the solver eigenvector is treated as the reduced radial wavefunction
-`u(r)` on a uniform mesh with physical normalization `∫|u|² dr = 1`. With
-`ψ(r) = u(r) / r · Y_LM` and a 3D-normalized regulator `δ_σ(r)` satisfies
-`∫ d³r δ_σ(r) = 1`. Therefore
-
-`⟨α_s(r) δ_σ(r)⟩ = ∫ |u(r)|² α_s(r) δ_σ(r) dr`
-
-with no extra `4π` factor.
+For the reduced radial wavefunction `u(r)`, with `∫|u|² dr = 1`, a radial
+smeared contact kernel `K(r)` has expectation `∫ |u(r)|² K(r) dr` for every L.
+There is no extra `4π` factor. Solving and reporting use the same native matrix.
 
 Uses only [`FineStructureMultiplet`](@ref).`L_label` and `.multiplicity`; `.J` is unused (same multiplet object as fine-structure).
 """
@@ -373,14 +347,10 @@ function contact_hyperfine_shift(
     multiplet::FineStructureMultiplet,
     wave::RadialWave,
 )
-    multiplet.multiplicity in (1, 3) || return 0.0
-    expectation = radial_expect(
-        wave,
-        r -> smeared_contact_kernel(params, masses, r),
+    return contact_expectation(
+        ContactHyperfine(params, masses, multiplet.multiplicity; sandwich = false),
+        L_SYMBOLS[multiplet.L_label], wave,
     )
-    return (1.0 + params.factors.epsilon_c) *
-           (32π / (9 * masses.m1_GeV * masses.m2_GeV)) *
-           expectation * spin_dot(multiplet.multiplicity)
 end
 
 """Convenience: same as [`contact_hyperfine_shift`](@ref)`(params, ConstituentMasses(m1, m2), ...)`."""
@@ -409,17 +379,10 @@ function contact_hyperfine_shift_momentum_sandwich(
     multiplet::FineStructureMultiplet,
     wave::RadialWave,
 )
-    multiplet.multiplicity in (1, 3) || return 0.0
-    expectation = radial_expect_momentum_sandwich(
-        params,
-        masses,
-        L_SYMBOLS[multiplet.L_label],
-        wave,
-        params.factors.epsilon_c,
-        (r, _) -> smeared_contact_kernel(params, masses, r),
+    return contact_expectation(
+        ContactHyperfine(params, masses, multiplet.multiplicity; sandwich = true),
+        L_SYMBOLS[multiplet.L_label], wave,
     )
-    return (32π / (9 * masses.m1_GeV * masses.m2_GeV)) *
-           expectation * spin_dot(multiplet.multiplicity)
 end
 
 function contact_hyperfine_shift_momentum_sandwich(
@@ -447,10 +410,8 @@ function contact_hyperfine_shift_active(
     multiplet::FineStructureMultiplet,
     wave::RadialWave,
 )
-    if params.factors.contact_momentum_sandwich
-        return contact_hyperfine_shift_momentum_sandwich(params, masses, multiplet, wave)
-    end
-    return contact_hyperfine_shift(params, masses, multiplet, wave)
+    return contact_expectation(ContactHyperfine(params, masses, multiplet.multiplicity),
+                               L_SYMBOLS[multiplet.L_label], wave)
 end
 
 function contact_hyperfine_shift_active(
@@ -462,16 +423,6 @@ function contact_hyperfine_shift_active(
     vector::AbstractVector,
     r::AbstractVector,
 )
-    mm = ConstituentMasses(m1, m2)
-    if params.factors.contact_momentum_sandwich
-        return _contact_hyperfine_shift_momentum_sandwich_diagonal(
-            params,
-            mm,
-            L,
-            multiplicity,
-            vector,
-            r,
-        )
-    end
-    return _contact_hyperfine_shift_diagonal(params, mm, L, multiplicity, vector, r)
+    return contact_expectation(ContactHyperfine(params, ConstituentMasses(m1, m2), multiplicity),
+                               L_SYMBOLS[L], MeshWave(vector, r))
 end

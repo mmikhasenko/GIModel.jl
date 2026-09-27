@@ -68,16 +68,15 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     $B_c=(m_1m_2/E_1E_2)^{1/2+\epsilon_c}$. The legacy diagonal
     `(1+epsilon_c)` implementation remains available as
     `contact_hyperfine_shift`.
-  - Ordering convention: in the finite-difference path, `compare` now follows
-    the paper's first diagonalization more closely for S waves by diagonalizing
-    the central S-wave Hamiltonian plus the contact operator in fixed
-    multiplicity sectors. The reported `contact_shift_GeV` is therefore the
-    nonperturbative level displacement relative to the spin-independent central
-    level. The operator is also part of every L>0 fixed-sector Hamiltonian
-    (FD and HO): the smeared kernel is nonzero at r>0, and GI Eqs. (23)-(26)
-    keep its S in all P-wave levels. Until 2026-09 it was S-wave-only, which
-    spoiled the singlet-triplet gaps behind the published mixing angles; see
-    `GIPaper/docs/investigations/mixing_composition_investigation.md`.
+  - Ordering convention: every fixed `(L,S,J)` Hamiltonian includes contact
+    before diagonalization, in both FD and HO. The reported `contact_shift_GeV`
+    is the expectation of that same operator in the resulting eigenstate,
+    not the displacement relative to a separate central-only solve.
+    `ContactHyperfine` and its native matrix adapters serve both operations.
+    Contact-only diagnostics also use this fixed-sector solve for every L.
+    The smeared kernel is nonzero at r>0; GI Eqs. (23)-(26) retain it in
+    P waves. The former S-wave restriction and its propagation are reviewed in
+    `docs/operator_path_review.md`.
   - Smearing width: Appendix A (A9) is implemented as
     $$
       \sigma^2(m_1,m_2)=\sigma_0^2\left(\tfrac12+\tfrac12\left(\frac{4m_1m_2}{(m_1+m_2)^2}\right)^4\right)
@@ -90,8 +89,8 @@ Bundling: Julia package **GIModel** in `Project.toml`, module [`src/GIModel.jl`]
     $\delta_\sigma(r)=(\sigma^3/\pi^{3/2})e^{-\sigma^2 r^2}$ (Table II $\sigma$
     has units GeV, so $r$ is treated as GeV$^{-1}$). In code this kernel is
     `GIModel.delta_sigma_3d(r, σ)` and is regression-tested to satisfy
-    $4\pi\int r^2 \delta_\sigma(r)\,dr=1$. The S-wave radial expectation then
-    uses $\int |u|^2 \alpha_s(r)\,\delta_\sigma(r)\,dr$ (no extra $4\pi$ factor).
+    $4\pi\int r^2 \delta_\sigma(r)\,dr=1$. The radial expectation for every L uses the smeared contact kernel
+    in $\int |u|^2 K(r)\,dr$ (no extra $4\pi$ factor).
     Guardrail: `GIModel.physical_u_norm(r, h, u)` validates that the supplied
     `h` matches a **uniformly spaced** `r` mesh and throws on mismatch, so
     expectation-value conventions cannot silently drift.

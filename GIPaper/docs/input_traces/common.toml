@@ -142,8 +142,8 @@ weights = [0.25, 0.15, 0.2]
 "src/central_potential_dispatch.jl" = "b7cfba76fd818458bfb9cf5acdf7751f57cbcbb6cfdae223ff7d040a68bf1d05"
 "src/channel_solver.jl" = "c72fd11f3836ec17ee41e9a3ef848cc4244eee72e191daeb460179843bae571d"
 "src/constants.jl" = "278b9315767e45d1f252fc27a5dc748a56778f74e51f56b9be4f9d081180ddf3"
-"src/contact_hyperfine.jl" = "27a2f8fd24d1faaade6b97f3f592836cb3ccca4c1632d29a782596238ab756e2"
-"src/fixed_channel_solver.jl" = "082cbbf1244b00b9323409938e2019e1d304843f82a663412c481b67374ea67f"
+"src/contact_hyperfine.jl" = "37a8c7bae79c0b4c79baf2e1c1fe66ca8026f6ef6826db679fbd9cca70fb2d31"
+"src/fixed_channel_solver.jl" = "32b7cf30bdc139a96c84ffd2531a7c41ad65e9c3c90c03804ed667658dec3ea9"
 "src/flavor_mixing.jl" = "58824af19a6395a9f109f303c36c5940b40867b5f2584aada3e21026f90bb5c0"
 "src/hamiltonian.jl" = "47878357ffefffd4074d4a79c299373f452c9407910d36c4b64bc475655b7177"
 "src/harmonic_oscillator_basis.jl" = "016b135961ee42f6d865ddc6209ce39d0d7d59651dc3e1141e9dd9ad66921033"
@@ -160,8 +160,8 @@ weights = [0.25, 0.15, 0.2]
 "src/sector_solver.jl" = "c94526db69bc634cf02127cc0a8406d267470a4bc25813dd76b7d53fd33ad90b"
 "src/smearing_appendix_a.jl" = "a4d3c844503a8d3197d7ed8722c188f652b886e885475b8e12e2a40b8d7124e8"
 "src/solver_options.jl" = "466022db504a38051b4353b39d253dd2cb29886264b7d2fb78fef5f7afecda40"
-"src/spectrum.jl" = "3ce1327d204d491560c7254ebfd204663f270ef1561206ff4033f976a910be90"
-"src/spin_fine_structure.jl" = "006832de32739fa20558c75df93a288a32602ba35821e0cc1a65a366098ae7a6"
+"src/spectrum.jl" = "af919a75d9eecc01b9b028a8a12a94ca89a81af103a657046a0c9ed939d6e33e"
+"src/spin_fine_structure.jl" = "5935ed3907837edcd32e278116faba709c055841e1bf402867607325fd453d8f"
 "src/state_mixing.jl" = "e126ce69d931a6caf4cb8f9d45ab19d642ca24b9c7cd30e5b8ebb1a95d1b58ff"
 
 [spectrum_configuration.annihilation]

@@ -163,3 +163,39 @@ and transition audit is
    tolerance; convergence mode; and requested level capacity. Plot grids are
    owned by plotting code, never by the HO calculation. The achieved
    `OscillatorConvergence` certificate lives on `ChannelRadialSolution`.
+
+## Spin-operator ownership and partial waves
+
+`ContactHyperfine` owns the smeared kernel, spin/mass coefficient and momentum
+prescription. `contact_matrix` represents that definition on an FD grid or in
+an HO basis, with the sector's actual `L`. Both fixed-sector diagonalization and
+`contact_hyperfine_shift_active` use these same matrix builders. Wave-specific
+expectation adapters are representation implementations, not additional physics
+consumers. There is no contact selection rule that excludes S, P, D or higher
+waves. The local approximation is an explicit prescription, not an orbital
+branch.
+
+The contact-only diagnostic delegates to `fixed_channel_solution` for all
+partial waves. It no longer returns `nothing` for P/D states or invalid spins;
+invalid input throws. The explicit-grid overload validates and translates the
+mesh into solver settings, then calls that same solver.
+
+Diagonal spin-orbit and tensor terms share `diagonal_fine_structure_active`
+and `_fine_structure_algebra` between matrix assembly and reported scalar
+contributions. In a triplet, each single-spin L·S factor is half the total;
+the A15 tensor bracket is Pauli S12/12 because S_i = sigma_i/2. Their zeros for L=0 and spin singlets follow angular matrix
+elements. Off-diagonal tensor S-D mixing remains allowed: a zero diagonal
+matrix element must not be generalized into absence of the operator.
+
+Review any new state-dependent branch against its mathematical reason:
+
+1. Is this an angular selection rule, a numerical representation choice, an
+   explicit approximation, or merely an inherited restriction?
+2. Does the same operator definition control solving and contribution reporting?
+3. Could two solvers agree because they copied the same incorrect exclusion?
+4. Does an independent analytic limit or integral test the selected and
+   neighboring sectors, including a nonzero higher-wave matrix element?
+5. Does unsupported input fail explicitly rather than masquerading as zero?
+
+The audit and regression evidence are recorded in
+[`operator_path_review.md`](operator_path_review.md).

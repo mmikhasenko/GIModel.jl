@@ -480,6 +480,23 @@ function _zero_fine_matrices(n::Integer)
     )
 end
 
+# Diagonal L·S and S12 vanish for L=0 or total spin S=0. This is
+# angular algebra, unlike the smeared contact interaction, which acts in both.
+diagonal_fine_structure_active(params, L, multiplicity) =
+    params.fine_structure.enabled && L > 0 && multiplicity == 3
+
+# One angular/mass definition for matrices and scalar expectations.
+function _fine_structure_algebra(masses, L, J, G11, G22, G12, S11, S22, T12)
+    m1, m2 = masses.m1_GeV, masses.m2_GeV
+    ls = LdotS(Int(L), 1, Int(J))
+    vector = ls * (G11 / (4m1^2) + G22 / (4m2^2) + G12 / (m1 * m2))
+    thomas = -ls * (S11 / (4m1^2) + S22 / (4m2^2))
+    tensor = tensor_triplet_LJ(Int(L), Int(J), 1) * T12 / (12m1 * m2)
+    return (spin_orbit_vector = vector, spin_orbit_thomas = thomas,
+            spin_orbit = vector + thomas, tensor = tensor,
+            total = vector + thomas + tensor)
+end
+
 # A15-A16 operator algebra is independent of the radial representation.  FD
 # and HO differ only in how the six radial sandwich matrices below are built;
 # keeping their angular/mass assembly here prevents the two numerical paths
@@ -504,21 +521,9 @@ function _assemble_fine_structure_matrices(
         "fine-structure radial matrices must have one common size",
     ))
 
-    m1, m2 = masses.m1_GeV, masses.m2_GeV
-    ls = LdotS(Int(L), 1, Int(J))
-    vector = Symmetric(ls * (G11 / (4m1^2) + G22 / (4m2^2) + G12 / (m1 * m2)))
-    thomas = Symmetric(-ls * (S11 / (4m1^2) + S22 / (4m2^2)))
-    spin_orbit = Symmetric(Matrix(vector) + Matrix(thomas))
-    tensor = Symmetric(
-        tensor_triplet_LJ(Int(L), Int(J), 1) * T12 / (12m1 * m2),
-    )
-    return (
-        spin_orbit_vector = vector,
-        spin_orbit_thomas = thomas,
-        spin_orbit = spin_orbit,
-        tensor = tensor,
-        total = Symmetric(Matrix(spin_orbit) + Matrix(tensor)),
-    )
+    return map(Symmetric, _fine_structure_algebra(
+        masses, L, J, G11, G22, G12, S11, S22, T12,
+    ))
 end
 
 function fine_structure_components(
@@ -529,11 +534,9 @@ function fine_structure_components(
     enabled::Bool = true,
 )
     L = L_SYMBOLS[multiplet.L_label]
-    S = (multiplet.multiplicity - 1) ÷ 2
-    (!enabled || !params.fine_structure.enabled || L == 0 || S != 1) &&
+    (!enabled || !diagonal_fine_structure_active(params, L, multiplet.multiplicity)) &&
         return _zero_fine_components()
 
-    m1, m2 = masses.m1_GeV, masses.m2_GeV
     so = spin_orbit_radial_integrals(params, masses, L, radial)
     I12 = _spin_expectation(
         params, masses, L, radial, params.factors.epsilon_so_vector,
@@ -545,30 +548,19 @@ function fine_structure_components(
              tensor_kernel_smeared_coulomb(params, masses, r) :
              tensor_kernel_coulomb_running(r),
     )
-    ls = LdotS(L, 1, multiplet.J)
-
-    # A15-A16 are written in S1 and S2. In a diagonal triplet matrix element,
-    # <S1·L> = <S2·L> = <S·L>/2. The pair (12) vector term multiplies
-    # (S1+S2)·L directly.
-    vector = ls * (so.vector_11 / (4m1^2) + so.vector_22 / (4m2^2) + I12 / (m1 * m2))
-    scalar = -ls * (so.scalar_11 / (4m1^2) + so.scalar_22 / (4m2^2))
-
-    # tensor_triplet_LJ is the conventional Pauli S12 matrix element. The
-    # spin-operator bracket in A15 is
-    # S1·rhat S2·rhat - (S1·S2)/3 = S12/12, since S_i = sigma_i/2.
-    tensor = Itk * tensor_triplet_LJ(L, multiplet.J, 1) / (12m1 * m2)
-    return (
+    contributions = _fine_structure_algebra(
+        masses, L, multiplet.J, so.vector_11, so.vector_22, I12,
+        so.scalar_11, so.scalar_22, Itk,
+    )
+    return merge((
         I_vector_11 = so.vector_11, I_vector_22 = so.vector_22,
         I_vector_12 = I12, I_scalar_11 = so.scalar_11,
         I_scalar_22 = so.scalar_22, I_tk = Itk,
-        spin_orbit_vector = vector, spin_orbit_thomas = scalar,
-        spin_orbit = vector + scalar, tensor = tensor,
-        total = vector + scalar + tensor,
-    )
+    ), contributions)
 end
 
 """
-    fine_structure_grid_matrices(params, masses, J, r, h; L = 1)
+    fine_structure_grid_matrices(params, masses, J, r, h; L = 1, multiplicity = 3)
 
 Triplet `³L_J` spin-orbit and tensor potentials as dense operators on the
 uniform radial mesh `r`, term-by-term identical to Appendix A15-A16. The
@@ -585,16 +577,16 @@ function fine_structure_grid_matrices(
     r::AbstractVector,
     h::Real;
     L::Integer = 1,
+    multiplicity::Integer = 3,
 )
+    diagonal_fine_structure_active(params, L, multiplicity) ||
+        return _zero_fine_matrices(length(r))
     params.factors.fine_structure_momentum_sandwich &&
         params.factors.fine_structure_smeared_kernels ||
         error("fine_structure_grid_operator requires the Appendix-A smeared momentum-sandwich path")
     m1 = masses.m1_GeV
     m2 = masses.m2_GeV
     n = length(r)
-    if !(params.fine_structure.enabled && L >= 1)
-        return _zero_fine_matrices(n)
-    end
     p2_fact = eigen(p2_operator(params, m1, L, r, h))
     side(pair, eps) = momentum_relativization_matrix(
         pair.m1_GeV,
@@ -644,8 +636,7 @@ function ho_fine_structure_matrices(
     beta::Real,
     nbasis::Integer,
 )
-    S = (multiplicity - 1) ÷ 2
-    if !params.fine_structure.enabled || L == 0 || S != 1
+    if !diagonal_fine_structure_active(params, L, multiplicity)
         return _zero_fine_matrices(nbasis)
     end
     params.factors.fine_structure_momentum_sandwich &&

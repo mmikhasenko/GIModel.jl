@@ -107,10 +107,11 @@ end
     solution = contact_hyperfine_nonperturbative_states(params, masses, "S", 1, r, 2)
     @test length(solution.eigenvalues_GeV) == 2 && length(solution.waves) == 2
 
-    # Empty is still the right answer where the path is genuinely inactive:
-    # not an S wave, or a multiplicity the contact term does not touch.
-    @test contact_hyperfine_nonperturbative_states(params, masses, "P", 1, r, 2) === nothing
-    @test GIModel.contact_hyperfine_nonperturbative_levels(params, masses, "S", 2, r, 2) == Float64[]
+    # All partial waves use the fixed-sector solver; invalid input is an error.
+    @test length(contact_hyperfine_nonperturbative_states(
+        params, masses, "P", 1, r, 2).waves) == 2
+    @test_throws ArgumentError GIModel.contact_hyperfine_nonperturbative_levels(
+        params, masses, "S", 2, r, 2)
 
     # The oscillator basis used to answer "empty" here, which
     # the old spectrum correction stage read as "fall back to first-order PT": the light

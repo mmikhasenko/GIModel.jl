@@ -28,13 +28,7 @@ function _fixed_channel_matrices(
         multiplet.J,
         beta,
         nbasis,
-    ) : (
-        spin_orbit_vector = _zero_operator(nbasis),
-        spin_orbit_thomas = _zero_operator(nbasis),
-        spin_orbit = _zero_operator(nbasis),
-        tensor = _zero_operator(nbasis),
-        total = _zero_operator(nbasis),
-    )
+    ) : _zero_fine_matrices(nbasis)
     return (
         central = central,
         contact = contact,
@@ -60,35 +54,12 @@ function _fixed_channel_matrices(
     central, r = relativistic_hamiltonian(params, masses, L; solver = solver)
     h = r[2] - r[1]
     n = length(r)
-    contact = if terms.contact_hyperfine && multiplet.multiplicity in (1, 3)
-        if params.factors.contact_momentum_sandwich
-            contact_hyperfine_operator(
-                params, masses, multiplet.L_label, multiplet.multiplicity, r,
-            )
-        else
-            strength = (1 + params.factors.epsilon_c) *
-                       (32pi / (9 * masses.m1_GeV * masses.m2_GeV)) *
-                       spin_dot(multiplet.multiplicity)
-            Diagonal([
-                strength * smeared_contact_kernel(params, masses, ri) for ri in r
-            ])
-        end
-    else
-        _zero_operator(n)
-    end
-    fine = if terms.fine_structure && params.fine_structure.enabled &&
-              L > 0 && multiplet.multiplicity == 3
-        fine_structure_grid_matrices(params, masses, multiplet.J, r, h; L = L)
-    else
-        zero_matrix = _zero_operator(n)
-        (
-            spin_orbit_vector = zero_matrix,
-            spin_orbit_thomas = zero_matrix,
-            spin_orbit = zero_matrix,
-            tensor = zero_matrix,
-            total = zero_matrix,
-        )
-    end
+    contact = terms.contact_hyperfine ? contact_matrix(
+        ContactHyperfine(params, masses, multiplet.multiplicity), L, r,
+    ) : _zero_operator(n)
+    fine = terms.fine_structure ? fine_structure_grid_matrices(
+        params, masses, multiplet.J, r, h; L, multiplicity = multiplet.multiplicity,
+    ) : _zero_fine_matrices(n)
     return (
         central = central,
         contact = contact,

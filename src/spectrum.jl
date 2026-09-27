@@ -521,8 +521,9 @@ function fixed_spectrum(
         fs_convention = "disabled"
         fine_structure_requested = terms.fine_structure && params.fine_structure.enabled &&
                                    level.L_label != "S"
-        fine_structure_active = fine_structure_requested &&
-                                level.L_label != "S" && level.multiplicity == 3
+        fine_structure_active = terms.fine_structure && diagonal_fine_structure_active(
+            params, L_SYMBOLS[level.L_label], level.multiplicity,
+        )
         if fine_structure_active
             comp = fine_structure_components(
                 params,
