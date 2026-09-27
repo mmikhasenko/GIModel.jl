@@ -137,5 +137,14 @@
     # Mismatched meshes are an error, not a silently wrong overlap.
     other, _ = GIModel.radial_grid(200, 24.0)
     @test_throws ArgumentError radial_overlap(w, MeshWave(other .* 0 .+ 1.0, other), x -> 1.0)
+
+    # Plotting code samples either representation through one call. On its own
+    # mesh a MeshWave is returned unchanged; on a finer grid it interpolates.
+    @test sample_wave(w, w.r).u ≈ w.u
+    fine = range(0.0, 20.0; length = 2001)
+    @test isapprox(sum(abs2, sample_wave(w, fine).u) * step(fine), 1.0; rtol = 1e-12)
+    @test isapprox(radial_expect(sample_wave(w, fine), x -> x), 1.5; rtol = 1e-3)
+    wide = range(0.0, 40.0; length = 801)
+    @test all(iszero, sample_wave(w, wide).u[wide .>= w.r[end] + w.h])
 end
 

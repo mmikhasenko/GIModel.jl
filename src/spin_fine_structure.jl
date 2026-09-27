@@ -826,9 +826,10 @@ function same_j_mixing(
     singlet_mass::Real,
     triplet_mass::Real,
     offdiag::Real;
+    # Generic labels on a valid representative pair (the matrix is 2×2 either way).
     basis::AbstractVector{BasisState} = [
-        BasisState(1, "L", 1, 0; label = "^1L_L"),
-        BasisState(1, "L", 3, 0; label = "^3L_L"),
+        BasisState(1, "P", 1, 1; label = "^1L_L"),
+        BasisState(1, "P", 3, 1; label = "^3L_L"),
     ],
 )
     length(basis) == 2 || throw(ArgumentError("same_j_mixing requires two basis states"))

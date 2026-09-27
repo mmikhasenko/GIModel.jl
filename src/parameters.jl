@@ -6,7 +6,25 @@
 #   FineStructure, AnnihilationAmplitudes, CentralPotentialMethod and its
 #   singletons, load_parameters, default_parameters_path
 
-"""Path to the parameter file shipped with GIModel."""
+"""
+    default_parameters_path() -> String
+
+Path to the Godfrey–Isgur parameter set shipped with GIModel: the Table II
+masses and potential parameters with the Appendix A switches. The path does not
+depend on the working directory.
+
+## Example
+
+```julia
+using GIModel
+params, mq = load_parameters_and_quark_masses(default_parameters_path())
+```
+
+## Related
+
+[`load_parameters_and_quark_masses`](@ref) reads both parts;
+[`load_parameters`](@ref) and [`load_quark_masses`](@ref) read one each.
+"""
 default_parameters_path() = normpath(joinpath(@__DIR__, "..", "data", "parameters.provisional.toml"))
 
 # `GIParameters` used to carry a `Basis` type parameter (`FiniteDifferenceBasis` /
@@ -465,7 +483,7 @@ The file describes the model only; pick the radial method with a
 
 ```julia
 using GIModel
-path = joinpath(pkgdir(GIModel), "data", "parameters.provisional.toml")
+path = default_parameters_path()
 params = load_parameters(path)
 meson = Meson(:c, :c, ConstituentMasses(1.628, 1.628))
 ```
@@ -478,4 +496,26 @@ replace `path` with your own TOML file for a parameter scan.
 """
 function load_parameters(path::AbstractString)
     return gi_parameters_from_raw(TOML.parsefile(path))
+end
+
+# The parametric type name alone is several lines long; show the model instead.
+Base.show(io::IO, p::GIParameters) = print(
+    io, "GIParameters(b = ", p.potential.b, " GeV², c = ", p.potential.c, " GeV, ",
+    nameof(typeof(p.central)), ")",
+)
+
+function Base.show(io::IO, ::MIME"text/plain", p::GIParameters)
+    f, a = p.factors, p.annihilation
+    println(io, "GIParameters")
+    println(io, "  potential       b = ", p.potential.b, " GeV², c = ", p.potential.c, " GeV")
+    println(io, "  central         ", nameof(typeof(p.central)))
+    println(io, "  smearing        σ₀ = ", p.smearing.sigma0, " GeV, s = ", p.smearing.s)
+    println(io, "  ε factors       contact ", f.epsilon_c, ", tensor ", f.epsilon_t,
+        ", spin-orbit vector ", f.epsilon_so_vector, ", scalar ", f.epsilon_so_scalar)
+    println(io, "  sandwiches      contact ", f.contact_momentum_sandwich,
+        ", fine structure ", f.fine_structure_momentum_sandwich,
+        ", smeared kernels ", f.fine_structure_smeared_kernels)
+    println(io, "  fine structure  ", p.fine_structure.enabled ? "enabled" : "disabled")
+    print(io, "  annihilation    P1 A = ", a.p1_A_np, ", P2 A = ", a.p2_A_np,
+        ", A(³S₁) = ", a.s1_A, ", A(³P₂) = ", a.a_3p2)
 end

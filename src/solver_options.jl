@@ -49,10 +49,10 @@ abstract type RadialSolver end
 
 Solve on a uniform radial mesh. Here the mesh **is** the method: every operator
 is a matrix on it, so `ngrid` and `rmax` set the accuracy of the answer.
-The defaults are the package's fast report settings. The independent FD-COMP
-audit certifies `(ngrid, rmax) = (2400, 32.0)` for precision cross-checks over
-the paper's q/s/c/b sectors; this is a modern comparator profile, not part of
-the original HO algorithm.
+The defaults are fast and accurate to a fraction of an MeV for most states.
+`(ngrid, rmax) = (2400, 32.0)` is a precision setting for cross-checks over
+the q/s/c/b sectors. Finite differences are an independent comparator, not
+part of the paper's oscillator algorithm.
 
 Fields:
 
@@ -211,6 +211,13 @@ struct OscillatorSolver <: RadialSolver
         )
     end
 end
+
+# Settings are values: two solvers with equal fields are the same method, even
+# though `beta_grid` is a Vector (whose default struct `==` would be identity).
+Base.:(==)(a::OscillatorSolver, b::OscillatorSolver) =
+    all(getfield(a, f) == getfield(b, f) for f in fieldnames(OscillatorSolver))
+Base.hash(s::OscillatorSolver, h::UInt) =
+    foldr(hash, (getfield(s, f) for f in fieldnames(OscillatorSolver)); init = hash(:OscillatorSolver, h))
 
 # `RadialSolver(...)` builds the default implementation, so every call site that
 # predates the split keeps working and keeps meaning finite differences.

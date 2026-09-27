@@ -10,7 +10,7 @@
 #   exp(∇² / (4σ²)) G ≈ G + ∇²G / (4σ²)
 #
 # with S(r)=br+c left pointwise, matching the simplification noted in
-# docs/appendix_a_from_paper.md. This is intentionally a named comparator, not
+# the "Reading the paper" documentation page. This is intentionally a named comparator, not
 # the production default.
 
 function radial_laplacian_values(v::AbstractVector{<:Real}, r::AbstractVector{<:Real})
