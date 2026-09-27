@@ -1,5 +1,15 @@
 # Mixing: what must be matched?
 
+> **Closed / historical investigation brief (2026-09-27).** The pre-fix
+> numbers and proposed checks below describe the original investigation, not
+> current failures. The all-L contact defect is fixed; the remaining large
+> GI85 caption mismatch is a documented historical reference discrepancy.
+> Current targets retain GI85 and add GK91 side by side:
+> [target ledger](../../data/mixing_angle_targets.md),
+> [comparison](../residual_reports/mixing_angles.md),
+> [resolution](mixing_composition_investigation.md).
+> The separate ψ(3.82) tensor-composition question remains open.
+
 ## Decision
 
 Use published eigenstate compositions as the primary mixing targets, alongside

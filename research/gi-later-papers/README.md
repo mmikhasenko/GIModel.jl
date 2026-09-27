@@ -1,5 +1,11 @@
 # What the GI model says about J=L mixing, 1985 → 2016
 
+**Status: closed as an implementation investigation.** The historical cause of
+GI85's caption values remains unknown. The [GIPaper benchmark](../../GIPaper/data/mixing_angle_targets.md)
+now preserves the original targets alongside the six GK91 values; small
+quantitative residuals remain visible. The separate ψ(3.82) tensor question
+below remains open.
+
 **Question.** GIModel, after the L>0 contact fix, does not reproduce the J=L
 singlet–triplet mixing angles printed in the Godfrey–Isgur (1985) figure
 captions. Is that a defect of our calculation, or of the 1985 numbers? What did

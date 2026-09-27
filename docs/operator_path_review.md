@@ -38,7 +38,10 @@ continue to select the Appendix-A sandwich.
 
 The small-r guards in derivative kernels are numerical limit handling, not
 orbital exclusions. This review does not independently rederive those kernels
-or certify the remaining published mixing discrepancies as solved.
+or independently certify publication targets. The subsequent literature audit
+closed the large same-J caption discrepancy as a historical reference issue;
+see [the coverage ledger](paper_gap_ledger.md). The ψ(3.82) tensor question
+remains separate.
 
 ## Regression design
 

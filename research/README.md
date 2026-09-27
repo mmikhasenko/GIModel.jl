@@ -5,7 +5,7 @@ of the package API, reproduction layer, or polished report.
 
 ## Reference history
 
-- [What the GI model says about J=L mixing, 1985 → 2016](gi-later-papers/README.md)
+- **Closed investigation:** [What the GI model says about J=L mixing, 1985 → 2016](gi-later-papers/README.md)
   traces the singlet–triplet mixing angles through Godfrey's later papers and
   an independent reimplementation. From 1991 on, all of them give the small
   angles GIModel reproduces, not the 1985 captions. It ends with a compact

@@ -78,6 +78,21 @@ Results and the complete sweeps are in
 HO agreement remains diagnostic evidence, not an acceptance condition for
 PA-18 or a dependency of the original 1985 algorithm.
 
+## Closed: same-J spin-orbit mixing investigation
+
+The missing L>0 smeared contact interaction is fixed, and solving/reporting now
+share its operator definition. The remaining large mismatch with the GI85
+caption angles is a historical reference discrepancy: later GI-model
+calculations corroborate the corrected result. The historical cause is unknown;
+matching those captions is no longer an open implementation task. The original
+1985 reference policy and all 13 caption targets remain unchanged.
+
+The [target ledger](../GIPaper/data/mixing_angle_targets.md) adds six GK91
+angles alongside the originals. The [generated comparison](../GIPaper/docs/residual_reports/mixing_angles.md)
+retains numerical residuals and projected singlet probabilities. Small residuals
+against later tables are optional precision follow-up. The ψ(3.82) S–D
+admixtures, annihilation and photon-decay residuals remain separate open issues.
+
 ## Outside the spectrum-algorithm queue
 
 Table VI is complete as an implementation/accounting audit: all 79 rows use

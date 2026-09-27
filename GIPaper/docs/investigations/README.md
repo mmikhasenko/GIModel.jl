@@ -32,10 +32,10 @@ Every numerical study here should:
 - [Report refresh after the contact correction](report_contact_refresh.md) —
   dependency map, regeneration commands, and validation for `report/main.tex`.
 
-- [Mixing matching targets](mixing_matching_targets.md) — distinguishes direct
+- **Closed; historical brief:** [Mixing matching targets](mixing_matching_targets.md) — distinguishes direct
   caption angles and tensor compositions from conditional energy-shift
   reconstructions, and checks the two-stage algorithm and its basis limits.
-- [Why the mixing compositions failed](mixing_composition_investigation.md) —
+- **Closed:** [Why the mixing compositions failed](mixing_composition_investigation.md) —
   demonstrates the missing L>0 smeared contact term as the cause of the wrong
   singlet–triplet diagonal gaps (fixed in core), certifies both mixing stages,
   independently re-derives the antisymmetric element, and shows the remaining

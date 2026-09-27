@@ -37,8 +37,9 @@ and bibliography; use the documented local `latexmk -pdf` build.
 ## Interpretation
 
 The large light P-wave discrepancy is now a demonstrated missing-contact bug,
-not an unresolved cancellation diagnosis. The report retains the remaining
-spin-orbit and tensor-composition discrepancies and distinguishes convergence,
+not an unresolved cancellation diagnosis. At this refresh checkpoint the report retained
+the remaining spin-orbit and tensor-composition discrepancies (the same-J question was
+subsequently closed by the literature audit) and distinguished convergence,
 implementation checks, and reproduction of GI's published amplitudes. Table VI
 coverage is 79/79; this is not a claim that every amplitude agrees.
 
@@ -95,6 +96,9 @@ quadrature tolerance for every internal matrix. The pre-existing package
 manifest compatibility warnings were left visible; no dependency upgrade or
 parameter adjustment was made to suppress them.
 
-The report remains explicit about unresolved GI mixing discrepancies. Its
+Subsequent closure: the large same-J caption mismatch is a historical reference
+discrepancy, corroborated by later GI-model calculations; see the
+[target ledger](../../data/mixing_angle_targets.md). The ψ(3.82) tensor
+admixtures remain a separate open issue. Its
 threshold figure remains the verified restricted-wavefunction diagnostic,
 not a newly computed full-spin-wave result.

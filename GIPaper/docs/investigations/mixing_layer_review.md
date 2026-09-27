@@ -6,7 +6,7 @@
 > match them. Cause and interpretation:
 > [mixing_composition_investigation.md](mixing_composition_investigation.md).
 
-For the evidence hierarchy and the next investigation's acceptance targets,
+For the historical evidence hierarchy and investigation targets,
 see [Mixing matching targets](mixing_matching_targets.md). Published composition
 is the primary target; the repulsion scatter is a conditional two-state inverse,
 not a direct measurement of GI's full-block shifts.

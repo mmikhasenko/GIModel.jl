@@ -108,3 +108,10 @@ reports and per-row TOML input records together with:
 ```sh
 julia --project=GIPaper/scripts GIPaper/scripts/trace_rate_inputs.jl
 ```
+
+## Same-J mixing benchmark
+
+The [target ledger](data/mixing_angle_targets.md) retains the 13 GI85 caption
+angles and adds six GK91 comparisons with explicit conventions and provenance.
+The implementation investigation is closed; the historical caption discrepancy
+and small later-table residuals remain visible in the generated audit.
