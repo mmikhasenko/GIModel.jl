@@ -26,7 +26,7 @@
 #
 # The result is in MeV^(1/2); the partial width is its square (`decay_width`).
 # `StrongDecayAmplitude` returns all three factors so a computed number is
-# self-documenting. See docs/observable_ledger.md for the full equation ledger.
+# self-documenting. The documentation page "Equations to code" maps each factor to the paper.
 #
 # STRUCTURE-DEPENDENT CONVENTION (TableIVPolynomial vs LeadingS0)
 #   Table IV writes the structure-dependent classes as S0 - k A qbar^2 with

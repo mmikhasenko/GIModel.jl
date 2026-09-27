@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 # Audit explicit @ref links in core API docstrings (not Julia call dependencies)
-# and regenerate docs/discoverability_graph.md. Stdlib only.
+# and print their link graph as Markdown. Stdlib only.
 #
 # Run from any directory: julia scripts/audit_doc_links.jl
 
@@ -91,10 +91,8 @@ function main()
         "Counts combine constructor and method docstrings and exclude self-links.",
         "This graph covers explicit docstring links among the selected entries;",
         "it does not represent function calls or every exported method.", "",
-        "See [Discoverability](discoverability.md) for help conventions and regeneration.", ""])
-    output = joinpath(ROOT, "docs", "discoverability_graph.md")
-    write(output, join(lines, '\n'))
-    println("$output: $(length(edges)) core links")
+        "See the developer notes on writing docstrings for the conventions.", ""])
+    println(join(lines, '\n'))
 end
 
 abspath(PROGRAM_FILE) == (@__FILE__) && main()
