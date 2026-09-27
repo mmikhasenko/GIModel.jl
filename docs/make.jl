@@ -109,7 +109,7 @@ makedocs(;
         repo = "https://github.com/mmikhasenko/GIModel.jl",
         devbranch = "main",
         devurl = "dev",
-        deploy_url = "mmikhasenko.github.io/GIModel.jl",
+        deploy_url = "https://mmikhasenko.github.io/GIModel.jl",
         # `DOCS_MD_ONLY=true` stops after the Markdown stage (no Node.js needed).
         build_vitepress = get(ENV, "DOCS_MD_ONLY", "false") != "true",
     ),
