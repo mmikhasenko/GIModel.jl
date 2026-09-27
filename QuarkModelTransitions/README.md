@@ -49,7 +49,7 @@ The ordered daughters are `(surviving, emitted)`.
 predicted by the spectrum. The values below only demonstrate the API: no coupling
 fit is performed, so the resulting width is not a calibrated prediction. A
 quantitative study must state how the couplings were calibrated with its chosen
-wavefunctions and kinematics.
+wavefunctions and external masses.
 
 ```julia
 using GIModel, QuarkModelTransitions
@@ -179,7 +179,7 @@ the vector width uses the massless-lepton approximation.
 ## Mass and momentum comparisons
 
 `matrix_element` and `decay_width` use the masses stored in their input states.
-They do not accept `kinematics=...`. Use `mass_correction_factor` for a comparison
+Use `mass_correction_factor` for a comparison
 at another external mass or momentum, keeping wavefunctions, mixing, constituent
 masses, and operator settings fixed. This does not recompute a spectrum.
 
@@ -289,7 +289,7 @@ explicit imports of the internal kernels they need.
 `matrix_element` evaluates on-shell transitions without a momentum override.
 Use `mass_correction_factor(...; target_momentum=...)` for momentum corrections;
 strong emission also requires `partial_wave`. A ratio is undefined for a closed
-or zero reference amplitude. `OnShell` and `CMKinematics` are internal records.
+or zero reference amplitude.
 
 The [complete API inventory and documentation graph](docs/discoverability_graph.md)
 lists the access level of every name. The [help conventions](docs/discoverability.md)

@@ -119,8 +119,7 @@ end
     amplitude = matrix_element(final, operator, a1)
 
     @test amplitude.normalization isa RelativisticTwoBodyNormalization
-    @test amplitude.kinematics.momentum_GeV ≈ decay_momentum(a1.mass_GeV,rho.mass_GeV,pion.mass_GeV)
-    @test_throws MethodError matrix_element(final,operator,a1; kinematics=CMKinematics(0.31))
+    @test amplitude.momentum_GeV ≈ decay_momentum(a1.mass_GeV,rho.mass_GeV,pion.mass_GeV)
     for wave in partial_waves(amplitude), q in (0.31,0.1im)
         correction = mass_correction_factor(final,operator,a1; target_momentum=q,partial_wave=wave)
         target = QuarkModelTransitions._pseudoscalar_matrix_element(final,operator,a1,q)
@@ -131,7 +130,7 @@ end
             @test correction*amplitude[wave] ≈ matrix_element(final,operator,shifted)[wave]
         end
         @test mass_correction_factor(final,operator,a1;
-            target_momentum=amplitude.kinematics.momentum_GeV,partial_wave=wave) ≈ 1
+            target_momentum=amplitude.momentum_GeV,partial_wave=wave) ≈ 1
     end
     @test_throws UndefKeywordError mass_correction_factor(final,operator,a1; target_momentum=0.3)
     @test_throws DomainError mass_correction_factor(final,
@@ -150,7 +149,7 @@ end
     @test all(term.provenance.source == :GI1985_Eq19 for term in amplitude.terms)
     @test all(isfinite(last(item)) for item in amplitude.helicity)
     @test all(isfinite(last(item)) for item in amplitude.partial_wave_amplitudes)
-    expected_width = 1000 * amplitude.kinematics.momentum_GeV / (2pi * 3) *
+    expected_width = 1000 * amplitude.momentum_GeV / (2pi * 3) *
                      sum(abs2(last(item)) for item in amplitude.partial_wave_amplitudes)
     @test decay_width(amplitude) ≈ expected_width
     @test_throws ArgumentError decay_width(QuarkModelTransitions._pseudoscalar_matrix_element(

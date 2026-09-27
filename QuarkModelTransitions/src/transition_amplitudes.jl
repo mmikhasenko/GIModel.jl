@@ -549,57 +549,13 @@ function _compose_physical_decay(
     return _CoherentComposition(value, terms, symmetry, masses)
 end
 
-abstract type TransitionKinematics end
-"""
-Internal marker for deriving momentum from external-state masses.
-Public `matrix_element` calls always derive their own on-shell momentum.
-
-## Example
-
-```julia
-import QuarkModelTransitions as QMT
-marker = QMT.OnShell()
-@assert marker isa QMT.TransitionKinematics
-```
-
-## Related
-
-[`matrix_element`](@ref), `CMKinematics`, [`mass_correction_factor`](@ref).
-"""
-struct OnShell <: TransitionKinematics end
-
-"""
-    CMKinematics(momentum_GeV)
-
-Momentum record stored in emission amplitudes. Real momentum must be nonnegative;
-complex values support internal strong-emission continuation. Use
-`mass_correction_factor` for public comparisons at another momentum.
-
-## Example
-
-```julia
-import QuarkModelTransitions as QMT
-record = QMT.CMKinematics(0.1)
-@assert record.momentum_GeV == 0.1
-```
-
-## Related
-
-`OnShell`, `TransitionAmplitude`, `RadiativeAmplitude`,
-[`mass_correction_factor`](@ref).
-"""
-struct CMKinematics{T<:Number} <: TransitionKinematics
-    momentum_GeV::T
-    function CMKinematics(momentum_GeV::Number)
-        momentum = float(momentum_GeV)
-        isfinite(real(momentum)) && isfinite(imag(momentum)) || throw(ArgumentError(
-            "center-of-mass momentum must be finite, got $momentum_GeV",
-        ))
-        momentum isa Real && momentum < 0 && throw(ArgumentError(
-            "real center-of-mass momentum must be non-negative, got $momentum_GeV",
-        ))
-        return new{typeof(momentum)}(momentum)
-    end
+function _validated_momentum(momentum_GeV::Number)
+    momentum = float(momentum_GeV)
+    isfinite(momentum) || throw(ArgumentError("momentum must be finite, got $momentum_GeV"))
+    momentum isa Real && momentum < 0 && throw(ArgumentError(
+        "real momentum must be non-negative, got $momentum_GeV",
+    ))
+    return momentum
 end
 
 struct ClosedChannelError <: Exception
@@ -631,10 +587,6 @@ function _on_shell_momentum(final::TwoMesonChannel, initial::TransitionState)
     ))
     return sqrt((M^2 - (m1 + m2)^2) * (M^2 - (m1 - m2)^2)) / (2M)
 end
-
-_resolve_kinematics(final, initial, kinematics::CMKinematics) = kinematics
-_resolve_kinematics(final::TwoMesonChannel, initial, ::OnShell) =
-    CMKinematics(_on_shell_momentum(final, initial))
 
 abstract type AmplitudeNormalization end
 """
@@ -711,7 +663,8 @@ end
 
 A complete transition result with primitive helicity values, every available
 partial-wave projection, typed term decomposition, normalization, and
-provenance. Collections are tuples so no field erases its element type.
+provenance. The computed momentum is stored directly as `momentum_GeV`.
+Collections are tuples so no field erases its element type.
 
 ## Example
 
@@ -751,7 +704,7 @@ struct TransitionAmplitude{O,I,F,K,N,H<:Tuple,W<:Tuple,R<:Tuple,P}
     operator::O
     initial::I
     final::F
-    kinematics::K
+    momentum_GeV::K
     normalization::N
     helicity::H
     partial_wave_amplitudes::W
@@ -859,7 +812,7 @@ universal invariant-amplitude normalization shared by these results.
 ## Masses and comparisons
 
 Emission momenta are calculated from the input-state masses. There is no public
-`kinematics` override. Use [`mass_correction_factor`](@ref) separately to compare
+momentum override. Use [`mass_correction_factor`](@ref) separately to compare
 another mass or momentum while keeping waves, mixing, and operator parameters
 fixed. A closed reference emission channel has no amplitude correction ratio.
 Explicit flavor components are required where a current or isospin combination
@@ -1032,10 +985,7 @@ function Base.show(io::IO, ::MIME"text/plain", amplitude::TransitionAmplitude)
     println(io, "  transition     ", amplitude.initial.label, " -> ",
         amplitude.final.first.label, " + ", amplitude.final.second.label)
     println(io, "  operator       ", nameof(typeof(amplitude.operator)))
-    momentum = hasproperty(amplitude.kinematics, :momentum_GeV) ?
-        string(amplitude.kinematics.momentum_GeV, " GeV") :
-        string(nameof(typeof(amplitude.kinematics)))
-    println(io, "  momentum       ", momentum)
+    println(io, "  momentum       ", amplitude.momentum_GeV, " GeV")
     println(io, "  normalization  ", nameof(typeof(amplitude.normalization)))
     println(io, "  helicities     ", length(amplitude.helicity))
     println(io, "  partial waves  ", length(amplitude.partial_wave_amplitudes))

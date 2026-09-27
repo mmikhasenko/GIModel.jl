@@ -167,7 +167,7 @@ struct StandardPhotonCurrent <: PhotonCurrent end
 """
 PhotonEmitter(flavors, constituent, coefficient)
 
-One resolved term in an electromagnetic current. This technical adapter is
+One q term in an electromagnetic current. This technical adapter is
 used by paper-reproduction code whose legacy `:q` states do not retain enough
 flavor information to derive isospin charges automatically.
 
@@ -202,16 +202,16 @@ struct PhotonEmitter
     end
 end
 
-"""A pre-resolved current for reproducing a source with coarse flavor states."""
+"""A pre-q current for reproducing a source with coarse flavor states."""
 struct ResolvedPhotonCurrent{E<:Tuple} <: PhotonCurrent
     emitters::E
     function ResolvedPhotonCurrent(emitters)
-        resolved = Tuple(emitters)
-        isempty(resolved) && throw(ArgumentError("resolved photon current cannot be empty"))
-        all(term -> term isa PhotonEmitter, resolved) || throw(ArgumentError(
-            "every resolved photon-current term must be a PhotonEmitter",
+        q = Tuple(emitters)
+        isempty(q) && throw(ArgumentError("q photon current cannot be empty"))
+        all(term -> term isa PhotonEmitter, q) || throw(ArgumentError(
+            "every q photon-current term must be a PhotonEmitter",
         ))
-        return new{typeof(resolved)}(resolved)
+        return new{typeof(q)}(q)
     end
 end
 
@@ -308,6 +308,7 @@ end
 
 """
 A photon matrix element and its complete coherent component decomposition.
+The computed photon momentum is stored directly as `momentum_GeV`.
 
 ## Example
 
@@ -336,7 +337,7 @@ struct RadiativeAmplitude{O,I,F,K,C<:PhotonTransitionClass,V<:Number,T<:Tuple,P}
     operator::O
     initial::I
     final::F
-    kinematics::K
+    momentum_GeV::K
     transition_class::C
     multipole::Symbol
     value::V
@@ -360,9 +361,6 @@ function _on_shell_photon_momentum(final::TransitionState, initial::TransitionSt
     ))
     return photon_momentum(initial.mass_GeV, final.mass_GeV)
 end
-
-_resolve_kinematics(final::TransitionState, initial::TransitionState, ::OnShell) =
-    CMKinematics(_on_shell_photon_momentum(final, initial))
 
 function _component_transition_class(daughter::StateComponent, parent::StateComponent)
     Ld = orbital_angular_momentum(daughter.basis.L_label)
@@ -550,9 +548,8 @@ function _assemble_photon_amplitude(
     final::PhysicalState,
     operator::PhotonEmission,
     initial::PhysicalState,
-    resolved::CMKinematics,
+    q::Real,
 )
-    q = resolved.momentum_GeV
     terms = TransitionTerm[]
     total = 0.0 + 0.0im
     matched = false
@@ -604,22 +601,22 @@ function _assemble_photon_amplitude(
         width_units = :MeV,
     )
     return RadiativeAmplitude(
-        operator, initial, final, resolved, class, multipole,
+        operator, initial, final, q, class, multipole,
         total, Tuple(terms), provenance,
     )
 end
 
 photon_emission_matrix_element(
-    class::Union{DirectM1,HinderedM1}, final, operator, initial, resolved,
-) = _assemble_photon_amplitude(class, final, operator, initial, resolved)
+    class::Union{DirectM1,HinderedM1}, final, operator, initial, q,
+) = _assemble_photon_amplitude(class, final, operator, initial, q)
 
 photon_emission_matrix_element(
-    class::AllowedE1, final, operator, initial, resolved,
-) = _assemble_photon_amplitude(class, final, operator, initial, resolved)
+    class::AllowedE1, final, operator, initial, q,
+) = _assemble_photon_amplitude(class, final, operator, initial, q)
 
 photon_emission_matrix_element(
-    class::Union{SpinFlipE1,SpinFlipM2}, final, operator, initial, resolved,
-) = _assemble_photon_amplitude(class, final, operator, initial, resolved)
+    class::Union{SpinFlipE1,SpinFlipM2}, final, operator, initial, q,
+) = _assemble_photon_amplitude(class, final, operator, initial, q)
 
 
 function matrix_element(
@@ -641,8 +638,7 @@ end
 
 function _photon_matrix_element(final::PhysicalState, operator::PhotonEmission,
                                 initial::PhysicalState, momentum::Real; verbose::Bool=false)
-    resolved = CMKinematics(momentum)
-    q = resolved.momentum_GeV
+    q = _validated_momentum(momentum)
     q isa Real && q >= 0 || throw(ArgumentError(
         "PhotonEmission requires a real non-negative photon momentum",
     ))
@@ -650,7 +646,7 @@ function _photon_matrix_element(final::PhysicalState, operator::PhotonEmission,
     if verbose
         @info "photon transition selected" initial=initial.label final=final.label transition_class=nameof(typeof(class)) multipole=_photon_multipole(class) recoil_order=operator.recoil_order q_GeV=q
     end
-    return photon_emission_matrix_element(class, final, operator, initial, resolved)
+    return photon_emission_matrix_element(class, final, operator, initial, q)
 end
 
 function matrix_element(
@@ -660,14 +656,14 @@ function matrix_element(
     verbose::Bool = false,
 )
     throw(ArgumentError(
-        "PhotonEmission requires resolved PhysicalState inputs; got " *
+        "PhotonEmission requires q PhysicalState inputs; got " *
         "$(nameof(typeof(initial))) -> $(nameof(typeof(final)))",
     ))
 end
 
 
 function decay_width(amplitude::RadiativeAmplitude)
-    q = amplitude.kinematics.momentum_GeV
+    q = amplitude.momentum_GeV
     if amplitude.multipole == :M1
         return 1000 * m1_radiative_width(
             abs(amplitude.value), q; parent_spin = amplitude.initial.J,
@@ -694,7 +690,7 @@ end
 # Explicit-current compatibility for callers of the independently developed API.
 struct SpecifiedPhotonCurrent{C<:PhotonCurrent} <: PhotonCurrent
     multipole::Symbol
-    resolved::C
+    q::C
 end
 function PhotonEmission(multipole::Symbol, masses::QuarkMassTable, emitters;
                         recoil::Bool=false, kwargs...)
@@ -708,5 +704,5 @@ function _photon_emitters(current::SpecifiedPhotonCurrent, class::PhotonTransiti
                          flavors::Tuple{Symbol,Symbol})
     _photon_multipole(class) == current.multipole ||
         throw(ArgumentError("specified multipole is incompatible with the states"))
-    return _photon_emitters(current.resolved, class, flavors)
+    return _photon_emitters(current.q, class, flavors)
 end

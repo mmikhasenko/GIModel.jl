@@ -69,8 +69,6 @@ end
     identical = TwoMesonChannel(pip, pip)
     @test isempty(allowed_partial_waves(identical, rho))
     @test_throws ArgumentError PartialWave(-1, 0)
-    @test_throws ArgumentError CMKinematics(-0.1)
-    @test CMKinematics(0.2im).momentum_GeV == 0.2im
 
     incomplete = ReferenceState("epsilon", 0.7)
     @test_throws ArgumentError allowed_partial_waves(
@@ -307,14 +305,11 @@ end
     @test partial_waves(amplitude) == [PartialWave(1, 0)]
     @test amplitude[PartialWave(1, 0)] == legacy.total
     @test decay_width(amplitude) == decay_width(legacy)
-    @test amplitude.kinematics.momentum_GeV ≈ q_rho
+    @test amplitude.momentum_GeV ≈ q_rho
     @test amplitude.provenance.helicity_available == false
     @test all(type -> type !== Any, fieldtypes(typeof(amplitude)))
     @test occursin("rho -> pi+ + pi-", sprint(show, MIME"text/plain"(), amplitude))
     @test_throws KeyError amplitude[PartialWave(3, 0)]
-    @test_throws MethodError matrix_element(
-        final, operator, parent; kinematics = CMKinematics(0.1im),
-    )
     @test_throws ArgumentError matrix_element(
         final, DummyNativeDecayOperator(), parent,
     )

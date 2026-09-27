@@ -2,7 +2,7 @@
     mass_correction_factor(final, operator, initial; target_mass, kwargs...)
     mass_correction_factor(final, operator, initial; target_momentum, kwargs...)
 
-Compare another external mass/momentum with the default input-state kinematics,
+Compare another external mass/momentum with the default input-state masses and momentum,
 holding wavefunctions, mixing, constituent masses and operator parameters fixed.
 This is not a new spectrum calculation. The operator's docstring specifies the
 required keyword; unsupported keywords are errors, not silently ignored.
@@ -43,7 +43,7 @@ comparison_amplitude = factor * amplitude.value
 ## Related
 
 [`matrix_element`](@ref), [`decay_width`](@ref), [`PhysicalState`](@ref),
-[`PartialWave`](@ref), `OnShell`, `CMKinematics`.
+[`PartialWave`](@ref).
 """
 function mass_correction_factor end
 

@@ -55,7 +55,6 @@
     @test_throws ArgumentError GluonicAnnihilation(masses,:not_callable)
     zero = TwoPhotonAnnihilation(masses,AnnihilationTerm((:c,:c),0.0))
     @test_throws DomainError mass_correction_factor(TwoPhotonChannel(),zero,state(0,1,0,3.5); target_mass=4.0)
-    @test_throws MethodError matrix_element(TwoPhotonChannel(),gg,state(0,1,0,3.5); kinematics=CMKinematics(0.1))
 
     emitter = PhotonEmitter((:c,:c),1,4/3)
     vector, pseudoscalar, tensor = state(0,3,1,3.5), state(0,1,0,3.0), state(1,3,2,4.0)
@@ -64,10 +63,9 @@
                                           (:M1,pseudoscalar,vector,0.0))
         op = PhotonEmission(multipole,masses,emitter)
         a = matrix_element(final,op,initial)
-        q = a.kinematics.momentum_GeV
+        q = a.momentum_GeV
         @test mass_correction_factor(final,op,initial; target_momentum=q) ≈ 1
         @test mass_correction_factor(final,op,initial; target_momentum=2q) ≈ 2^power
-        @test_throws MethodError matrix_element(final,op,initial; kinematics=CMKinematics(q))
         @test_throws UndefKeywordError mass_correction_factor(final,op,initial)
         for invalid in (-1.0,Inf,NaN)
             @test_throws ArgumentError mass_correction_factor(final,op,initial; target_momentum=invalid)

@@ -118,7 +118,7 @@ struct LeadingS0 <: ReducedAmplitudeConvention end
     decay_momentum(M, m1, m2)
 
 [DERIVED] Two-body breakup momentum of `M -> m1 + m2` (GeV); zero below
-threshold. Pure Kallen kinematics, no paper input.
+threshold. Pure Kallen two-body momentum, no paper input.
 
 ## Example
 
@@ -623,8 +623,7 @@ function matrix_element(
     initial::TransitionState,
 )
     _validate_transition(final, operator, initial)
-    resolved = _resolve_kinematics(final, initial, OnShell())
-    q = resolved.momentum_GeV
+    q = _on_shell_momentum(final, initial)
     q isa Real || throw(ArgumentError(
         "TableVReference has no complex-momentum continuation; use a native operator",
     ))
@@ -652,7 +651,7 @@ function matrix_element(
         operator,
         initial,
         final,
-        resolved,
+        q,
         GITableVNormalization(),
         (),
         partial_wave_amplitudes,

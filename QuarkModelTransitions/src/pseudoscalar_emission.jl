@@ -477,8 +477,7 @@ function _pseudoscalar_matrix_element(
     momentum::Number,
 )
     roles = _validate_eq19_transition(final, initial)
-    resolved = CMKinematics(momentum)
-    q = resolved.momentum_GeV
+    q = _validated_momentum(momentum)
     allowed = Tuple(allowed_partial_waves(final, initial))
     identical_normalization = _same_external_state(final.first, final.second) ?
         inv(sqrt(2.0)) : 1.0
@@ -567,7 +566,7 @@ function _pseudoscalar_matrix_element(
         operator,
         initial,
         final,
-        resolved,
+        q,
         RelativisticTwoBodyNormalization(),
         helicity,
         partial_wave_amplitudes,
@@ -592,7 +591,7 @@ function partial_width(
     ::RelativisticTwoBodyNormalization,
     amplitude::TransitionAmplitude{<:PseudoscalarEmission},
 )
-    q = amplitude.kinematics.momentum_GeV
+    q = amplitude.momentum_GeV
     q isa Real || throw(ArgumentError(
         "a decay width is defined only for real on-shell momentum",
     ))
