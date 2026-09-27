@@ -5,13 +5,13 @@ PDFS := $(patsubst %.tex,pdf/%.pdf,$(notdir $(SOURCES)))
 all: $(PDFS)
 
 pdf/%.pdf: part1/%.tex course-common.tex | pdf
-	latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=pdf $<
+	latexmk -cd -pdf -interaction=nonstopmode -halt-on-error -outdir=../pdf $<
 
 pdf/%.pdf: part2/%.tex course-common.tex | pdf
-	latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=pdf $<
+	latexmk -cd -pdf -interaction=nonstopmode -halt-on-error -outdir=../pdf $<
 
 pdf:
 	mkdir -p pdf
 
 clean:
-	latexmk -c -outdir=pdf $(SOURCES)
+	latexmk -cd -c -outdir=../pdf $(SOURCES)
