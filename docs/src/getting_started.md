@@ -1,4 +1,6 @@
-<!-- Generated from docs/quarto/getting_started.qmd by docs/render.jl. Edit the .qmd file. source-sha256: 40214d4711795f9cf66b0a86e8b36a75c0db27fe247e73e7f71747fa671f04a8 -->
+```@meta
+EditURL = "../quarto/getting_started.qmd"
+```
 
 
 

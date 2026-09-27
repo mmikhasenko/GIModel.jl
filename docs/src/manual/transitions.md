@@ -1,4 +1,6 @@
-<!-- Generated from docs/quarto/manual/transitions.qmd by docs/render.jl. Edit the .qmd file. source-sha256: d65b2b34c9f83aea4191baeaa169d4b669100433e3debbc063e4b9477071b1b0 -->
+```@meta
+EditURL = "../../quarto/manual/transitions.qmd"
+```
 
 
 

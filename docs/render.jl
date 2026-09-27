@@ -11,6 +11,7 @@
 # documentation build only assembles the site and runs no calculations.
 
 using SHA
+using TOML
 
 const DOCS = @__DIR__
 const QUARTO = joinpath(DOCS, "quarto")
@@ -32,6 +33,9 @@ cd(QUARTO) do
         foreach(source -> run(`quarto render $source`), sources)
     end
 end
+
+# Landing-page figures (docs/src/public/home/) come from a plain script.
+isempty(ARGS) && run(`julia --project=$QUARTO $(joinpath(QUARTO, "home_figures.jl"))`)
 
 # Quarto writes cell outputs as indented code blocks; turn them into fenced
 # blocks so Documenter and VitePress render them consistently.
@@ -64,14 +68,20 @@ function fence_outputs(text)
     return replace(text, r"<img src=\"([^\"]+)\"[^>]*/>" => s"![](\1)")
 end
 
+# Hash of each rendered source, so the site build can detect a .qmd edited
+# without re-rendering (checked in docs/make.jl).
+const MANIFEST = joinpath(QUARTO, "rendered.toml")
+manifest = isfile(MANIFEST) ? TOML.parsefile(MANIFEST) : Dict{String,Any}()
+
 for source in sources
     name = splitext(source)[1]
     rendered = joinpath(OUTPUT, name * ".md")
     target = joinpath(SRC, name * ".md")
     mkpath(dirname(target))
-    # The source hash lets the site build detect a .qmd edited without re-rendering.
-    digest = bytes2hex(sha256(read(joinpath(QUARTO, source))))
-    header = "<!-- Generated from docs/quarto/$source by docs/render.jl. Edit the .qmd file. source-sha256: $digest -->\n\n"
+    manifest[source] = bytes2hex(sha256(read(joinpath(QUARTO, source))))
+    # Invisible on the page: the "Edit this page" link opens the .qmd source.
+    edit_url = relpath(joinpath(QUARTO, source), dirname(target))
+    header = "```@meta\nEditURL = \"$edit_url\"\n```\n\n"
     write(target, header * fence_outputs(read(rendered, String)))
     # Figures live next to the page in `<name>_files/`.
     figures = joinpath(OUTPUT, name * "_files")
@@ -79,4 +89,9 @@ for source in sources
     rm(destination; force = true, recursive = true)
     isdir(figures) && cp(figures, destination)
     println("wrote ", relpath(target, dirname(DOCS)))
+end
+
+open(MANIFEST, "w") do io
+    println(io, "# Written by docs/render.jl: SHA-256 of each .qmd when it was last rendered.")
+    TOML.print(io, manifest; sorted = true)
 end

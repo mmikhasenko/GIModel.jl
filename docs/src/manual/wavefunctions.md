@@ -1,4 +1,6 @@
-<!-- Generated from docs/quarto/manual/wavefunctions.qmd by docs/render.jl. Edit the .qmd file. source-sha256: 34febc7a9040e73e95de9065f197ac570183bbe21df9948753d4ac6695ce1c39 -->
+```@meta
+EditURL = "../../quarto/manual/wavefunctions.qmd"
+```
 
 
 
