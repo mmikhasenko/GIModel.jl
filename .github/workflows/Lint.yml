@@ -1,0 +1,42 @@
+name: Lint
+
+on:
+    push:
+        branches:
+            - main
+        tags: ["*"]
+    pull_request:
+
+concurrency:
+    # Skip intermediate builds: always.
+    # Cancel intermediate builds: only if it is a pull request build.
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
+jobs:
+    link-checker:
+        name: Link checker
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+
+            # Repository-internal links only: the paper and PDG references sit
+            # behind publisher bot protection that makes online checks flaky.
+            - name: Link Checker
+              id: lychee
+              uses: lycheeverse/lychee-action@v2
+              with:
+                  args: --offline --no-progress './**/*.md'
+                  fail: true
+
+    paper-manifest:
+        name: Paper manifest
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: julia-actions/setup-julia@v2
+              with:
+                  version: "1"
+            # Stdlib-only anti-drift gate: every code symbol, test and report
+            # cited by docs/paper_manifest/*.toml must exist.
+            - run: julia --startup-file=no GIPaper/scripts/check_manifest.jl

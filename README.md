@@ -127,8 +127,17 @@ julia GIPaper/scripts/run_all_spectrum_checks.jl
 julia GIPaper/scripts/paper_tables/generate.jl
 ```
 
+`Pkg.test()` runs each package's quick suite, including
+[Aqua.jl](https://github.com/JuliaTesting/Aqua.jl) quality checks; this is what
+CI runs on every push and pull request. GIModel's solver-convergence sweeps
+(`test/heavy/`, a few minutes) run only on request:
+
+```bash
+GI_HEAVY_TESTS=true julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
 Fast GIModel/GIPaper check: `bash scripts/verify_packages.sh`. Full gate, all
-three packages plus every generated report:
+three packages with the heavy tests plus every generated report:
 
 ```bash
 bash scripts/verify_project.sh
