@@ -133,6 +133,16 @@ eta_c = spectrum_state(four, BasisState(1, "S", 1, 0; flavors = (:c, :c)))
 [(join(c.basis.flavors), round(c.coefficient; digits = 4)) for c in physical_components(four, eta_c)]
 ```
 
+## Using isoscalar states in transitions
+
+The nonstrange channel is `Meson(mq, :q, :q)`, and its components carry the
+flavor label `:q`. Photon emission and leptonic currents need explicit `:u` and
+`:d` charges, so they currently refuse states from an isoscalar spectrum, even
+the ``\phi``, which has a small ``n\bar n`` component. Two-photon widths work,
+because [`AnnihilationTerm`](@ref) takes the effective charge of each flavor
+component explicitly (see [η and η′](@ref)). Radiative and leptonic decays of
+mixed isoscalars are not yet available through the public API.
+
 ## A calibrated alternative
 
 [`CalibratedP1Annihilation`](@ref) fixes the pseudoscalar block so that its

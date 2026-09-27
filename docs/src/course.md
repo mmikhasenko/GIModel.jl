@@ -9,27 +9,31 @@ well enough to implement it.
 
 **Part 1: theory sheets**
 
-1. Radial quantum mechanics
-2. Angular momentum and mesons
-3. Variational methods and the semirelativistic kinetic energy
-4. Color, confinement and the running coupling
-5. Relativization and smearing
-6. Spin-dependent fine structure
-7. State and flavor mixing
-8. Decay observables
-9. The full algorithm: a capstone
+1. [Radial quantum mechanics](https://github.com/mmikhasenko/GIModel.jl/releases/download/learning-sheets/01_radial_quantum_mechanics.pdf)
+2. [Angular momentum and mesons](https://github.com/mmikhasenko/GIModel.jl/releases/download/learning-sheets/02_angular_momentum_and_mesons.pdf)
+3. [Variational methods and the semirelativistic kinetic energy](https://github.com/mmikhasenko/GIModel.jl/releases/download/learning-sheets/03_variational_and_semirelativistic.pdf)
+4. [Color, confinement and the running coupling](https://github.com/mmikhasenko/GIModel.jl/releases/download/learning-sheets/04_color_confinement_running_coupling.pdf)
+5. [Relativization and smearing](https://github.com/mmikhasenko/GIModel.jl/releases/download/learning-sheets/05_relativization_and_smearing.pdf)
+6. [Spin-dependent fine structure](https://github.com/mmikhasenko/GIModel.jl/releases/download/learning-sheets/06_spin_fine_structure.pdf)
+7. [State and flavor mixing](https://github.com/mmikhasenko/GIModel.jl/releases/download/learning-sheets/07_state_and_flavor_mixing.pdf)
+8. [Decay observables](https://github.com/mmikhasenko/GIModel.jl/releases/download/learning-sheets/08_decay_observables.pdf)
+9. [The full algorithm: a capstone](https://github.com/mmikhasenko/GIModel.jl/releases/download/learning-sheets/09_full_algorithm_capstone.pdf)
 
 **Part 2: computational track**
 
-- C1: computational discovery
+- C1: [computational discovery](https://github.com/mmikhasenko/GIModel.jl/releases/download/learning-sheets/C1_computational_discovery.pdf)
 
 Each sheet contains problems, worked solutions and short concept checks after
 the solutions. Problem statements give all inputs, conventions and the
 requested result, so a student can start without reading the solution.
 
+The links download the PDFs from the latest successful build on `main`, which
+the Learning sheets workflow publishes to a dedicated
+[release](https://github.com/mmikhasenko/GIModel.jl/releases/tag/learning-sheets).
+
 ## Building the PDFs
 
-A LaTeX installation with `latexmk` is required:
+To build them yourself, a LaTeX installation with `latexmk` is required:
 
 ```bash
 cd LearningTrack

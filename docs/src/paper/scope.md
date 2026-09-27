@@ -29,6 +29,10 @@ purpose is to make clear which questions the package can answer.
   (threshold effects, pole dressing) are not included. This matters for states
   near or above open-flavor thresholds, such as the ``X(3872)``.
 - **Isospin breaking.** As in the paper, ``u`` and ``d`` are degenerate.
+- **Electromagnetic decays of mixed isoscalars.** Photon emission and leptonic
+  widths of states from [`compute_isoscalar_spectrum`](@ref) are not available
+  through the public API, because the nonstrange component is labeled `:q`
+  (see [Isoscalar flavor mixing](@ref)). Two-photon widths are available.
 - **Baryons and exotics.** Only ``q\bar q`` mesons.
 - **Top quarks.** The 1985 parameter set has no top mass; toponium rows of
   the paper are not computed.

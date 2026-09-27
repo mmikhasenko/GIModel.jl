@@ -57,6 +57,7 @@ time; regenerate the reports first if the physics changed.
 | `Test.yml`, `TestOnPRs.yml` | both test suites | pushes to `main`, pull requests |
 | `Documentation.yml` | docs build and deployment to GitHub Pages | pushes to `main`, tags, pull requests (preview) |
 | `Lint.yml` | offline link check of Markdown files | pushes, pull requests |
+| `LearningSheets.yml` | builds the course PDFs and publishes them to the `learning-sheets` release | changes under `LearningTrack/` |
 | `CompatHelper.yml`, `TagBot.yml` | dependency bounds, release tags | scheduled |
 
 Deployment uses the `DOCUMENTER_KEY` secret. Documentation for pull requests
