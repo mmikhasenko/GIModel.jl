@@ -180,11 +180,8 @@ If you use GIModel.jl, please cite the original work:
 S. Godfrey and N. Isgur, *Phys. Rev. D* **32**, 189 (1985),
 [doi:10.1103/PhysRevD.32.189](https://doi.org/10.1103/PhysRevD.32.189).
 
-This project can be cited as [arXiv preprint 1/10] (placeholder for the
+Also this project can be cited as [arXiv preprint 1/10] (placeholder for the
 preprint planned for Thursday, 1 October 2026; arXiv link to follow).
-
-BibTeX entries are provided below. The project entry is provisional;
-`2610.XXXXX` is a placeholder and will be replaced when the preprint is available.
 
 ```bibtex
 % original work
