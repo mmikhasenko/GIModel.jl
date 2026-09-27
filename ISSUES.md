@@ -1,4 +1,4 @@
-# Testing and documentation issues
+# Open issues
 
 Issues found while writing the documentation (September 2026). Each one needs
 an investigation before a fix: the behavior may have a reason. Every entry
@@ -14,35 +14,6 @@ params, mq = load_parameters_and_quark_masses(default_parameters_path())
 ---
 
 ## 1. The two solvers converge to different mixing angles
-
-**Resolution (September 2026).** The oscillator path applied non-polynomial
-momentum factors to the finite `p²` matrix. In general,
-`f(P_N p² P_N) != P_N f(p²) P_N`; optimizing β during energy refinement could
-hide this operator error. It affected both the Hamiltonian and the mixing
-element, especially the cancellation of vector and Thomas terms.
-
-The Hamiltonian now projects continuum momentum functions by independently
-refined quadrature and retains an enlarged intermediate basis in sandwiches.
-Wave-interface spin sandwiches separately refine their auxiliary operator
-basis with the input wave held fixed. This includes diagonal expectations and
-cross elements with different β or L. Failure to converge raises an error.
-
-An independent momentum-space integral for analytic oscillator waves checks
-the operator; mesh comparisons and zero-padding invariance provide additional
-regressions. `test/heavy/mixing_convergence.jl` compares all three systems,
-including a fixed common β, with a 0.1° tolerance for residual wave/grid errors.
-A three-system check gives:
-
-| system | FD 900 | corrected HO |
-|---|---:|---:|
-| u s̄ | 4.30° | 4.31° |
-| c ū | −25.78° | −25.79° |
-| b ū | −27.96° | −27.97° |
-
-Published angles are not used as numerical targets: the regression compares
-two independent implementations of the same Hamiltonian. Remaining differences
-are governed by wave and grid convergence. The original observations and
-investigation questions follow for context.
 
 **Symptom.** The singlet–triplet mixing angle of unequal-mass P waves differs
 between the finite-difference (FD) and oscillator (HO) solvers by 1–2°, and
@@ -87,15 +58,6 @@ visibly. The GIPaper reports use FD.
 
 ## 2. Isoscalar states cannot enter radiative or leptonic decays
 
-**Resolution.** Isoscalar spectra now retain explicit nonstrange-isoscalar
-provenance. Standard photon and electromagnetic leptonic currents resolve that
-channel coherently into uū and dd̄ with coefficients 1/√2. Ambiguous ordinary
-`:q` spectra still fail. Explicit effective-charge annihilation operators keep
-the original coarse components, avoiding double counting. Regression tests
-cover mixed ω/φ currents, φ radiative decay, and mass corrections. The Table VI
-audit now uses public photon currents with explicit isospin states; its charged
-A1/A2 spin-flip rows use u d̄ rather than an internal emitter coefficient.
-
 **Symptom.** States from `compute_isoscalar_spectrum` carry the nonstrange
 component as flavor `:q`. `PhotonEmission` and `LeptonicCurrent` reject `:q`,
 so ω → e⁺e⁻, φ → e⁺e⁻ (through its small n n̄ admixture) and φ → ηγ all fail.
@@ -130,12 +92,6 @@ internal `PhotonEmitter` currents. Two-photon widths work because
 
 ## 3. Photon emission rejects states with a D-wave component
 
-**Resolution (requested policy).** Unsupported nonzero D-wave components
-raise `ErrorException("Not implemented yet. Please submit issue if needed,
-and/or PR with implementation.")`. No components are silently discarded and
-no projection helper is introduced. General D→P kernels remain future physics
-work, requiring a derivation and validation against the implemented S/P cases.
-
 **Symptom.** When D waves are requested, tensor mixing gives the J/ψ a small
 ³D₁ component (amplitude ≈ 0.01). `PhotonEmission` then refuses the state.
 
@@ -166,21 +122,6 @@ transition), impossible.
 
 ## 4. Different default solvers
 
-**Resolution.** Both general spectrum entry points now default to FD.
-GIPaper comparisons instead default to HO, and their production spectrum and
-mixing-angle audits select `OscillatorSolver()` explicitly, following the
-original investigation. FD remains available as an explicit cross-check. The
-general FD default preserves
-`compute_spectrum` behavior and supports diagnostic central-potential variants
-that native HO deliberately rejects. The paper's oscillator method remains an
-explicit `solver = OscillatorSolver()` choice. Combining already-computed
-spectra still retains their solver, with incompatible solvers rejected. This
-preserves existing single-meson defaults; GIPaper's distinct HO default is
-documented explicitly, and historical FD reports retain their solver labels.
-Warm timings on the development machine (one BLAS thread, `spectrum_levels(2)`):
-u–s, FD 5.13 s / HO 13.99 s; c–c, FD 2.84 s / HO 6.20 s.
-These timings are illustrative, not performance guarantees.
-
 **Symptom.** `compute_spectrum` defaults to `FiniteDifferenceSolver()`, while
 `compute_isoscalar_spectrum` defaults to `OscillatorSolver()`. A user who
 combines `compute_spectrum` results in `add_isoscalar_annihilation` gets FD,
@@ -202,13 +143,6 @@ issue 1 for angles.
 ---
 
 ## 5. The keyword constructor of `GIParameters` builds a different model
-
-**Resolution.** Construction from scratch requires all six keyword fields.
-The loader and copy constructor already supply them; repository tests and
-research probes use those paths and need no model changes. Diagnostic
-`RelativisticFactors()` defaults remain available when deliberately requested.
-Missing physics fields now fail immediately instead of silently creating a
-pointwise, unrelativized model.
 
 **Symptom.** `GIParameters(; potential, smearing)` fills the other fields with
 `PointwiseCentral()` and `RelativisticFactors()` with all ε = 0 and all
@@ -236,12 +170,6 @@ simplified defaults are used by diagnostic tests.
 
 ## 6. Signs of spectroscopic mixing eigenvectors are arbitrary
 
-**Resolution.** All mixing blocks now use the annihilation rule by default:
-positive overlap with the assigned precursor, in ascending unmixed-mass order.
-A zero overlap uses the largest component. The common helper is shared with
-annihilation; `phase_anchor=1` remains an explicit compatibility option. Only
-overall state phases change, not eigenvalues, relative internal signs or widths.
-
 **Symptom.** Annihilation eigenvectors are phase-fixed (positive overlap with
 the assigned basis state), but spin-orbit and tensor eigenvectors keep the sign
 returned by the diagonalization.
@@ -268,16 +196,6 @@ oscillator-basis column signs was found and fixed earlier.
 ---
 
 ## 7. Missing conveniences
-
-**Resolution.** `convergence(spec, state)` returns the source-channel energy
-certificates for every component (FD has no automatic certificate). Native
-oscillator momentum waves are callable as `phi(p)`, with no mesh transform.
-`superpose(states, coefficients; mass_GeV, label)` constructs coherent,
-optionally normalized combinations, including interference in the norm.
-The mass must be supplied rather than inferred from a superposition. The
-`AnnihilationTerm` documentation now explains the color factor √3 and the
-Appendix-D factor 2 in the pseudoscalar coefficient, and distinguishes CKM,
-state mixing, electric charge, and current normalization.
 
 Each is small, but each forces users into internals:
 
