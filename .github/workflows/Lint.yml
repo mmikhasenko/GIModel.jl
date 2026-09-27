@@ -22,9 +22,11 @@ jobs:
 
             # Repository-internal links only: the paper and PDG references sit
             # behind publisher bot protection that makes online checks flaky.
+            # docs/ is excluded: Documenter resolves its cross-references and
+            # fails the documentation build on a broken link.
             - name: Link Checker
               id: lychee
               uses: lycheeverse/lychee-action@v2
               with:
-                  args: --offline --no-progress './**/*.md'
+                  args: --offline --no-progress --exclude-path docs './**/*.md'
                   fail: true

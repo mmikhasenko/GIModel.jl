@@ -1,0 +1,7 @@
+_output/
+.quarto/
+Manifest.toml
+*_files/
+
+/.quarto/
+**/*.quarto_ipynb
