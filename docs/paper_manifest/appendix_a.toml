@@ -21,7 +21,6 @@ label = "Eq. (A1)"
 page = 36
 statement = "Scattering-amplitude setup that motivates the effective qq-bar potential construction."
 status = "context"
-anchor = "paper/vision_ocr/page_images/page-036.png"
 parent = "app-A"
 notes = "Derivational motivation for the later prescription; the code uses the (A7)-(A14) prescription rather than evaluating the scattering kernel. Not a coding target."
 
@@ -32,7 +31,6 @@ label = "Eq. (A2)"
 page = 36
 statement = "Continuation of the scattering-kernel setup for the effective potential."
 status = "context"
-anchor = "paper/vision_ocr/page_images/page-036.png"
 parent = "app-A"
 notes = "Same as A1: motivational, not implemented directly."
 
@@ -43,7 +41,6 @@ label = "Eq. (A3)"
 page = 36
 statement = "Continuation of the scattering-kernel setup for the effective potential."
 status = "context"
-anchor = "paper/vision_ocr/page_images/page-036.png"
 parent = "app-A"
 notes = "Motivational; not implemented directly."
 
@@ -54,7 +51,6 @@ label = "Eq. (A4)"
 page = 36
 statement = "Closing of the scattering-amplitude setup motivating the effective potential."
 status = "context"
-anchor = "paper/vision_ocr/page_images/page-036.png"
 parent = "app-A"
 notes = "Motivational; not implemented directly."
 
@@ -65,7 +61,6 @@ label = "Eq. (A5)"
 page = 36
 statement = "Vector/Coulomb effective kernel (bracketed S_q, S_qbar spin structure)."
 status = "context"
-anchor = "paper/vision_ocr/page_images/page-036.png"
 parent = "app-A"
 notes = "Deliberately kept as derivational context, NOT a coefficient source: the local OCR carries spin-label risk (text defines S_q and S_qbar but the displayed expression shows S_q in every spin slot). Do not transcribe without a manual PDF check."
 
@@ -76,7 +71,6 @@ label = "Eq. (A6)"
 page = 36
 statement = "Scalar/confinement effective kernel (line-broken product form)."
 status = "context"
-anchor = "paper/vision_ocr/page_images/page-036.png"
 parent = "app-A"
 notes = "Same caveat as A5: useful for the qualitative prescription, not for direct transcription."
 
@@ -91,7 +85,6 @@ statement = "Normalized 3D Gaussian smearing kernel rho_sigma(r) with unit volum
 status = "implemented"
 code = ["src/contact_hyperfine.jl:delta_sigma_3d", "src/smearing_appendix_a.jl:smear_3d_radial"]
 tests = ["Gaussian contact regulator is 3D-normalized", "Appendix A 3D smearing (constant preserves norm)"]
-anchor = "paper/vision_ocr/page_images/page-036.png"
 parent = "app-A"
 notes = "delta_sigma_3d is the contact regulator (normalization tested); smear_3d_radial is the diagnostic 3D convolution kernel. The active spin-independent central path uses the closed forms A12-A13 instead."
 
@@ -104,7 +97,6 @@ statement = "Smeared potential f-tilde(r) = convolution of the pointwise f(r) wi
 status = "implemented"
 code = ["src/smearing_appendix_a.jl:smear_3d_radial", "src/smearing_appendix_a.jl:smeared_central_values"]
 tests = ["3D isotropic Gaussian smear: constant vector unchanged"]
-anchor = "paper/vision_ocr/page_images/page-036.png"
 parent = "app-A"
 notes = "smeared_central_values realizes the direct (A7)-(A8) convolution of pointwise G and S as an experimental/diagnostic branch (can remove the small-r well when sigma is O(1)); the production central path uses the closed-form A12-A14 results."
 
@@ -117,7 +109,6 @@ statement = "Mass-dependent smearing width sigma(m1,m2) from Table II sigma0 and
 status = "implemented"
 code = ["src/contact_hyperfine.jl:contact_smearing_sigma"]
 tests = ["contact smearing σ implements Appendix A (A9)"]
-anchor = "paper/vision_ocr/page_images/page-036.png"
 parent = "app-A"
 notes = "The single shared width for the contact term, closed-form central smearing, and smeared-derivative kernels; tested against the paper's symmetric mass combination."
 
@@ -131,7 +122,6 @@ page = 37
 statement = "Pointwise Coulomb block G(r) = -(4/3) alpha_s(r)/r with the running Gaussian-sum coupling."
 status = "implemented"
 code = ["src/running_coupling.jl:static_coulomb_G", "src/running_coupling.jl:alpha_s_r"]
-anchor = "paper/vision_ocr/page_images/page-037.png"
 parent = "app-A"
 notes = "alpha_s_r is the erf-profile coordinate-space form of the GI Gaussian-sum coupling."
 
@@ -143,7 +133,6 @@ page = 37
 statement = "Pointwise confinement block S(r) = b r + c."
 status = "implemented"
 code = ["src/running_coupling.jl:static_confinement_S"]
-anchor = "paper/vision_ocr/page_images/page-037.png"
 parent = "app-A"
 notes = "Linear-plus-constant scalar confinement piece."
 
@@ -158,7 +147,6 @@ statement = "Closed-form Gaussian-smeared Coulomb kernel G-tilde(r) via erf(tau_
 status = "implemented"
 code = ["src/smearing_appendix_a.jl:smeared_coulomb_G_closed"]
 tests = ["closed-form Coulomb smearing matches QuadGK convolution"]
-anchor = "paper/vision_ocr/page_images/page-037.png"
 parent = "app-A"
 notes = "Part of the active spin-independent central reproduction path; tested against QuadGK convolution."
 
@@ -170,7 +158,6 @@ page = 37
 statement = "Closed-form Gaussian-smeared linear confinement S-tilde(r) via the erf + Gaussian bracket."
 status = "implemented"
 code = ["src/smearing_appendix_a.jl:smeared_confinement_S_closed"]
-anchor = "paper/vision_ocr/page_images/page-037.png"
 parent = "app-A"
 notes = "Active-path partner of A12."
 
@@ -183,7 +170,6 @@ statement = "Smearing scale tau_k and the central Coulomb momentum factor G' = A
 status = "implemented"
 code = ["src/smearing_appendix_a.jl:appendix_a_closed_central_values", "src/hamiltonian.jl:appendix_a_momentum_sandwich_matrix"]
 tests = ["central_potential_path (default = GI momentum sandwich)", "post-A14 spin-dependent momentum exponent gives energy denominators"]
-anchor = "paper/vision_ocr/page_images/page-037.png"
 parent = "app-A"
 notes = "tau_k = 1/sqrt(1/sigma^2 + 1/gamma^2) enters the closed forms; the two-sided A(p) = sqrt(1 + p^2/(E1 E2)) sandwich around G-tilde is the active central operator. This FD analogue is what the HO-order comparison (A17) validates."
 
@@ -200,7 +186,6 @@ code = ["src/contact_hyperfine.jl:smeared_contact_kernel", "src/contact_hyperfin
 tests = ["A15 contact is the Laplacian of the smeared Coulomb kernel", "post-A14 spin-dependent momentum exponent gives energy denominators", "OGE tensor kernel matches finite-difference derivatives of G(r)", "Native HO fixed-channel spin-distorted waves", "Native HO full fixed-channel diagonalization"]
 report = "GIPaper/docs/residual_reports/w6_ho_order_validation.md"
 metric = "paper-order (finite-HO full diagonalization) treatment of these blocks reproduces all 16 Table VII gluonic signs with magnitude ratios in [0.88,1.17] (median 1.05); every singlet/triplet and 3P0/3P2 splitting pattern collapses; the light-1S0 mass discriminates full diagonalization (paper) from first-order PT"
-anchor = "paper/vision_ocr/page_images/page-037.png"
 parent = "app-A"
 notes = "The post-A14 (m1 m2/E1 E2)^(1/2+eps) sandwiches are native HO matrices for the exact Laplacian contact, vector/scalar spin-orbit, and tensor terms. fixed_channel_solution assembles them with H_central and performs one full finite-HO diagonalization per (L,S,J) sector; no mesh operator is projected into HO space. W6 validates the same treatment against independently refined FD and the light-1S0 discriminator. FineStructure has no fitted bridge strengths."
 
@@ -214,7 +199,6 @@ status = "reproduced"
 code = ["src/spin_fine_structure.jl:fine_structure_components", "src/spin_fine_structure.jl:ho_fine_structure_matrices", "src/spin_fine_structure.jl:spin_orbit_mixing_components", "src/spin_fine_structure.jl:same_j_mixing"]
 tests = ["Native HO full fixed-channel diagonalization", "same-J spin-orbit mixing diagnostics"]
 report = "GIPaper/docs/residual_reports/w6_ho_order_validation.md"
-anchor = "paper/vision_ocr/page_images/page-038.png"
 parent = "app-A"
 notes = "The symmetric fixed-(L,S,J) vector/scalar matrices and the unequal-mass antisymmetric same-J matrix are literal A15-A16 operators. The latter enters the complete stage-2 mixing block over all compatible radial levels. No fitted spin bridge or duplicate Coulomb contribution remains."
 
@@ -230,6 +214,5 @@ status = "reproduced"
 code = ["src/harmonic_oscillator_basis.jl:ho_p2_matrix", "src/harmonic_oscillator_basis.jl:ho_r2_matrix", "src/harmonic_oscillator_basis.jl:ho_operator_matrix", "src/harmonic_oscillator_basis.jl:oscillator_central_matrix", "src/harmonic_oscillator_basis.jl:ho_momentum_sandwich_matrix", "src/harmonic_oscillator_basis.jl:ho_reduced_radial", "src/fixed_channel_solver.jl:fixed_channel_solution"]
 tests = ["Oscillator matrix elements validate themselves", "A17 position side: Gauss-Laguerre in Golub-Welsch form", "Exact oscillator p^2 (A17 momentum side)", "The oscillator basis has a fixed phase", "OscillatorSolver channel solve returns native waves", "The solver, not the parameters, chooses the radial method", "PA-12 adaptive HO convergence is certified or fails loudly", "Native HO fixed-channel spin-distorted waves", "Native HO full fixed-channel diagonalization"]
 report = "GIPaper/docs/residual_reports/ho_convergence.md"
-anchor = "paper/vision_ocr/page_images/page-038.png"
 parent = "app-A"
 notes = "Both sides of A17 are assembled from exact oscillator matrix elements. OscillatorSolver adaptively refines beta and basis size; ChannelRadialSolution retains OscillatorWave coefficients plus its achieved OscillatorConvergence certificate and no reporting mesh. The same factorization builds central and diagonal spin matrices, while cross-sector tensor/spin-orbit elements dispatch on native waves. Plotting may explicitly sample a wave, but production HO operators never consume radial_grid, ngrid, or rmax."

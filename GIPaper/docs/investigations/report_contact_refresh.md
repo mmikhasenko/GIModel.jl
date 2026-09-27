@@ -26,7 +26,8 @@ source hashes and records the renderer hash separately.
 
 ## Reproduction
 
-Run `bash scripts/refresh_report.sh` from the GIModel repository. It uses the
+The report refresh script lives with the report sources, outside the released
+packages; it runs `bash scripts/verify_project.sh` first. It uses the
 current working tree, including existing transition-code changes, and leaves
 the PDG snapshot fixed. Julia 1.11.5 is used for the report gate and figures; the census was run
 with Julia 1.11.6. Both use single-threaded BLAS and the existing package

@@ -21,7 +21,6 @@ code = ["QuarkModelTransitions/src/pseudoscalar_emission.jl:matrix_element", "Qu
 tests = ["Public native Eq. (19) transition", "Table V strong-decay model"]
 report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
 metric = "Eq. (19) is evaluated through the same SU(6), single-beta SHO reduction used for the paper's numerical strong-decay tables; the Table IV classes and Table V amplitudes use beta = 0.40 GeV and the paper's two-strength fit."
-anchor = "paper/vision_ocr/page_images/page-012.png"
 parent = "sec-IV"
 notes = "The frozen Table-IV/V route reproduces the paper's published SU(6), single-beta treatment. The separate native route now evaluates g sigma.q + h sigma.p' between resolved physical model wavefunctions; this is a beyond-paper improvement, not a reproduction fallback."
 
@@ -34,7 +33,6 @@ statement = "Type-A realistic-factor ratio <3S1|r^(L-1)|M*> / <1S0|r^(L-1)|M*> â
 status = "reproduced"
 code = ["GIPaper/scripts/audit_realistic_factors.jl"]
 metric = "type-A ratios R_A = 1.65/2.03/2.23 (L=2,3,4) vs paper 1.5/1.7-1.8/2.1"
-anchor = "paper/vision_ocr/page_images/page-023.png"
 parent = "sec-IV"
 notes = "Computed from hyperfine-distinct pi/rho radial waves (contact_hyperfine_nonperturbative_states). Was mislabelled 'missing' in the old prose ledger."
 
@@ -48,7 +46,6 @@ status = "reproduced"
 code = ["GIPaper/scripts/audit_realistic_factors.jl"]
 report = "GIPaper/docs/residual_reports/realistic_factors.md"
 metric = "type-S R_S = 1.17 on the 1P parents (epsilon/kappa 1^3P_0, B 1^1P_1) vs paper ~1.2-1.3; pi <p^2> = 3.8x rho, so R_S > 1 as required"
-anchor = "paper/vision_ocr/page_images/page-023.png"
 parent = "sec-IV"
 notes = "Scored from the model's own hyperfine-distinct pi/rho momentum waves: <S|p|M*> proportional to integral p^3 Phi_0(p) Phi_1(p) dp (the vector-p radial part; the common angular factor cancels in the ratio). R_S = 1.17 sits just below the paper's rough ~1.2-1.3 -- same-order agreement as the type-A rows, within the paper's own 'rough indication' caveat. Both realistic factors now reproduced from the wavefunctions with no new constants: type-A in position space (r^{L-1}), type-S in momentum space (p)."
 
@@ -62,7 +59,6 @@ status = "implemented"
 code = ["QuarkModelTransitions/src/mock_meson_overlaps.jl:mock_meson_overlap", "QuarkModelTransitions/src/mock_meson_overlaps.jl:mock_meson_radial_moment", "QuarkModelTransitions/src/mock_meson_overlaps.jl:m1_transition_moment", "QuarkModelTransitions/src/mock_meson_overlaps.jl:e1_transition_amplitude", "QuarkModelTransitions/src/mock_meson_overlaps.jl:photon_momentum", "QuarkModelTransitions/src/radiative_decays.jl", "GIPaper/scripts/audit_table_vi_photon_decays.jl"]
 tests = ["Appendix-D mock-meson overlap kernels", "Radiative charge normalization and recoil", "Photon multipole angular factors and powers"]
 report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
-anchor = "paper/vision_ocr/page_images/page-023.png"
 parent = "sec-IV"
 notes = "Realized as the Appendix-D mock-meson form. All 79 Table VI rows use shared overlap, charge, angular, recoil and physical-composition APIs. Native HO P waves include the fixed-channel spin interactions. Table VI documents residuals without row-local vectors or phase adjustments."
 
@@ -79,7 +75,6 @@ code = ["QuarkModelTransitions/src/strong_decays.jl:reduced_decay_amplitude"]
 tests = ["Table V strong-decay model", "Table V charmed decays"]
 report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
 metric = "light calibration (A, S0) transfers to charm with no refit; LeadingS0 vs TableIVPolynomial conventions"
-anchor = "paper/vision_ocr/page_images/page-013.png"
 parent = "sec-IV"
 notes = "Structure-dependent classes carry the S0 - k A qbar^2 polynomial (TableIVPolynomial) or the leading constant S0 (LeadingS0, the paper's numeric-column convention). CORRECTION (S5): Table IV prints the S-family coefficient as k = 1/2 for S but k = m_c/(m_d+m_c) for S_c (page-013 lines 39 and 55); the code had used the light 1/2 for both. Reading the rows together shows the light case IS the equal-mass point of the charmed one (r = 1/2), the same collapse as the Gaussian form factor, so both now take k = heavy_fraction. Under TableIVPolynomial the charmed S_c moves 3.085 -> 2.450 (21%); LeadingS0 -- the convention every scored report uses -- is bit-identical, so no reproduction number changes. Currently unexercised: nothing runs TableIVPolynomial on a charmed row."
 
@@ -95,7 +90,6 @@ code = ["QuarkModelTransitions/src/strong_decays.jl:decay_amplitude", "GIPaper/s
 tests = ["Row-oriented decay API"]
 report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
 metric = "220/220 canonical rows accounted for: 107/134 scoreable rows match, 14 near, 13 miss, 82 convention-deferred, 4 context-only"
-anchor = "paper/vision_ocr/page_images/page-014.png"
 parent = "sec-IV"
 notes = "Canonical page-image CSV data/raw/digitized_tables/table_v_strong_decays.csv; loaded via load_table_v. Pure-state rows are computed when source conventions and masses are reconstructible; experimental-mass, threshold, mixing-only, and context-only rows remain explicitly visible."
 
@@ -110,7 +104,6 @@ statement = "Single harmonic-oscillator scale beta for the SHO-limit decay ampli
 status = "reproduced"
 code = ["QuarkModelTransitions/src/strong_decays.jl:spatial_overlap"]
 tests = ["Table V strong-decay model"]
-anchor = "paper/vision_ocr/page_images/page-014.png"
 parent = "sec-IV"
 notes = "Paper's own input, not fitted. The form factor is now one expression exp[-(1/4) r^2 q^2/beta_c^2] parametrized by the heavy fraction r = m_Q/(m_Q+m_q); the light Gaussian exp(-q^2/16 beta^2) is exactly its r = 1/2 point (verified bitwise), so there is no separate charm branch and a b-flavored row would simply pass a larger r. r is carried per row on DecayChannel and resolved by the harness from the parent's flavor content, since the canonical CSV has no quark-content column. Note the paper applies this unequal-mass treatment to CHARMED rows only: strange rows are also unequal-mass (r = 0.66) yet keep the equal-mass Gaussian, so 0.5 there is the paper's convention, not the kinematics."
 
@@ -124,7 +117,6 @@ status = "reproduced"
 code = ["QuarkModelTransitions/src/strong_decays.jl:calibrate_strong_decay_model"]
 tests = ["Table V strong-decay model"]
 metric = "A=1.644, S0=3.291 (leading convention; paper A=1.67, S=3.27)"
-anchor = "paper/vision_ocr/page_images/page-023.png"
 parent = "sec-IV"
 notes = "Methodologically identical to the paper's own fit; no extra freedom. (Old ledgers listed the stale table_iv S0=3.918.)"
 
@@ -137,7 +129,6 @@ label = "Eqs. (B16)-(B25)"
 page = 38
 statement = "SU(3) flavor operators X_q^i (and the antiquark charge rule B25) that set the Table V spin-flavor coefficients."
 status = "folded"
-anchor = "paper/vision_ocr/page_images/page-038.png"
 parent = "app-B"
 notes = "Their matrix elements are baked into the digitized Table V `coefficient` column (transcribed, not independently derived). Independent derivation would upgrade Table V from 'coefficients transcribed' to 'coefficients derived'."
 
@@ -148,7 +139,6 @@ label = "Eqs. (B14)-(B15)"
 page = 38
 statement = "Perfect-mixing eta, eta' wavefunctions used for the 1^1S_0 formula column."
 status = "implemented"
-anchor = "paper/vision_ocr/page_images/page-038.png"
 parent = "app-B"
 notes = "Used by the Table V 1^1S_0 formula-column convention."
 
@@ -161,6 +151,5 @@ statement = "Partial width from partial-wave amplitudes, fixing the sqrt(q/2pi) 
 status = "implemented"
 code = ["QuarkModelTransitions/src/pseudoscalar_emission.jl:partial_width", "QuarkModelTransitions/src/strong_decays.jl:spatial_overlap"]
 tests = ["Public native Eq. (19) transition", "Table V strong-decay model"]
-anchor = "paper/vision_ocr/page_images/page-039.png"
 parent = "app-C"
 notes = "The native Eq. (19) result uses q/[2pi(2J+1)] times the complete partial-wave norm and reports MeV. The frozen Table-V convention absorbs sqrt(q/2pi) into its MeV^(1/2) amplitude and uses decay_width = |amp|^2."

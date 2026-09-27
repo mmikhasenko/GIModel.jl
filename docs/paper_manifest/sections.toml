@@ -3,8 +3,8 @@
 # marked "derived" here and computed by check_manifest.jl from its children
 # (the rollup), so it never needs hand-editing.
 #
-# Page numbers are page-IMAGE numbers (paper/vision_ocr/page_images/page-0NN.png);
-# the mapping is  image = journal_pg - 188  (journal p.189 = page-001.png).
+# Page numbers are PDF page numbers of the 1985 article;
+# PDF page = journal page - 188 (journal p. 189 is PDF page 1).
 
 schema_version = 1
 

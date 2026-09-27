@@ -22,7 +22,7 @@ The graph measures source links, not Pluto rendering or example correctness.
 Regenerate the graph from the repository root:
 
 ```sh
-python3 scripts/audit_doc_links.py
+julia scripts/audit_doc_links.jl
 ```
 
 Run edited examples and check live help when changing documentation syntax.

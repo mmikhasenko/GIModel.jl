@@ -18,7 +18,6 @@ label = "Eqs. (B1)-(B9)"
 page = 38
 statement = "Flavor wavefunctions (pi, K, eta_8, eta_1) with their sign conventions."
 status = "folded"
-anchor = "paper/vision_ocr/page_images/page-038.png"
 parent = "app-B"
 notes = "Baked into the flavor labels and the ns-bar/ss-bar basis conventions in src/meson.jl (Meson flavor1/flavor2) and the annihilation basis labels; not an independent reproduction target. OCR-located on page-image 38."
 
@@ -31,7 +30,6 @@ statement = "Ideal-mixing isoscalar basis M_ns, M_s and the singlet-octet mixing
 status = "implemented"
 code = ["src/flavor_mixing.jl:annihilation_basis_input"]
 tests = ["annihilation blocks built from two spectra"]
-anchor = "paper/vision_ocr/page_images/page-038.png"
 parent = "app-B"
 notes = "Ideal mixing is the default isoscalar scheme; the ns-bar/ss-bar inputs carry the sqrt(2) flavor-coherence label and the rotation is the Table III eigenvector convention. OCR-located on page-image 38."
 
@@ -44,7 +42,6 @@ statement = "Spin wavefunctions chi and the standard angular-momentum algebra (S
 status = "folded"
 code = ["src/contact_hyperfine.jl:spin_dot", "src/spin_fine_structure.jl:LdotS"]
 tests = ["L·S and spin_dot algebra"]
-anchor = "paper/vision_ocr/page_images/page-039.png"
 parent = "app-B"
 notes = "Standard angular algebra folded into the fine-structure operators; the concrete pieces (spin_dot, LdotS, tensor_triplet_LJ) exist and are checked via sum rules, so they are cited even though the spin algebra is not a distinct reproduction milestone. OCR-located on page-image 39."
 
@@ -57,7 +54,6 @@ statement = "Simple-harmonic-oscillator wavefunctions Psi_nLM (radial Laguerre f
 status = "implemented"
 code = ["src/harmonic_oscillator_basis.jl:ho_reduced_radial"]
 tests = ["OscillatorSolver channel solve returns native waves"]
-anchor = "paper/vision_ocr/page_images/page-039.png"
 parent = "app-B"
 notes = "Realized by the paper-style HO radial expansion (generalized_laguerre / ho_reduced_radial / ho_basis_matrix); also implicit in the Table IV decay-class q^L exp(-q^2/16 beta^2) formulas. OCR-located on page-image 39."
 
@@ -68,7 +64,6 @@ label = "Eq. (B37)"
 page = 39
 statement = "Worked example of a fully composed (flavor x spin x space) meson state vector."
 status = "context"
-anchor = "paper/vision_ocr/page_images/page-039.png"
 parent = "app-B"
 notes = "Convention demonstration only — no independent code target; the composition it illustrates is exercised piecewise by the B1-B36 units. OCR-located on page-image 39."
 
@@ -79,6 +74,5 @@ label = "Appendix-B beta powers (Table IV footnote)"
 page = 13
 statement = "The Appendix-B oscillator beta powers reappear inside the Table IV partial-wave class formulas."
 status = "folded"
-anchor = "paper/vision_ocr/page_images/page-013.png"
 parent = "app-B"
 notes = "The ledger's trailing '4Note' row: the beta scaling of the SHO overlaps is absorbed into the Table IV class algebra (see table-IV in decays.toml), so it is not scored separately. Anchored to Table IV (page-image 13), where these beta powers appear in the class formulas."

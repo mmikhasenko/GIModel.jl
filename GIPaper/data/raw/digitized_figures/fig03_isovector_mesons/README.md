@@ -4,7 +4,7 @@ Source: Godfrey-Isgur 1985, Fig. 3, PDF page 6.
 
 Screenshot:
 
-- `paper/screenshots/spectrum_pages/gi_spectrum_page-06.png`
+- `gi_spectrum_page-06.png` (render of the 1985 paper PDF)
 
 Scope:
 

@@ -131,7 +131,7 @@ def promoted_table_iii_mixings() -> list[dict[str, str]]:
                 "amplitude": f"{amplitude:.6g}",
                 "mass_shift_MeV": str(shift),
                 "confidence": "medium",
-                "provenance_file": "paper/vision_ocr/pages/page-011.md",
+                "provenance_file": "data/raw/digitized_tables/table_iii_isoscalar_mixings/vision_ocr_page_011.md",
                 "provenance_row": str(raw_row),
                 "notes": "Image-audited visible non-pseudoscalar row from page-011 markdown; general Eq. (16) reproduction is pending.",
             })

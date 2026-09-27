@@ -6,18 +6,16 @@
 > historical page references (page-036 for A1-A9, page-037 for A10-A15, page-038
 > for A16-A17) are the OCR-verified anchors the manifest now uses.
 
-This ledger records the current equation source status for Appendix A. The best
-current OCR-derived text is `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`;
-the older split files under `paper/vision_ocr/pages/` are archived historical
-OCR output and remain useful for provenance comparison only. Implementation
-claims below should be updated only after checking against the PDF or page
-images.
+This ledger records the current equation source status for Appendix A.
+Implementation claims below should be updated only after checking against the
+published article (the paper itself is not distributed with this repository).
 
-Historical page references used when this ledger was first written:
+Page references (PDF pages of the 1985 article) used when this ledger was
+first written:
 
-- `paper/vision_ocr/pages/page-036.md` for (A1)-(A9).
-- `paper/vision_ocr/pages/page-037.md` for (A10)-(A15).
-- `paper/vision_ocr/pages/page-038.md` for (A16)-(A17).
+- page 36 for (A1)-(A9).
+- page 37 for (A10)-(A15).
+- page 38 for (A16)-(A17).
 
 ## Source Status
 

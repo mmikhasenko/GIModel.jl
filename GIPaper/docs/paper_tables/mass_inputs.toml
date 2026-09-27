@@ -1,0 +1,2389 @@
+edition = "PDG 2026"
+
+[[inputs]]
+assignment_note = ""
+context = "D7"
+edition = "2026"
+historical = []
+key = "mu"
+label = "mu"
+mass_GeV = 0.1056583755
+note = ""
+particle = "mu MASS"
+pdg_display = "105.6583755+-0.0000023"
+pdg_id = "S004M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S004M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.23 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "a1"
+label = "A1"
+mass_GeV = 1.23
+note = ""
+particle = "a_1(1260) MASS"
+pdg_display = "1230+-40"
+pdg_id = "M010M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M010M"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.318 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "a2"
+label = "A2"
+mass_GeV = 1.318202926499983
+note = ""
+particle = "a_2(1320) MASS"
+pdg_display = "1318.2+-0.6"
+pdg_id = "M012M0"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M012M0"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = []
+key = "pi2"
+label = "A3"
+mass_GeV = 1.670628482324409
+note = ""
+particle = "pi_2(1670) MASS"
+pdg_display = "1670.6+2.9-1.2"
+pdg_id = "M034M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M034M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.231 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "b1"
+label = "B"
+mass_GeV = 1.229483446980134
+note = ""
+particle = "b_1(1235) MASS"
+pdg_display = "1229.5+-3.2"
+pdg_id = "M011M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M011M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.867 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "D_avg"
+label = "D"
+mass_GeV = 1.8672535928608844
+note = "Arithmetic isospin average for charge-unspecified channels; components: D+, D0"
+particle = "(D+ + D0) / 2"
+pdg_display = ""
+pdg_id = "S031M;S032M"
+source_url = "https://pdg.lbl.gov/2026/api/index.html"
+status = "derived experimental input"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.865 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "D0"
+label = "D0"
+mass_GeV = 1.864842442150871
+note = ""
+particle = "D0 MASS"
+pdg_display = "1864.84+-0.04"
+pdg_id = "S032M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S032M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.283 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "f1"
+label = "D1285"
+mass_GeV = 1.281841436830458
+note = ""
+particle = "f_1(1285) MASS"
+pdg_display = "1281.8+-0.5"
+pdg_id = "M008M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M008M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.869 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "D+"
+label = "Dplus"
+mass_GeV = 1.869664743570898
+note = ""
+particle = "D+- MASS"
+pdg_display = "1869.66+-0.05"
+pdg_id = "S031M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S031M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["2.008 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "Dstar_avg"
+label = "Dstar"
+mass_GeV = 2.0085624267045796
+note = "Arithmetic isospin average for charge-unspecified channels; components: Dstar+, Dstar0"
+particle = "(Dstar+ + Dstar0) / 2"
+pdg_display = ""
+pdg_id = "M062M;M061M"
+source_url = "https://pdg.lbl.gov/2026/api/index.html"
+status = "derived experimental input"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["2.007 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "Dstar0"
+label = "Dstar0"
+mass_GeV = 2.006856662548903
+note = ""
+particle = "D*(2007)0 MASS"
+pdg_display = "2006.86+-0.05"
+pdg_id = "M061M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M061M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["2.01 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "Dstar+"
+label = "Dstarplus"
+mass_GeV = 2.010268190860256
+note = ""
+particle = "D*(2010)+- MASS"
+pdg_display = "2010.27+-0.04"
+pdg_id = "M062M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M062M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.42 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "f1prime"
+label = "E1420"
+mass_GeV = 1.4277078932525331
+note = ""
+particle = "f_1(1420) MASS"
+pdg_display = "1427.7+1.7-1.4"
+pdg_id = "M006M2"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M006M2"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = []
+key = "h1"
+label = "H"
+mass_GeV = 1.166
+note = ""
+particle = "h_1(1170) MASS"
+pdg_display = "1166+-6"
+pdg_id = "M030M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M030M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = []
+key = "h1prime"
+label = "Hprime"
+mass_GeV = 1.409062450792051
+note = ""
+particle = "h_1(1415) MASS"
+pdg_display = "1409+9-8"
+pdg_id = "M109M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M109M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["0.4957 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "K_avg"
+label = "K"
+mass_GeV = 0.49564368349464905
+note = "Arithmetic isospin average for charge-unspecified channels; components: K+, K0"
+particle = "(K+ + K0) / 2"
+pdg_display = ""
+pdg_id = "S010M;S011M"
+source_url = "https://pdg.lbl.gov/2026/api/index.html"
+status = "derived experimental input"
+[[inputs]]
+assignment_note = "No unambiguous experimental counterpart assigned to this GI state."
+context = "V"
+edition = "2026"
+historical = []
+key = ""
+label = "Kprime"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["0.8921 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "Kstar_avg"
+label = "Kstar"
+mass_GeV = 0.8937194517117202
+note = "Arithmetic isospin average for charge-unspecified channels; components: Kstar+, Kstar0"
+particle = "(Kstar+ + Kstar0) / 2"
+pdg_display = ""
+pdg_id = "M018M1;M018M2"
+source_url = "https://pdg.lbl.gov/2026/api/index.html"
+status = "derived experimental input"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.4256 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "K2_avg"
+label = "Kstar2"
+mass_GeV = 1.4298024914638425
+note = "Arithmetic isospin average for charge-unspecified channels; components: K2+, K20"
+particle = "(K2+ + K20) / 2"
+pdg_display = ""
+pdg_id = "M022M1;M022M4"
+source_url = "https://pdg.lbl.gov/2026/api/index.html"
+status = "derived experimental input"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = []
+key = "K3"
+label = "Kstar3"
+mass_GeV = 1.778947997002842
+note = ""
+particle = "K_3*(1780) MASS"
+pdg_display = "1779+-8"
+pdg_id = "M060M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M060M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = []
+key = "K4"
+label = "Kstar4"
+mass_GeV = 2.048247496629263
+note = ""
+particle = "K_4*(2045) MASS"
+pdg_display = "2048+8-9"
+pdg_id = "M035M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M035M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "V"
+edition = "2026"
+historical = []
+key = "Kstar1680"
+label = "KstarD"
+mass_GeV = 1.717577132197535
+note = ""
+particle = "K*(1680) MASS"
+pdg_display = "1718+-18"
+pdg_id = "M095M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M095M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "V"
+edition = "2026"
+historical = []
+key = "Kstar1410"
+label = "KstarS"
+mass_GeV = 1.413732912723449
+note = ""
+particle = "K*(1410) MASS"
+pdg_display = "1414+-15"
+pdg_id = "M094M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M094M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = []
+key = "D2"
+label = "Kstar_c"
+mass_GeV = 2.4611321663318497
+note = ""
+particle = "D_2*(2460) MASS"
+pdg_display = "2461.1+-0.8"
+pdg_id = "M254M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M254M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.273 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "K1_1270"
+label = "Q1"
+mass_GeV = 1.255765763305702
+note = ""
+particle = "K_1(1270) MASS"
+pdg_display = "1256+-6"
+pdg_id = "M028MX"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M028MX"
+status = "PDG average"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "V"
+edition = "2026"
+historical = []
+key = "K2_1770"
+label = "Q1_1D2"
+mass_GeV = 1.77302507831344
+note = ""
+particle = "K_2(1770) MASS"
+pdg_display = "1773+-8"
+pdg_id = "M023M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M023M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "D1 broad/narrow assignment to this GI mixing convention needs validation."
+context = "V"
+edition = "2026"
+historical = []
+key = ""
+label = "Q1c"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.402 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "K1_1400"
+label = "Q2"
+mass_GeV = 1.402516791473017
+note = ""
+particle = "K_1(1400) MASS"
+pdg_display = "1403+-7"
+pdg_id = "M064M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M064M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "V"
+edition = "2026"
+historical = []
+key = "K2_1820"
+label = "Q2_1D2"
+mass_GeV = 1.819150235893909
+note = ""
+particle = "K_2(1820) MASS"
+pdg_display = "1819+-12"
+pdg_id = "M146M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M146M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "D1 broad/narrow assignment to this GI mixing convention needs validation."
+context = "V"
+edition = "2026"
+historical = []
+key = ""
+label = "Q2c"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = "No unambiguous experimental counterpart assigned to this GI state."
+context = "V"
+edition = "2026"
+historical = []
+key = ""
+label = "Sstar"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = "Scalar qq assignment is ambiguous."
+context = "V"
+edition = "2026"
+historical = []
+key = ""
+label = "delta"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = "Effective quasi-two-body mass is not an experimental particle mass."
+context = "V"
+edition = "2026"
+historical = ["0.98 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = ""
+label = "delta2"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = "Scalar qq assignment and broad lineshape require an explicit prescription."
+context = "V"
+edition = "2026"
+historical = ["1.0 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = ""
+label = "eps"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = "Scalar ss assignment is ambiguous."
+context = "V"
+edition = "2026"
+historical = []
+key = ""
+label = "epsprime"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["0.5488 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "eta"
+label = "eta"
+mass_GeV = 0.54786187114402
+note = ""
+particle = "eta MASS"
+pdg_display = "547.862+-0.017"
+pdg_id = "S014M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S014M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "V"
+edition = "2026"
+historical = []
+key = "eta1295"
+label = "eta_r"
+mass_GeV = 1.293710130391174
+note = ""
+particle = "eta(1295) MASS"
+pdg_display = "1294+-4"
+pdg_id = "M037M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M037M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["0.9575 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "eta_prime"
+label = "etaprime"
+mass_GeV = 0.9577837638923
+note = ""
+particle = "eta'(958) MASS"
+pdg_display = "957.78+-0.06"
+pdg_id = "M002M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M002M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "Historical eta(1440) / ss radial assignment is ambiguous between modern eta(1405) and eta(1475)."
+context = "V"
+edition = "2026"
+historical = []
+key = ""
+label = "etaprime_r"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.273 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "f2"
+label = "f"
+mass_GeV = 1.2754120499190051
+note = ""
+particle = "f_2(1270) MASS"
+pdg_display = "1275.4+-0.8"
+pdg_id = "M005M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M005M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.525 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "f2prime"
+label = "fprime"
+mass_GeV = 1.517304243265377
+note = ""
+particle = "f_2'(1525) MASS"
+pdg_display = "1517.3+-2.4"
+pdg_id = "M013MX"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M013MX"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = []
+key = "rho3"
+label = "g"
+mass_GeV = 1.6888024030087911
+note = ""
+particle = "rho_3(1690) MASS"
+pdg_display = "1688.8+-2.1"
+pdg_id = "M015M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M015M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = []
+key = "f4"
+label = "h"
+mass_GeV = 2.018439509055114
+note = ""
+particle = "f_4(2050) MASS"
+pdg_display = "2018+-11"
+pdg_id = "M016M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M016M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "No unambiguous experimental counterpart assigned to this GI state."
+context = "V"
+edition = "2026"
+historical = []
+key = ""
+label = "hprime"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = "Historical scalar/effective daughter assignment is ambiguous."
+context = "V"
+edition = "2026"
+historical = ["0.98 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = ""
+label = "kappa"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = "No unambiguous experimental counterpart assigned to this GI state."
+context = "V"
+edition = "2026"
+historical = []
+key = ""
+label = "kappa_c"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["0.7826 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "omega"
+label = "omega"
+mass_GeV = 0.782655723752181
+note = ""
+particle = "omega(782) MASS"
+pdg_display = "782.66+-0.13"
+pdg_id = "M001M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M001M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "No unambiguous experimental counterpart assigned to this GI state."
+context = "V"
+edition = "2026"
+historical = []
+key = ""
+label = "omega2"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = []
+key = "omega3"
+label = "omega3"
+mass_GeV = 1.667205745233679
+note = ""
+particle = "omega_3(1670) MASS"
+pdg_display = "1667+-4"
+pdg_id = "M045M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M045M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "V"
+edition = "2026"
+historical = []
+key = "omega1650"
+label = "omegaD"
+mass_GeV = 1.67
+note = ""
+particle = "omega(1650) MASS"
+pdg_display = "1670+-30"
+pdg_id = "M126M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M126M"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "V"
+edition = "2026"
+historical = []
+key = "omega1420"
+label = "omegaS"
+mass_GeV = 1.41
+note = ""
+particle = "omega(1420) MASS"
+pdg_display = "1410+-60"
+pdg_id = "M125M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M125M"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "V"
+edition = "2026"
+historical = []
+key = "eta2"
+label = "omega_1D2"
+mass_GeV = 1.617318566614613
+note = ""
+particle = "eta_2(1645) MASS"
+pdg_display = "1617+-5"
+pdg_id = "M154M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M154M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["1.0195 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "phi"
+label = "phi"
+mass_GeV = 1.019459752114901
+note = ""
+particle = "phi(1020) MASS"
+pdg_display = "1019.460+-0.016"
+pdg_id = "M004M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M004M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "No unambiguous experimental counterpart assigned to this GI state."
+context = "V"
+edition = "2026"
+historical = []
+key = ""
+label = "phi2"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = []
+key = "phi3"
+label = "phi3"
+mass_GeV = 1.8543031038549909
+note = ""
+particle = "phi_3(1850) MASS"
+pdg_display = "1854+-7"
+pdg_id = "M054M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M054M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "No unique experimental identification of the GI 1D ss vector."
+context = "V"
+edition = "2026"
+historical = []
+key = ""
+label = "phiD"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "V"
+edition = "2026"
+historical = []
+key = "phi1680"
+label = "phiS"
+mass_GeV = 1.68
+note = ""
+particle = "e+ e- PRODUCTION"
+pdg_display = "1680+-20"
+pdg_id = "M067M1"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M067M1"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "V"
+edition = "2026"
+historical = []
+key = "eta2prime"
+label = "phi_1D2"
+mass_GeV = 1.841689075718733
+note = ""
+particle = "eta_2(1870) MASS"
+pdg_display = "1842+-8"
+pdg_id = "M101M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M101M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["0.138 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "pi_avg"
+label = "pi"
+mass_GeV = 0.13803920324501578
+note = "Arithmetic isospin average for charge-unspecified channels; components: pi+, pi+, pi0"
+particle = "(pi+ + pi+ + pi0) / 3"
+pdg_display = ""
+pdg_id = "S008M;S008M;S009M"
+source_url = "https://pdg.lbl.gov/2026/api/index.html"
+status = "derived experimental input"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["0.135 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "pi0"
+label = "pi0"
+mass_GeV = 0.13497682776768472
+note = ""
+particle = "pi0 MASS"
+pdg_display = "134.9768+-0.0005"
+pdg_id = "S009M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S009M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["0.1396 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "pi+"
+label = "piplus"
+mass_GeV = 0.13957039098368132
+note = ""
+particle = "pi+- MASS"
+pdg_display = "139.57039+-0.00018"
+pdg_id = "S008M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S008M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = []
+key = "pi1300"
+label = "piprime"
+mass_GeV = 1.3
+note = ""
+particle = "pi(1300) MASS"
+pdg_display = "1300+-100"
+pdg_id = "M058M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M058M"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = ""
+context = "V"
+edition = "2026"
+historical = ["0.769 GeV — Previous Table V audit hardcoded mass; legacy audit input; GI experimental provenance not verified"]
+key = "rho0"
+label = "rho"
+mass_GeV = 0.7752611563582926
+note = ""
+particle = "NEUTRAL ONLY, e+ e-"
+pdg_display = "775.26+-0.23"
+pdg_id = "M009M0"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M009M0"
+status = "PDG average"
+[[inputs]]
+assignment_note = "No unambiguous experimental counterpart assigned to this GI state."
+context = "V"
+edition = "2026"
+historical = []
+key = ""
+label = "rho2"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "V"
+edition = "2026"
+historical = []
+key = "rho1700"
+label = "rhoD"
+mass_GeV = 1.72
+note = ""
+particle = "eta rho0 AND pi+ pi- MODES"
+pdg_display = "1720+-20"
+pdg_id = "M065M0"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M065M0"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "V"
+edition = "2026"
+historical = []
+key = "rho1450"
+label = "rhoS"
+mass_GeV = 1.465
+note = "This is only an educated guess; the error given is larger than the error on the average of the published values."
+particle = "rho(1450) MASS"
+pdg_display = "1465+-25"
+pdg_id = "M105M0"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M105M0"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = "The F-wave delta label denotes a4; the scalar delta in the cryptoexotic section is distinct."
+context = "V:1^3F_4"
+edition = "2026"
+historical = []
+key = "a4"
+label = "delta"
+mass_GeV = 1.967276339976973
+note = ""
+particle = "a_4(1970) MASS"
+pdg_display = "1967+-16"
+pdg_id = "M017M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M017M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["1.275 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "a1"
+label = "A1"
+mass_GeV = 1.23
+note = ""
+particle = "a_1(1260) MASS"
+pdg_display = "1230+-40"
+pdg_id = "M010M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M010M"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["1.318 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "a2"
+label = "A2"
+mass_GeV = 1.318202926499983
+note = ""
+particle = "a_2(1320) MASS"
+pdg_display = "1318.2+-0.6"
+pdg_id = "M012M0"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M012M0"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["1.231 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "b1"
+label = "B"
+mass_GeV = 1.229483446980134
+note = ""
+particle = "b_1(1235) MASS"
+pdg_display = "1229.5+-3.2"
+pdg_id = "M011M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M011M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "B0"
+label = "B0"
+mass_GeV = 5.2797166045222
+note = ""
+particle = "B0 MASS"
+pdg_display = "5279.72+-0.08"
+pdg_id = "S042M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S042M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "B+"
+label = "Bminus"
+mass_GeV = 5.279405997146907
+note = ""
+particle = "B+- MASS"
+pdg_display = "5279.41+-0.07"
+pdg_id = "S041M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S041M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = "PDG combined B* mass used for both charges."
+context = "VI"
+edition = "2026"
+historical = []
+key = "Bstar"
+label = "Bstar0"
+mass_GeV = 5.3247454336330655
+note = ""
+particle = "B* MASS"
+pdg_display = "5324.75+-0.20"
+pdg_id = "S085M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S085M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = "PDG combined B* mass used for both charges."
+context = "VI"
+edition = "2026"
+historical = []
+key = "Bstar"
+label = "Bstarminus"
+mass_GeV = 5.3247454336330655
+note = ""
+particle = "B* MASS"
+pdg_display = "5324.75+-0.20"
+pdg_id = "S085M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S085M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "D0"
+label = "D0"
+mass_GeV = 1.864842442150871
+note = ""
+particle = "D0 MASS"
+pdg_display = "1864.84+-0.04"
+pdg_id = "S032M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S032M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "D+"
+label = "Dplus"
+mass_GeV = 1.869664743570898
+note = ""
+particle = "D+- MASS"
+pdg_display = "1869.66+-0.05"
+pdg_id = "S031M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S031M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "Dstar0"
+label = "Dstar0"
+mass_GeV = 2.006856662548903
+note = ""
+particle = "D*(2007)0 MASS"
+pdg_display = "2006.86+-0.05"
+pdg_id = "M061M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M061M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "Dstar+"
+label = "Dstarplus"
+mass_GeV = 2.010268190860256
+note = ""
+particle = "D*(2010)+- MASS"
+pdg_display = "2010.27+-0.04"
+pdg_id = "M062M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M062M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "Ds"
+label = "F"
+mass_GeV = 1.9683548722252
+note = ""
+particle = "D_s+- MASS"
+pdg_display = "1968.35+-0.07"
+pdg_id = "S034M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S034M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "Bs"
+label = "Fb"
+mass_GeV = 5.366931931225692
+note = ""
+particle = "B_s0 MASS"
+pdg_display = "5366.93+-0.10"
+pdg_id = "S086M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S086M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "Bsstar"
+label = "Fbstar"
+mass_GeV = 5.41544209743894
+note = ""
+particle = "B_s* MASS"
+pdg_display = "5415.4+-1.4"
+pdg_id = "S087M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S087M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "Dsstar"
+label = "Fstar"
+mass_GeV = 2.112198041153834
+note = ""
+particle = "D_s*+- MASS"
+pdg_display = "2112.2+-0.4"
+pdg_id = "S074M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S074M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["0.494 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "K+"
+label = "K"
+mass_GeV = 0.4936765994580406
+note = ""
+particle = "K+- MASS"
+pdg_display = "493.677+-0.015"
+pdg_id = "S010M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S010M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "K0"
+label = "K0"
+mass_GeV = 0.49761076753125755
+note = ""
+particle = "K0 MASS"
+pdg_display = "497.611+-0.013"
+pdg_id = "S011M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S011M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "K+"
+label = "Kplus"
+mass_GeV = 0.4936765994580406
+note = ""
+particle = "K+- MASS"
+pdg_display = "493.677+-0.015"
+pdg_id = "S010M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S010M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "Kstar0"
+label = "Kstar0"
+mass_GeV = 0.8955564491633554
+note = ""
+particle = "NEUTRAL ONLY"
+pdg_display = "895.56+-0.20"
+pdg_id = "M018M2"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M018M2"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["1.425 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "K2+"
+label = "Kstar2_1420"
+mass_GeV = 1.427251610677319
+note = ""
+particle = "CHARGED ONLY, WITH FINAL STATE K pi"
+pdg_display = "1427.3+-1.5"
+pdg_id = "M022M1"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M022M1"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "Kstar+"
+label = "Kstarplus"
+mass_GeV = 0.891882454260085
+note = ""
+particle = "CHARGED ONLY, HADROPRODUCED"
+pdg_display = "891.88+-0.23"
+pdg_id = "M018M1"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M018M1"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["9.46 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "Upsilon"
+label = "Upsilon"
+mass_GeV = 9.460399964216766
+note = ""
+particle = "Upsilon(1S) MASS"
+pdg_display = "9460.40+-0.10"
+pdg_id = "M049M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M049M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["10.355 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "Upsilon3"
+label = "Upsilondoubleprime"
+mass_GeV = 10.3551
+note = ""
+particle = "Upsilon(3S) MASS"
+pdg_display = "10355.1+-0.5"
+pdg_id = "M048M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M048M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["10.023 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "Upsilon2"
+label = "Upsilonprime"
+mass_GeV = 10.023399999999999
+note = ""
+particle = "Upsilon(2S) MASS"
+pdg_display = "10023.4+-0.5"
+pdg_id = "M052M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M052M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["9.86 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "chi_b0"
+label = "chi_0b"
+mass_GeV = 9.859440000000001
+note = "From average gamma energy below, using Upsilon(2S) mass = 10023.26+-0.31 MeV"
+particle = "chi_b0(1P) MASS"
+pdg_display = "9859.44+-0.42+-0.31"
+pdg_id = "M076M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M076M"
+status = "PDG quoted value"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["3.415 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "chi_c0"
+label = "chi_0c"
+mass_GeV = 3.415497307177493
+note = ""
+particle = "chi_c0(1P) MASS"
+pdg_display = "3415.50+-0.19"
+pdg_id = "M056M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M056M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["9.892 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "chi_b1"
+label = "chi_1b"
+mass_GeV = 9.89278
+note = "From average gamma energy below, using Upsilon(2S) mass = 10023.26+-0.31 MeV"
+particle = "chi_b1(1P) MASS"
+pdg_display = "9892.78+-0.26+-0.31"
+pdg_id = "M077M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M077M"
+status = "PDG quoted value"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["3.51 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "chi_c1"
+label = "chi_1c"
+mass_GeV = 3.5106696010893503
+note = ""
+particle = "chi_c1(1P) MASS"
+pdg_display = "3510.67+-0.05"
+pdg_id = "M055M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M055M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["9.913 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "chi_b2"
+label = "chi_2b"
+mass_GeV = 9.91221
+note = "From average gamma energy below, using Upsilon(2S) mass = 10023.26+-0.31 MeV"
+particle = "chi_b2(1P) MASS"
+pdg_display = "9912.21+-0.26+-0.31"
+pdg_id = "M078M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M078M"
+status = "PDG quoted value"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["3.556 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "chi_c2"
+label = "chi_2c"
+mass_GeV = 3.556168201191627
+note = ""
+particle = "chi_c2(1P) MASS"
+pdg_display = "3556.17+-0.07"
+pdg_id = "M057M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M057M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["10.23 GeV — Fig. 8 model label; legacy audit input; not verified GI experimental mass"]
+key = "chi_b02"
+label = "chiprime_0b"
+mass_GeV = 10.2325
+note = "From gamma energy below, using Upsilon(3S) mass = 10355.2+-0.5 MeV"
+particle = "chi_b0(2P) MASS"
+pdg_display = "10232.5+-0.4+-0.5"
+pdg_id = "M079M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M079M"
+status = "PDG quoted value"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["10.25 GeV — Fig. 8 model label; legacy audit input; not verified GI experimental mass"]
+key = "chi_b12"
+label = "chiprime_1b"
+mass_GeV = 10.25546
+note = "From gamma energy below, using Upsilon(3S) mass = 10355.2+-0.5 MeV"
+particle = "chi_b1(2P) MASS"
+pdg_display = "10255.46+-0.22+-0.50"
+pdg_id = "M080M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M080M"
+status = "PDG quoted value"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["10.26 GeV — Fig. 8 model label; legacy audit input; not verified GI experimental mass"]
+key = "chi_b22"
+label = "chiprime_2b"
+mass_GeV = 10.26865
+note = "From gamma energy below, using Upsilon(3S) mass = 10355.2+-0.5 MeV"
+particle = "chi_b2(2P) MASS"
+pdg_display = "10268.65+-0.22+-0.50"
+pdg_id = "M081M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M081M"
+status = "PDG quoted value"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["0.548 GeV — Table III observed label; legacy audit input; not verified GI experimental mass"]
+key = "eta"
+label = "eta"
+mass_GeV = 0.54786187114402
+note = ""
+particle = "eta MASS"
+pdg_display = "547.862+-0.017"
+pdg_id = "S014M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S014M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["9.4 GeV — Fig. 8 model label; legacy audit input; not verified GI experimental mass"]
+key = "eta_b"
+label = "eta_b"
+mass_GeV = 9.39869813003584
+note = ""
+particle = "eta_b(1S) MASS"
+pdg_display = "9398.7+-2.0"
+pdg_id = "M171M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M171M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["2.98 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "eta_c"
+label = "eta_c"
+mass_GeV = 2.984094916772463
+note = ""
+particle = "eta_c(1S) MASS"
+pdg_display = "2984.09+-0.30"
+pdg_id = "M026M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M026M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "VI"
+edition = "2026"
+historical = ["1.44 GeV — Fig. 5 / Table III P1 assignment; legacy audit input; not verified GI experimental mass"]
+key = "eta1295"
+label = "eta_r"
+mass_GeV = 1.293710130391174
+note = ""
+particle = "eta(1295) MASS"
+pdg_display = "1294+-4"
+pdg_id = "M037M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M037M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "No established eta_b(3S) mass."
+context = "VI"
+edition = "2026"
+historical = ["10.34 GeV — Fig. 8 model label; legacy audit input; not verified GI experimental mass"]
+key = ""
+label = "etadoubleprime_b"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["0.958 GeV — Table III observed label; legacy audit input; not verified GI experimental mass"]
+key = "eta_prime"
+label = "etaprime"
+mass_GeV = 0.9577837638923
+note = ""
+particle = "eta'(958) MASS"
+pdg_display = "957.78+-0.06"
+pdg_id = "M002M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M002M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["9.98 GeV — Fig. 8 model label; legacy audit input; not verified GI experimental mass"]
+key = "eta_b2"
+label = "etaprime_b"
+mass_GeV = 9.999
+note = ""
+particle = "eta_b(2S) MASS"
+pdg_display = "9999+-4"
+pdg_id = "M200M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M200M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = []
+key = "eta_c2"
+label = "etaprime_c"
+mass_GeV = 3.637762839740389
+note = ""
+particle = "eta_c(2S) MASS"
+pdg_display = "3637.8+-0.6"
+pdg_id = "M059M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M059M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "Historical eta(1440) / ss radial assignment is ambiguous between modern eta(1405) and eta(1475)."
+context = "VI"
+edition = "2026"
+historical = ["1.63 GeV — Fig. 5 P1 prediction; legacy audit input; not verified GI experimental mass"]
+key = ""
+label = "etaprime_r"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["1.27 GeV — Table III observed label; legacy audit input; not verified GI experimental mass"]
+key = "f2"
+label = "f"
+mass_GeV = 1.2754120499190051
+note = ""
+particle = "f_2(1270) MASS"
+pdg_display = "1275.4+-0.8"
+pdg_id = "M005M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M005M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["1.525 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "f2prime"
+label = "fprime"
+mass_GeV = 1.517304243265377
+note = ""
+particle = "f_2'(1525) MASS"
+pdg_display = "1517.3+-2.4"
+pdg_id = "M013MX"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M013MX"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["0.783 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "omega"
+label = "omega"
+mass_GeV = 0.782655723752181
+note = ""
+particle = "omega(782) MASS"
+pdg_display = "782.66+-0.13"
+pdg_id = "M001M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M001M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["1.02 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "phi"
+label = "phi"
+mass_GeV = 1.019459752114901
+note = ""
+particle = "phi(1020) MASS"
+pdg_display = "1019.460+-0.016"
+pdg_id = "M004M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M004M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["0.138 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "pi_avg"
+label = "pi"
+mass_GeV = 0.13803920324501578
+note = "Arithmetic isospin average for charge-unspecified channels; components: pi+, pi+, pi0"
+particle = "(pi+ + pi+ + pi0) / 3"
+pdg_display = ""
+pdg_id = "S008M;S008M;S009M"
+source_url = "https://pdg.lbl.gov/2026/api/index.html"
+status = "derived experimental input"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["0.135 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "pi0"
+label = "pi0"
+mass_GeV = 0.13497682776768472
+note = ""
+particle = "pi0 MASS"
+pdg_display = "134.9768+-0.0005"
+pdg_id = "S009M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S009M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["3.097 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "psi"
+label = "psi"
+mass_GeV = 3.096900354542921
+note = ""
+particle = "J/psi(1S) MASS"
+pdg_display = "3096.900+-0.006"
+pdg_id = "M070M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M070M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["3.686 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "psi2"
+label = "psiprime"
+mass_GeV = 3.686097362258823
+note = ""
+particle = "psi(2S) MASS"
+pdg_display = "3686.097+-0.011"
+pdg_id = "M071M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M071M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VI"
+edition = "2026"
+historical = ["0.776 GeV — existing Table VI audit kinematics; legacy audit input; not verified GI experimental mass"]
+key = "rho0"
+label = "rho"
+mass_GeV = 0.7752611563582926
+note = ""
+particle = "NEUTRAL ONLY, e+ e-"
+pdg_display = "775.26+-0.23"
+pdg_id = "M009M0"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M009M0"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "Bc"
+label = "1^1S_0(bc) -> mu nu"
+mass_GeV = 6.27447
+note = ""
+particle = "B_c+ MASS"
+pdg_display = "6274.47+-0.32"
+pdg_id = "S091M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S091M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "No unambiguous experimental counterpart assigned to this GI state."
+context = "VII"
+edition = "2026"
+historical = []
+key = ""
+label = "1^3D_1(bb) -> e+ e-"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "a2"
+label = "A2 -> gamma gamma"
+mass_GeV = 1.318202926499983
+note = ""
+particle = "a_2(1320) MASS"
+pdg_display = "1318.2+-0.6"
+pdg_id = "M012M0"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M012M0"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "B+"
+label = "B -> mu nu"
+mass_GeV = 5.279405997146907
+note = ""
+particle = "B+- MASS"
+pdg_display = "5279.41+-0.07"
+pdg_id = "S041M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S041M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "D+"
+label = "D -> mu nu"
+mass_GeV = 1.869664743570898
+note = ""
+particle = "D+- MASS"
+pdg_display = "1869.66+-0.05"
+pdg_id = "S031M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S031M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "Ds"
+label = "F -> mu nu"
+mass_GeV = 1.9683548722252
+note = ""
+particle = "D_s+- MASS"
+pdg_display = "1968.35+-0.07"
+pdg_id = "S034M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S034M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "K+"
+label = "K -> mu nu"
+mass_GeV = 0.4936765994580406
+note = ""
+particle = "K+- MASS"
+pdg_display = "493.677+-0.015"
+pdg_id = "S010M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S010M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "Upsilon"
+label = "Upsilon -> 3g"
+mass_GeV = 9.460399964216766
+note = ""
+particle = "Upsilon(1S) MASS"
+pdg_display = "9460.40+-0.10"
+pdg_id = "M049M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M049M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "Upsilon"
+label = "Upsilon -> e+ e-"
+mass_GeV = 9.460399964216766
+note = ""
+particle = "Upsilon(1S) MASS"
+pdg_display = "9460.40+-0.10"
+pdg_id = "M049M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M049M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "Upsilon2"
+label = "Upsilon' -> 3g"
+mass_GeV = 10.023399999999999
+note = ""
+particle = "Upsilon(2S) MASS"
+pdg_display = "10023.4+-0.5"
+pdg_id = "M052M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M052M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "Upsilon2"
+label = "Upsilon' -> e+ e-"
+mass_GeV = 10.023399999999999
+note = ""
+particle = "Upsilon(2S) MASS"
+pdg_display = "10023.4+-0.5"
+pdg_id = "M052M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M052M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "Upsilon3"
+label = "Upsilon'' -> 3g"
+mass_GeV = 10.3551
+note = ""
+particle = "Upsilon(3S) MASS"
+pdg_display = "10355.1+-0.5"
+pdg_id = "M048M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M048M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "Upsilon3"
+label = "Upsilon'' -> e+ e-"
+mass_GeV = 10.3551
+note = ""
+particle = "Upsilon(3S) MASS"
+pdg_display = "10355.1+-0.5"
+pdg_id = "M048M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M048M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "Upsilon4"
+label = "Upsilon''' -> 3g"
+mass_GeV = 10.579380866425991
+note = ""
+particle = "Upsilon(4S) MASS"
+pdg_display = "10579.4+-1.2"
+pdg_id = "M047M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M047M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "Upsilon4"
+label = "Upsilon''' -> e+ e-"
+mass_GeV = 10.579380866425991
+note = ""
+particle = "Upsilon(4S) MASS"
+pdg_display = "10579.4+-1.2"
+pdg_id = "M047M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M047M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "chi_b02"
+label = "chi'_0b -> 2g"
+mass_GeV = 10.2325
+note = "From gamma energy below, using Upsilon(3S) mass = 10355.2+-0.5 MeV"
+particle = "chi_b0(2P) MASS"
+pdg_display = "10232.5+-0.4+-0.5"
+pdg_id = "M079M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M079M"
+status = "PDG quoted value"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "chi_b22"
+label = "chi'_2b -> 2g"
+mass_GeV = 10.26865
+note = "From gamma energy below, using Upsilon(3S) mass = 10355.2+-0.5 MeV"
+particle = "chi_b2(2P) MASS"
+pdg_display = "10268.65+-0.22+-0.50"
+pdg_id = "M081M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M081M"
+status = "PDG quoted value"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "chi_b0"
+label = "chi_0b -> 2g"
+mass_GeV = 9.859440000000001
+note = "From average gamma energy below, using Upsilon(2S) mass = 10023.26+-0.31 MeV"
+particle = "chi_b0(1P) MASS"
+pdg_display = "9859.44+-0.42+-0.31"
+pdg_id = "M076M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M076M"
+status = "PDG quoted value"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "chi_c0"
+label = "chi_0c -> 2g"
+mass_GeV = 3.415497307177493
+note = ""
+particle = "chi_c0(1P) MASS"
+pdg_display = "3415.50+-0.19"
+pdg_id = "M056M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M056M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "chi_b2"
+label = "chi_2b -> 2g"
+mass_GeV = 9.91221
+note = "From average gamma energy below, using Upsilon(2S) mass = 10023.26+-0.31 MeV"
+particle = "chi_b2(1P) MASS"
+pdg_display = "9912.21+-0.26+-0.31"
+pdg_id = "M078M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M078M"
+status = "PDG quoted value"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "chi_c2"
+label = "chi_2c -> 2g"
+mass_GeV = 3.556168201191627
+note = ""
+particle = "chi_c2(1P) MASS"
+pdg_display = "3556.17+-0.07"
+pdg_id = "M057M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M057M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = ["0.548 GeV — Previous Table VII mixed two-photon audit; legacy audit input; GI experimental provenance not verified"]
+key = "eta"
+label = "eta -> gamma gamma"
+mass_GeV = 0.54786187114402
+note = ""
+particle = "eta MASS"
+pdg_display = "547.862+-0.017"
+pdg_id = "S014M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S014M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = ["0.958 GeV — Previous Table VII mixed two-photon audit; legacy audit input; GI experimental provenance not verified"]
+key = "eta_prime"
+label = "eta' -> gamma gamma"
+mass_GeV = 0.9577837638923
+note = ""
+particle = "eta'(958) MASS"
+pdg_display = "957.78+-0.06"
+pdg_id = "M002M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M002M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "eta_b2"
+label = "eta'_b -> 2g"
+mass_GeV = 9.999
+note = ""
+particle = "eta_b(2S) MASS"
+pdg_display = "9999+-4"
+pdg_id = "M200M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M200M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "eta_c2"
+label = "eta'_c -> 2g"
+mass_GeV = 3.637762839740389
+note = ""
+particle = "eta_c(2S) MASS"
+pdg_display = "3637.8+-0.6"
+pdg_id = "M059M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M059M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "eta_c2"
+label = "eta'_c -> gamma gamma"
+mass_GeV = 3.637762839740389
+note = ""
+particle = "eta_c(2S) MASS"
+pdg_display = "3637.8+-0.6"
+pdg_id = "M059M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M059M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "Historical eta(1440) / ss radial assignment is ambiguous between modern eta(1405) and eta(1475)."
+context = "VII"
+edition = "2026"
+historical = ["1.44 GeV — Previous Table VII mixed two-photon audit; legacy audit input; GI experimental provenance not verified"]
+key = ""
+label = "eta'_r -> gamma gamma"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "eta_b"
+label = "eta_b -> 2g"
+mass_GeV = 9.39869813003584
+note = ""
+particle = "eta_b(1S) MASS"
+pdg_display = "9398.7+-2.0"
+pdg_id = "M171M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M171M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "eta_b"
+label = "eta_b -> gamma gamma"
+mass_GeV = 9.39869813003584
+note = ""
+particle = "eta_b(1S) MASS"
+pdg_display = "9398.7+-2.0"
+pdg_id = "M171M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M171M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "eta_c"
+label = "eta_c -> 2g"
+mass_GeV = 2.984094916772463
+note = ""
+particle = "eta_c(1S) MASS"
+pdg_display = "2984.09+-0.30"
+pdg_id = "M026M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M026M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "eta_c"
+label = "eta_c -> gamma gamma"
+mass_GeV = 2.984094916772463
+note = ""
+particle = "eta_c(1S) MASS"
+pdg_display = "2984.09+-0.30"
+pdg_id = "M026M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M026M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "VII"
+edition = "2026"
+historical = ["1.295 GeV — Previous Table VII mixed two-photon audit; legacy audit input; GI experimental provenance not verified"]
+key = "eta1295"
+label = "eta_r -> gamma gamma"
+mass_GeV = 1.293710130391174
+note = ""
+particle = "eta(1295) MASS"
+pdg_display = "1294+-4"
+pdg_id = "M037M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M037M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "f2"
+label = "f -> gamma gamma"
+mass_GeV = 1.2754120499190051
+note = ""
+particle = "f_2(1270) MASS"
+pdg_display = "1275.4+-0.8"
+pdg_id = "M005M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M005M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "f2prime"
+label = "f' -> gamma gamma"
+mass_GeV = 1.517304243265377
+note = ""
+particle = "f_2'(1525) MASS"
+pdg_display = "1517.3+-2.4"
+pdg_id = "M013MX"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M013MX"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "omega"
+label = "omega -> e+ e-"
+mass_GeV = 0.782655723752181
+note = ""
+particle = "omega(782) MASS"
+pdg_display = "782.66+-0.13"
+pdg_id = "M001M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M001M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "VII"
+edition = "2026"
+historical = []
+key = "omega1650"
+label = "omegaD -> e+ e-"
+mass_GeV = 1.67
+note = ""
+particle = "omega(1650) MASS"
+pdg_display = "1670+-30"
+pdg_id = "M126M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M126M"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "VII"
+edition = "2026"
+historical = []
+key = "omega1420"
+label = "omegaS -> e+ e-"
+mass_GeV = 1.41
+note = ""
+particle = "omega(1420) MASS"
+pdg_display = "1410+-60"
+pdg_id = "M125M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M125M"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "phi"
+label = "phi -> e+ e-"
+mass_GeV = 1.019459752114901
+note = ""
+particle = "phi(1020) MASS"
+pdg_display = "1019.460+-0.016"
+pdg_id = "M004M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M004M"
+status = "PDG average"
+[[inputs]]
+assignment_note = "No unique experimental identification of the GI 1D ss vector."
+context = "VII"
+edition = "2026"
+historical = []
+key = ""
+label = "phiD -> e+ e-"
+note = ""
+particle = "unassigned"
+pdg_display = ""
+pdg_id = ""
+source_url = ""
+status = "unavailable"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "VII"
+edition = "2026"
+historical = []
+key = "phi1680"
+label = "phiS -> e+ e-"
+mass_GeV = 1.68
+note = ""
+particle = "e+ e- PRODUCTION"
+pdg_display = "1680+-20"
+pdg_id = "M067M1"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M067M1"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "pi0"
+label = "pi -> gamma gamma"
+mass_GeV = 0.13497682776768472
+note = ""
+particle = "pi0 MASS"
+pdg_display = "134.9768+-0.0005"
+pdg_id = "S009M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S009M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "pi+"
+label = "pi -> mu nu"
+mass_GeV = 0.13957039098368132
+note = ""
+particle = "pi+- MASS"
+pdg_display = "139.57039+-0.00018"
+pdg_id = "S008M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=S008M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "pi1300"
+label = "pi' -> gamma gamma"
+mass_GeV = 1.3
+note = ""
+particle = "pi(1300) MASS"
+pdg_display = "1300+-100"
+pdg_id = "M058M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M058M"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "psi"
+label = "psi -> 3g"
+mass_GeV = 3.096900354542921
+note = ""
+particle = "J/psi(1S) MASS"
+pdg_display = "3096.900+-0.006"
+pdg_id = "M070M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M070M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "psi"
+label = "psi -> e+ e-"
+mass_GeV = 3.096900354542921
+note = ""
+particle = "J/psi(1S) MASS"
+pdg_display = "3096.900+-0.006"
+pdg_id = "M070M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M070M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "psi2"
+label = "psi' -> 3g"
+mass_GeV = 3.686097362258823
+note = ""
+particle = "psi(2S) MASS"
+pdg_display = "3686.097+-0.011"
+pdg_id = "M071M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M071M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "psi2"
+label = "psi' -> e+ e-"
+mass_GeV = 3.686097362258823
+note = ""
+particle = "psi(2S) MASS"
+pdg_display = "3686.097+-0.011"
+pdg_id = "M071M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M071M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "psi3770"
+label = "psi'' -> e+ e-"
+mass_GeV = 3.7736771046364113
+note = ""
+particle = "psi(3770) MASS"
+pdg_display = "3773.7+-0.7"
+pdg_id = "M053M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M053M"
+status = "PDG fit"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "psi4040"
+label = "psi''' -> e+ e-"
+mass_GeV = 4.0396
+note = ""
+particle = "psi(4040) MASS"
+pdg_display = "4040+-4"
+pdg_id = "M072M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M072M"
+status = "PDG average"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "rho0"
+label = "rho -> e+ e-"
+mass_GeV = 0.7752611563582926
+note = ""
+particle = "NEUTRAL ONLY, e+ e-"
+pdg_display = "775.26+-0.23"
+pdg_id = "M009M0"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M009M0"
+status = "PDG average"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "VII"
+edition = "2026"
+historical = []
+key = "rho1700"
+label = "rhoD -> e+ e-"
+mass_GeV = 1.72
+note = ""
+particle = "eta rho0 AND pi+ pi- MODES"
+pdg_display = "1720+-20"
+pdg_id = "M065M0"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M065M0"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = "Spectroscopic correspondence is a stated remix assignment, not a PDG determination of the GI eigenstate."
+context = "VII"
+edition = "2026"
+historical = []
+key = "rho1450"
+label = "rhoS -> e+ e-"
+mass_GeV = 1.465
+note = "This is only an educated guess; the error given is larger than the error on the average of the published values."
+particle = "rho(1450) MASS"
+pdg_display = "1465+-25"
+pdg_id = "M105M0"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M105M0"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "a1"
+label = "tau -> A1 nu"
+mass_GeV = 1.23
+note = ""
+particle = "a_1(1260) MASS"
+pdg_display = "1230+-40"
+pdg_id = "M010M"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M010M"
+status = "PDG estimate"
+[[inputs]]
+assignment_note = ""
+context = "VII"
+edition = "2026"
+historical = []
+key = "Kstar+"
+label = "tau -> K*(892) nu"
+mass_GeV = 0.891882454260085
+note = ""
+particle = "CHARGED ONLY, HADROPRODUCED"
+pdg_display = "891.88+-0.23"
+pdg_id = "M018M1"
+source_url = "https://pdglive.lbl.gov/DataBlock.action?node=M018M1"
+status = "PDG average"

@@ -7,14 +7,11 @@ policy. No original number is replaced.
 
 ## Sources and scope
 
-- `GI1985`: *Phys. Rev. D* **32**, 189, Figs. 4, 7, 9; original paper at
-  `paper/Godfrey-Isgur-1985.pdf`. The caption values are the same ones previously
-  embedded in `scripts/audit_mixing_angles.jl`.
-- `GK1991`: Godfrey–Kokoski, *Phys. Rev. D* **43**, 1679, Table I. The local
-  revised-preprint scan and OCR are in
-  [`research/gi-later-papers`](../../research/gi-later-papers/README.md).
-  That investigation records the July 1986 draft, the model parameters, and
-  corroboration from later publications. Table I supplies six directly
+- `GI1985`: *Phys. Rev. D* **32**, 189, Figs. 4, 7, 9. The caption values are
+  the same ones previously embedded in `scripts/audit_mixing_angles.jl`.
+- `GK1991`: Godfrey–Kokoski, *Phys. Rev. D* **43**, 1679, Table I, transcribed
+  from the revised preprint (July 1986 draft) with the same model parameters;
+  later publications corroborate it. Table I supplies six directly
   convention-mappable targets; later literature is not silently merged into
   those six numbers.
 

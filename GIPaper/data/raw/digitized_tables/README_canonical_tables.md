@@ -1,7 +1,7 @@
 # Canonical digitized tables (Godfrey–Isgur 1985)
 
 These CSVs are a **from-the-page-image** transcription of the paper's tables,
-verified row-by-row against `paper/vision_ocr/page_images/page-0NN.png` (the
+verified row-by-row against PDF page images of the 1985 paper (the
 `page` column is the PDF page = image number; `journal_pg` is the printed page).
 They supersede the earlier piecemeal `table_v_*.provisional.csv` files, which
 conflated the two "realistic factor" sub-columns and carried a few OCR sign/value

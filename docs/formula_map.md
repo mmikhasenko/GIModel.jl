@@ -271,7 +271,7 @@ masses and that detailed smearing is “relegated to Appendix A.”
 `data/table_ii_parameters.csv` via `test/data_validation.jl`. Reference
 spectrum rows are checked for schema by the same command.
 Formula-audit checkpoint: Table II `epsilon_so_scalar` was rechecked against
-`paper/vision_ocr/page_images/page-005.png`; the paper value is
+the Table II page of the article (PDF page 5); the paper value is
 `epsilon_so(S)=+0.055`, now reflected in both the CSV and TOML inputs.
 
 **Paper navigation for Appendix A:** see `docs/appendix_a_from_paper.md` and
@@ -281,8 +281,7 @@ by `GIModel.central_potential_path` in `src/appendix_a_status.jl`.
 
 ## Formula Audit Ledger
 
-Treat `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` as searchable. For
-Appendix A, use the checked split markdown pages and
+Verify against the published article. For Appendix A, use
 `docs/appendix_a_equation_audit.md` as the local equation-source ledger.
 
 | Paper item | Status | Implementation/readout |

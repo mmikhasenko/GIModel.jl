@@ -16,7 +16,7 @@ The local paper transcription, Sec. II Eqs. (11)–(13) and the Fig. 2 caption, 
 
 The implementation directly evaluates this published profile; it does not fit it anew from Λ. Thus Λ is **upstream historical provenance of the coupling approximation**, not an additional runtime degree of freedom. It has been removed from GIModel's active TOML, remains in GIPaper's historical/clean Table II records, and does not enter any rate table at runtime. The three weights and three scales do enter the spectrum and any runtime `alpha_s_q` call. The saturation value 0.60 is their sum, not a seventh independent number.
 
-Evidence: `paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md` lines 163–200 and 294; `GIPaper/data/raw/digitized_tables/table_ii_parameters/table_ii_parameters.csv`; `src/constants.jl`; `src/running_coupling.jl`. Paper context here was checked in the local transcription; the runtime conclusion is independently established by the code.
+Evidence: GI (1985), the running-coupling discussion of Sec. II and the Fig. 2 caption; `GIPaper/data/raw/digitized_tables/table_ii_parameters/table_ii_parameters.csv`; `src/constants.jl`; `src/running_coupling.jl`. Paper context here was checked in the local transcription; the runtime conclusion is independently established by the code.
 
 ## Executable per-row records
 

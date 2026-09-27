@@ -133,8 +133,8 @@ calculation. They give θ = −5° (K as sū), −26° (D), −38° (Ds), −31�
 and +68° (Bc). These match GIModel in magnitude and in sign, including Bc, where
 the GI85 caption has −53°. Their P-wave ⟨H_cont⟩, ⟨H⁺_so⟩ and ⟨H_ten⟩ match our
 inverted S, L and 2T to about 1 MeV. They also call the model's spin–orbit mixing
-amplitude small. Full timeline:
-[research/gi-later-papers](../../../research/gi-later-papers/README.md).
+amplitude small. Sources and conventions:
+[mixing-angle target ledger](../../data/mixing_angle_targets.md).
 
 ## Hypothesis ledger
 

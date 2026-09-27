@@ -34,7 +34,7 @@ residuals using unchanged local waves. Changing experimental photon momentum
 cannot fix them: none of these six M1 moments includes a recoil correction or
 depends on q. A width inferred from the moment does depend on q³. Missing parent
 masses therefore obstruct widths, not these particular moment comparisons.
-This corrects the earlier kinematic explanation in the paper-remix overview.
+This corrects an earlier kinematic explanation of these residuals.
 
 One sign remains: eta_r→omega gives +0.179867 against the printed −0.18, while
 eta_r→rho has the correct positive sign. A global parent rephasing cannot repair

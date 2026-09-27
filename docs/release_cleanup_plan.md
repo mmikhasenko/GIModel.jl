@@ -36,7 +36,7 @@ These are completed changes in the working tree, not a claim that the whole rele
 | P1 | `GIPaper/data/` and `src/` | Canonical reference/policy records and adapters | Provenance, schema and assignment checks |
 | P2 | `GIPaper/scripts/` | One forward-computation route per table; obsolete scripts removed | Rate/report regeneration and numeric comparisons |
 | P3 | `GIPaper/docs/`, `extraction/` | Current generated outputs and reproducible provenance tools | Source hashes, coverage and regeneration instructions |
-| R1 | `archive/`, `research/`, `diff_support/`, `LearningTrack/` | Explicit release inclusion and historical status | Broken-link scan; no runtime dependency on historical work |
+| R1 | Non-release material, `LearningTrack/` | Explicit release inclusion and historical status | Broken-link scan; no runtime dependency on historical work |
 | R2 | Whole repository | Release candidate | Final clean-environment tests and full relevant gate |
 
 Start with **G1**. Complete GIModel's short cleanup passes before the larger T/P passes. Do not combine all folders into one broad refactor.
@@ -121,9 +121,8 @@ Done when every shipped result has a reproducible command and an input record, e
 
 ## R1/R2 — repository closure
 
-- [ ] Review `archive/` for genuinely unique provenance versus redundant dead code. Remove unsupported promises that historical scripts still run unless verified. Do not use the archive as an automatic destination for everything deleted from production.
-- [ ] Keep active `research/decays` work and the current `diff_support/fitting_plan.md` separate from historical proposals. Check current owner activity before editing or deleting either tree.
-- [ ] Treat `LearningTrack/` as a separate educational deliverable with its own build. Treat ignored `paper/`, `report/` and `docs/paper-remix/` as separate source/workspaces; their cleanup is not implied by removing core-package leftovers.
+- [x] Move non-release material out of the repository (2026-09-27): the archive, differentiation-support notes, decay research, later-paper study, paper source archive, executable paper remix and local scratch now live in a separate, git-ignored research workspace with its own repository. No released file links into it. The paper-layout table drivers moved into GIPaper (`GIPaper/scripts/paper_tables/`, outputs in `GIPaper/docs/paper_tables/`); Table III vector/tensor provenance now resolves inside `GIPaper/data/raw/`. The report stays a separate, git-ignored checkout.
+- [ ] Treat `LearningTrack/` as a separate educational deliverable with its own build.
 - [ ] Review package contents and documented installation from a fresh environment; resolve manifest policy and dependency compatibility for each package.
 - [ ] Run all three package suites, the affected example smoke checks, reference/link checks, rate traces and the full relevant `scripts/verify_project.sh` gate on the final candidate. Attribute existing warnings; do not treat a test pass as proof of every numerical certificate.
 - [ ] Record the release revision, validation commands/results and any intentionally unsupported capability in one final checklist. Apply version/tag/publish steps only as part of the actual release request.

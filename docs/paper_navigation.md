@@ -2,17 +2,14 @@
 
 > **Detail layer.** The manifest/dashboard (`docs/paper_manifest/*.toml`;
 > `cd docs && make dashboard`) now anchors every equation, table, and figure to
-> its exact page image (`page-0NN.png`, image = journal_pg − 188) — use it to jump
-> from a unit to its page. This file stays as the human **reading map** and the
-> guide to the OCR/PDF sources.
+> its PDF page of the article (PDF page = journal page − 188) — use it to jump
+> from a unit to its page. This file stays as the human **reading map**.
 
 Use this as a fast map into the Godfrey-Isgur paper while coding or extracting
-tables. For reading and search, start with
-`paper/vision_ocr/godfrey_isgur_1985_vision_ocr.md`; it is the most complete
-current OCR-derived Markdown source and has better table cleanup than the
-initial page files. Always verify equations and table values against
-`paper/Godfrey-Isgur-1985.pdf` or the saved `paper/vision_ocr/page_images/` and
-`paper/vision_ocr/column_crops/`.
+tables: S. Godfrey and N. Isgur, *Phys. Rev. D* **32**, 189 (1985),
+[doi:10.1103/PhysRevD.32.189](https://doi.org/10.1103/PhysRevD.32.189). The
+article is not distributed with this repository; always verify equations and
+table values against the published PDF.
 
 ## Core Model
 
@@ -51,17 +48,13 @@ initial page files. Always verify equations and table values against
 - Figures 6-9, PDF pages 8-9: first target spectra for `ccbar`, `cqbar`,
   `csbar`, `bbbar`, `bqbar`, `bsbar`, and `bcbar`.
 
-Rendered spectrum pages are available under `paper/screenshots/spectrum_pages/`.
-Digitized spectrum labels begin under `data/raw/digitized_figures/`.
+Digitized spectrum labels begin under `GIPaper/data/raw/digitized_figures/`;
+the recomputed tables and figures, in the paper's layout, are indexed in
+[GIPaper/docs/paper_tables](../GIPaper/docs/paper_tables/README.md).
 
 ## Caution Zones
 
-- Markdown references are convenient for search but not reliable enough for
-  final numbers.
-- `paper/vision_ocr/pages/` is archived historical page OCR from a layout pass
-  that was not fully successful. Prefer the full-paper Markdown unless auditing
-  OCR history.
-- The vision-OCR pass is much better than the removed `pdftotext` artifacts, but
-  dense equations and crowded tables still need crop-level audit.
+- OCR transcriptions are convenient for search but not reliable enough for
+  final numbers; dense equations and crowded tables need an image-level audit.
 - The paper uses isospin symmetry for heavy-light `Q qbar` doublets; precision
   `u` vs `d` splittings are outside the baseline 1985 reproduction.

@@ -21,10 +21,11 @@ import urllib.request
 from pathlib import Path
 
 
-# The scanned paper PDF lives at the repository root, one level above GIPaper/.
-ROOT = Path(__file__).resolve().parents[2]
-PDF = ROOT / "paper" / "Godfrey-Isgur-1985.pdf"
-OUT_DIR = ROOT / "paper" / "vision_ocr"
+# The scanned paper is not distributed with the packages. Point GI_PAPER_DIR at
+# a local folder holding Godfrey-Isgur-1985.pdf; OCR output is written beside it.
+PAPER_DIR = Path(os.environ.get("GI_PAPER_DIR", "paper")).resolve()
+PDF = PAPER_DIR / "Godfrey-Isgur-1985.pdf"
+OUT_DIR = PAPER_DIR / "vision_ocr"
 MODEL = "gpt-4.1"
 
 
@@ -275,10 +276,10 @@ def main() -> int:
                 "page": page,
                 "model": args.model,
                 "usage": usage,
-                "markdown": str(md_path.relative_to(ROOT)),
-                "full_page": str(full_page.relative_to(ROOT)),
-                "left_crop": str(left.relative_to(ROOT)),
-                "right_crop": str(right.relative_to(ROOT)),
+                "markdown": str(md_path.relative_to(PAPER_DIR)),
+                "full_page": str(full_page.relative_to(PAPER_DIR)),
+                "left_crop": str(left.relative_to(PAPER_DIR)),
+                "right_crop": str(right.relative_to(PAPER_DIR)),
             },
         )
         completed.append(md_path)

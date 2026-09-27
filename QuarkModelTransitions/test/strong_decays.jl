@@ -39,7 +39,7 @@ end
     r = m_c / (m_c + m_d)
     @test r ≈ 1.628 / (1.628 + 0.220)   # unfreezing changed no value
 
-    # Table IV (paper/vision_ocr/pages/page-013.md:39,55) prints
+    # GI (1985) Table IV (PDF page 13) prints
     #   S   = [3h - (1/2)      (g + h/4) q^2/beta^2  ] beta
     #   S_c = [3h - m_c/(m_d+m_c) A_c/beta q^2/beta_c^2] beta_c
     # so the S-family polynomial coefficient is the heavy fraction r, and the

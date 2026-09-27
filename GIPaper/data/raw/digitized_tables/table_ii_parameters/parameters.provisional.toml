@@ -3,7 +3,7 @@ source = "Godfrey-Isgur 1985"
 page = 5
 table = "Table II"
 status = "provisional_raw_digitization"
-authority_note = "Verify symbols and values against paper/Godfrey-Isgur-1985.pdf before promoting to data/clean/parameters.toml."
+authority_note = "Verify symbols and values against the 1985 paper PDF before promoting to data/clean/parameters.toml."
 
 [masses]
 m_ud_avg_MeV = 220

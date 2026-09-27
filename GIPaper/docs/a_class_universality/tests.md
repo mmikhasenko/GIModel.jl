@@ -8,10 +8,12 @@
   Existing under-resolution/quadrature warnings occurred in deliberate solver
   stress tests; no core source changes were made for this study.
 - `julia --project=GIPaper GIPaper/test/runtests.jl`:
-  **2,869 passed**, including 217 survey contracts. This suite requires the
-  independently maintained `paper/` source archive. The first run in the isolated
-  worktree had 20 missing-provenance failures; an ignored symlink to the existing
-  local archive supplied those unchanged reference files, after which it passed.
+  **2,869 passed**, including 217 survey contracts. At the time the suite
+  still needed a local copy of the paper archive: the first run in the isolated
+  worktree had 20 missing-provenance failures (Table III vector/tensor rows),
+  resolved by a symlink to that archive. Those rows now cite
+  `data/raw/digitized_tables/table_iii_isoscalar_mixings/vision_ocr_page_011.md`,
+  so the suite is self-contained.
 
 The pilot archives record the original failed **1%** cross-solver gate. The full
 survey uses the explicitly documented **3%** gate and exports exact discrepancies

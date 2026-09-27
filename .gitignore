@@ -5,9 +5,8 @@
 # Autonomous loop logs can become large and are regenerated locally.
 docs/autonomous_runs/
 
-# The paper source archive and executable remix are independent repositories.
-/paper/
-/docs/paper-remix/
+# Unreleased research workspace (its own git repository; not part of any package).
+/research/
 
 # Local environments and caches
 .venv/
@@ -22,9 +21,8 @@ __pycache__/
 docs/*_files/
 docs/*.html
 
-# Regenerable sector plots; curated copies are tracked under report/figures/.
+# Regenerable sector plots.
 GIPaper/scripts/spectrum_plots/
 
-# The report lives in its own Overleaf repository; clone it here with
-#   git clone https://git@git.overleaf.com/6aa00b740749f422ca1291fe report
-report/
+# The report is a separate repository, checked out here for local builds.
+/report/

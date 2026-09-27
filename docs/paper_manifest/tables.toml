@@ -2,7 +2,7 @@
 # Tables IV and V are owned by decays.toml (Sec. IV strong decays) and are NOT
 # re-added here (ids are globally unique). Field style copies decays.toml.
 #
-# Page numbers are page-IMAGE numbers (paper/vision_ocr/page_images/page-0NN.png),
+# Page numbers are PDF page numbers of the 1985 article,
 # image = journal_pg - 188. Values seeded from docs/reproduction_audit.md and the
 # canonical digitized tables (GIPaper/data/raw/digitized_tables/), verified against
 # code/reports that actually exist.
@@ -18,9 +18,8 @@ label = "Table I"
 page = 1
 statement = "Motivational estimates of the importance of confinement in heavy QQbar systems (quark mass, typical alpha_s, a_0, 2S-1S confinement fraction)."
 status = "reproduced"
-anchor = "paper/vision_ocr/page_images/page-001.png"
 parent = "sec-II"
-code = ["docs/paper-remix/computations/table-i.jl", "docs/paper-remix/computed/table-i.tsv"]
+code = ["GIPaper/scripts/paper_tables/table_i.jl", "GIPaper/docs/paper_tables/table_i.tsv"]
 tests = ["Requested numerical quantities"]
 notes = "The Bohr radii are reproduced directly. The percentage column is reconstructed by solving the stated nonrelativistic Coulomb-plus-linear Hamiltonian with the Table II slope and evaluating Delta<br>/Delta E. GI did not publish its separation convention, so the local values are explicitly compared with, rather than claimed identical to, their rounded estimates."
 
@@ -33,7 +32,6 @@ statement = "Model parameters of soft-QCD spectroscopy: quark masses, b, c, sigm
 status = "reproduced"
 code = ["data/parameters.provisional.toml", "GIPaper/test/data_validation.jl:Table II agrees"]
 tests = ["parameter loading"]
-anchor = "paper/vision_ocr/page_images/page-005.png"
 parent = "sec-II"
 notes = "Reproduced as audited input (tier A): the paper's own constants, loaded into data/parameters.provisional.toml and sync-checked by the Julia data-validation tests; the `parameter loading` testset asserts b, quark masses and the epsilon factors. Not refit."
 
@@ -49,7 +47,6 @@ status = "reproduced"
 code = ["src/state_mixing.jl", "src/flavor_mixing.jl:add_isoscalar_annihilation", "GIPaper/scripts/audit_table_iii_mixings.jl"]
 tests = ["PA-16 final isoscalar spectrum owns flavor annihilation", "table_iii isoscalar scheme: ideal mixing + general Eq.(16)"]
 report = "GIPaper/docs/residual_reports/table_iii_mixing_audit.md"
-anchor = "paper/vision_ocr/page_images/page-011.png"
 parent = "sec-III"
 notes = "General Eq. (16) blocks match the omega/phi and f2/f2' eigenvectors; literal P1/P2 pseudoscalar modes reproduce the structure at mean component RMS 0.082/0.015. Their mean absolute mass residuals are 56/11 MeV. Digitized rows are low-confidence OCR (table_iii_isoscalar_mixings/), so amplitude scoring is against the on-page eigenvectors."
 
@@ -64,7 +61,6 @@ pages = "24-27"
 statement = "Photon decays: M1 magnetic moments (units e/2) and E1/M2 amplitudes (units sqrt(alpha q)) for radiative meson transitions (page-width table; 79 rows on pages 24-26, footnotes d-i on page 27)."
 status = "reproduced"
 report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
-anchor = "paper/vision_ocr/page_images/page-024.png"
 parent = "sec-IV"
 
 code = ["GIPaper/src/table_vi.jl:load_table_vi", "GIPaper/src/table_vi.jl:load_table_vi_states", "QuarkModelTransitions/src/radiative_decays.jl", "src/flavor_mixing.jl:add_isoscalar_annihilation", "GIPaper/scripts/audit_table_vi_photon_decays.jl"]
@@ -84,7 +80,6 @@ code = ["QuarkModelTransitions/src/annihilation_widths.jl:gluonic_annihilation_a
 tests = ["Table VII gluonic annihilation", "Table VII leptonic decay constants", "Table VII two-photon amplitudes", "Table VII charge radii", "Table VII mixed eta/eta' two-photon", "Native HO fixed-channel spin-distorted waves", "Native HO full fixed-channel diagonalization"]
 report = "GIPaper/docs/residual_reports/table_vii_annihilation_em.md"
 metric = "one native fixed-channel HO treatment: gluonic 16/16 signs, median 1.05; leptonic 24/24 scoreable signs, median 1.03 (2 unavailable); clean two-photon 8/8 signs, median 1.06; mixed eta 3/3 scoreable signs, median 0.78 (1 unavailable); charge radii median 1.02; 4 hypothetical top-flavor rows unavailable"
-anchor = "paper/vision_ocr/page_images/page-028.png"
 parent = "sec-IV"
 notes = "All four subtables use native fixed_channel_solution HO waves and final MixedSpectrum compositions through shared physical-state amplitude dispatch; no HO mesh projection or report-local phase remains. Gluonic, leptonic, and clean two-photon scoreable rows reproduce every printed sign. The two former excited mixed-eta sign disagreements are resolved by the shared precursor-phase convention; magnitude residuals remain explicit. The only fitted quantity is the paper's own charge-radius exponent f=0.2. The four hypothetical top-flavor rows are preserved in the accounting but unavailable because Table II supplies neither a top mass nor toponium wavefunctions."
 
@@ -97,6 +92,5 @@ label = "Table VIII"
 page = 33
 statement = "Input masses and on-resonance widths of the states contributing to the I=0 S-wave pi-pi / K-Kbar (00++) coupled channel, used as input to Fig. 16."
 status = "context"
-anchor = "paper/vision_ocr/page_images/page-033.png"
 parent = "sec-V"
 notes = "Discussion-layer phenomenology inputs for the Sec. V D coupled-channel S-matrix (Eqs. 27-29 / Fig. 16), not a model output. Optional for the reproduction claim."

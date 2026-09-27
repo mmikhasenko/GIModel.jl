@@ -11,4 +11,4 @@ Godfrey-Isgur 1985,5,Table II,relativistic_smearing,s,"s",1.55,dimensionless,pdf
 Godfrey-Isgur 1985,5,Table II,relativistic_factors,epsilon_c,"epsilon_c",-0.168,dimensionless,pdftotext_layout_manual,low,"OCR label appears e_c; verify symbol."
 Godfrey-Isgur 1985,5,Table II,relativistic_factors,epsilon_t,"epsilon_t",0.025,dimensionless,pdftotext_layout_manual,low,"OCR label appears e_t; verify symbol."
 Godfrey-Isgur 1985,5,Table II,relativistic_factors,epsilon_so_vector,"epsilon_so(v)",-0.035,dimensionless,pdftotext_layout_manual,low,"OCR label appears e(y); likely vector spin-orbit epsilon. Verify on PDF."
-Godfrey-Isgur 1985,5,Table II,relativistic_factors,epsilon_so_scalar,"epsilon_so(S)",0.055,dimensionless,vision_ocr_page_image_audit,high,"Verified against paper/vision_ocr/page_images/page-005.png: ε_so(S)=+0.055."
+Godfrey-Isgur 1985,5,Table II,relativistic_factors,epsilon_so_scalar,"epsilon_so(S)",0.055,dimensionless,vision_ocr_page_image_audit,high,"Verified against the PDF page-5 image: ε_so(S)=+0.055."

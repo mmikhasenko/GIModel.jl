@@ -29,10 +29,11 @@ The following changes are coherent and independently verified:
 - numeric-generic central Hamiltonian assembly; and
 - the FD and fixed-beta HO Hellmann--Feynman probes.
 
-`diff_support/` is research and verification material, not runtime code. Its
-historical audit documents intentionally retain the types seen at their original
-snapshot; `diff_support/implementation_status.md` now states the current native
-solution types.
+The differentiation-support notes (since moved out of the repository into the
+unreleased research workspace) are research and verification material, not
+runtime code. Their historical audit documents intentionally retain the types
+seen at their original snapshot; their implementation-status note states the
+current native solution types.
 
 ## Damage and residue found
 
@@ -46,7 +47,7 @@ solution types.
 | `docs/code_architecture.md` described removed GIModel files and APIs that had moved to GIPaper | Misled the next worker about ownership and call flow | Rewritten from the live module |
 | `docs/conventions.md` and `docs/formula_map.md` retained the same pre-split ownership model | Reintroduced dead names during follow-up work | Corrected to the GIModel/GIPaper split |
 | `GIPaper/extraction/data_checks.py` read deleted `src/sector_comparison.jl` and searched for the old `compare` spelling | The implementation score path could fail or score zero for the wrong reason | Pointed at `GIPaper/src/comparison.jl` and current tests |
-| `diff_support/probes/audit_baseline.jl` still called `first(channel_solution(...))` and claimed HO reconstructed a mesh | The audit probe itself broke once the compatibility shim was removed | Updated and rerun successfully |
+| The differentiation-support baseline probe still called `first(channel_solution(...))` and claimed HO reconstructed a mesh | The audit probe itself broke once the compatibility shim was removed | Updated and rerun successfully |
 | Several paper scripts and one example used removed basis markers, loose solver keywords, tuple unpacking, or cached eigenvector matrices | Scripts outside unit-test coverage would rot silently | Migrated; all edited Julia scripts parse and both package test suites pass |
 | `OscillatorSolver` still carried `ngrid`/`rmax` fields described as a reporting mesh | Kept a mesh-shaped concept in the HO calculation even after native waves existed | Fields, constructors, display text, and `with_mesh(::OscillatorSolver, ...)` removed; plots own explicit sampling grids |
 | A mesh-bearing contact overload silently ignored its `r` argument for HO | Preserved the appearance that an HO solve could consume an FD operator grid | Mesh overload is FD-only; the representation-free overload dispatches directly to native `fixed_channel_solution` |
@@ -108,8 +109,9 @@ one plan and the relevant manifest entry in the same change as code and tests.
 - Two stashes contain edits against the removed path
   `src/GIModel/spin_fine_structure.jl`. They were not applied or deleted because
   stash deletion is destructive and their intent cannot be inferred safely.
-- `archive/table_iii_forensics/` contains pre-migration scripts. It is preserved
-  as historical evidence and is excluded from the live consumer contract.
+- The Table III forensics scripts are pre-migration. They are preserved outside
+  the repository as historical evidence and are excluded from the live
+  consumer contract.
 
 ## Verification performed
 

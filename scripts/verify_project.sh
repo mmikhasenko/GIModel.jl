@@ -36,7 +36,10 @@ julia GIPaper/scripts/run_all_spectrum_checks.jl
 # isoscalar_residuals.md -- so it must run after both are regenerated. It used to
 # run first, which made the scorecard show the PREVIOUS run's numbers: a change
 # surfaced as report drift one gate later, attributed to whatever was in flight
-# then. Keep this line last but one.
+# then. Keep it after every report writer.
 julia GIPaper/scripts/score_annihilation.jl
+# Paper-layout Tables I/II/IV and Figs. 1-9 read the reports regenerated above.
+julia GIPaper/scripts/paper_tables/generate.jl
+julia GIPaper/scripts/paper_tables/check.jl
 julia GIPaper/scripts/check_manifest.jl   # anti-drift gate: manifest links must resolve
 echo "verify_project.sh: all checks passed."
