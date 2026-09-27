@@ -74,7 +74,7 @@ silently coarsening the momentum quadrature. The transform now caps the
 independently checked physical range at 60 GeV.
 
 Results and the complete sweeps are in
-[`fd_comparator_convergence.md`](../GIPaper/docs/residual_reports/fd_comparator_convergence.md).
+`fd_comparator_convergence.md` (historical report retired).
 HO agreement remains diagnostic evidence, not an acceptance condition for
 PA-18 or a dependency of the original 1985 algorithm.
 
@@ -88,7 +88,7 @@ matching those captions is no longer an open implementation task. The original
 1985 reference policy and all 13 caption targets remain unchanged.
 
 The [target ledger](../GIPaper/data/mixing_angle_targets.md) adds six GK91
-angles alongside the originals. The [generated comparison](../GIPaper/docs/residual_reports/mixing_angles.md)
+angles alongside the originals. The [generated comparison](../GIPaper/reports/mixing_angles.md)
 retains numerical residuals and projected singlet probabilities. Small residuals
 against later tables are optional precision follow-up. The ψ(3.82) S–D
 admixtures, annihilation and photon-decay residuals remain separate open issues.

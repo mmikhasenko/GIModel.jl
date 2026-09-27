@@ -1,7 +1,0 @@
-# Lossless .csv.gz counterparts are the committed machine-readable artifacts.
-traces.csv
-comparisons.csv
-certificates.csv
-waves.csv
-wave_samples.csv
-plot_membership.csv

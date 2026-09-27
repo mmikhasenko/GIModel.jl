@@ -41,7 +41,7 @@ need assessment for the integral concerned, even if energy checks pass.
 
 Decay operators and their additional inputs belong to QuarkModelTransitions;
 GIPaper owns reference comparisons and external assignments. See the
-[rate input ledger](../GIPaper/docs/rate_input_ledger.md) and
+rate input ledger (retired during GIPaper cleanup) and
 [release editing plan](release_cleanup_plan.md).
 
 Transition matrix elements and generic widths use the masses stored in the

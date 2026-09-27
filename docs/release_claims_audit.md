@@ -4,7 +4,7 @@ The active folder-by-folder checklist is [Release editing plan](release_cleanup_
 This document preserves the investigation baseline, not the remaining task list.
 
 Follow-up: the authorized operator migration and rate-input tracing are documented
-in [the rate input ledger](../GIPaper/docs/rate_input_ledger.md). The findings
+in the rate input ledger (retired during GIPaper cleanup). The findings
 below describe the pre-cleanup baseline; observable ownership and the active
 Lambda entry have since been corrected.
 
@@ -76,7 +76,7 @@ No fitted spin-orbit/tensor bridge strength is present in this path; the loader 
 | Native pseudoscalar emission | g, h, explicit constituent mass table | `QuarkModelTransitions/src/pseudoscalar_emission.jl`; no hidden g/h calibration defaults. The mass table is copied into the operator. |
 | Frozen strong-decay model | A, S0, β; default calibration amplitudes +12.4 and −11.0 MeV¹ᐟ²; β=0.40 GeV | `calibrate_strong_decay_model` in `strong_decays.jl`. A/S0 are derived from anchors and breakup momenta, so do not count derived values and calibration inputs twice. `reproduce_table_v.jl` relies on these default anchors. |
 | External kinematics | Input-state masses, lepton masses; separate fixed-wave mass/momentum corrections | Passed to observables or transition states; paper harnesses use GIPaper's registry. Model eigenvalues, mock masses and measured masses have distinct meanings. |
-| Experimental validation anchors in scripts | fπ=0.1307 GeV; ℏ=6.582119×10⁻²⁵ GeV s; pion lifetime=2.6033×10⁻⁸ s; dilepton widths 7.04, 5.55, 2.34 and 1.34 keV | Hard-coded in `GIPaper/scripts/audit_table_vii.jl:476–484`, outside the mass registry. These validate/compare observables and do not enter the mass Hamiltonian. Their dataset/edition must be recorded separately; the mass-registry README explicitly says legacy widths are not updated PDG 2026 widths. |
+| Experimental validation anchors in scripts | fπ=0.1307 GeV; ℏ=6.582119×10⁻²⁵ GeV s; pion lifetime=2.6033×10⁻⁸ s; dilepton widths 7.04, 5.55, 2.34 and 1.34 keV | Hard-coded in `GIPaper/checks/audit_table_vii.jl:476–484`, outside the mass registry. These validate/compare observables and do not enter the mass Hamiltonian. Their dataset/edition must be recorded separately; the mass-registry README explicitly says legacy widths are not updated PDG 2026 widths. |
 
 Exact rational/color/spin factors (4/3, 32π/9, Clebsch–Gordan coefficients, charge fractions), unit conversions and normalization factors are formula constants, not empirical tuning. Likewise 0.3 and 0.75 in Table IV reduced polynomials are documented formula coefficients; their decimal spelling alone is not evidence of a fit.
 

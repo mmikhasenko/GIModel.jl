@@ -17,7 +17,8 @@ on:
             - "GIPaper/src/**"
             - "GIPaper/test/**"
             - "GIPaper/data/**"
-            - "GIPaper/docs/**"
+            - "GIPaper/checks/**"
+            - "GIPaper/reports/**"
             - "GIPaper/*.toml"
             - ".github/workflows/*Test*.yml"
         types: [opened, synchronize, reopened]

@@ -145,7 +145,7 @@ is a report-side sweep rather than another result-holder type. The historical
 `FiniteDifferenceSolver()` defaults `(450, 24)` remain useful for fast reports;
 precision HO cross-checks use `(2400, 32)`. The complete q/s/c/b, P/F mixing,
 and transition audit is
-[`fd_comparator_convergence.md`](../GIPaper/docs/residual_reports/fd_comparator_convergence.md).
+`fd_comparator_convergence.md` (historical report retired).
 
 ## Rules for extensions
 

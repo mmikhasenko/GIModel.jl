@@ -46,8 +46,8 @@ label = "Eq. (D1)"
 page = 40
 statement = "Magnetic-moment coupling mu_{piomega} (and analogues) defined from the mock-meson current matrix element."
 status = "folded"
-code = ["GIPaper/scripts/audit_table_vi_photon_decays.jl"]
-report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
+code = ["GIPaper/checks/audit_table_vi_photon_decays.jl"]
+report = "GIPaper/reports/table_vi_photon_decays.md"
 parent = "app-D"
 notes = "Folded into the mu/(e/2) (mu/mu_N) convention of the Table VI photon-decay audit. OCR-located on page-image 40 (Appendix D's heading is at the foot of page-image 39)."
 
@@ -60,7 +60,7 @@ statement = "Mock-meson state definition; mock mass M~ = <E_1> + <E_2> built fro
 status = "reproduced"
 code = ["QuarkModelTransitions/src/mock_meson_overlaps.jl:mock_wave_mass", "QuarkModelTransitions/src/mock_meson_overlaps.jl:mock_mean_energy", "src/momentum_waves.jl:mock_momentum_wave"]
 tests = ["Appendix-D mock-meson overlap kernels"]
-report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
+report = "GIPaper/reports/table_vi_photon_decays.md"
 metric = "mock mass M~ = <E1>+<E2> from the model's momentum-space radial wave; tested 2m <= M~ <= 2m+2, momentum wave normalized"
 parent = "app-D"
 notes = "Promoted from the Table VI audit into src (mock_meson_overlaps.jl): mock_momentum_wave (Bessel transform, normalized), mock_mean_energy, mock_wave_mass = <E1>+<E2>. The Table VI audit now delegates to these; its report is byte-identical. OCR-located on page-image 40."
@@ -74,7 +74,7 @@ statement = "Relativized moment with the (m+2E)/3E^2 -> (m/E)^f prescription rea
 status = "reproduced"
 code = ["QuarkModelTransitions/src/mock_meson_overlaps.jl:mock_meson_overlap", "QuarkModelTransitions/src/mock_meson_overlaps.jl:mock_meson_radial_moment"]
 tests = ["Appendix-D mock-meson overlap kernels"]
-report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
+report = "GIPaper/reports/table_vi_photon_decays.md"
 metric = "I_i and E_n^i promoted to src; the I_i kernel reproduces the rho->pi gamma M1 fit row mu = (1/3) I_rho-pi M_N = +0.65 (paper +0.69), tested end-to-end"
 parent = "app-D"
 notes = "Promoted into src (mock_meson_overlaps.jl): mock_meson_overlap = I_i(x,y) with weight (1/m_i)(m_i/E_i)^0.7, mock_meson_radial_moment = E_n^i with prefactor |m_i/sqrt(<E_i>_x<E_i>_y)|^0.5 -- the paper's fitted exponents, no new constants. The Table VI audit delegates to these (report byte-identical); the test reproduces the rho->pi gamma fit row from the src kernel. OCR-located on page-image 40."
@@ -88,7 +88,7 @@ statement = "Decay-constant definitions f_P, f_V, f_{A1} from the mock-meson wav
 status = "reproduced"
 code = ["QuarkModelTransitions/src/annihilation_widths.jl:leptonic_decay_factor", "QuarkModelTransitions/src/annihilation_widths.jl:mock_meson_mass"]
 tests = ["Table VII leptonic decay constants"]
-report = "GIPaper/docs/residual_reports/table_vii_annihilation_em.md"
+report = "GIPaper/reports/table_vii_annihilation_em.md"
 metric = "26 Table VII leptonic rows present; 24 scoreable, median |model|/|paper| = 1.03, signs 24/24; 2 unavailable (zero-parameter)"
 parent = "app-D"
 notes = "Implemented as leptonic_decay_factor: P_P = M^-1 M~^-1/2 K[sqrt(m1m2/E1E2)], V_V = M^-2 M~^1/2 K[...], V'_V with weight (m/E)(1-m/E), P'_A1 with weight mp/E^2, where K is the Eq.(17) smeared momentum kernel and M~ the mock mass <E1+E2> (mock_meson_mass). Drives the Table VII leptonic subtable. Widths Gamma from these constants (D7-D9) are a further step Table VII does not tabulate. OCR-located on page-image 40."
@@ -102,7 +102,7 @@ statement = "Leptonic width Gamma(P -> l nu) from the pseudoscalar decay constan
 status = "implemented"
 code = ["QuarkModelTransitions/src/annihilation_widths.jl:leptonic_pseudoscalar_width"]
 tests = ["Decay widths from decay constants"]
-report = "GIPaper/docs/residual_reports/table_vii_annihilation_em.md"
+report = "GIPaper/reports/table_vii_annihilation_em.md"
 metric = "Gamma(P->l nu) = G^2 f_P^2 m_l^2/(8 pi M_P) (M_P^2-m_l^2)^2; fed the measured f_pi/M_pi=0.936 it reproduces the pi->mu nu width to 4% (the omitted Cabibbo cos^2 theta_C)"
 parent = "app-D"
 notes = "Implemented as leptonic_pseudoscalar_width (exact Eq. D7, reduced G^2 = no CKM). Validated against experiment by feeding the measured constant; applied to the model's own f it carries the Table VII f-residual squared. The literal A15 contact gives the model light 1S0 pion mass 0.149 GeV, so the pi-to-mu-nu phase space is open. Table VII lists the constant, not the width. OCR-located on page-image 40."
@@ -116,7 +116,7 @@ statement = "Dilepton width Gamma(V -> l+ l-) from the vector decay constant f_V
 status = "implemented"
 code = ["QuarkModelTransitions/src/annihilation_widths.jl:dilepton_vector_width"]
 tests = ["Decay widths from decay constants"]
-report = "GIPaper/docs/residual_reports/table_vii_annihilation_em.md"
+report = "GIPaper/reports/table_vii_annihilation_em.md"
 metric = "Gamma(V->l+l-) = (4 pi/3) alpha^2 M_V f_V^2; on the model's own f_V the leading-order widths are rho 0.96, Upsilon 1.28, psi' 1.50, psi 1.88 x measured -- the ratios track the omitted QCD (1-16 alpha_s/3 pi) correction, largest for charm"
 parent = "app-D"
 notes = "Implemented as dilepton_vector_width (exact Eq. D8, no QCD radiative factor). Round-trips the measured psi->ee width (f_V=0.0896). Applied to the model's f_V it carries the Table VII residual squared plus the leading-order over-prediction that the (1-16 alpha_s/3 pi) correction removes (largest for charm, hence psi 1.88 vs Upsilon 1.28). Table VII lists the constant, not the width. OCR-located on page-image 40."
@@ -130,7 +130,7 @@ statement = "Width Gamma(tau -> A1 nu) from the axial-vector decay constant f_{A
 status = "implemented"
 code = ["QuarkModelTransitions/src/annihilation_widths.jl:axial_tau_width"]
 tests = ["Decay widths from decay constants"]
-report = "GIPaper/docs/residual_reports/table_vii_annihilation_em.md"
+report = "GIPaper/reports/table_vii_annihilation_em.md"
 metric = "Gamma(tau->A1 nu) = G^2 f_A1^2 m_tau^3 M_A1^2/(16 pi) [1-M_A1^2/m_tau^2][1+2 M_A1^2/m_tau^2]; the kinematic bracket closes correctly as M_A1 -> m_tau (tested)"
 parent = "app-D"
 notes = "Implemented as axial_tau_width (exact Eq. D9, reduced G^2). Tested on the analytic value and the kinematic bracket (channel closes at M_A1 = m_tau). The tau->A1 nu 3-pi width is not cleanly tabulated experimentally, so validation is analytic + the f_A1 constant (Table VII Pp_A1 row, 0.86x paper). OCR-located on page-image 40."
@@ -144,6 +144,6 @@ statement = "Radiative widths Gamma(V -> P gamma) and Gamma(P -> V gamma) from t
 status = "implemented"
 code = ["QuarkModelTransitions/src/radiative_decays.jl:m1_radiative_width"]
 tests = ["Radiative charge normalization and recoil"]
-report = "GIPaper/docs/residual_reports/table_vi_photon_decays.md"
+report = "GIPaper/reports/table_vi_photon_decays.md"
 parent = "app-D"
 notes = "Implemented as m1_radiative_width in GeV, with the vector/pseudoscalar spin-average factor and cubic photon-momentum scaling tested. Table VI itself compares moments and multipole amplitudes. OCR-located on page-image 40."

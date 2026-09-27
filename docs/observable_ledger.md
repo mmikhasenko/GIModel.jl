@@ -8,7 +8,7 @@
 > physics-convention reasoning the per-unit `notes` only summarize.
 
 Numerical input values and per-row records are in
-[GIPaper’s rate input ledger](../GIPaper/docs/rate_input_ledger.md).
+GIPaper’s rate input ledger (retired during GIPaper cleanup).
 
 Scope ledger for GI observables beyond the mass spectrum (gap-ledger item 8).
 The mass-spectrum reproduction machinery stays in `src/` untouched; decay and
@@ -91,7 +91,7 @@ three-state composer. A pure-component kernel must not repeat that factor.
 
 ### Encoded so far
 
-- `data/raw/digitized_tables/table_v_strong_decays.csv`: the canonical,
+- `data/table_v_strong_decays.csv`: the canonical,
   page-image-verified transcription of all of Table V (220 rows, see
   `README_canonical_tables.md`).
 - `QuarkModelTransitions/src/strong_decays.jl`: the row-oriented API — `DecayChannel`,
@@ -171,7 +171,7 @@ three-state composer. A pure-component kernel must not repeat that factor.
 - The transition package contains no Table VI row lookup. The audit script
   maps the paper's footnotes to `recoil_order` and supplies a resolved current
   only for legacy `(:q,:q)` states whose isospin was discarded.
-- `GIPaper/scripts/audit_table_vi_photon_decays.jl` writes the complete
+- `GIPaper/checks/audit_table_vi_photon_decays.jl` writes the complete
   79-row report and a machine-readable CSV: 42 M1, 35 E1, and 2 M2.
   Every state uses the shared native fixed-channel solver, including the
   spin-distorted P waves. Four-flavor P1/vector/tensor states are composed

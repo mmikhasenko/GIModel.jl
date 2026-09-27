@@ -6,7 +6,7 @@
 # It answers: why is Gamma(chi_c0 -> gg) about six times Gamma(chi_c2 -> gg),
 # when the lowest-order spin algebra alone says 15/4 = 3.75?
 #
-# Wave treatment matches `GIPaper/scripts/audit_table_vii.jl`: the paper-order
+# Wave treatment matches `GIPaper/checks/audit_table_vii.jl`: the paper-order
 # native finite-HO full diagonalization of H_central + spin-orbit
 # + tensor operator, so each ^3P_J gets its own J-distorted radial wave.
 #

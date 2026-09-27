@@ -3,7 +3,7 @@
 The radiative-decay implementation now covers all **79 canonical rows**:
 42 M1, 35 E1, and 2 M2. The source of unit status is
 `docs/paper_manifest/*.toml`; numerical results are in
-`GIPaper/docs/residual_reports/table_vi_photon_decays.md` and its CSV companion.
+`GIPaper/reports/table_vi_photon_decays.md` and its CSV companion.
 
 Completed work:
 
@@ -26,7 +26,7 @@ reported. It does not mean exact numerical reproduction of the excited eta
 channels or every cancellation-sensitive transition. Further study of those
 residuals is physics follow-up, not missing photon-decay coverage.
 
-Run `julia GIPaper/scripts/audit_table_vi_photon_decays.jl` for the HO audit,
+Run `julia GIPaper/checks/audit_table_vi_photon_decays.jl` for the HO audit,
 or set `GI_TABLE_VI_SOLVER=fd` for its independent comparator.
 
 ## Verification
@@ -37,6 +37,6 @@ all reproduction audits, and the 103-unit manifest/link check.
 
 The complete Table VI FD cross-check has median differences from HO of
 0.099% (M1), 0.049% (E1), and 0.092% (M2). The detailed comparison is in
-`GIPaper/docs/residual_reports/table_vi_solver_comparison.md`.
+`GIPaper/reports/table_vi_solver_comparison.md`.
 The shared phase correction also resolves the former Table VII excited-eta
 two-photon sign discrepancies (now 4/4 signs), without changing magnitudes.

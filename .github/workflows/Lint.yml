@@ -39,4 +39,4 @@ jobs:
                   version: "1"
             # Stdlib-only anti-drift gate: every code symbol, test and report
             # cited by docs/paper_manifest/*.toml must exist.
-            - run: julia --startup-file=no GIPaper/scripts/check_manifest.jl
+            - run: julia --startup-file=no scripts/check_paper_manifest.jl

@@ -7,7 +7,7 @@ printed prediction alongside its numeric value and approximation qualifiers.
 Formula strings are transcriptions, not executable expressions.
 """
 function load_table_vi(path::AbstractString = joinpath(
-    paper_data_dir(), "raw", "digitized_tables", "table_vi_photon_decays.csv"))
+    paper_data_dir(), "table_vi_photon_decays.csv"))
     rows = map(CSV.File(path; types = String)) do row
         printed = String(row.predicted)
         parenthetical = startswith(printed, "(")

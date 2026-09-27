@@ -50,7 +50,7 @@ table values against the published PDF.
 
 Digitized spectrum labels begin under `GIPaper/data/raw/digitized_figures/`;
 the recomputed tables and figures, in the paper's layout, are indexed in
-[GIPaper/docs/paper_tables](../GIPaper/docs/paper_tables/README.md).
+GIPaper/docs/paper_tables (retired during GIPaper cleanup).
 
 ## Caution Zones
 

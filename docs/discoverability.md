@@ -27,4 +27,4 @@ julia scripts/audit_doc_links.jl
 
 Run edited examples and check live help when changing documentation syntax.
 
-Release navigation: [model inputs](model_inputs.md), [active release plan](release_cleanup_plan.md), [Table VI completion record](work_plan.md), and [rate input provenance](../GIPaper/docs/rate_input_ledger.md).
+Release navigation: [model inputs](model_inputs.md), [active release plan](release_cleanup_plan.md), [Table VI completion record](work_plan.md), and rate input provenance (retired during GIPaper cleanup).

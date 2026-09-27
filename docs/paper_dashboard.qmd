@@ -153,6 +153,6 @@ nothing
 
 ---
 
-*Generated from `docs/paper_manifest/*.toml`. Run `julia GIPaper/scripts/check_manifest.jl`
+*Generated from `docs/paper_manifest/*.toml`. Run `julia scripts/check_paper_manifest.jl`
 to validate links and roll status up (`manifest_check.md`); `cd docs && make dashboard`
 to rebuild this page.*

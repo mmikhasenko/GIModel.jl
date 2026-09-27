@@ -5,7 +5,7 @@
 > and page image — is now the machine-checked source of truth in
 > `docs/paper_manifest/*.toml`, rendered as the drill-down dashboard
 > (`docs/paper_dashboard.qmd`; `cd docs && make dashboard`) and validated by
-> `GIPaper/scripts/check_manifest.jl`. Go there for "is unit X done, and where is
+> `scripts/check_paper_manifest.jl`. Go there for "is unit X done, and where is
 > the code?".
 >
 > What stays in this file is the **cross-cutting synthesis** the per-unit manifest

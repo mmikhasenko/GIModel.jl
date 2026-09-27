@@ -182,12 +182,12 @@ label = "Eq. (A15)"
 page = 37
 statement = "Effective Coulomb-side spin operators (contact, tensor, spin-orbit) with the two-sided (m/E)^(1/2+eps) momentum sandwich."
 status = "reproduced"
-code = ["src/contact_hyperfine.jl:smeared_contact_kernel", "src/contact_hyperfine.jl:ho_contact_hyperfine_matrix", "src/contact_hyperfine.jl:gi_spin_dependent_side_exponent", "src/spin_fine_structure.jl:ho_fine_structure_matrices", "src/spin_fine_structure.jl:tensor_kernel_smeared_coulomb", "src/fixed_channel_solver.jl:fixed_channel_solution", "GIPaper/scripts/audit_w6_ho_order.jl"]
+code = ["src/contact_hyperfine.jl:smeared_contact_kernel", "src/contact_hyperfine.jl:ho_contact_hyperfine_matrix", "src/contact_hyperfine.jl:gi_spin_dependent_side_exponent", "src/spin_fine_structure.jl:ho_fine_structure_matrices", "src/spin_fine_structure.jl:tensor_kernel_smeared_coulomb", "src/fixed_channel_solver.jl:fixed_channel_solution"]
 tests = ["A15 contact is the Laplacian of the smeared Coulomb kernel", "post-A14 spin-dependent momentum exponent gives energy denominators", "OGE tensor kernel matches finite-difference derivatives of G(r)", "Native spin matrices equal wave-interface expectations", "Both solvers solve the same native fixed-(L,S,J) Hamiltonian"]
-report = "GIPaper/docs/residual_reports/w6_ho_order_validation.md"
+report = ""
 metric = "paper-order (finite-HO full diagonalization) treatment of these blocks reproduces all 16 Table VII gluonic signs with magnitude ratios in [0.88,1.17] (median 1.05); every singlet/triplet and 3P0/3P2 splitting pattern collapses; the light-1S0 mass discriminates full diagonalization (paper) from first-order PT"
 parent = "app-A"
-notes = "The post-A14 (m1 m2/E1 E2)^(1/2+eps) sandwiches are native HO matrices for the exact Laplacian contact, vector/scalar spin-orbit, and tensor terms. fixed_channel_solution assembles them with H_central and performs one full finite-HO diagonalization per (L,S,J) sector; no mesh operator is projected into HO space. W6 validates the same treatment against independently refined FD and the light-1S0 discriminator. FineStructure has no fitted bridge strengths."
+notes = "Historical audit; auxiliary tooling was retired during the GIPaper cleanup. The post-A14 (m1 m2/E1 E2)^(1/2+eps) sandwiches are native HO matrices for the exact Laplacian contact, vector/scalar spin-orbit, and tensor terms. fixed_channel_solution assembles them with H_central and performs one full finite-HO diagonalization per (L,S,J) sector; no mesh operator is projected into HO space. W6 validates the same treatment against independently refined FD and the light-1S0 discriminator. FineStructure has no fitted bridge strengths."
 
 [[unit]]
 id = "A16"
@@ -198,7 +198,7 @@ statement = "Scalar/Thomas-precession spin-orbit operator, including the unequal
 status = "reproduced"
 code = ["src/spin_fine_structure.jl:fine_structure_components", "src/spin_fine_structure.jl:ho_fine_structure_matrices", "src/spin_fine_structure.jl:spin_orbit_mixing_components", "src/spin_fine_structure.jl:same_j_mixing"]
 tests = ["Both solvers solve the same native fixed-(L,S,J) Hamiltonian", "same-J spin-orbit mixing diagnostics"]
-report = "GIPaper/docs/residual_reports/w6_ho_order_validation.md"
+report = ""
 parent = "app-A"
 notes = "The symmetric fixed-(L,S,J) vector/scalar matrices and the unequal-mass antisymmetric same-J matrix are literal A15-A16 operators. The latter enters the complete stage-2 mixing block over all compatible radial levels. No fitted spin bridge or duplicate Coulomb contribution remains."
 
@@ -213,6 +213,6 @@ statement = "Harmonic-oscillator matrix-element factorization for the smeared/mo
 status = "reproduced"
 code = ["src/harmonic_oscillator_basis.jl:ho_p2_matrix", "src/harmonic_oscillator_basis.jl:ho_r2_matrix", "src/harmonic_oscillator_basis.jl:ho_operator_matrix", "src/harmonic_oscillator_basis.jl:oscillator_central_matrix", "src/harmonic_oscillator_basis.jl:ho_momentum_sandwich_matrix", "src/harmonic_oscillator_basis.jl:ho_reduced_radial", "src/fixed_channel_solver.jl:fixed_channel_solution"]
 tests = ["Oscillator matrix elements validate themselves", "A17 position side: Gauss-Laguerre in Golub-Welsch form", "Exact oscillator p^2 (A17 momentum side)", "The oscillator basis has a fixed phase", "OscillatorSolver channel solve returns native waves", "The solver, not the parameters, chooses the radial method", "PA-12 adaptive HO convergence is certified or fails loudly", "Native spin matrices equal wave-interface expectations", "Both solvers solve the same native fixed-(L,S,J) Hamiltonian"]
-report = "GIPaper/docs/residual_reports/ho_convergence.md"
+report = ""
 parent = "app-A"
 notes = "Both sides of A17 are assembled from exact oscillator matrix elements. OscillatorSolver adaptively refines beta and basis size; ChannelRadialSolution retains OscillatorWave coefficients plus its achieved OscillatorConvergence certificate and no reporting mesh. The same factorization builds central and diagonal spin matrices, while cross-sector tensor/spin-orbit elements dispatch on native waves. Plotting may explicitly sample a wave, but production HO operators never consume radial_grid, ngrid, or rmax."

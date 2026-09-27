@@ -3,7 +3,7 @@
 # Public API (exported from GIPaper.jl): paper_data_dir, reference_spectrum_path,
 #   model_parameters_path
 
-"""Directory holding the digitized paper data (reference CSVs, seed/raw/clean extractions)."""
+"""Directory holding the digitized paper data (reference CSVs and transcription provenance)."""
 paper_data_dir() = normpath(joinpath(@__DIR__, "..", "data"))
 
 """

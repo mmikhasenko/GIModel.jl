@@ -275,7 +275,7 @@ and annihilation mixing of the mass spectrum remain in GIModel.
 `ELECTROMAGNETIC_DEFAULTS` and `STRONG_DECAY_DEFAULTS` expose the additional
 phenomenological inputs. They are separate from spectrum parameters and from
 numerical controls. GIPaper owns the table-specific reference data and the
-[rate input ledger](../GIPaper/docs/rate_input_ledger.md).
+rate input ledger (retired during GIPaper cleanup).
 
 ## Public API and migration
 

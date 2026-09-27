@@ -49,8 +49,7 @@ The package dependency is GIPaper → GIModel.
   the digitized paper data, maps reference rows to mesons (`reference_meson`,
   no fallback masses), runs `compare_reference`, applies the Table III
   annihilation prescriptions, and writes residual reports. Its
-  [paper tables](GIPaper/docs/paper_tables/README.md) recompute every numbered
-  table and spectrum figure of the 1985 paper in the paper's own layout.
+  `checks/` directory contains direct spectrum, mixing and decay comparisons.
 
 To install both packages into one environment:
 
@@ -93,14 +92,14 @@ Also in the repository:
   [Appendix A](docs/appendix_a_from_paper.md) and its
   [equation audit](docs/appendix_a_equation_audit.md).
 - [Paper manifest](docs/paper_manifest/) — every equation, table and figure
-  with its implementation status, checked by `GIPaper/scripts/check_manifest.jl`.
+  with its implementation status, checked by `scripts/check_paper_manifest.jl`.
 - [Original 1985 algorithm audit](docs/original_1985_algorithm_audit.md) — the
   paper's mesh-free HO spectrum algorithm against the implementation.
 - [Paper gap ledger](docs/paper_gap_ledger.md) — what remains relative to the paper.
 - [Discoverability](docs/discoverability.md) — help conventions and the
   [public API documentation graph](docs/discoverability_graph.md).
-- [Rate input ledger](GIPaper/docs/rate_input_ledger.md) — numerical inputs to
-  Tables V, VI and VII, with generated per-row records.
+- [Paper data and comparisons](GIPaper/README.md) — reference values, kinematic
+  inputs and Julia comparison scripts for Tables V, VI and VII.
 - [Strong decays tutorial](docs/strong_decays_tutorial.qmd) (Quarto).
 
 ## Beyond the 1985 paper
@@ -126,18 +125,18 @@ emission, leptonic currents, annihilation, units, and correction factors.
 
 - Model configuration (GIModel): `data/parameters.provisional.toml`.
 - Paper reference spectra (GIPaper): `GIPaper/data/reference_spectrum_*.csv`.
-- Promoted audited data: `GIPaper/data/clean/masses.csv`,
-  `GIPaper/data/clean/mixings.csv`, `GIPaper/data/clean/parameters.toml`
+- Promoted audited data: `GIPaper/data/transcription_masses.csv`,
+  `GIPaper/data/transcription_mixings.csv`, `GIPaper/data/transcription_parameters.toml`
   (a Table II transcription, not a solver configuration).
-- Raw extraction evidence: `GIPaper/data/raw/`.
+- Raw extraction evidence: `GIPaper/data/provenance/`.
 
 ## Common commands
 
 ```bash
 julia --project=. -e 'using Pkg; Pkg.test()'
 julia --project=GIPaper -e 'using Pkg; Pkg.test()'
-julia GIPaper/scripts/run_all_spectrum_checks.jl
-julia GIPaper/scripts/paper_tables/generate.jl
+julia GIPaper/checks/run_all_spectrum_checks.jl
+julia GIPaper/checks/reproduce_table_v.jl
 ```
 
 `Pkg.test()` runs each package's quick suite, including

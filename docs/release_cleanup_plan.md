@@ -1,6 +1,6 @@
 # Release editing plan
 
-Updated 2026-09-26. This is the active checklist derived from the [release claims audit](release_claims_audit.md). The audit remains the historical evidence; this document tracks edits and closure. Numerical provenance is maintained in the [rate input ledger](../GIPaper/docs/rate_input_ledger.md).
+Updated 2026-09-26. This is the active checklist derived from the [release claims audit](release_claims_audit.md). The audit remains the historical evidence; this document tracks edits and closure. Numerical provenance is maintained in the rate input ledger (retired during GIPaper cleanup).
 
 ## Agreed direction
 
@@ -163,7 +163,7 @@ separate pipelines. No transition implementation edits belong to this pass.
 | `examples/` | Curated solver/transition examples retained. `played_with_model.jl` retains unique interactive paper-comparison exploration and is explicitly uncurated; density demonstrations/data are separate examples, not runtime inputs. No blanket deletion of figures or local renders. |
 | Root `scripts/` | Added fast GIModel/GIPaper test gate. Full gate regenerates V/VI/VII with traces together, then checks their integrity. Doc-graph generator retained. |
 | Root `docs/` | Added model-input entry point; corrected formula-map typed dispatch and HO support. `work_plan.md` already identifies itself as the Table VI completion record and remains historical evidence. HTML is ignored/regenerated; source documents retained. |
-| `GIPaper/data/clean/parameters.toml` | Relabeled as reference transcription. Lambda/derived alpha-critical preserved as paper evidence; full runtime loader rejects it. |
+| `GIPaper/data/transcription_parameters.toml` | Relabeled as reference transcription. Lambda/derived alpha-critical preserved as paper evidence; full runtime loader rejects it. |
 | `GIPaper/data/raw/`, `seed/`, reference CSVs | Retained extraction evidence, promotion inputs and canonical comparison datasets. They are not interchangeable runtime presets. |
 | `GIPaper/data/mass_inputs/`, `src/mass_inputs.jl` | Pinned experimental inputs and archived historical comparisons retained. Loader rejects duplicate keys, invalid measurements, unresolved average components and unknown assignments. No fallback introduced. |
 | `GIPaper/data/table_policy.toml`, `src/table_policy.jl` | Added source-bearing paper calibration/mixing/footnote records and explicitly comparison-only legacy anchors. Original edition of legacy validation widths remains unknown and is recorded as such. |

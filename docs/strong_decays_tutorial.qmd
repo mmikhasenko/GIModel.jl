@@ -219,10 +219,10 @@ fit constants and the kinematics — no per-row tuning.
 Running the whole table is one script:
 
 ```bash
-julia GIPaper/scripts/reproduce_table_v.jl
+julia GIPaper/checks/reproduce_table_v.jl
 ```
 
-which writes `GIPaper/docs/residual_reports/table_v_reproduction.md`. That
+which writes `GIPaper/reports/table_v_reproduction.md`. That
 generated report is the single source for current coverage totals and per-row
 diagnoses. It keeps each non-match visible because mass choice, mixing,
 thresholds, and operator limitations do not produce one universal explanation:
@@ -249,9 +249,9 @@ thresholds, and operator limitations do not produce one universal explanation:
   factor.
 - `docs/observable_ledger.md` — the equation-provenance table and the
   leading-$S_0$ note.
-- `GIPaper/data/raw/digitized_tables/README_canonical_tables.md` — the canonical
+- `GIPaper/data/provenance/digitized_tables_README_canonical_tables.md` — the canonical
   transcription and the digitization errors it fixed.
-- `GIPaper/scripts/reproduce_table_v.jl` — the harness that produces the per-row
+- `GIPaper/checks/reproduce_table_v.jl` — the harness that produces the per-row
   report.
 
 Try it yourself: pick any Table V row, build its `DecayChannel`, and inspect the

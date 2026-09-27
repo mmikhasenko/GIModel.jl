@@ -41,7 +41,7 @@ jobs:
                   Pkg.add(; name, uuid, version)
               shell: julia --color=yes {0}
             # One repository, two packages; the application environments
-            # (GIPaper/scripts, examples) are refreshed by hand.
+            # (examples) are refreshed by hand.
             - name: "Run CompatHelper"
               run: |
                   import CompatHelper

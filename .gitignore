@@ -9,7 +9,7 @@ docs/autonomous_runs/
 /research/
 
 # Package manifests are resolved locally and in CI from the compat bounds;
-# only the application environments (GIPaper/scripts, examples) pin theirs.
+# only the application environments (examples) pin theirs.
 /Manifest.toml
 /QuarkModelTransitions/Manifest.toml
 /GIPaper/Manifest.toml
@@ -26,9 +26,6 @@ __pycache__/
 # Quarto build artifacts in docs/ (the .qmd sources are tracked; render locally).
 docs/*_files/
 docs/*.html
-
-# Regenerable sector plots.
-GIPaper/scripts/spectrum_plots/
 
 # The report is a separate repository, checked out here for local builds.
 /report/

@@ -41,10 +41,10 @@ reference discrepancy supported by the later GI-model calculations. Why the
 1985 captions differ remains unknown. Small quantitative residuals remain
 reported, without tuning toward either source.
 
-Run `julia GIPaper/scripts/audit_mixing_angles.jl` from the repository root.
+Run `julia GIPaper/checks/audit_mixing_angles.jl` from the repository root.
 It computes the same production spectra as before and writes both
-[`mixing_angles.md`](../docs/residual_reports/mixing_angles.md) and
-[`mixing_reference_comparison.csv`](../docs/residual_reports/mixing_reference_comparison.csv).
+[`mixing_angles.md`](../reports/mixing_angles.md) and
+[`mixing_reference_comparison.csv`](../reports/mixing_reference_comparison.csv).
 The seven GI85 rows without a GK91 counterpart are retained, not treated as
 validated by missing data. Tensor ψ(3.82) admixtures and isoscalar annihilation
 are separate investigations and are not closed by this result.

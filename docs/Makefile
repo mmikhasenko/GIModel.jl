@@ -36,7 +36,7 @@ $(HTML): $(QMD)
 
 ## check:   validate the paper manifest (link-check + status rollup)
 check:
-	julia ../GIPaper/scripts/check_manifest.jl
+	julia ../scripts/check_paper_manifest.jl
 
 ## dashboard: validate the manifest, then render the reproduction dashboard + open
 dashboard: check
