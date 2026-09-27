@@ -249,7 +249,7 @@ function radial_overlap(wx::MeshWave, wy::MeshWave, f)
     return s * wx.h / sqrt(nx * ny)
 end
 
-raw"""
+@doc raw"""
     radial_derivative_overlap(wx::RadialWave, wy::RadialWave, f)
 
 Evaluate

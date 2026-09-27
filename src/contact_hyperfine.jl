@@ -1,7 +1,7 @@
 # Public API (exported from GIModel.jl):
 #   spin_dot, contact_smearing_sigma
 
-raw"""
+@doc raw"""
     contact_smearing_sigma(params, m1, m2) -> Float64
     contact_smearing_sigma(params, masses::ConstituentMasses) -> Float64
 
@@ -58,7 +58,7 @@ function delta_sigma_3d(r::Real, σ::Real)
     return σ^3 / (π^(3 / 2)) * exp(-(σ * ri)^2)
 end
 
-raw"""
+@doc raw"""
     smeared_contact_kernel(params, masses, r)
 
 The radial contact kernel obtained from the Laplacian of the Appendix-A

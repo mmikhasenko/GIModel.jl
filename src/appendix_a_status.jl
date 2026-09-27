@@ -4,6 +4,13 @@
 # Public API (exported from GIModel.jl):
 #   CentralPotentialPath, central_potential_path
 
+"""
+    CentralPotentialPath(name, paper_refs, notes)
+
+Human-readable description of the spin-independent central construction in
+effect, as returned by [`central_potential_path`](@ref): the method `name`, the
+paper equations it implements (`paper_refs`) and short `notes`.
+"""
 struct CentralPotentialPath
     name::String
     paper_refs::String

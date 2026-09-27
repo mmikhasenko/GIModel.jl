@@ -125,6 +125,13 @@ function dV_coul_central_dr(r::Real, params::GIParameters)
     return coulomb_G_prime_running(ri)
 end
 
+@doc raw"""
+    tensor_triplet_LJ(L, J, S) -> Float64
+
+Diagonal angular factor ``\langle S_{12} \rangle`` of the tensor operator in
+a spin-triplet ``^3L_J`` state: ``-2(L+1)/(2L-1)`` for ``J = L-1``, ``2`` for
+``J = L`` and ``-2L/(2L+3)`` for ``J = L+1``. Zero for singlets and S waves.
+"""
 function tensor_triplet_LJ(L::Int, J::Int, S::Int)
     S == 1 || return 0.0
     L <= 0 && return 0.0
@@ -134,12 +141,25 @@ function tensor_triplet_LJ(L::Int, J::Int, S::Int)
     return 0.0
 end
 
+@doc raw"""
+    tensor_triplet_offdiag_sameJ(J, S) -> Float64
+
+Off-diagonal angular factor of ``S_{12}`` between the triplets
+``^3(J-1)_J`` and ``^3(J+1)_J``: ``6\sqrt{J(J+1)}/(2J+1)``. Zero for
+singlets and ``J = 0``. See [`tensor_mixing_components`](@ref).
+"""
 function tensor_triplet_offdiag_sameJ(J::Int, S::Int)
     S == 1 || return 0.0
     J <= 0 && return 0.0
     return 6.0 * sqrt(J * (J + 1.0)) / (2J + 1)
 end
 
+@doc raw"""
+    LdotS(L, S, J) -> Float64
+
+Eigenvalue of ``\mathbf{L}\cdot\mathbf{S}`` in a state of total angular
+momentum `J`: ``[J(J+1) - L(L+1) - S(S+1)]/2``.
+"""
 function LdotS(L::Int, S::Int, J::Int)
     0.5 * (J * (J + 1) - L * (L + 1) - S * (S + 1))
 end
@@ -195,6 +215,15 @@ function radial_expect_udr(
     return s
 end
 
+@doc raw"""
+    radial_cross_expect_udr(u_left, u_right, r, h, f) -> Float64
+
+Mesh cross matrix element ``\int u_\mathrm{left}(r)\,u_\mathrm{right}(r)\,
+f(r, i)\,dr`` on a uniform grid of spacing `h`, with both reduced waves first
+normalized to ``\int u^2 dr = 1``. The kernel receives the radius and the grid
+index. This is the off-diagonal counterpart of `radial_expect_udr`; wave
+objects should use [`radial_overlap`](@ref) instead.
+"""
 function radial_cross_expect_udr(
     u_left::AbstractVector{<:Real},
     u_right::AbstractVector{<:Real},
@@ -736,6 +765,19 @@ function spin_orbit_mixing_components(
     )
 end
 
+@doc raw"""
+    tensor_mixing_components(params, masses, radial_left, radial_right, J;
+                             enabled = true) -> NamedTuple
+
+Tensor off-diagonal element between ``^3(J-1)_J`` (`radial_left`) and
+``^3(J+1)_J`` (`radial_right`). Returns `(I_tk, angular, total)`: the radial
+tensor-kernel overlap, the angular factor
+[`tensor_triplet_offdiag_sameJ`](@ref), and
+`total = I_tk * angular / (12 m1 m2)` in GeV. The kernel is the smeared or
+running-coupling Coulomb tensor kernel, sandwiched with the ``\epsilon_t``
+momentum factors when the parameters enable it. All components are zero when
+`enabled` is false or `J = 0`.
+"""
 function tensor_mixing_components(
     params::GIParameters,
     masses::ConstituentMasses,

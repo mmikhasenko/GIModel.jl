@@ -447,26 +447,6 @@ function _assign_table_iii_rows!(
     return rows
 end
 
-"""
-    compare_reference(params, quark_masses, reference; ...) -> Vector{NamedTuple}
-
-Compare the model to a vector of [`ReferenceState`](@ref) rows:
-
- 1. group rows by [`reference_meson`](@ref) and run one
-    [`GIModel.compute_spectrum`](@ref) per meson (the reference rows define
-    exactly which levels are computed);
- 2. match each row to its model state by `(n, multiplicity, L, J)`;
- 3. reassign 2×2 mixing-block eigenvalues per `mixed_assignment`:
-    `:reference_order` (default) reproduces the paper convention of assigning
-    ascending mixed masses by ascending reference mass; `:model_order` keeps
-    the model's own assignment (ascending unmixed prediction);
- 4. optionally apply the isoscalar annihilation `scheme`
-    (`:calibrated_p1`, `:p1`/`:paper_p1`, `:p2`/`:paper_p2`, `:general_s1`,
-    `:p1_and_s1`, `:table_iii`) — requires `strange_mass_GeV`.
-
-Rows with `n > 6` are skipped with a warning. The output rows feed
-[`write_residual_report`](@ref) / [`nonmixing_deviation_summary`](@ref).
-"""
 # `solver` and the four loose mesh keywords say the same thing, so accepting both
 # means one of them is silently ignored. Either name the solver or name the mesh.
 function _comparison_solver(solver; ngrid, rmax, kinetic, eigensolver)
@@ -488,6 +468,26 @@ function _comparison_solver(solver; ngrid, rmax, kinetic, eigensolver)
     )
 end
 
+"""
+    compare_reference(params, quark_masses, reference; ...) -> Vector{NamedTuple}
+
+Compare the model to a vector of [`ReferenceState`](@ref) rows:
+
+ 1. group rows by [`reference_meson`](@ref) and run one
+    [`GIModel.compute_spectrum`](@ref) per meson (the reference rows define
+    exactly which levels are computed);
+ 2. match each row to its model state by `(n, multiplicity, L, J)`;
+ 3. reassign 2×2 mixing-block eigenvalues per `mixed_assignment`:
+    `:reference_order` (default) reproduces the paper convention of assigning
+    ascending mixed masses by ascending reference mass; `:model_order` keeps
+    the model's own assignment (ascending unmixed prediction);
+ 4. optionally apply the isoscalar annihilation `scheme`
+    (`:calibrated_p1`, `:p1`/`:paper_p1`, `:p2`/`:paper_p2`, `:general_s1`,
+    `:p1_and_s1`, `:table_iii`) — requires `strange_mass_GeV`.
+
+Rows with `n > 6` are skipped with a warning. The output rows feed
+[`write_residual_report`](@ref) / [`nonmixing_deviation_summary`](@ref).
+"""
 function compare_reference(
     params::GIParameters,
     quark_masses::QuarkMassTable,

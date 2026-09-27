@@ -87,6 +87,13 @@ function mixing_prone_state(row)
     return _tensor_sd_prone(row)
 end
 
+"""
+    nonmixing_deviation_summary(rows) -> Vector{NamedTuple}
+
+Per-sector summary of [`compare_reference`](@ref) rows after excluding states
+flagged by `mixing_prone_state`: number of rows kept and excluded, and the
+mean and maximum absolute residual in MeV (`NaN` when nothing is kept).
+"""
 function nonmixing_deviation_summary(rows)
     sectors = sort(unique(_row_sector(row) for row in rows))
     out = NamedTuple[]
@@ -122,6 +129,14 @@ _central_note(::Coulomb1DSmearing) =
 _central_note(::PointwiseCentral) =
     "pointwise Coulomb + linear + constant (no Appendix A or 1D G smear), "
 
+"""
+    write_residual_report(path, title, rows; solver, contact_hyperfine, central, ...)
+
+Write [`compare_reference`](@ref) rows as a Markdown residual report at `path`:
+a header describing the solver and Hamiltonian configuration (the keywords
+mirror the settings used to produce `rows`), followed by per-state residual
+tables. Creates the parent directory if needed.
+"""
 function write_residual_report(
     path::AbstractString,
     title::AbstractString,

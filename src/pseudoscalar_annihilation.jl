@@ -48,6 +48,20 @@ Base.propertynames(::PseudoscalarAnnihilationBasisInput) = (
     :radial_components, :isoscalar_coherent,
 )
 
+@doc raw"""
+    pseudoscalar_annihilation_basis_input(basis, constituent_mass_GeV, diagonal_GeV,
+                                          radial; isoscalar_coherent)
+    pseudoscalar_annihilation_basis_input(basis, constituent_mass_GeV, diagonal_GeV,
+                                          radial_components; isoscalar_coherent)
+
+One flavor channel of an annihilation mixing block: its basis label, the
+constituent quark mass, the pre-annihilation model mass on the diagonal, and
+either a single radial wave or signed `(coefficient, wave)` components.
+`isoscalar_coherent` states whether the channel is the coherent
+``(u\bar u + d\bar d)/\sqrt{2}`` combination, which carries a ``\sqrt{2}``
+amplitude factor. [`annihilation_basis_input`](@ref) builds these from a
+spectrum.
+"""
 function pseudoscalar_annihilation_basis_input(
     basis::BasisState,
     constituent_mass_GeV::Real,

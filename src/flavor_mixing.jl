@@ -21,35 +21,16 @@ function _annihilation_flavor_tag(m::Meson)
 end
 
 """
-    annihilation_basis_input(spec::Spectrum, level::BasisState)
+    fix_annihilation_phase(w::RadialWave) -> RadialWave
 
-One flavor-channel entry for an annihilation mixing block: the state's
-pre-annihilation model mass as the diagonal, and the signed projection of its
-physical radial components into the requested `(L,S,J)` annihilation channel.
-Each wave is phase-fixed to the GI convention `Φ(0) > 0` (see
-[`fix_annihilation_phase!`](@ref)), with the compensating sign retained in its
-coefficient. The
-eigensolver hands back arbitrary column signs, and without the convention the
-`S_L` factor flips between quark masses and radial levels, randomizing the
-off-diagonal block elements.
-
-The wave comes from the spectrum's own solver, like every other observable.
-
-**Historical note, because the alternative looks principled and is not.** This
-used to take a `wave_basis` keyword defaulting to `:ho`, so annihilation read a
-separately-cached oscillator wave no matter which solver produced the spectrum.
-The stated reason was that the oscillator basis gave a ~3x larger
-wavefunction-at-origin for light quarks and Table III was built on that basis.
-The real cause was a normalization bug: finite differences then returned
-Euclidean eigenvectors (`sum u^2 = 1`) against the oscillator path's physical
-ones (`int u^2 dr = 1`), a ratio of `1/sqrt(h)` = 3.17 on the Table III audit's
-own 220-point mesh. That bug is fixed (see `physically_normalized_waves`), and
-the two solvers now agree on the smeared origin factor to 0.1%, so there is
-nothing left for a second basis to correct.
+Return `w` with the GI annihilation phase convention `Φ(0) > 0`, fixed by the
+sign of `∫ r u(r) dr`; the input wave is not modified. This is the wave-level
+counterpart of [`fix_annihilation_phase!`](@ref) and is what
+[`annihilation_basis_input`](@ref) applies to each radial component.
 """
-# `fix_annihilation_phase!` works on eigenvector columns; a cached wave must not
-# be mutated in place, so flip a copy.
 function fix_annihilation_phase(w::MeshWave)
+    # `fix_annihilation_phase!` works on eigenvector columns; a cached wave must
+    # not be mutated in place, so flip a copy.
     u = reshape(copy(w.u), :, 1)
     fix_annihilation_phase!(u, w.r)
     return MeshWave(vec(u), w.r, w.h)
@@ -80,6 +61,33 @@ function _annihilation_phase_sign(w::OscillatorWave)
     return phase < 0 ? -1.0 : 1.0
 end
 
+"""
+    annihilation_basis_input(spec::Spectrum, level::BasisState)
+
+One flavor-channel entry for an annihilation mixing block: the state's
+pre-annihilation model mass as the diagonal, and the signed projection of its
+physical radial components into the requested `(L,S,J)` annihilation channel.
+Each wave is phase-fixed to the GI convention `Φ(0) > 0` (see
+[`fix_annihilation_phase!`](@ref)), with the compensating sign retained in its
+coefficient. The
+eigensolver hands back arbitrary column signs, and without the convention the
+`S_L` factor flips between quark masses and radial levels, randomizing the
+off-diagonal block elements.
+
+The wave comes from the spectrum's own solver, like every other observable.
+
+**Historical note, because the alternative looks principled and is not.** This
+used to take a `wave_basis` keyword defaulting to `:ho`, so annihilation read a
+separately-cached oscillator wave no matter which solver produced the spectrum.
+The stated reason was that the oscillator basis gave a ~3x larger
+wavefunction-at-origin for light quarks and Table III was built on that basis.
+The real cause was a normalization bug: finite differences then returned
+Euclidean eigenvectors (`sum u^2 = 1`) against the oscillator path's physical
+ones (`int u^2 dr = 1`), a ratio of `1/sqrt(h)` = 3.17 on the Table III audit's
+own 220-point mesh. That bug is fixed (see `physically_normalized_waves`), and
+the two solvers now agree on the smeared origin factor to 0.1%, so there is
+nothing left for a second basis to correct.
+"""
 function annihilation_basis_input(spec::SpinResolvedSpectrum, level::BasisState)
     meson = _single_channel(spec)
     state = spectrum_state(spec, level)

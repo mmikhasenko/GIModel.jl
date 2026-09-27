@@ -48,7 +48,21 @@ function load_mass_inputs(dir::AbstractString = joinpath(paper_data_dir(), "mass
 end
 
 const _MASS_INPUTS = load_mass_inputs()
+"""
+    mass_input(context, label) -> NamedTuple
+
+Pinned experimental mass record for the state `label` in a paper table
+`context` (`"V"`, `"VI"`, `"VII"`): PDG identifier, edition, `mass_GeV` (or
+`nothing` when no experimental assignment exists), status and notes. Throws a
+`KeyError` for unknown labels; there is no model or historical fallback.
+"""
 mass_input(context::AbstractString,label::AbstractString) = _MASS_INPUTS[(String(context),String(label))]
+"""
+    experimental_mass(context, label) -> Union{Float64,Nothing}
+
+The `mass_GeV` field of [`mass_input`](@ref): the pinned PDG mass used for
+decay kinematics, or `nothing` for an unassigned state.
+"""
 experimental_mass(context::AbstractString,label::AbstractString) = mass_input(context,label).mass_GeV
 
 """Archived audit mass for comparison only; never an experimental fallback."""
