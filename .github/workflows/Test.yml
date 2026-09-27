@@ -15,7 +15,7 @@ jobs:
             os: ${{ matrix.os }}
             version: ${{ matrix.version }}
             allow_failure: ${{ matrix.allow_failure }}
-            run_codecov: ${{ matrix.version == '1' && matrix.os == 'ubuntu-latest' }}
+            run_codecov: ${{ matrix.version == '1' && matrix.os == 'ubuntu-24.04' }}
         secrets:
             codecov_token: ${{ secrets.CODECOV_TOKEN }}
         strategy:
@@ -28,7 +28,7 @@ jobs:
                     - "1.11"
                     - "1"
                 os:
-                    - ubuntu-latest
+                    - ubuntu-24.04
                     - macOS-latest
                     - windows-latest
                 allow_failure: [false]

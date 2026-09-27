@@ -27,7 +27,7 @@ permissions:
 jobs:
     TagBot:
         if: github.event_name == 'workflow_dispatch' || github.actor == 'JuliaTagBot'
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         strategy:
             matrix:
                 # Subdirectory packages are tagged `<Name>-v<version>`.

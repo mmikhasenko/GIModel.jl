@@ -34,7 +34,7 @@ jobs:
         uses: ./.github/workflows/ReusableTest.yml
         with:
             project: ${{ matrix.project }}
-            os: ubuntu-latest
+            os: ubuntu-24.04
             version: "1"
             allow_failure: false
             run_codecov: true
