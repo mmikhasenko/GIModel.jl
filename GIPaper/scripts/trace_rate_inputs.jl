@@ -4,6 +4,7 @@
 using Pkg
 Pkg.activate(@__DIR__; io=devnull)
 using TOML, SHA, CSV, GIModel, QuarkModelTransitions, GIPaper
+using QuarkModelTransitions: ALPHA_EM, ELECTROMAGNETIC_DEFAULTS, G_FERMI_GEV, HBARC_FM2, LeadingS0, NUCLEON_MASS_GEV, STRONG_DECAY_DEFAULTS
 
 const TRACE_ROOT = dirname(dirname(@__DIR__))
 const TRACE_DIR = joinpath(dirname(@__DIR__), "docs", "input_traces")

@@ -101,6 +101,13 @@ partial waves, and an Eq. (C2) width. It is deliberately separate from the
 frozen Table IV/V reproduction because it goes beyond the approximation used
 for the paper's numerical strong-decay results.
 
+Transition calculations use `matrix_element(final, operator, initial)` and
+`decay_width`, with masses and momenta derived from the GIModel states.
+`mass_correction_factor` provides separate comparisons at another external mass
+or momentum while holding the waves fixed. The
+[transition guide](QuarkModelTransitions/README.md) covers photon and strong
+emission, leptonic currents, annihilation, units, and correction factors.
+
 ## Data
 
 - Model configuration (GIModel): `data/parameters.provisional.toml`.
@@ -133,3 +140,8 @@ bash scripts/verify_project.sh
   against the published article.
 - Raw extraction and clean physics data stay separate.
 - Every promoted numerical value retains provenance and confidence.
+
+## License
+
+MIT — see [LICENSE](LICENSE). Each package directory carries the same license
+file. The 1985 article itself is not covered and is not distributed here.

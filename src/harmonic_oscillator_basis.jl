@@ -262,9 +262,29 @@ end
 """
     OscillatorWave(L, beta, coefficients)
 
-One normalized radial eigenlevel in its native harmonic-oscillator
-representation. `coefficients[n+1]` multiplies
-`ho_reduced_radial(n, L, beta, r)`. No spatial or momentum mesh is stored.
+A normalized radial wave expanded in harmonic-oscillator basis functions.
+`coefficients[n+1]` multiplies `ho_reduced_radial(n, L, beta, r)`; `L` is the
+orbital angular momentum and `beta` is a momentum scale in GeV. No spatial or
+momentum mesh is stored.
+
+A GIModel oscillator-basis solve determines the coefficients by diagonalizing
+the model Hamiltonian. In that case this type represents a calculated model
+wave, subject to basis convergence. Manually supplying `[1.0]` instead assumes
+a single oscillator shape with a chosen width. The constructor normalizes the
+supplied coefficients.
+Prefer [`radial_wave`](@ref) to retrieve a solved wave.
+
+## Example
+
+```julia
+using GIModel
+assumed_wave = OscillatorWave(0, 0.5, [1.0]) # Assumed S-wave, not a GI solve.
+@assert wave_norm(assumed_wave) ≈ 1
+```
+
+## Related
+
+[`radial_wave`](@ref), [`RadialWave`](@ref), [`sample_wave`](@ref).
 """
 struct OscillatorWave <: RadialWave
     L::Int

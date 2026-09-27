@@ -2,7 +2,38 @@
 # Transition-amplitude domain model
 # =============================================================================
 
+"""
+Abstract supertype of operators evaluated by `matrix_element`. Implementations determine the final-state type and normalization.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert PhotonEmission <: QMT.TransitionOperator
+```
+
+## Related
+
+- [`matrix_element`](@ref) — evaluate an operator between states.
+"""
 abstract type TransitionOperator end
+abstract type AnnihilationOperator <: TransitionOperator end
+"""
+Abstract transition operator for an ordered two-meson final channel.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert PseudoscalarEmission <: QMT.StrongDecayOperator
+```
+
+## Related
+
+- [`matrix_element`](@ref) — evaluate an operator between states.
+"""
 abstract type StrongDecayOperator <: TransitionOperator end
 abstract type TransitionState end
 
@@ -19,7 +50,34 @@ end
 
 An eagerly resolved external meson state. Its physical mass, common `J^P`,
 pure-basis components, mixing coefficients, native radial waves, and provenance
-are independent of the [`Spectrum`](@ref) that produced it.
+are independent of the [`Spectrum`](@ref) that produced it. Prefer
+[`physical_state`](@ref) to obtain these inputs from a GIModel calculation.
+The manual constructor also accepts assumed radial waves and supplied masses;
+constructing this object does not solve a Hamiltonian or certify those inputs.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+params, masses = load_parameters_and_quark_masses(default_parameters_path())
+levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
+# A modest grid for this example; check convergence for quantitative widths.
+solver = FiniteDifferenceSolver(ngrid=240, rmax=24.0, nlevels_per_channel=1)
+spectrum = compute_spectrum(params, Meson(masses, :c, :c); levels, solver)
+initial = physical_state(spectrum, levels[1])
+final = physical_state(spectrum, levels[2])
+operator = PhotonEmission(masses)
+@assert initial.J == 1
+@assert length(initial.components) == 1
+```
+
+## Related
+
+- [`matrix_element`](@ref) — evaluate an operator between states.
+- [`physical_state`](@ref) — adapt a solved spectrum state.
+- [`PhotonEmission`](@ref) — infer and evaluate a photon transition.
+- [`TwoMesonChannel`](@ref) — ordered surviving and emitted daughters.
 """
 struct PhysicalState{C<:Tuple,P} <: TransitionState
     label::String
@@ -90,6 +148,28 @@ function _physical_state_provenance(spec::Spectrum, state)
     )
 end
 
+"""
+    physical_state(spectrum, state_or_label)
+
+Resolve a solver state, `BasisState`, or label into a `PhysicalState`, retaining its mass in GeV, coherent components, radial waves, and provenance.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+params, masses = load_parameters_and_quark_masses(default_parameters_path())
+basis = BasisState(1, "S", 3, 1; flavors=(:c, :c))
+spectrum = compute_spectrum(params, Meson(masses, :c, :c); levels=[basis], solver=FiniteDifferenceSolver(ngrid=90, rmax=12.0, nlevels_per_channel=1))
+state = physical_state(spectrum, basis)
+@assert state.mass_GeV > 0
+```
+
+## Related
+
+- [`matrix_element`](@ref) — evaluate an operator between states.
+- [`PhysicalState`](@ref) — resolved meson components and mass.
+"""
 function physical_state(
     spec::Spectrum,
     state::Union{CentralState,CorrectedState,MixedState},
@@ -116,6 +196,20 @@ A mass-and-label external state for a reference backend. It deliberately has no
 radial wave. Supply both `J` and parity (`+1` or `-1`) when angular selection
 rules are required; omit both for legacy rows whose quantum numbers are not yet
 encoded. Solver-native operators must reject this state kind.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+initial = QMT.ReferenceState("rho", 0.77; J=1, parity=-1)
+final = TwoMesonChannel(QMT.ReferenceState("pi+", 0.14; J=0, parity=-1), QMT.ReferenceState("pi-", 0.14; J=0, parity=-1))
+@assert initial.mass_GeV == 0.77
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
 """
 struct ReferenceState{P} <: TransitionState
     label::String
@@ -189,6 +283,37 @@ For [`PseudoscalarEmission`](@ref), use
 state. Reverse the arguments to choose the other assignment in a
 two-pseudoscalar channel. Identical-particle rules use state identity, not
 sorting.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+params, masses = load_parameters_and_quark_masses(default_parameters_path())
+a1, vector, pion_basis = BasisState(1, "P", 3, 1), BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)
+# A modest grid for this example; check convergence for quantitative widths.
+solver = FiniteDifferenceSolver(ngrid=240, rmax=24.0, nlevels_per_channel=1)
+charged = compute_spectrum(params, Meson(masses, :u, :d);
+    levels=[a1, vector, pion_basis], solver)
+initial = physical_state(charged, a1)
+rho = physical_state(charged, vector)
+# Resolve pi0 = (u ubar - d dbar)/sqrt(2) in the isospin limit.
+up = compute_spectrum(params, Meson(masses, :u, :u); levels=[pion_basis], solver)
+down = compute_spectrum(params, Meson(masses, :d, :d); levels=[pion_basis], solver)
+u, d = physical_state(up, pion_basis), physical_state(down, pion_basis)
+pion = PhysicalState("pi0", (u.mass_GeV + d.mass_GeV)/2,
+    [(basis=c.basis, coefficient=sign*c.coefficient/sqrt(2), wave=c.wave)
+     for (state, sign) in ((u, 1), (d, -1)) for c in state.components];
+    provenance=(source=:isospin_combination,))
+final = TwoMesonChannel(rho, pion)
+g, h = 0.7, 0.3 # Illustrative GeV^-1 inputs, not fitted GI predictions.
+operator = PseudoscalarEmission(g, h, masses)
+@assert final.second.J == 0
+```
+
+## Related
+
+- [`matrix_element`](@ref) — evaluate an operator between states.
 """
 struct TwoMesonChannel{A<:TransitionState,B<:TransitionState}
     first::A
@@ -201,7 +326,22 @@ struct TwoMesonChannel{A<:TransitionState,B<:TransitionState}
     end
 end
 
-"""Relative orbital angular momentum `L` and coupled daughter spin `S`."""
+"""
+Relative orbital angular momentum `L` and coupled daughter spin `S`.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+wave = PartialWave(1, 0)
+@assert wave.relative_L == 1
+```
+
+## Related
+
+- [`matrix_element`](@ref) — evaluate an operator between states.
+"""
 struct PartialWave
     relative_L::Int
     channel_spin::Int
@@ -244,6 +384,20 @@ end
 
 Derive every `(L,S)` allowed by angular momentum, parity, and identical-boson
 exchange symmetry. The external states must carry `J^P` metadata.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+initial = QMT.ReferenceState("rho", 0.77; J=1, parity=-1)
+final = TwoMesonChannel(QMT.ReferenceState("pi+", 0.14; J=0, parity=-1), QMT.ReferenceState("pi-", 0.14; J=0, parity=-1))
+@assert QuarkModelTransitions.allowed_partial_waves(final, initial) == [PartialWave(1, 0)]
+```
+
+## Related
+
+- [`matrix_element`](@ref) — evaluate an operator between states.
 """
 function allowed_partial_waves(final::TwoMesonChannel, initial::TransitionState)
     J, parent_parity = _state_quantum_numbers(initial)
@@ -283,6 +437,21 @@ reduced helicities `h_0 = H_0`, `h_m = sqrt(2) H_m` for `m > 0`. Spin-zero
 daughters have the unique one-column projection; a vector plus pseudoscalar is
 projected with conventional Clebsch--Gordan coefficients and reproduces Table
 XI. Higher-spin compression remains gated on its own phase audit.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+initial = QMT.ReferenceState("rho", 0.77; J=1, parity=-1)
+final = TwoMesonChannel(QMT.ReferenceState("pi+", 0.14; J=0, parity=-1), QMT.ReferenceState("pi-", 0.14; J=0, parity=-1))
+projection = QMT.partial_wave_projection(final, initial)
+@assert projection.matrix == ones(1, 1)
+```
+
+## Related
+
+- [`matrix_element`](@ref) — evaluate an operator between states.
 """
 function partial_wave_projection(final::TwoMesonChannel, initial::TransitionState)
     J, _ = _state_quantum_numbers(initial)
@@ -381,8 +550,44 @@ function _compose_physical_decay(
 end
 
 abstract type TransitionKinematics end
+"""
+Internal marker for deriving momentum from external-state masses.
+Public `matrix_element` calls always derive their own on-shell momentum.
+
+## Example
+
+```julia
+import QuarkModelTransitions as QMT
+marker = QMT.OnShell()
+@assert marker isa QMT.TransitionKinematics
+```
+
+## Related
+
+[`matrix_element`](@ref), `CMKinematics`, [`mass_correction_factor`](@ref).
+"""
 struct OnShell <: TransitionKinematics end
 
+"""
+    CMKinematics(momentum_GeV)
+
+Momentum record stored in emission amplitudes. Real momentum must be nonnegative;
+complex values support internal strong-emission continuation. Use
+`mass_correction_factor` for public comparisons at another momentum.
+
+## Example
+
+```julia
+import QuarkModelTransitions as QMT
+record = QMT.CMKinematics(0.1)
+@assert record.momentum_GeV == 0.1
+```
+
+## Related
+
+`OnShell`, `TransitionAmplitude`, `RadiativeAmplitude`,
+[`mass_correction_factor`](@ref).
+"""
 struct CMKinematics{T<:Number} <: TransitionKinematics
     momentum_GeV::T
     function CMKinematics(momentum_GeV::Number)
@@ -410,7 +615,7 @@ function Base.showerror(io::IO, error::ClosedChannelError)
         "on-shell channel ", error.parent, " -> ", error.daughters[1], " + ",
         error.daughters[2], " is closed: M=", error.parent_mass_GeV,
         " GeV, threshold=", error.threshold_GeV,
-        " GeV; use explicit CMKinematics(k) for an off-shell vertex",
+        " GeV; no on-shell amplitude exists for these input masses",
     )
 end
 
@@ -432,7 +637,63 @@ _resolve_kinematics(final::TwoMesonChannel, initial, ::OnShell) =
     CMKinematics(_on_shell_momentum(final, initial))
 
 abstract type AmplitudeNormalization end
+"""
+Native Eq. (C2) normalization. For strong amplitudes, the partial width in MeV is `1000q/(2π(2J+1))` times the sum of squared partial-wave values, with `q` in GeV.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+params, masses = load_parameters_and_quark_masses(default_parameters_path())
+a1, vector, pion_basis = BasisState(1, "P", 3, 1), BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)
+# A modest grid for this example; check convergence for quantitative widths.
+solver = FiniteDifferenceSolver(ngrid=240, rmax=24.0, nlevels_per_channel=1)
+charged = compute_spectrum(params, Meson(masses, :u, :d);
+    levels=[a1, vector, pion_basis], solver)
+initial = physical_state(charged, a1)
+rho = physical_state(charged, vector)
+# Resolve pi0 = (u ubar - d dbar)/sqrt(2) in the isospin limit.
+up = compute_spectrum(params, Meson(masses, :u, :u); levels=[pion_basis], solver)
+down = compute_spectrum(params, Meson(masses, :d, :d); levels=[pion_basis], solver)
+u, d = physical_state(up, pion_basis), physical_state(down, pion_basis)
+pion = PhysicalState("pi0", (u.mass_GeV + d.mass_GeV)/2,
+    [(basis=c.basis, coefficient=sign*c.coefficient/sqrt(2), wave=c.wave)
+     for (state, sign) in ((u, 1), (d, -1)) for c in state.components];
+    provenance=(source=:isospin_combination,))
+final = TwoMesonChannel(rho, pion)
+g, h = 0.7, 0.3 # Illustrative GeV^-1 inputs, not fitted GI predictions.
+operator = PseudoscalarEmission(g, h, masses)
+amplitude = matrix_element(final, operator, initial)
+@assert amplitude.normalization isa QMT.RelativisticTwoBodyNormalization
+```
+
+## Related
+
+- [`matrix_element`](@ref) — evaluate an operator between states.
+"""
 struct RelativisticTwoBodyNormalization <: AmplitudeNormalization end
+"""
+Frozen Table V normalization: each amplitude has units MeV^(1/2), and its squared modulus is a partial width in MeV.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
+channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
+initial = QMT.ReferenceState("rho", 0.77; J=1, parity=-1)
+final = TwoMesonChannel(QMT.ReferenceState("pi+", 0.14; J=0, parity=-1), QMT.ReferenceState("pi-", 0.14; J=0, parity=-1))
+operator = QMT.TableVReference(model, channel, PartialWave(1, 0))
+amplitude = matrix_element(final, operator, initial)
+@assert amplitude.normalization isa QMT.GITableVNormalization
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
+"""
 struct GITableVNormalization <: AmplitudeNormalization end
 
 """One inspectable contribution to a transition amplitude."""
@@ -451,6 +712,40 @@ end
 A complete transition result with primitive helicity values, every available
 partial-wave projection, typed term decomposition, normalization, and
 provenance. Collections are tuples so no field erases its element type.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+params, masses = load_parameters_and_quark_masses(default_parameters_path())
+a1, vector, pion_basis = BasisState(1, "P", 3, 1), BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)
+# A modest grid for this example; check convergence for quantitative widths.
+solver = FiniteDifferenceSolver(ngrid=240, rmax=24.0, nlevels_per_channel=1)
+charged = compute_spectrum(params, Meson(masses, :u, :d);
+    levels=[a1, vector, pion_basis], solver)
+initial = physical_state(charged, a1)
+rho = physical_state(charged, vector)
+# Resolve pi0 = (u ubar - d dbar)/sqrt(2) in the isospin limit.
+up = compute_spectrum(params, Meson(masses, :u, :u); levels=[pion_basis], solver)
+down = compute_spectrum(params, Meson(masses, :d, :d); levels=[pion_basis], solver)
+u, d = physical_state(up, pion_basis), physical_state(down, pion_basis)
+pion = PhysicalState("pi0", (u.mass_GeV + d.mass_GeV)/2,
+    [(basis=c.basis, coefficient=sign*c.coefficient/sqrt(2), wave=c.wave)
+     for (state, sign) in ((u, 1), (d, -1)) for c in state.components];
+    provenance=(source=:isospin_combination,))
+final = TwoMesonChannel(rho, pion)
+g, h = 0.7, 0.3 # Illustrative GeV^-1 inputs, not fitted GI predictions.
+operator = PseudoscalarEmission(g, h, masses)
+amplitude = matrix_element(final, operator, initial)
+@assert amplitude isa QuarkModelTransitions.TransitionAmplitude
+```
+
+## Related
+
+- [`matrix_element`](@ref) — evaluate an operator between states.
+- [`partial_waves`](@ref) — inspect the available angular components.
+- [`decay_width`](@ref) — convert a transition result to MeV.
 """
 struct TransitionAmplitude{O,I,F,K,N,H<:Tuple,W<:Tuple,R<:Tuple,P}
     operator::O
@@ -464,6 +759,48 @@ struct TransitionAmplitude{O,I,F,K,N,H<:Tuple,W<:Tuple,R<:Tuple,P}
     provenance::P
 end
 
+"""
+    partial_waves(amplitude)
+
+Return the available `PartialWave` keys of a strong transition. Read each value with `amplitude[wave]`; photon results instead record a transition class and multipole.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+params, masses = load_parameters_and_quark_masses(default_parameters_path())
+a1, vector, pion_basis = BasisState(1, "P", 3, 1), BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)
+# A modest grid for this example; check convergence for quantitative widths.
+solver = FiniteDifferenceSolver(ngrid=240, rmax=24.0, nlevels_per_channel=1)
+charged = compute_spectrum(params, Meson(masses, :u, :d);
+    levels=[a1, vector, pion_basis], solver)
+initial = physical_state(charged, a1)
+rho = physical_state(charged, vector)
+# Resolve pi0 = (u ubar - d dbar)/sqrt(2) in the isospin limit.
+up = compute_spectrum(params, Meson(masses, :u, :u); levels=[pion_basis], solver)
+down = compute_spectrum(params, Meson(masses, :d, :d); levels=[pion_basis], solver)
+u, d = physical_state(up, pion_basis), physical_state(down, pion_basis)
+pion = PhysicalState("pi0", (u.mass_GeV + d.mass_GeV)/2,
+    [(basis=c.basis, coefficient=sign*c.coefficient/sqrt(2), wave=c.wave)
+     for (state, sign) in ((u, 1), (d, -1)) for c in state.components];
+    provenance=(source=:isospin_combination,))
+final = TwoMesonChannel(rho, pion)
+g, h = 0.7, 0.3 # Illustrative GeV^-1 inputs, not fitted GI predictions.
+operator = PseudoscalarEmission(g, h, masses)
+amplitude = matrix_element(final, operator, initial)
+waves = partial_waves(amplitude)
+@assert waves == [PartialWave(0, 1), PartialWave(2, 1)]
+@assert isfinite(amplitude[first(waves)])
+```
+
+## Related
+
+- [`matrix_element`](@ref) — evaluate an operator between states.
+- [`PartialWave`](@ref) — orbital and coupled-spin labels.
+- `TransitionAmplitude` — strong result and its decomposition.
+- [`decay_width`](@ref) — convert a transition result to MeV.
+"""
 partial_waves(amplitude::TransitionAmplitude) =
     [first(item) for item in amplitude.partial_wave_amplitudes]
 
@@ -474,28 +811,90 @@ function Base.getindex(amplitude::TransitionAmplitude, wave::PartialWave)
 end
 
 """
-    matrix_element(final, operator, initial; kinematics=OnShell())
+    matrix_element(final, operator, initial; kwargs...)
 
-Evaluate a transition operator between an initial meson and its resolved final
-object. The final object is part of the dispatch: strong decays use an ordered
-[`TwoMesonChannel`](@ref), whereas [`PhotonEmission`](@ref) uses the surviving
-final [`PhysicalState`](@ref) directly.
+Evaluate a transition using the masses, wavefunctions, and coherent components
+of the supplied states. Obtain GIModel solutions with [`physical_state`](@ref).
+The returned object records its normalization and contributions; use
+[`decay_width`](@ref) for the supported physical-width conversion in MeV.
 
-The implemented operator classes are:
+## Initial states
 
-- [`PseudoscalarEmission`](@ref): solver-native GI Eq. (19)
-  `M_i -> M_f + P`, with `final.second` the elementary emitted `J^P=0^-`
-  meson. It returns all allowed helicity and partial-wave amplitudes.
-- [`TableVReference`](@ref): one frozen GI Table V row with its already selected
-  partial wave, intended for paper reproduction and audit.
-- [`PhotonEmission`](@ref): the published Appendix-D mock-meson realization of
-  M1, E1, or M2 photon emission. Spectroscopy selects the typed kernel and
-  explicit flavor components determine the standard electromagnetic current.
+[`PhysicalState`](@ref) for native operators, `ReferenceState` for the
+qualified `TableVReference` compatibility backend.
 
-Annihilation and leptonic observables still use their specialized exported
-functions. General quark-pair creation (including `s sbar` creation),
-non-pseudoscalar meson emission, weak hadronic transitions, and
-continuum-induced mixing are not implemented.
+## Final states
+
+[`PhysicalState`](@ref) for the daughter in photon emission,
+[`TwoMesonChannel`](@ref) for pseudoscalar emission,
+[`Vacuum`](@ref) for a meson-current matrix element,
+[`TwoPhotonChannel`](@ref) for two-photon annihilation.
+For pseudoscalar emission, order the daughters as `(surviving, emitted)`;
+the second must be a resolved elementary `0^-` state. Reference channels must
+match the labels of their supplied row.
+
+## Operators
+
+[`PhotonEmission`](@ref), [`PseudoscalarEmission`](@ref),
+[`LeptonicCurrent`](@ref), [`TwoPhotonAnnihilation`](@ref),
+`TableVReference` (internal reference backend).
+[`GluonicAnnihilation`](@ref) supports only `decay_width`, not `matrix_element`.
+
+`PhotonEmission` returns a `RadiativeAmplitude`: M1 values are moments
+in nuclear magnetons, E1/M2 values are integrated amplitudes in MeV^(1/2).
+The default constructor infers the multipole and flavor current from the states;
+`verbose=true` reports the selection.
+
+`PseudoscalarEmission` returns a `TransitionAmplitude` with dimensionless
+Eq. (19) partial waves, compressed helicities, and coherent component terms.
+Its `g,h` couplings are additional phenomenological inputs supplied by the caller.
+`TableVReference` returns a `TransitionAmplitude` for one supplied paper-row
+partial wave in MeV^(1/2).
+
+`LeptonicCurrent` and `TwoPhotonAnnihilation` return an
+`AnnihilationAmplitude`. Its `.value` is respectively a dimensionless GI
+reduced current or a signed two-photon width amplitude in GeV^(1/2). There is no
+universal invariant-amplitude normalization shared by these results.
+
+## Masses and comparisons
+
+Emission momenta are calculated from the input-state masses. There is no public
+`kinematics` override. Use [`mass_correction_factor`](@ref) separately to compare
+another mass or momentum while keeping waves, mixing, and operator parameters
+fixed. A closed reference emission channel has no amplitude correction ratio.
+Explicit flavor components are required where a current or isospin combination
+must be resolved; an averaged `:q` label alone does not specify that information.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+params, masses = load_parameters_and_quark_masses(default_parameters_path())
+levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
+# A modest grid for this example; check convergence for quantitative widths.
+solver = FiniteDifferenceSolver(ngrid=240, rmax=24.0, nlevels_per_channel=1)
+spectrum = compute_spectrum(params, Meson(masses, :c, :c); levels, solver)
+initial = physical_state(spectrum, levels[1])
+final = physical_state(spectrum, levels[2])
+operator = PhotonEmission(masses)
+amplitude = matrix_element(final, operator, initial)
+@assert decay_width(amplitude) > 0
+```
+
+## Related
+
+Results: [`decay_width`](@ref), [`mass_correction_factor`](@ref),
+[`partial_waves`](@ref), `allowed_partial_waves`, [`PartialWave`](@ref),
+`partial_wave_projection`.
+
+Internal conventions: `RelativisticTwoBodyNormalization`,
+`GITableVNormalization`, `TransitionOperator`,
+`StrongDecayOperator`.
+
+Primitive observables: `leptonic_decay_factor`,
+`gluonic_annihilation_width`, `two_photon_amplitude`,
+[`charge_radius_squared`](@ref).
 """
 function matrix_element end
 function partial_width end
@@ -505,8 +904,7 @@ _validate_transition(final, operator, initial) = nothing
 function matrix_element(
     final::TwoMesonChannel,
     operator::StrongDecayOperator,
-    initial::TransitionState;
-    kinematics::TransitionKinematics = OnShell(),
+    initial::TransitionState,
 )
     states = (initial, final.first, final.second)
     reference = findfirst(state -> state isa ReferenceState, states)
@@ -522,6 +920,87 @@ function matrix_element(
     ))
 end
 
+"""
+    decay_width(final, operator, initial; kwargs...)
+    decay_width(amplitude)
+
+Return a numerical partial width in **MeV**. The conversion includes the
+operator's prescribed phase space, spin sums/averages, and symmetry factors.
+Do not apply those factors a second time. Masses and emission momenta come from
+the input states; a closed native emission channel returns zero.
+
+## Initial states
+
+[`PhysicalState`](@ref) from [`physical_state`](@ref), `ReferenceState`
+for qualified `TableVReference` compatibility calculations.
+
+## Final states
+
+[`PhysicalState`](@ref) for photon emission, [`TwoMesonChannel`](@ref) for
+pseudoscalar emission or reference rows, [`LeptonNeutrinoChannel`](@ref) for
+pseudoscalar leptonic decay, [`MasslessLeptonPair`](@ref) for vector dilepton
+decay, [`TwoPhotonChannel`](@ref) for two photons, [`TwoGluonChannel`](@ref),
+[`ThreeGluonChannel`](@ref) for integrated gluonic rates.
+
+## Operators
+
+[`PhotonEmission`](@ref), [`PseudoscalarEmission`](@ref),
+[`LeptonicCurrent`](@ref), [`TwoPhotonAnnihilation`](@ref),
+[`GluonicAnnihilation`](@ref), `TableVReference` (internal reference backend).
+
+The final-state type must match the operator. `LeptonicCurrent(:P_P, ...)`
+requires a lepton-neutrino channel with an explicit CKM magnitude; vector
+currents use the massless-pair approximation. Axial tau decay remains available
+through the primitive `axial_tau_width`, in GeV.
+
+## Amplitude inputs
+
+`TransitionAmplitude`, `RadiativeAmplitude`,
+`AnnihilationAmplitude` produced by `TwoPhotonAnnihilation`,
+`StrongDecayAmplitude` from the reference backend.
+For a leptonic current use the three-argument form to specify a physical final
+channel: its `Vacuum()` matrix element is a current, not a decay width.
+
+Native strong widths use `RelativisticTwoBodyNormalization`; reference
+rows use `GITableVNormalization`. M1 moments are converted with photon
+phase space; E1/M2 amplitudes are squared. Two-photon amplitudes are squared
+and converted from GeV to MeV. Gluonic formulas expose integrated rates only.
+
+## Mass corrections
+
+[`mass_correction_factor`](@ref) gives a fixed-wave comparison at another mass
+or momentum. Most factors multiply amplitudes or currents, so their squared
+modulus does not generally include the change in the width's remaining phase
+space. Gluonic correction factors multiply the width directly.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+params, masses = load_parameters_and_quark_masses(default_parameters_path())
+levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
+# A modest grid for this example; check convergence for quantitative widths.
+solver = FiniteDifferenceSolver(ngrid=240, rmax=24.0, nlevels_per_channel=1)
+spectrum = compute_spectrum(params, Meson(masses, :c, :c); levels, solver)
+initial = physical_state(spectrum, levels[1])
+final = physical_state(spectrum, levels[2])
+operator = LeptonicCurrent(:electromagnetic, masses)
+current = matrix_element(Vacuum(), operator, initial)
+width_MeV = decay_width(MasslessLeptonPair(), operator, initial)
+@assert width_MeV > 0
+@assert isfinite(current.value)
+```
+
+## Related
+
+[`matrix_element`](@ref), [`partial_waves`](@ref), `m1_radiative_width`,
+`leptonic_pseudoscalar_width`, `dilepton_vector_width`,
+`gluonic_annihilation_width`, `two_photon_amplitude`,
+`GEV_TO_MEV`.
+"""
+function decay_width end
+
 decay_width(amplitude::TransitionAmplitude) =
     partial_width(amplitude.normalization, amplitude)
 
@@ -532,7 +1011,7 @@ function decay_width(
 )
     _validate_transition(final, operator, initial)
     initial.mass_GeV <= final.first.mass_GeV + final.second.mass_GeV && return 0.0
-    return decay_width(matrix_element(final, operator, initial; kinematics = OnShell()))
+    return decay_width(matrix_element(final, operator, initial))
 end
 
 function Base.show(io::IO, state::PhysicalState)

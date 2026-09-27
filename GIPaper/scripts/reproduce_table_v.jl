@@ -18,6 +18,14 @@ using CSV
 using Printf
 using GIModel
 using QuarkModelTransitions
+# Internal kernels for reference calculations.
+using QuarkModelTransitions: LeadingS0, calibrate_strong_decay_model, decay_amplitude, decay_momentum, spatial_overlap
+# Qualified public API used by this reference/kernel audit.
+using QuarkModelTransitions: LeadingS0,
+    calibrate_strong_decay_model,
+    decay_amplitude,
+    decay_momentum,
+    spatial_overlap
 using GIPaper: load_table_v, quark_for, experimental_mass, historical_mass, load_table_policy
 
 const ROOT = dirname(@__DIR__)

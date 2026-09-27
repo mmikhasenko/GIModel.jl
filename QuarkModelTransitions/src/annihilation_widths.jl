@@ -24,6 +24,20 @@ mass `mass_GeV`, with `Φ(p)` the momentum-space wave from the jₗ transform an
 result carries the absolute GeV^(3/2) scale of a wavefunction at the origin; its
 sign follows the radial phase of `radial` (which alternates with the number of
 radial nodes, matching the Table VII sign pattern within a quarkonium family).
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+wave = OscillatorWave(0, 0.5, [1.0])
+@assert isfinite(QuarkModelTransitions.wavefunction_origin_smearing(wave, 1.628))
+```
+
+## Related
+
+- `gluonic_annihilation_width` — gluonic width in GeV.
+- `gluonic_annihilation_amplitude` — signed gluonic amplitude.
 """
 function wavefunction_origin_smearing(
     radial::RadialWave,
@@ -48,6 +62,21 @@ end
 #   :P0_2g  Γ(³P₀→2g) = 8π α_s²/(3 m_Q²) |S₁|²
 # (α_s = α_s(μ) with μ the mass of the decaying meson; S_L is S₀ for the S-wave
 # channels and S₁ for the P-wave channels.)
+"""
+Supported lowest-order annihilation channels: `:S0_2g`, `:S1_3g`, `:P2_2g`, and `:P0_2g`.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert :S0_2g in QMT.GLUONIC_CHANNELS
+```
+
+## Related
+
+- `gluonic_annihilation_width` — gluonic width in GeV.
+"""
 const GLUONIC_CHANNELS = (:S0_2g, :S1_3g, :P2_2g, :P0_2g)
 
 function gluonic_width_prefactor(channel::Symbol, alpha_s::Real, mQ::Real)
@@ -69,6 +98,21 @@ which tabulates √Γ with the sign of `S_L`). `channel` ∈ `GLUONIC_CHANNELS`;
 `S_L` is `wavefunction_origin_smearing` at `L=0` for the S-wave channels
 (`:S0_2g`, `:S1_3g`) and `L=1` for the P-wave channels (`:P2_2g`, `:P0_2g`);
 `alpha_s = α_s(M)` at the decaying-meson mass; `mQ` the constituent quark mass.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+wave = OscillatorWave(0, 0.5, [1.0])
+smearing = QuarkModelTransitions.wavefunction_origin_smearing(wave, 1.628)
+amplitude = QuarkModelTransitions.gluonic_annihilation_amplitude(:S0_2g, smearing, 0.3, 1.628)
+@assert abs2(amplitude) ≈ QuarkModelTransitions.gluonic_annihilation_width(:S0_2g, smearing, 0.3, 1.628)
+```
+
+## Related
+
+- `gluonic_annihilation_width` — gluonic width in GeV.
 """
 gluonic_annihilation_amplitude(channel::Symbol, S_L::Real, alpha_s::Real, mQ::Real) =
     sqrt(gluonic_width_prefactor(channel, alpha_s, mQ)) * float(S_L)
@@ -77,7 +121,24 @@ gluonic_annihilation_amplitude(channel::Symbol, S_L::Real, alpha_s::Real, mQ::Re
     gluonic_annihilation_width(channel, S_L, alpha_s, mQ)
 
 Lowest-order gluonic annihilation width Γ (GeV) = amplitude². See
-[`gluonic_annihilation_amplitude`](@ref).
+`gluonic_annihilation_amplitude`.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+wave = OscillatorWave(0, 0.5, [1.0])
+smearing = QuarkModelTransitions.wavefunction_origin_smearing(wave, 1.628)
+@assert QuarkModelTransitions.gluonic_annihilation_width(:S0_2g, smearing, 0.3, 1.628) > 0
+```
+
+## Related
+
+- `GLUONIC_CHANNELS` — supported gluonic channel symbols.
+- `gluonic_annihilation_amplitude` — signed gluonic amplitude.
+- [`matrix_element`](@ref) — evaluate an operator between states.
+- `wavefunction_origin_smearing` — smeared wavefunction at the origin.
 """
 gluonic_annihilation_width(channel::Symbol, S_L::Real, alpha_s::Real, mQ::Real) =
     gluonic_width_prefactor(channel, alpha_s, mQ) * float(S_L)^2
@@ -104,6 +165,21 @@ Return the normalized momentum-space representation used by transition
 observables. For finite-difference waves the transform respects the mesh
 Nyquist limit and the certified 60 GeV integration cutoff; oscillator waves
 retain their exact infinite-domain representation.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+wave = OscillatorWave(0, 0.5, [1.0])
+mw = QMT.observable_momentum_wave(wave, 0)
+@assert momentum_expect(mw, p -> 1.0) ≈ 1
+```
+
+## Related
+
+- `m1_transition_moment` — assemble a moment in nuclear magnetons.
+- `wavefunction_origin_smearing` — smeared wavefunction at the origin.
 """
 observable_momentum_wave(w::MeshWave, L::Integer; npoints::Integer = 900) =
     momentum_wave(
@@ -129,6 +205,20 @@ end
 The mock-meson mass `M̃ = <E₁> + <E₂>` (GeV): the free quark-pair energy
 averaged over the momentum-space wavefunction `|Φ_L(p)|²` of the radial wave.
 This is the `M̃` appearing in the Table VII(a) leptonic-factor prefactors.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+wave = OscillatorWave(0, 0.5, [1.0])
+@assert QMT.mock_meson_mass(wave, 1.628, 1.628) > 2 * 1.628
+```
+
+## Related
+
+- `leptonic_decay_factor` — dimensionless mock-meson factors.
+- `observable_momentum_wave` — momentum representation for observables.
 """
 function mock_meson_mass(
     radial::RadialWave,
@@ -148,6 +238,21 @@ function mock_meson_mass(
 end
 
 # kind => (orbital L of the wavefunction, needs equal masses)
+"""
+Map each leptonic factor symbol to `(orbital_L, equal_masses_required)`. Use this to choose the radial wave passed to `leptonic_decay_factor`.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert QMT.LEPTONIC_FACTOR_KINDS[:P_P] == (0, false)
+```
+
+## Related
+
+- `leptonic_decay_factor` — dimensionless mock-meson factors.
+"""
 const LEPTONIC_FACTOR_KINDS = Dict(
     :P_P => (0, false),    # ¹S₀ pseudoscalar, weight √(m₁m₂/E₁E₂)
     :V_V => (0, false),    # ³S₁ vector,       weight √(m₁m₂/E₁E₂)
@@ -166,12 +271,33 @@ The dimensionless Table VII(a) mock-meson leptonic factor (Eqs. D4-D6):
     P'_A1 = M⁻² M̃^(+1/2) K[m·p/E²]           (³P₁ wave, L=1, equal masses)
 
 with `K[w] = (2π)^(-3/2) ∫d³p (4π)^(-1/2) Φ_L(p) w(p)`, `M` the meson mass and
-`M̃` the mock mass [`mock_meson_mass`](@ref) of the same wave. The tabulated
+`M̃` the mock mass `mock_meson_mass` of the same wave. The tabulated
 amplitude is a quark-charge/flavor coefficient times this factor (e.g.
 `f_π/M_π = 2√3 P_π`, `f_ψ = (16/3)^(1/2) V_ψ`); the paper's implicit `m/E`
 exponent is unity, as stated below the formula block. `radial` must be the
 wave of the orbital the kind expects; its overall sign propagates to the
 factor (fix a phase convention upstream for sign comparisons).
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+wave = OscillatorWave(0, 0.5, [1.0])
+factor = QuarkModelTransitions.leptonic_decay_factor(:V_V, wave, 1.628, 1.628, 3.10)
+f_V = sqrt(16/3) * factor
+@assert QuarkModelTransitions.dilepton_vector_width(f_V, 3.10) > 0
+```
+
+## Related
+
+- `G_FERMI_GEV` — Fermi coupling in GeV^-2.
+- `LEPTONIC_FACTOR_KINDS` — orbital and mass requirements.
+- `axial_tau_width` — tau-to-axial width in GeV.
+- `dilepton_vector_width` — vector dilepton width in GeV.
+- `leptonic_pseudoscalar_width` — pseudoscalar leptonic width in GeV.
+- [`matrix_element`](@ref) — evaluate an operator between states.
+- `mock_meson_mass` — mock mass from a radial wave.
 """
 function leptonic_decay_factor(
     kind::Symbol,
@@ -206,7 +332,21 @@ end
 # Two-photon amplitudes — the Table VII(b) γγ formulas (page 28).
 # -----------------------------------------------------------------------------
 
-"""Electromagnetic fine-structure constant used in the Table VII(b) γγ formulas."""
+"""
+Electromagnetic fine-structure constant used in the Table VII(b) γγ formulas.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert QMT.ALPHA_EM ≈ 1/137.036
+```
+
+## Related
+
+- `dilepton_vector_width` — vector dilepton width in GeV.
+"""
 const ALPHA_EM = 1 / 137.036
 
 # raw momentum moment ∫ p² Φ_L(p) w(p) dp over the (unit-normalized) wave
@@ -224,11 +364,27 @@ Two-photon annihilation amplitude (GeV^(1/2), amplitude² = Γ) of Table VII(b):
 
 for `kind` `:P` (S-wave pseudoscalar, `radial` the ¹S₀ wave) or `:P2` (the
 ³P₂ tensor, `radial` the P-wave). `m_GeV` is the constituent quark mass (equal
-masses), `M_GeV` the meson mass, `M̃` the mock mass [`mock_meson_mass`](@ref),
+masses), `M_GeV` the meson mass, `M̃` the mock mass `mock_meson_mass`,
 and `q_eff = Σ aᵢ eᵢ²` the state's effective squared charge (the flavor
 amplitude weighted sum of quark charges; e.g. `(e_u²−e_d²)/√2` for a π⁰-like
 isovector, `4/9` for cc̄). For the `:P` S-wave, `∫d³p φ_P(m/E) = √(4π) ∫p²Φ(m/E)dp`.
 The sign follows `q_eff` and the wave's phase convention.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+wave = OscillatorWave(0, 0.5, [1.0])
+amplitude = QuarkModelTransitions.two_photon_amplitude(:P, wave, 1.628, 2.98, 4/9)
+width_GeV = abs2(amplitude)
+@assert width_GeV > 0
+```
+
+## Related
+
+- [`matrix_element`](@ref) — evaluate an operator between states.
+- `ALPHA_EM` — electromagnetic fine-structure constant.
 """
 function two_photon_amplitude(
     kind::Symbol,
@@ -268,7 +424,21 @@ function _rel_momentum_average(wave::RadialWave, m::Real, power::Real; npoints::
     return value / nrm
 end
 
-"""Conversion (ħc)² : an r² in GeV⁻² is `HBARC_FM2 · r²` in fm²."""
+"""
+Conversion (ħc)² : an r² in GeV⁻² is `HBARC_FM2 · r²` in fm².
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert 1.0 * QMT.HBARC_FM2 ≈ 0.19733^2 # 1 GeV^-2 in fm^2
+```
+
+## Related
+
+- [`charge_radius_squared`](@ref) — mean-square charge radius in GeV^-2.
+"""
 const HBARC_FM2 = 0.19733^2
 
 """
@@ -283,7 +453,23 @@ Mean-square charge radius `r_E²` (GeV⁻²) of a qq̄ meson, Table VII(d):
 `radial` (¹S₀) wave; the second term is the relativistic smearing of the
 quark-position operator, `f` the fit exponent (0.2, fitted to the π⁺). `e1`,
 `e2` are the quark charges (e.g. `+2/3`, `+1/3` for the u and d̄ of π⁺;
-`−1/3`, `+1/3` for the d and s̄ of K⁰). Multiply by [`HBARC_FM2`](@ref) for fm².
+`−1/3`, `+1/3` for the d and s̄ of K⁰). Multiply by `HBARC_FM2` for fm².
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+wave = OscillatorWave(0, 0.5, [1.0])
+radius_GeV2 = charge_radius_squared(wave, 0.22, 2/3, 0.22, 1/3)
+radius_fm2 = QMT.HBARC_FM2 * radius_GeV2
+@assert radius_fm2 > 0
+```
+
+## Related
+
+- `HBARC_FM2` — convert GeV^-2 to fm².
+- [`matrix_element`](@ref) — evaluate an operator between states.
 """
 function charge_radius_squared(
     radial::RadialWave,
@@ -315,7 +501,21 @@ end
 # constants imply; validate them by feeding the EXPERIMENTAL constant and
 # recovering the measured width (see the tests).
 
-"""Fermi coupling G_F in GeV⁻² (the `G` of Eqs. D7/D9)."""
+"""
+Fermi coupling G_F in GeV⁻² (the `G` of Eqs. D7/D9).
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert QMT.G_FERMI_GEV > 0
+```
+
+## Related
+
+- `leptonic_decay_factor` — dimensionless mock-meson factors.
+"""
 const G_FERMI_GEV = 1.1663787e-5
 
 """
@@ -329,6 +529,19 @@ with `f_P` the paper's dimensionless decay constant (= `f_P/M_P` in the
 mass-dimension convention, i.e. the Table VII(a) tabulated value). Cabibbo/CKM
 mixing is not included (the paper writes the reduced `G²`); multiply the result
 by `|V_CKM|²` for a specific quark transition. Returns 0 if `m_ℓ ≥ M_P`.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert QuarkModelTransitions.leptonic_pseudoscalar_width(0.130/0.140, 0.140, 0.106) > 0
+```
+
+## Related
+
+- `leptonic_decay_factor` — dimensionless mock-meson factors.
+- `G_FERMI_GEV` — Fermi coupling in GeV^-2.
 """
 function leptonic_pseudoscalar_width(
     f_P::Real,
@@ -351,6 +564,19 @@ Eq. (D8): the dilepton width of a vector,
 
 with `f_V` the paper's dimensionless vector decay constant (the Table VII(a)
 value). The lepton mass is neglected (massless-lepton limit, as written).
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert QuarkModelTransitions.dilepton_vector_width(0.13, 3.10) > 0
+```
+
+## Related
+
+- `ALPHA_EM` — electromagnetic fine-structure constant.
+- `leptonic_decay_factor` — dimensionless mock-meson factors.
 """
 function dilepton_vector_width(f_V::Real, M_V_GeV::Real; alpha::Real = ALPHA_EM)
     M = float(M_V_GeV)
@@ -367,6 +593,18 @@ Eq. (D9): the τ → A₁ ν_τ width from the axial decay constant,
 
 with `f_A1` the paper's dimensionless axial decay constant. Cabibbo mixing is not
 included (reduced `G²`). Returns 0 if `M_A1 ≥ m_τ` (channel closed).
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert QuarkModelTransitions.axial_tau_width(0.1, 1.23, 1.777) > 0
+```
+
+## Related
+
+- `leptonic_decay_factor` — dimensionless mock-meson factors.
 """
 function axial_tau_width(
     f_A1::Real,

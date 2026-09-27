@@ -1,21 +1,158 @@
 # High-level photon-emission operator for the common matrix_element API.
 
-"""A spectroscopically selected photon-transition kernel."""
+"""
+A spectroscopically selected photon-transition kernel.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+params, masses = load_parameters_and_quark_masses(default_parameters_path())
+levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
+# A modest grid for this example; check convergence for quantitative widths.
+solver = FiniteDifferenceSolver(ngrid=240, rmax=24.0, nlevels_per_channel=1)
+spectrum = compute_spectrum(params, Meson(masses, :c, :c); levels, solver)
+initial = physical_state(spectrum, levels[1])
+final = physical_state(spectrum, levels[2])
+operator = PhotonEmission(masses)
+@assert QuarkModelTransitions.photon_transition_class(final, initial) isa QMT.PhotonTransitionClass
+```
+
+## Related
+
+- [`PhotonEmission`](@ref) — infer and evaluate a photon transition.
+"""
 abstract type PhotonTransitionClass end
 
-"""Leading M1 transition between states with the same radial quantum number."""
+"""
+Leading M1 transition between states with the same radial quantum number.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+initial_wave = OscillatorWave(0, 0.5, [1.0])
+initial = PhysicalState("parent", 3.5, [(
+    basis=BasisState(1, "S", 3, 1; flavors=(:c, :c)),
+    coefficient=1.0, wave=initial_wave,
+)])
+final = PhysicalState("daughter", 3.0, [(
+    basis=BasisState(1, "S", 1, 0; flavors=(:c, :c)),
+    coefficient=1.0, wave=OscillatorWave(0, 0.5, [1.0]),
+)])
+@assert QuarkModelTransitions.photon_transition_class(final, initial) isa QMT.DirectM1
+```
+
+## Related
+
+- [`PhotonEmission`](@ref) — infer and evaluate a photon transition.
+"""
 struct DirectM1 <: PhotonTransitionClass end
 
-"""M1 transition between states with different radial quantum numbers."""
+"""
+M1 transition between states with different radial quantum numbers.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+initial_wave = OscillatorWave(0, 0.5, [0.0, 1.0])
+initial = PhysicalState("parent", 3.5, [(
+    basis=BasisState(2, "S", 3, 1; flavors=(:c, :c)),
+    coefficient=1.0, wave=initial_wave,
+)])
+final = PhysicalState("daughter", 3.0, [(
+    basis=BasisState(1, "S", 1, 0; flavors=(:c, :c)),
+    coefficient=1.0, wave=OscillatorWave(0, 0.5, [1.0]),
+)])
+@assert QuarkModelTransitions.photon_transition_class(final, initial) isa QMT.HinderedM1
+```
+
+## Related
+
+- [`PhotonEmission`](@ref) — infer and evaluate a photon transition.
+"""
 struct HinderedM1 <: PhotonTransitionClass end
 
-"""Spin-conserving electric-dipole transition between S and P states."""
+"""
+Spin-conserving electric-dipole transition between S and P states.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+initial_wave = OscillatorWave(1, 0.5, [1.0])
+initial = PhysicalState("parent", 3.5, [(
+    basis=BasisState(1, "P", 3, 1; flavors=(:c, :c)),
+    coefficient=1.0, wave=initial_wave,
+)])
+final = PhysicalState("daughter", 3.0, [(
+    basis=BasisState(1, "S", 3, 1; flavors=(:c, :c)),
+    coefficient=1.0, wave=OscillatorWave(0, 0.5, [1.0]),
+)])
+@assert QuarkModelTransitions.photon_transition_class(final, initial) isa QMT.AllowedE1
+```
+
+## Related
+
+- [`PhotonEmission`](@ref) — infer and evaluate a photon transition.
+"""
 struct AllowedE1 <: PhotonTransitionClass end
 
-"""Spin-flip electric-dipole transition from a triplet P1 to a singlet S0 state."""
+"""
+Spin-flip electric-dipole transition from a triplet P1 to a singlet S0 state.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+initial_wave = OscillatorWave(1, 0.5, [1.0])
+initial = PhysicalState("parent", 3.5, [(
+    basis=BasisState(1, "P", 3, 1; flavors=(:c, :c)),
+    coefficient=1.0, wave=initial_wave,
+)])
+final = PhysicalState("daughter", 3.0, [(
+    basis=BasisState(1, "S", 1, 0; flavors=(:c, :c)),
+    coefficient=1.0, wave=OscillatorWave(0, 0.5, [1.0]),
+)])
+@assert QuarkModelTransitions.photon_transition_class(final, initial) isa QMT.SpinFlipE1
+```
+
+## Related
+
+- [`PhotonEmission`](@ref) — infer and evaluate a photon transition.
+"""
 struct SpinFlipE1 <: PhotonTransitionClass end
 
-"""Spin-flip magnetic-quadrupole transition from a triplet P2 to a singlet S0 state."""
+"""
+Spin-flip magnetic-quadrupole transition from a triplet P2 to a singlet S0 state.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+initial_wave = OscillatorWave(1, 0.5, [1.0])
+initial = PhysicalState("parent", 3.5, [(
+    basis=BasisState(1, "P", 3, 2; flavors=(:c, :c)),
+    coefficient=1.0, wave=initial_wave,
+)])
+final = PhysicalState("daughter", 3.0, [(
+    basis=BasisState(1, "S", 1, 0; flavors=(:c, :c)),
+    coefficient=1.0, wave=OscillatorWave(0, 0.5, [1.0]),
+)])
+@assert QuarkModelTransitions.photon_transition_class(final, initial) isa QMT.SpinFlipM2
+```
+
+## Related
+
+- [`PhotonEmission`](@ref) — infer and evaluate a photon transition.
+"""
 struct SpinFlipM2 <: PhotonTransitionClass end
 
 _photon_multipole(::Union{DirectM1,HinderedM1}) = :M1
@@ -28,11 +165,24 @@ abstract type PhotonCurrent end
 struct StandardPhotonCurrent <: PhotonCurrent end
 
 """
-    PhotonEmitter(flavors, constituent, coefficient)
+PhotonEmitter(flavors, constituent, coefficient)
 
 One resolved term in an electromagnetic current. This technical adapter is
 used by paper-reproduction code whose legacy `:q` states do not retain enough
 flavor information to derive isospin charges automatically.
+
+## Example
+
+```julia
+using QuarkModelTransitions
+import QuarkModelTransitions as QMT
+emitter = QMT.PhotonEmitter((:c, :c), 1, 4/3)
+@assert emitter.coefficient == 4/3
+```
+
+## Related
+
+[`PhotonEmission`](@ref).
 """
 struct PhotonEmitter
     flavors::Tuple{Symbol,Symbol}
@@ -67,15 +217,53 @@ end
 
 """
     PhotonEmission(quark_masses; recoil_order=0, ...)
+    PhotonEmission(multipole, quark_masses, emitters; recoil=false, ...)
 
 The Godfrey--Isgur photon-emission operator in the Appendix-D mock-meson
 prescription. The transition class and multipole are inferred from the final
-and initial states by [`photon_transition_class`](@ref).
+and initial states by `photon_transition_class`.
 
 `recoil_order=0` selects the class-specific leading expression. Order `2`
 adds the relative `(qr)^2` correction where that correction is implemented;
 currently this is the published M1 `E_2` term. Unsupported combinations fail
 explicitly rather than silently dropping a requested correction.
+
+The explicit-current constructor accepts `:M1`, `:E1`, or `:M2` and
+`PhotonEmitter` terms; the supplied multipole must match the states.
+Use [`mass_correction_factor`](@ref) for comparisons at another photon momentum.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+params, masses = load_parameters_and_quark_masses(default_parameters_path())
+levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
+# A modest grid for this example; check convergence for quantitative widths.
+solver = FiniteDifferenceSolver(ngrid=240, rmax=24.0, nlevels_per_channel=1)
+spectrum = compute_spectrum(params, Meson(masses, :c, :c); levels, solver)
+initial = physical_state(spectrum, levels[1])
+final = physical_state(spectrum, levels[2])
+operator = PhotonEmission(masses)
+@assert operator.recoil_order == 0
+```
+
+## Related
+
+- `AllowedE1` — spin-conserving S–P classification.
+- `DirectM1` — same-radial-level M1 classification.
+- `ELECTROMAGNETIC_DEFAULTS` — phenomenological electromagnetic inputs.
+- `HinderedM1` — different-radial-level M1 classification.
+- `PhotonTransitionClass` — common photon classification type.
+- `RadiativeAmplitude` — photon result and coherent terms.
+- `SpinFlipE1` — triplet P1 to singlet S0 classification.
+- `SpinFlipM2` — triplet P2 to singlet S0 classification.
+- `e1_transition_amplitude` — assemble an E1 amplitude.
+- `m1_transition_moment` — assemble a moment in nuclear magnetons.
+- [`matrix_element`](@ref) — evaluate an operator between states.
+- `photon_momentum` — two-body photon momentum in GeV.
+- `photon_transition_class` — infer the kernel from spectroscopy.
+- `spin_flip_photon_amplitude` — assemble a spin-flip photon amplitude.
 """
 struct PhotonEmission{C<:PhotonCurrent} <: TransitionOperator
     quark_masses::QuarkMassTable
@@ -118,7 +306,32 @@ function PhotonEmission(
     )
 end
 
-"""A photon matrix element and its complete coherent component decomposition."""
+"""
+A photon matrix element and its complete coherent component decomposition.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+params, masses = load_parameters_and_quark_masses(default_parameters_path())
+levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
+# A modest grid for this example; check convergence for quantitative widths.
+solver = FiniteDifferenceSolver(ngrid=240, rmax=24.0, nlevels_per_channel=1)
+spectrum = compute_spectrum(params, Meson(masses, :c, :c); levels, solver)
+initial = physical_state(spectrum, levels[1])
+final = physical_state(spectrum, levels[2])
+operator = PhotonEmission(masses)
+amplitude = matrix_element(final, operator, initial)
+@assert amplitude isa QuarkModelTransitions.RadiativeAmplitude
+```
+
+## Related
+
+- [`PhotonEmission`](@ref) — infer and evaluate a photon transition.
+- [`decay_width`](@ref) — convert a transition result to MeV.
+- `photon_transition_class` — infer the kernel from spectroscopy.
+"""
 struct RadiativeAmplitude{O,I,F,K,C<:PhotonTransitionClass,V<:Number,T<:Tuple,P}
     operator::O
     initial::I
@@ -186,6 +399,27 @@ _same_photon_family(a::PhotonTransitionClass, b::PhotonTransitionClass) =
 Infer the photon kernel from the states' orbital angular momentum, spin,
 total angular momentum, and radial quantum numbers. All coherently mixed
 components must select one compatible class.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+params, masses = load_parameters_and_quark_masses(default_parameters_path())
+levels = [BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)]
+# A modest grid for this example; check convergence for quantitative widths.
+solver = FiniteDifferenceSolver(ngrid=240, rmax=24.0, nlevels_per_channel=1)
+spectrum = compute_spectrum(params, Meson(masses, :c, :c); levels, solver)
+initial = physical_state(spectrum, levels[1])
+final = physical_state(spectrum, levels[2])
+operator = PhotonEmission(masses)
+@assert QuarkModelTransitions.photon_transition_class(final, initial) isa QMT.DirectM1
+```
+
+## Related
+
+- [`PhotonEmission`](@ref) — infer and evaluate a photon transition.
+- `RadiativeAmplitude` — inspect the selected class on a result.
 """
 function photon_transition_class(final::PhysicalState, initial::PhysicalState)
     classes = PhotonTransitionClass[]
@@ -387,21 +621,27 @@ photon_emission_matrix_element(
     class::Union{SpinFlipE1,SpinFlipM2}, final, operator, initial, resolved,
 ) = _assemble_photon_amplitude(class, final, operator, initial, resolved)
 
-"""
-    matrix_element(final, operator::PhotonEmission, initial;
-                   kinematics=OnShell(), verbose=false)
 
-Infer the radiative transition class, evaluate the corresponding mock-meson
-kernel, and coherently compose all physical-state flavor components.
-"""
 function matrix_element(
     final::PhysicalState,
     operator::PhotonEmission,
     initial::PhysicalState;
-    kinematics::TransitionKinematics = OnShell(),
     verbose::Bool = false,
 )
-    resolved = _resolve_kinematics(final, initial, kinematics)
+    return _photon_matrix_element(final, operator, initial,
+        _on_shell_photon_momentum(final, initial); verbose)
+end
+
+function mass_correction_factor(final::PhysicalState, operator::PhotonEmission,
+                                initial::PhysicalState; target_momentum::Real)
+    reference = matrix_element(final, operator, initial)
+    target = _photon_matrix_element(final, operator, initial, target_momentum)
+    return _correction_ratio(target.value, reference.value)
+end
+
+function _photon_matrix_element(final::PhysicalState, operator::PhotonEmission,
+                                initial::PhysicalState, momentum::Real; verbose::Bool=false)
+    resolved = CMKinematics(momentum)
     q = resolved.momentum_GeV
     q isa Real && q >= 0 || throw(ArgumentError(
         "PhotonEmission requires a real non-negative photon momentum",
@@ -417,7 +657,6 @@ function matrix_element(
     final::TransitionState,
     ::PhotonEmission,
     initial::TransitionState;
-    kinematics::TransitionKinematics = OnShell(),
     verbose::Bool = false,
 )
     throw(ArgumentError(
@@ -425,6 +664,7 @@ function matrix_element(
         "$(nameof(typeof(initial))) -> $(nameof(typeof(final)))",
     ))
 end
+
 
 function decay_width(amplitude::RadiativeAmplitude)
     q = amplitude.kinematics.momentum_GeV
@@ -442,11 +682,31 @@ function decay_width(
     initial::PhysicalState,
 )
     initial.mass_GeV <= final.mass_GeV && return 0.0
-    return decay_width(matrix_element(final, operator, initial; kinematics = OnShell()))
+    return decay_width(matrix_element(final, operator, initial))
 end
 
 function Base.show(io::IO, amplitude::RadiativeAmplitude)
     print(io, "RadiativeAmplitude(", amplitude.initial.label, " -> ",
         amplitude.final.label, " + gamma, ", nameof(typeof(amplitude.transition_class)),
         ", recoil_order=", amplitude.operator.recoil_order, ", ", amplitude.value, ")")
+end
+
+# Explicit-current compatibility for callers of the independently developed API.
+struct SpecifiedPhotonCurrent{C<:PhotonCurrent} <: PhotonCurrent
+    multipole::Symbol
+    resolved::C
+end
+function PhotonEmission(multipole::Symbol, masses::QuarkMassTable, emitters;
+                        recoil::Bool=false, kwargs...)
+    multipole in (:M1, :E1, :M2) || throw(ArgumentError("unsupported photon multipole"))
+    recoil && multipole != :M1 && throw(ArgumentError("recoil is implemented only for M1"))
+    terms = emitters isa PhotonEmitter ? (emitters,) : Tuple(emitters)
+    current = SpecifiedPhotonCurrent(multipole, ResolvedPhotonCurrent(terms))
+    return PhotonEmission(masses; current, recoil_order=recoil ? 2 : 0, kwargs...)
+end
+function _photon_emitters(current::SpecifiedPhotonCurrent, class::PhotonTransitionClass,
+                         flavors::Tuple{Symbol,Symbol})
+    _photon_multipole(class) == current.multipole ||
+        throw(ArgumentError("specified multipole is incompatible with the states"))
+    return _photon_emitters(current.resolved, class, flavors)
 end

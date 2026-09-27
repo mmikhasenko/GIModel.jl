@@ -4,6 +4,7 @@
 using Pkg
 Pkg.activate(dirname(@__DIR__))
 using GIModel, QuarkModelTransitions, GIPaper, Dates, Printf, Statistics
+using QuarkModelTransitions: neutral_m1_charge, photon_momentum
 
 const ROOT = dirname(@__DIR__)
 const G = GIModel
@@ -118,16 +119,17 @@ function evaluate(row)
             current = QMT.ResolvedPhotonCurrent(emitters),
             recoil_form_factor = "g" in footnotes,
         )
-        q_operator = something(q, 0.0)
-        amplitude = matrix_element(
-            daughter_state, operator, parent_state;
-            kinematics = CMKinematics(q_operator),
+        amplitude = matrix_element(daughter_state, operator, parent_state)
+        # A plain M1 moment has no q dependence; missing target masses leave it
+        # at the model value. Other rows require the explicit comparison factor.
+        correction = isnothing(q) ? 1.0 : mass_correction_factor(
+            daughter_state, operator, parent_state; target_momentum=q,
         )
         amplitude.multipole == multipole || error(
             "Table VI labels $(parent) -> $(daughter) as $multipole, " *
             "but spectroscopy selects $(amplitude.multipole)",
         )
-        value = real(amplitude.value)
+        value = real(correction * amplitude.value)
         # Explicit paper input, not fitted here: page 26 footnote a attributes
         # this additive moment to pi0-eta mixing.
         supplementary = multipole == :M1 &&

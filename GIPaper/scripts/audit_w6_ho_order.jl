@@ -35,6 +35,8 @@ using Printf
 using LinearAlgebra
 using GIModel
 using QuarkModelTransitions
+# Internal kernels for reference calculations.
+using QuarkModelTransitions: gluonic_annihilation_amplitude, wavefunction_origin_smearing
 
 const ROOT = dirname(@__DIR__)                                  # GIPaper/
 const PARAMS_PATH = default_parameters_path()

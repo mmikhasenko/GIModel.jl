@@ -44,7 +44,7 @@ Start with **G1**. Complete GIModel's short cleanup passes before the larger T/P
 ## G1 — root metadata and active inputs
 
 - [x] Review `Project.toml`, `Manifest.toml`, `.gitignore` and README. Declare the tested Julia compatibility range; document how companions are installed from this monorepo. Test an ordinary downstream environment, not just the developer checkout.
-- [ ] Resolve release licensing with the repository owner if it has not already been chosen; add the selected license rather than inventing one.
+- [x] Resolve release licensing with the repository owner: MIT (2026-09-27), `LICENSE` in the root and in each package directory.
 - [x] Replace the active configuration's `provisional_raw_digitization` description and obsolete promotion-path note with reviewed provenance. Decide the final preset filename here and update `default_parameters_path()` and callers together; avoid keeping two identical active files.
 - [x] Explicitly distinguish the runnable GI preset from GIPaper's clean transcription of Table II. Prevent loading the latter from silently choosing a different central Hamiltonian or disabling sandwiches. Define and test the intended loader error/preset behavior.
 - [x] Define accepted configuration keys and missing-field policy. Reject misspelled/inactive physics keys with useful errors, while preserving documented programmatic diagnostic constructors. Do not silently turn an incomplete production file into a different model.
@@ -135,7 +135,7 @@ The existing **Discrepancies** task owns `report/main.tex`. Requested edit: show
 
 | Pass | Files kept / edited / moved / deleted, and reason | Validation | Remaining issue | Status |
 |---|---|---|---|---|
-| G1 | Metadata, strict preset loader, README, input inventory; filename retained for compatibility | 1,022 core tests; fresh `/tmp` downstream spectrum | Owner license choice | Implemented; licensing open |
+| G1 | Metadata, strict preset loader, README, input inventory; filename retained for compatibility | 1,022 core tests; fresh `/tmp` downstream spectrum | — | Implemented; MIT license added 2026-09-27 |
 | G2 | Generic derivative API, comparator status/docs; diagnostic and independent solver routes retained | Core suite, caller inventory below | No physics algorithm changes | Reviewed |
 | G3/G4 | Fast/full gate commands and current documentation navigation | Shell syntax and diff whitespace checks | Full gate after parallel transition work | Implemented |
 | P1 | Policy/provenance record, stricter mass registry, explicit script inputs | 2,652 GIPaper tests; fresh downstream load | Legacy validation edition unknown, explicitly recorded | Implemented |
@@ -176,7 +176,7 @@ separate pipelines. No transition implementation edits belong to this pass.
 | PDG fetch/import and `extraction/` tools | Retained explicit refresh/promotion/OCR/visual validation roles; offline package tests do not fetch or re-extract data. |
 
 The remaining release-wide gate must wait for the parallel transition changes.
-Licensing remains an owner decision. This pass does not claim that legacy
+Licensing is resolved (MIT, 2026-09-27). This pass does not claim that legacy
 validation anchors have acquired missing historical provenance, or that optional
 research deliverables have received their own release review.
 

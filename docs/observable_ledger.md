@@ -186,6 +186,22 @@ three-state composer. A pure-component kernel must not repeat that factor.
   residuals. The independent FD run and solver-comparison report distinguish
   these from representation errors. There are no omitted Table VI rows.
 
+## Common transition and mass-comparison interface
+
+`matrix_element(final, operator, initial)` evaluates at input-state masses;
+`decay_width` returns MeV. Native operators are `PhotonEmission`,
+`PseudoscalarEmission`, `LeptonicCurrent`, `TwoPhotonAnnihilation`, and
+`GluonicAnnihilation` (integrated widths only). Leptonic currents use `Vacuum()`
+for the matrix element and a physical lepton channel for the width.
+
+`mass_correction_factor` separately compares another mass (`target_mass`) or
+emission momentum (`target_momentum`, plus `partial_wave` for strong emission)
+at fixed waves and mixing. It corrects the numerical amplitude/current, except
+for gluonic processes where it corrects the width. Remaining phase-space factors
+must be handled explicitly when converting amplitude corrections to widths.
+There is no public `kinematics` override. See the
+[operator and channel inventory](../QuarkModelTransitions/README.md#supported-transitions-and-observables).
+
 ## Numerical method (Appendix A, Eq. A17)
 
 Two independent algorithms solve the same radial problem, behind one interface:

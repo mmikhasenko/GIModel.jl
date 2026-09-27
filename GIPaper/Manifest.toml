@@ -2,7 +2,7 @@
 
 julia_version = "1.11.6"
 manifest_format = "2.0"
-project_hash = "7592d5d1de23d860a5f7c9369482242228abccea"
+project_hash = "c5a638b95adce2c2ec185af64222e136ea562f6c"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -236,7 +236,7 @@ version = "2.11.3"
 deps = ["GIModel", "PartialWaveFunctions", "Printf"]
 path = "../QuarkModelTransitions"
 uuid = "87282b95-dd94-4373-9910-f2158c0f9e5e"
-version = "0.1.0"
+version = "0.2.0"
 
 [[deps.Random]]
 deps = ["SHA"]

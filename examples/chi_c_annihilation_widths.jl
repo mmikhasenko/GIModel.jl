@@ -34,7 +34,10 @@ Pkg.instantiate(; io = devnull)
 using Printf
 using GIModel
 using QuarkModelTransitions
-
+# Internal kernels for reference calculations.
+using QuarkModelTransitions: ALPHA_EM, gluonic_annihilation_amplitude, mock_meson_mass, two_photon_amplitude, wavefunction_origin_smearing
+# Qualified public API used by this reference/kernel audit.
+using QuarkModelTransitions: ALPHA_EM, mock_meson_mass
 const PARAMS_PATH = joinpath(dirname(@__DIR__), "data", "parameters.provisional.toml")
 const NGRID, RMAX, NPTS, INITIAL_NBASIS = 1200, 24.0, 900, 24
 

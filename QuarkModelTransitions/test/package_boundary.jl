@@ -22,9 +22,9 @@
         :charge_radius_squared, :ALPHA_EM, :G_FERMI_GEV,
         :ELECTROMAGNETIC_DEFAULTS, :STRONG_DECAY_DEFAULTS,
     )
-    @test all(name -> Base.isexported(QuarkModelTransitions, name), transition_names)
+    @test all(name -> isdefined(QuarkModelTransitions, name), transition_names)
     @test all(name -> !Base.isexported(GIModel, name), transition_names)
-    @test !Base.isexported(QuarkModelTransitions, :PhotonEmitter)
+    @test !Base.ispublic(QuarkModelTransitions, :PhotonEmitter)
     @test !Base.isexported(QuarkModelTransitions, :ResolvedPhotonCurrent)
 
     @test all(name -> !isdefined(GIModel, name), transition_names)
@@ -35,4 +35,14 @@
 
     gi_project = read(joinpath(REPOSITORY_ROOT, "Project.toml"), String)
     @test !occursin("QuarkModelTransitions", gi_project)
+end
+
+@testset "Focused default namespace" begin
+    expected = Set(Symbol.(split("""PhysicalState physical_state TwoMesonChannel PartialWave matrix_element partial_waves mass_correction_factor LeptonicCurrent TwoPhotonAnnihilation GluonicAnnihilation Vacuum TwoPhotonChannel TwoGluonChannel ThreeGluonChannel LeptonNeutrinoChannel MasslessLeptonPair AnnihilationTerm PseudoscalarEmission decay_width charge_radius_squared PhotonEmission""")))
+    exported = Set(n for n in names(QuarkModelTransitions)
+                   if n != :QuarkModelTransitions && Base.isexported(QuarkModelTransitions, n))
+    @test exported == expected
+    @test Set(n for n in names(QuarkModelTransitions) if n != :QuarkModelTransitions) == expected
+    @test !Base.ispublic(QuarkModelTransitions, :TableVReference)
+    @test !Base.isexported(QuarkModelTransitions, :TableVReference)
 end

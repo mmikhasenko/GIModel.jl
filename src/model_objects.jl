@@ -188,8 +188,7 @@ end
 # The RadialWave interface, implemented for MeshWave by mesh quadrature.
 #
 # Consumers should go through this interface. Mesh implementation methods may
-# read `.u`, `.r`, and `.h`; physics consumers must not. The migration from the
-# older mesh-specific API is tracked in `docs/paper_algorithm_work_plan.md`.
+# read `.u`, `.r`, and `.h`; physics consumers must not.
 # =============================================================================
 
 """

@@ -1,7 +1,10 @@
 # Shared, dependency-light definitions for the formal Table-IV A-class survey.
 # This file is included by the runner and its tests; it does not change Table V.
+# Archived study-branch API: coupling_coefficients/topology/integral_cache are
+# not part of the current native matrix_element API. See the study README.
 module AClassKernels
 using GIModel, QuarkModelTransitions, LinearAlgebra
+using QuarkModelTransitions: CMKinematics
 export TRANSITIONS, flavor_routes, coefficients, compare_couplings, threshold_limit
 
 const TRANSITIONS = (

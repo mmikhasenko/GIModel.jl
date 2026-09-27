@@ -7,6 +7,21 @@ Equal-flavor hindered M1 moment, in nuclear magnetons, including the
 `-q² E₂/(24m)` term retained in Table VI footnote c. Waves are radial waves,
 `m` and photon momentum `q` are in GeV. The charge coefficient multiplies
 both the direct and recoil terms.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+wave = OscillatorWave(0, 0.5, [1.0])
+excited = OscillatorWave(0, 0.5, [0.0, 1.0])
+@assert isfinite(QMT.m1_recoil_moment(wave, excited, 1.628, 4/3, 0.2))
+```
+
+## Related
+
+- `m1_transition_moment` — assemble a moment in nuclear magnetons.
+- `mock_meson_radial_moment` — Appendix-D electric radial moment.
 """
 function m1_recoil_moment(
     singlet::RadialWave, triplet::RadialWave, m::Real,
@@ -31,6 +46,18 @@ end
 
 Amplitude form factor exp(-q²/(16β²)) for emission with recoil absorbed by a
 light-quark system (Table VI footnote g). Both q and beta are in GeV.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert QMT.photon_recoil_form_factor(0.0) == 1.0
+```
+
+## Related
+
+- `m1_transition_moment` — assemble a moment in nuclear magnetons.
 """
 function photon_recoil_form_factor(q::Real; beta::Real = ELECTROMAGNETIC_DEFAULTS.recoil_beta_GeV)
     q >= 0 || throw(ArgumentError("photon momentum must be nonnegative"))
@@ -44,6 +71,18 @@ end
 M1 partial width in GeV from a moment in nuclear magnetons and photon momentum
 in GeV. The spin average gives α μ² q³/(3 M_N²) for V -> P gamma and three
 times that for P -> V gamma.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert QMT.m1_radiative_width(1.0, 0.1) > 0 # GeV
+```
+
+## Related
+
+- `m1_transition_moment` — assemble a moment in nuclear magnetons.
 """
 function m1_radiative_width(moment::Real, q::Real; parent_spin::Integer = 1)
     parent_spin in (0, 1) || throw(ArgumentError("parent_spin must be 0 or 1"))
@@ -60,6 +99,18 @@ normalized nonstrange states, equal isospin gives e_u+e_d=1/3 and opposite
 isospin gives e_u-e_d=1. A single strange/charm/bottom flavor gives twice its
 quark charge. Perfect eta mixing factors must not be included here: the
 physical-state composition supplies them.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert QMT.neutral_m1_charge(:c) == 4/3
+```
+
+## Related
+
+- `m1_transition_moment` — assemble a moment in nuclear magnetons.
 """
 function neutral_m1_charge(
     flavor::Symbol; isovector_left::Bool = false, isovector_right::Bool = false,
@@ -80,6 +131,18 @@ end
 Angular factor multiplying the neutral M1 charge coefficient times q E1.
 Triplet P -> S transitions carry 1/3, with sqrt((2J_P+1)/3) for the inverse
 S -> P direction. The singlet P1 -> S0 factor is sqrt(2).
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert QMT.e1_angular_coefficient(1; singlet=true) == sqrt(2.0)
+```
+
+## Related
+
+- `e1_transition_amplitude` — assemble an E1 amplitude.
 """
 function e1_angular_coefficient(J_P::Integer; singlet::Bool = false, parent_is_S::Bool = false)
     if singlet
@@ -99,6 +162,20 @@ E1 for P1 -> S0. The power of q alone does not determine the multipole. Each ter
 quark (charge coefficient, constituent mass) pair; q is in GeV. The P2 and
 P1 denominators are sqrt(60)m and 6m, respectively. Charge coefficients
 include the relative sign of antiquark emission for this multipole.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+wave = OscillatorWave(0, 0.5, [1.0])
+pw = OscillatorWave(1, 0.5, [1.0])
+@assert isfinite(QMT.spin_flip_photon_amplitude(wave, pw, [(4/3, 1.628)], 2, 0.2))
+```
+
+## Related
+
+- [`PhotonEmission`](@ref) — infer and evaluate a photon transition.
 """
 function spin_flip_photon_amplitude(
     wave_S::RadialWave, wave_P::RadialWave, terms, J_P::Integer, q::Real;

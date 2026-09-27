@@ -37,7 +37,7 @@
 #   ~1%. `TableIVPolynomial()` is the default (faithful to the printed formula);
 #   the reproduction harness uses `LeadingS0()`.
 #
-# Public API (exported from QuarkModelTransitions.jl):
+# Qualified reference API (public in QuarkModelTransitions.jl):
 #   StrongDecayModel, decay_momentum, reduced_decay_amplitude, spatial_overlap,
 #   strong_decay_amplitude, calibrate_strong_decay_model,
 #   DecayChannel, StrongDecayAmplitude, decay_amplitude, reduced_matrix_element,
@@ -50,6 +50,22 @@ Two-parameter Table IV/V decay model: `A` is the structure-independent reduced
 amplitude (fit to `rho -> pi pi`), `S0 = 3 h beta` the structure-dependent
 strength (fit to `B -> [omega pi]_S`), with oscillator scale `beta` (0.40 GeV
 in the paper).
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
+channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
+@assert model.beta_GeV == 0.4
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
+- `calibrate_strong_decay_model` — fit the two reference strengths.
+- `decay_amplitude` — evaluate a reference row.
 """
 struct StrongDecayModel
     A::Float64
@@ -60,10 +76,42 @@ end
 """Convention for evaluating the structure-dependent Table IV amplitudes."""
 abstract type ReducedAmplitudeConvention end
 
-"""Use the full polynomial printed in Table IV."""
+"""
+Use the full polynomial printed in Table IV.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
+channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
+@assert QMT.reduced_decay_amplitude(model, :S, 1.0; convention=QMT.TableIVPolynomial()) ≈ 2.77
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
+"""
 struct TableIVPolynomial <: ReducedAmplitudeConvention end
 
-"""Use only the leading `S0` term employed for the paper's numeric column."""
+"""
+Use only the leading `S0` term employed for the paper's numeric column.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
+channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
+@assert QMT.reduced_decay_amplitude(model, :S, 1.0; convention=QMT.LeadingS0()) == model.S0
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
+"""
 struct LeadingS0 <: ReducedAmplitudeConvention end
 
 """
@@ -71,6 +119,19 @@ struct LeadingS0 <: ReducedAmplitudeConvention end
 
 [DERIVED] Two-body breakup momentum of `M -> m1 + m2` (GeV); zero below
 threshold. Pure Kallen kinematics, no paper input.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert QMT.decay_momentum(0.77, 0.14, 0.14) > 0
+@assert QMT.decay_momentum(0.2, 0.14, 0.14) == 0
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
 """
 function decay_momentum(M::Real, m1::Real, m2::Real)
     M <= m1 + m2 && return 0.0
@@ -102,6 +163,20 @@ so `k` is `1/2` for `:S` and `r = m_c/(m_d+m_c)` for `:S_c` — and at equal
 constituent masses `r = 1/2`, i.e. the light `S` *is* the equal-mass case of
 `S_c`, exactly as the light Gaussian is the `r = 1/2` case of the charmed form
 factor. Both therefore take `k = heavy_fraction`, which defaults to `0.5`.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
+channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
+@assert QMT.reduced_decay_amplitude(model, :A, 0.9) == model.A
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
 """
 function reduced_decay_amplitude(
     model::StrongDecayModel, class::Symbol, qbar::Real;
@@ -155,6 +230,18 @@ bitwise. Charmed rows (Table V footnote d) pass `r = m_c/(m_c+m_d) ≈ 0.881`;
 `b`-flavored rows would simply pass a larger `r`. The A_c P-wave rows
 additionally carry the unequal-mass recoil multiplier
 `m_c beta / ((m_c+m_d) beta_c)` when `recoil=true`.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+@assert QMT.spatial_overlap(0.36, 1, 0.4) > 0
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
 """
 function spatial_overlap(
     q_GeV::Real, L::Integer, beta_GeV::Real;
@@ -180,12 +267,26 @@ _suppressed_factor(q_GeV::Real, beta_GeV::Real) = spatial_overlap(q_GeV, 0, beta
 Scalar (compat) Table V amplitude in `MeV^(1/2)`: `coefficient` is the signed
 flavor/spin factor, `class` the reduced-amplitude class, `qbar_power` the
 explicit `qbar^L` power, `q_GeV` the breakup momentum. Prefer the row-oriented
-[`decay_amplitude`](@ref) for new code; this returns only the product.
+`decay_amplitude` for new code; this returns only the product.
 
 `heavy_fraction` is `r = m_Q/(m_Q + m_q)`; the default `0.5` is the equal-mass
 (light) case. Charmed rows pass `r = m_c/(m_c+m_d)` and, on the A_c P-waves,
 `recoil=true` for the footnote-d multiplier `r * beta/beta_c`. There is no
 separate charm entry point — the mass ratio is the only difference.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
+channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
+@assert QMT.strong_decay_amplitude(model, sqrt(4/3), :A, 1, 0.36) > 0
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
 """
 function strong_decay_amplitude(
     model::StrongDecayModel,
@@ -218,6 +319,19 @@ given the breakup momenta of the two fit decays. `A` is convention-independent.
 `S0` differs: `TableIVPolynomial()` back-solves the full
 `S0 - (1/2) A qbar_B^2`, while `LeadingS0()` sets `S0` directly to the value at
 `q_B` (the paper's numeric convention, giving `S0 ~ 3.27`).
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+model = QMT.calibrate_strong_decay_model(0.36, 0.35; convention=QMT.LeadingS0())
+@assert model.A > 0
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
 """
 function calibrate_strong_decay_model(
     rho_q_GeV::Real,
@@ -248,18 +362,32 @@ _calibrated_S0(::TableIVPolynomial, S_at_B, A, qbar_B) = S_at_B + 0.5 * A * qbar
                  label="", section="")
 
 A named strong-decay channel. `parent`/`daughter1`/`daughter2` are meson names
-resolved to masses by a [`MesonMasses`](@ref); `coefficient` is the signed
+resolved to masses by a `MesonMasses`; `coefficient` is the signed
 flavor-spin factor `c`, `class` the reduced-amplitude class, and `qbar_power`
 the orbital power `L`. Paper-specific row loaders live in the comparison layer;
 channels can always be constructed directly.
 
 `heavy_fraction` is `r = m_Q/(m_Q + m_q)`, the constituent-mass ratio driving the
-form factor (see [`spatial_overlap`](@ref)). It defaults to `0.5` (equal masses,
+form factor (see `spatial_overlap`). It defaults to `0.5` (equal masses,
 the light rows) but is **required** for the unequal-mass `:A_c`/`:S_c` classes —
 constructing one without it throws rather than silently applying the light
 Gaussian. Unlike the other fields it is *derived*, not digitized: the canonical
 CSV has no quark-content column, so the caller resolves it from the parent's
 flavor content. The A_c P-wave recoil multiplier is still keyed on `class`.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
+channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
+@assert channel.qbar_power == 1
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
 """
 struct DecayChannel
     parent::String
@@ -312,8 +440,24 @@ The factorized decomposition of a Table V amplitude:
 - `total` — their product in `MeV^(1/2)` (the tabulated amplitude);
 - `q_GeV` — the breakup momentum used.
 
-See [`reduced_matrix_element`](@ref) (`= coefficient*reduced`) and
+See `reduced_matrix_element` (`= coefficient*reduced`) and
 [`decay_width`](@ref) (`= total^2`).
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
+channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
+amplitude = QMT.decay_amplitude(model, channel, 0.36)
+@assert amplitude isa QMT.StrongDecayAmplitude
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
+- `decay_amplitude` — evaluate a reference row.
 """
 struct StrongDecayAmplitude
     coefficient::Float64
@@ -328,15 +472,25 @@ end
 
 The dimensionless flavor-spin/reduced interaction factor
 `coefficient * reduced`, before the spatial overlap.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
+channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
+amplitude = QMT.decay_amplitude(model, channel, 0.36)
+@assert QMT.reduced_matrix_element(amplitude) ≈ sqrt(4/3)
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
 """
 reduced_matrix_element(a::StrongDecayAmplitude) = a.coefficient * a.reduced
 
-"""
-    decay_width(a::StrongDecayAmplitude)
 
-Partial width `|amplitude|^2` in MeV (GI normalization: the tabulated MeV^(1/2)
-amplitude squared is the partial width).
-"""
 decay_width(a::StrongDecayAmplitude) = a.total^2
 
 """
@@ -345,13 +499,30 @@ decay_width(a::StrongDecayAmplitude) = a.total^2
     decay_amplitude(model, ch::DecayChannel, masses::MesonMasses;
                     convention=LeadingS0())
 
-Row-oriented Table V amplitude, returning the full [`StrongDecayAmplitude`]
+Row-oriented Table V amplitude, returning the full `StrongDecayAmplitude`
 decomposition. With a `MesonMasses` the breakup momentum is resolved internally
 from the channel's parent/daughter names, so nothing is passed positionally.
 Charmed rows (`:A_c`/`:S_c`) automatically use the footnote-d form factor and
 (for A_c P-waves) the recoil multiplier. Defaults to `LeadingS0()` (the
 paper's numeric column); pass `convention=TableIVPolynomial()` for the printed
 Table IV formula.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
+channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
+amplitude = QMT.decay_amplitude(model, channel, 0.36)
+@assert decay_width(amplitude) ≈ abs2(amplitude.total)
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
+- [`decay_width`](@ref) — convert a transition result to MeV.
+- `DecayChannel` — one explicitly supplied reference row.
 """
 function decay_amplitude(
     model::StrongDecayModel, ch::DecayChannel, q_GeV::Real;
@@ -372,6 +543,41 @@ end
 Frozen Table IV/V reference backend for the typed transition API. The explicit
 `partial_wave` records information already selected by the paper row; it is not
 used by solver-native operators, which derive all allowed waves together.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+model = QMT.StrongDecayModel(1.0, 3.27, 0.4)
+channel = QMT.DecayChannel("rho", "pi+", "pi-", sqrt(4/3), :A, 1)
+initial = QMT.ReferenceState("rho", 0.77; J=1, parity=-1)
+final = TwoMesonChannel(QMT.ReferenceState("pi+", 0.14; J=0, parity=-1), QMT.ReferenceState("pi-", 0.14; J=0, parity=-1))
+operator = QMT.TableVReference(model, channel, PartialWave(1, 0))
+amplitude = matrix_element(final, operator, initial)
+@assert decay_width(amplitude) > 0
+```
+
+## Related
+
+- `DecayChannel` — one explicitly supplied reference row.
+- `GITableVNormalization` — squared reference amplitude convention.
+- `LeadingS0` — leading constant convention.
+- `MesonMasses` — reference meson mass lookup.
+- `ReferenceState` — wave-free paper-reference state.
+- `STRONG_DECAY_DEFAULTS` — reference calibration inputs.
+- `StrongDecayAmplitude` — reference-row factorization.
+- `StrongDecayModel` — frozen Table IV/V parameters.
+- `TableIVPolynomial` — full printed polynomial convention.
+- `calibrate_strong_decay_model` — fit the two reference strengths.
+- `decay_amplitude` — evaluate a reference row.
+- `decay_momentum` — two-body breakup momentum in GeV.
+- [`matrix_element`](@ref) — evaluate an operator between states.
+- `meson_mass` — retrieve a reference mass in GeV.
+- `reduced_decay_amplitude` — Table IV reduced factor.
+- `reduced_matrix_element` — inspect the nonspatial reference factor.
+- `spatial_overlap` — reference SHO overlap factor.
+- `strong_decay_amplitude` — scalar reference-row compatibility helper.
 """
 struct TableVReference{C<:ReducedAmplitudeConvention} <: StrongDecayOperator
     model::StrongDecayModel
@@ -414,11 +620,10 @@ end
 function matrix_element(
     final::TwoMesonChannel,
     operator::TableVReference,
-    initial::TransitionState;
-    kinematics::TransitionKinematics = OnShell(),
+    initial::TransitionState,
 )
     _validate_transition(final, operator, initial)
-    resolved = _resolve_kinematics(final, initial, kinematics)
+    resolved = _resolve_kinematics(final, initial, OnShell())
     q = resolved.momentum_GeV
     q isa Real || throw(ArgumentError(
         "TableVReference has no complex-momentum continuation; use a native operator",
@@ -468,7 +673,20 @@ partial_width(::GITableVNormalization, amplitude::TransitionAmplitude) =
 
 A simple meson-name -> mass (GeV) resolver shared by every `DecayChannel`. Built
 by the reproduction harness from experimental values and/or model-predicted
-masses (`compute_spectrum`). Access with [`meson_mass`](@ref) or indexing.
+masses (`compute_spectrum`). Access with `meson_mass` or indexing.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+masses = QMT.MesonMasses(Dict("rho" => 0.77, "pi" => 0.14))
+@assert masses["rho"] == 0.77
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
 """
 struct MesonMasses
     lookup::Dict{String,Float64}
@@ -480,6 +698,19 @@ MesonMasses() = MesonMasses(Dict{String,Float64}())
 
 Mass (GeV) of a meson by name; throws with a clear message if the name is not
 registered.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+masses = QMT.MesonMasses(Dict("rho" => 0.77))
+@assert QMT.meson_mass(masses, "rho") == 0.77
+```
+
+## Related
+
+- `TableVReference` — evaluate a frozen paper row.
 """
 function meson_mass(m::MesonMasses, name::AbstractString)
     haskey(m.lookup, name) || throw(KeyError("no mass registered for meson `$name`"))

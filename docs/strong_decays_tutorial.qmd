@@ -55,6 +55,20 @@ using Pkg
 Pkg.activate(joinpath("..", "GIPaper"))
 using GIModel
 using QuarkModelTransitions
+# Qualified public API used by this reference/kernel audit.
+using QuarkModelTransitions: DecayChannel,
+    LeadingS0,
+    MesonMasses,
+    ReferenceState,
+    StrongDecayAmplitude,
+    TableIVPolynomial,
+    TableVReference,
+    calibrate_strong_decay_model,
+    decay_amplitude,
+    decay_momentum,
+    reduced_decay_amplitude,
+    reduced_matrix_element,
+    spatial_overlap
 using CSV, DataFrames
 ```
 
@@ -112,7 +126,7 @@ final = TwoMesonChannel(
     ReferenceState("pi", 0.138; J = 0, parity = -1),
 )
 reference = TableVReference(model, rho_pipi, PartialWave(1, 0))
-typed = matrix_element(final, reference, parent; kinematics = OnShell())
+typed = matrix_element(final, reference, parent)
 
 (partial_waves = partial_waves(typed),
  amplitude = typed[PartialWave(1, 0)],
@@ -122,9 +136,15 @@ typed = matrix_element(final, reference, parent; kinematics = OnShell())
 The legacy tables already contain a selected partial-wave amplitude, so
 `typed.helicity` is empty and the explicit `PartialWave` records the paper-row
 metadata. Solver-native operators instead compute helicity amplitudes first and
-derive all allowed partial waves together. A closed `OnShell()` vertex request
-throws; the width convenience returns zero, while an off-shell vertex requires
-an explicit `CMKinematics(k)`.
+derive all allowed partial waves together. Momenta are derived from the supplied
+state masses. A closed emission vertex request throws; the width convenience
+returns zero. Native `PseudoscalarEmission` comparisons use
+`mass_correction_factor(final, operator, initial; target_momentum, partial_wave)`
+separately. This factor multiplies one partial-wave amplitude, excludes the
+width's separate phase-space momentum, and is undefined for a closed or zero
+reference amplitude. It is not implemented for the frozen reference-row backend.
+See the [transition guide](../QuarkModelTransitions/README.md) for runnable native
+examples, leptonic/annihilation channels, and the complete correction API.
 
 ## The leading-$S_0$ convention (the key to the S/D/P rows)
 

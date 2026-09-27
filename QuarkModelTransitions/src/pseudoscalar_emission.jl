@@ -11,9 +11,56 @@ Godfrey--Isgur elementary pseudoscalar-emission operator of Eq. (19).
 `quark_masses` is a [`QuarkMassTable`](@ref) and is copied into the operator so
 the constituent-coordinate momentum routing is explicit and reproducible.
 
+Supply states obtained with [`physical_state`](@ref) to use GIModel's calculated
+masses and radial waves. The emitted pseudoscalar is elementary in this operator:
+its flavor components and mass enter, but its radial wave is not integrated.
+
+The couplings are additional phenomenological inputs, not outputs of the GI
+spectrum. No fit is performed by this constructor. The example's `g` and `h`
+are illustrative; quantitative predictions require a stated calibration using
+the chosen waves and conventions. For fixed inputs the amplitude is linear in
+`g` and `h`, including their relative sign and interference.
+
 This is distinct from the legacy fitted `A`/`S0` Table-IV model. The relation
 `A = (g + h/4) beta` holds only for the paper's equal-mass, equal-`beta`,
 single-oscillator reduction.
+
+For a fixed-wave comparison use [`mass_correction_factor`](@ref) with
+`target_momentum` in GeV and an explicit `partial_wave`. The factor multiplies
+that partial-wave amplitude; it excludes the width's separate phase-space factor.
+
+## Example
+
+```julia
+using GIModel, QuarkModelTransitions
+import QuarkModelTransitions as QMT
+params, masses = load_parameters_and_quark_masses(default_parameters_path())
+a1, vector, pion_basis = BasisState(1, "P", 3, 1), BasisState(1, "S", 3, 1), BasisState(1, "S", 1, 0)
+# A modest grid for this example; check convergence for quantitative widths.
+solver = FiniteDifferenceSolver(ngrid=240, rmax=24.0, nlevels_per_channel=1)
+charged = compute_spectrum(params, Meson(masses, :u, :d);
+    levels=[a1, vector, pion_basis], solver)
+initial = physical_state(charged, a1)
+rho = physical_state(charged, vector)
+# Resolve pi0 = (u ubar - d dbar)/sqrt(2) in the isospin limit.
+up = compute_spectrum(params, Meson(masses, :u, :u); levels=[pion_basis], solver)
+down = compute_spectrum(params, Meson(masses, :d, :d); levels=[pion_basis], solver)
+u, d = physical_state(up, pion_basis), physical_state(down, pion_basis)
+pion = PhysicalState("pi0", (u.mass_GeV + d.mass_GeV)/2,
+    [(basis=c.basis, coefficient=sign*c.coefficient/sqrt(2), wave=c.wave)
+     for (state, sign) in ((u, 1), (d, -1)) for c in state.components];
+    provenance=(source=:isospin_combination,))
+final = TwoMesonChannel(rho, pion)
+g, h = 0.7, 0.3 # Illustrative GeV^-1 inputs, not fitted GI predictions.
+operator = PseudoscalarEmission(g, h, masses)
+@assert decay_width(final, operator, initial) > 0
+```
+
+## Related
+
+- [`matrix_element`](@ref) — evaluate an operator between states.
+- [`TwoMesonChannel`](@ref) — ordered surviving and emitted daughters.
+- [`partial_waves`](@ref) — inspect the available angular components.
 """
 struct PseudoscalarEmission <: StrongDecayOperator
     g::Float64
@@ -410,32 +457,27 @@ function _eq19_wave_amplitude(
     return _Eq19WaveAmplitude(integrals, helicity, partial_waves)
 end
 
-"""
-    matrix_element(final, operator::PseudoscalarEmission, initial;
-                   kinematics=OnShell())
 
-Evaluate GI Eq. (19) on resolved physical states. The result contains the
-compressed Appendix-C helicities, every allowed partial wave, coherent
-component terms, and `RelativisticTwoBodyNormalization`.
+matrix_element(final::TwoMesonChannel{<:PhysicalState,<:PhysicalState},
+               operator::PseudoscalarEmission, initial::PhysicalState) =
+    _pseudoscalar_matrix_element(final, operator, initial, _on_shell_momentum(final, initial))
 
-`final` is order-sensitive: construct it as
-`TwoMesonChannel(surviving, emitted)`. The second daughter must be the
-elementary `0^-` field; reversing the pair chooses the other Fig.-14 assignment
-for a two-pseudoscalar channel.
+function mass_correction_factor(final::TwoMesonChannel{<:PhysicalState,<:PhysicalState},
+                                operator::PseudoscalarEmission, initial::PhysicalState;
+                                target_momentum::Number, partial_wave::PartialWave)
+    reference = matrix_element(final, operator, initial)
+    target = _pseudoscalar_matrix_element(final, operator, initial, target_momentum)
+    return _correction_ratio(target[partial_wave], reference[partial_wave])
+end
 
-All components require explicit ordered quark-antiquark flavors. The averaged
-`:q` flavor is deliberately rejected because it does not specify an isospin
-wavefunction. Complex `CMKinematics` is accepted for the off-shell vertex, but
-[`decay_width`](@ref) is defined only for real momentum.
-"""
-function matrix_element(
+function _pseudoscalar_matrix_element(
     final::TwoMesonChannel{<:PhysicalState,<:PhysicalState},
     operator::PseudoscalarEmission,
-    initial::PhysicalState;
-    kinematics::TransitionKinematics = OnShell(),
+    initial::PhysicalState,
+    momentum::Number,
 )
     roles = _validate_eq19_transition(final, initial)
-    resolved = _resolve_kinematics(final, initial, kinematics)
+    resolved = CMKinematics(momentum)
     q = resolved.momentum_GeV
     allowed = Tuple(allowed_partial_waves(final, initial))
     identical_normalization = _same_external_state(final.first, final.second) ?
@@ -542,7 +584,7 @@ function decay_width(
     _validate_eq19_transition(final, initial)
     initial.mass_GeV <= final.first.mass_GeV + final.second.mass_GeV && return 0.0
     return decay_width(matrix_element(
-        final, operator, initial; kinematics = OnShell(),
+        final, operator, initial,
     ))
 end
 

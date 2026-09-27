@@ -116,12 +116,33 @@ end
     )])
     final = TwoMesonChannel(rho, pion)
     reversed = TwoMesonChannel(pion, rho)
-    amplitude = matrix_element(final, operator, a1; kinematics = CMKinematics(0.31))
+    amplitude = matrix_element(final, operator, a1)
 
     @test amplitude.normalization isa RelativisticTwoBodyNormalization
+    @test amplitude.kinematics.momentum_GeV ≈ decay_momentum(a1.mass_GeV,rho.mass_GeV,pion.mass_GeV)
+    @test_throws MethodError matrix_element(final,operator,a1; kinematics=CMKinematics(0.31))
+    for wave in partial_waves(amplitude), q in (0.31,0.1im)
+        correction = mass_correction_factor(final,operator,a1; target_momentum=q,partial_wave=wave)
+        target = QuarkModelTransitions._pseudoscalar_matrix_element(final,operator,a1,q)
+        @test correction*amplitude[wave] ≈ target[wave]
+        if q isa Real
+            target_mass = sqrt(rho.mass_GeV^2+q^2)+sqrt(pion.mass_GeV^2+q^2)
+            shifted = PhysicalState(a1.label,target_mass,a1.components)
+            @test correction*amplitude[wave] ≈ matrix_element(final,operator,shifted)[wave]
+        end
+        @test mass_correction_factor(final,operator,a1;
+            target_momentum=amplitude.kinematics.momentum_GeV,partial_wave=wave) ≈ 1
+    end
+    @test_throws UndefKeywordError mass_correction_factor(final,operator,a1; target_momentum=0.3)
+    @test_throws DomainError mass_correction_factor(final,
+        PseudoscalarEmission(0.0,0.0,mq),a1;
+        target_momentum=0.3,partial_wave=PartialWave(0,1))
+    closed = PhysicalState(a1.label,0.5,a1.components)
+    @test_throws QuarkModelTransitions.ClosedChannelError mass_correction_factor(
+        final,operator,closed; target_momentum=0.3,partial_wave=PartialWave(0,1))
     @test partial_waves(amplitude) == [PartialWave(0, 1), PartialWave(2, 1)]
     @test_throws ArgumentError matrix_element(
-        reversed, operator, a1; kinematics = CMKinematics(0.31),
+        reversed, operator, a1,
     )
     @test amplitude.provenance.backend == :native_eq19
     @test amplitude.provenance.emitted == "pi+"
@@ -129,11 +150,11 @@ end
     @test all(term.provenance.source == :GI1985_Eq19 for term in amplitude.terms)
     @test all(isfinite(last(item)) for item in amplitude.helicity)
     @test all(isfinite(last(item)) for item in amplitude.partial_wave_amplitudes)
-    expected_width = 1000 * 0.31 / (2pi * 3) *
+    expected_width = 1000 * amplitude.kinematics.momentum_GeV / (2pi * 3) *
                      sum(abs2(last(item)) for item in amplitude.partial_wave_amplitudes)
     @test decay_width(amplitude) ≈ expected_width
-    @test_throws ArgumentError decay_width(matrix_element(
-        final, operator, a1; kinematics = CMKinematics(0.1im),
+    @test_throws ArgumentError decay_width(QuarkModelTransitions._pseudoscalar_matrix_element(
+        final, operator, a1, 0.1im,
     ))
 
     # Native physical-state composition is coherent: two algebraically equal
@@ -147,10 +168,10 @@ end
         ) for n in 1:2
     ])
     constructive = matrix_element(
-        final, operator, mixed_parent(1.0); kinematics = CMKinematics(0.31),
+        final, operator, mixed_parent(1.0),
     )
     destructive = matrix_element(
-        final, operator, mixed_parent(-1.0); kinematics = CMKinematics(0.31),
+        final, operator, mixed_parent(-1.0),
     )
     @test all(
         last(constructive.partial_wave_amplitudes[i]) ≈
@@ -179,12 +200,10 @@ end
         wave = s_wave,
     )])
     pp = matrix_element(
-        TwoMesonChannel(piplus, piminus), operator, parent_vector;
-        kinematics = CMKinematics(0.2),
+        TwoMesonChannel(piplus, piminus), operator, parent_vector,
     )
     pp_reversed = matrix_element(
-        TwoMesonChannel(piminus, piplus), operator, parent_vector;
-        kinematics = CMKinematics(0.2),
+        TwoMesonChannel(piminus, piplus), operator, parent_vector,
     )
     @test pp.provenance.emitted == "pi-"
     @test pp_reversed.provenance.emitted == "pi+"
@@ -197,8 +216,7 @@ end
         wave = s_wave,
     )])
     @test_throws ArgumentError matrix_element(
-        TwoMesonChannel(rho, coarse), operator, a1;
-        kinematics = CMKinematics(0.2),
+        TwoMesonChannel(rho, coarse), operator, a1,
     )
 
     vector2 = PhysicalState("vector2", 0.3, [(
@@ -207,8 +225,7 @@ end
         wave = s_wave,
     )])
     @test_throws ArgumentError matrix_element(
-        TwoMesonChannel(rho, vector2), operator, a1;
-        kinematics = CMKinematics(0.2),
+        TwoMesonChannel(rho, vector2), operator, a1,
     )
 
     reference_parent = ReferenceState("closed-reference", 0.2; J = 0, parity = 1)

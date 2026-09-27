@@ -1213,7 +1213,7 @@ version = "2.11.3"
 deps = ["GIModel", "PartialWaveFunctions", "Printf"]
 path = "../QuarkModelTransitions"
 uuid = "87282b95-dd94-4373-9910-f2158c0f9e5e"
-version = "0.1.0"
+version = "0.2.0"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "StyledStrings", "Unicode"]

@@ -18,7 +18,7 @@ QuarkModelTransitions = {path = "../QuarkModelTransitions"}
 julia = "1.11"
 CSV = "0.10.16"
 GIModel = "0.4"
-QuarkModelTransitions = "0.1"
+QuarkModelTransitions = "0.2"
 LinearAlgebra = "1.11.0"
 Printf = "1.11.0"
 TOML = "1.0.3"

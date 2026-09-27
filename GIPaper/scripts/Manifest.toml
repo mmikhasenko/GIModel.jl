@@ -2,7 +2,7 @@
 
 julia_version = "1.11.6"
 manifest_format = "2.0"
-project_hash = "fd81cb1cb7a890e29fbf73817347d98962be54e8"
+project_hash = "e7cb69b21294f991c335dc9dbe394cc7a96a4e72"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1220,7 +1220,7 @@ version = "2.11.3"
 deps = ["GIModel", "PartialWaveFunctions", "Printf"]
 path = "../../QuarkModelTransitions"
 uuid = "87282b95-dd94-4373-9910-f2158c0f9e5e"
-version = "0.1.0"
+version = "0.2.0"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "StyledStrings", "Unicode"]

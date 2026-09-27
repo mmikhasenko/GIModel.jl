@@ -28,6 +28,11 @@ Pkg.activate(@__DIR__; io = devnull)
 using Printf
 using GIModel
 using QuarkModelTransitions
+# Internal kernels for reference calculations.
+using QuarkModelTransitions: HBARC_FM2, axial_tau_width, dilepton_vector_width, gluonic_annihilation_amplitude, leptonic_decay_factor, leptonic_pseudoscalar_width, mock_meson_mass, two_photon_amplitude, wavefunction_origin_smearing
+# Qualified public API used by this reference/kernel audit.
+using QuarkModelTransitions: HBARC_FM2,
+    mock_meson_mass
 using GIPaper: experimental_mass, load_table_policy
 
 kinematic_mass(label) = something(experimental_mass("VII", label), NaN)

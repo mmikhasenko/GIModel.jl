@@ -299,8 +299,8 @@ end
         ReferenceState("pi-", 0.138; J = 0, parity = -1),
     )
 
-    amplitude = matrix_element(final, operator, parent; kinematics = OnShell())
-    @test @inferred(matrix_element(final, operator, parent; kinematics = OnShell())) isa
+    amplitude = matrix_element(final, operator, parent)
+    @test @inferred(matrix_element(final, operator, parent)) isa
           TransitionAmplitude
     legacy = decay_amplitude(model, row, q_rho; convention = TableIVPolynomial())
     @test isempty(amplitude.helicity)
@@ -312,11 +312,11 @@ end
     @test all(type -> type !== Any, fieldtypes(typeof(amplitude)))
     @test occursin("rho -> pi+ + pi-", sprint(show, MIME"text/plain"(), amplitude))
     @test_throws KeyError amplitude[PartialWave(3, 0)]
-    @test_throws ArgumentError matrix_element(
+    @test_throws MethodError matrix_element(
         final, operator, parent; kinematics = CMKinematics(0.1im),
     )
     @test_throws ArgumentError matrix_element(
-        final, DummyNativeDecayOperator(), parent; kinematics = CMKinematics(0.1),
+        final, DummyNativeDecayOperator(), parent,
     )
 
     closed_parent = ReferenceState("x", 0.2; J = 0, parity = 1)
@@ -328,7 +328,7 @@ end
     closed_operator = TableVReference(model, closed_row, PartialWave(0, 0))
     @test decay_width(closed_final, closed_operator, closed_parent) == 0.0
     @test_throws QuarkModelTransitions.ClosedChannelError matrix_element(
-        closed_final, closed_operator, closed_parent; kinematics = OnShell(),
+        closed_final, closed_operator, closed_parent,
     )
 
     quasi_row = DecayChannel("A1", "epsilon", "pi", 1.0, :A0, 0)
@@ -341,9 +341,8 @@ end
     quasi = matrix_element(
         quasi_final,
         quasi_operator,
-        quasi_parent;
-        kinematics = CMKinematics(0.2),
+        quasi_parent,
     )
     @test quasi[PartialWave(0, 0)] ==
-          decay_amplitude(model, quasi_row, 0.2).total
+          decay_amplitude(model, quasi_row, decay_momentum(1.4, 0.7, 0.138)).total
 end

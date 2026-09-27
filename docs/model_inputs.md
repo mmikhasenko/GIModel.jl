@@ -43,3 +43,8 @@ Decay operators and their additional inputs belong to QuarkModelTransitions;
 GIPaper owns reference comparisons and external assignments. See the
 [rate input ledger](../GIPaper/docs/rate_input_ledger.md) and
 [release editing plan](release_cleanup_plan.md).
+
+Transition matrix elements and generic widths use the masses stored in the
+resolved states. Comparisons with other masses or momenta use
+`QuarkModelTransitions.mass_correction_factor` separately at fixed wavefunctions;
+see the [transition guide](../QuarkModelTransitions/README.md#mass-and-momentum-comparisons).

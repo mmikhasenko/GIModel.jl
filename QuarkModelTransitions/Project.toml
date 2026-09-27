@@ -1,6 +1,6 @@
 name = "QuarkModelTransitions"
 uuid = "87282b95-dd94-4373-9910-f2158c0f9e5e"
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 GIModel = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
@@ -11,6 +11,7 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 GIModel = {path = ".."}
 
 [compat]
+julia = "1.11"
 GIModel = "0.4"
 PartialWaveFunctions = "0.2"
 Printf = "1.11.0"
