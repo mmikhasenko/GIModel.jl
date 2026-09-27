@@ -291,6 +291,47 @@ end
     end
 end
 
+@testset "Table V high-L single-SHO coefficient" begin
+    # In the common-beta single-oscillator limit, the native Eq. (19)
+    # calculation must recover the famously small h -> eta eta coefficient.
+    # The native partial wave carries an overall external-state phase (+i in
+    # this convention); Table V prints a real negative width-amplitude after a
+    # different external-state rephasing. Its invariant magnitude is
+    # 1/sqrt(241920).
+    beta, q = 0.4, 0.31
+    masses = QuarkMassTable("u" => 0.22, "d" => 0.22, "s" => 0.419)
+    operator = PseudoscalarEmission(1.0, 0.0, masses)
+    fwave = OscillatorWave(3, beta, [1.0])
+    swave = OscillatorWave(0, beta, [1.0])
+
+    hstate = PhysicalState("h", 2.01, [
+        (
+            basis = BasisState(1, "F", 3, 4; label = "h-$f", flavors = (f, f)),
+            coefficient = inv(sqrt(2.0)),
+            wave = fwave,
+        ) for f in (:u, :d)
+    ])
+    eta = PhysicalState("eta", 0.55, [
+        (
+            basis = BasisState(1, "S", 1, 0; label = "eta-$f", flavors = (f, f)),
+            coefficient = c,
+            wave = swave,
+        ) for (f, c) in ((:u, 0.5), (:d, 0.5), (:s, -inv(sqrt(2.0))))
+    ])
+
+    amplitude = QuarkModelTransitions._pseudoscalar_matrix_element(
+        TwoMesonChannel(eta, eta), operator, hstate, q,
+    )
+    H4 = amplitude[PartialWave(4, 0)]
+    width_amplitude = sqrt(1000q / (2pi * (2hstate.J + 1))) * H4
+    A = (operator.g + operator.h / 4) * beta
+    extracted = width_amplitude /
+                (A * QuarkModelTransitions.spatial_overlap(q, 4, beta))
+
+    @test extracted ≈ im / sqrt(241920) rtol = 2e-12
+    @test abs(extracted) ≈ abs(-inv(sqrt(241920))) rtol = 2e-12
+end
+
 @testset "Native solved HO/FD S-wave transition agreement" begin
     params, mq = load_parameters_and_quark_masses(
         joinpath(REPOSITORY_ROOT, "data", "parameters.provisional.toml"),

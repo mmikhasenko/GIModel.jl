@@ -443,7 +443,10 @@ function _eq19_wave_amplitude(
             parent_flavors,
         ) for label in decomposition.integral_labels
     )
-    values = collect(integrals)
+    # An exactly flavor-forbidden component has no integral columns. Keep the
+    # empty vector numerically typed so the zero-column angular matrices still
+    # produce an explicit zero helicity/partial-wave vector.
+    values = ComplexF64[integrals...]
     helicity_values = decomposition.helicity_coefficients * values
     partial_wave_values = decomposition.partial_wave_coefficients * values
     helicity = Tuple(
