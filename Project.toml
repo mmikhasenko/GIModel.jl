@@ -1,5 +1,6 @@
 name = "GIModel"
 uuid = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
+authors = ["Mikhail Mikhasenko <mikhail.mikhasenko@gmail.com>"]
 version = "0.4.0"
 
 [deps]
@@ -12,6 +13,8 @@ TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 
 [compat]
 julia = "1.11"
+Aqua = "0.8"
+Test = "1.11"
 FiniteDifferences = "0.12.33"
 KrylovKit = "0.10.3"
 LinearAlgebra = "1.11.0"
@@ -21,8 +24,9 @@ SpecialFunctions = "2.7.2"
 TOML = "1.0.3"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "FiniteDifferences"]
+test = ["Aqua", "Test", "FiniteDifferences"]

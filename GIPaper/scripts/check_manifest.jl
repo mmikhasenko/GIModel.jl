@@ -17,6 +17,7 @@ const MANIFEST_DIR = joinpath(ROOT, "docs", "paper_manifest")
 const REPORT = joinpath(ROOT, "GIPaper", "docs", "residual_reports", "manifest_check.md")
 const TEST_DIRS = [
     joinpath(ROOT, "test"),
+    joinpath(ROOT, "test", "heavy"),
     joinpath(ROOT, "QuarkModelTransitions", "test"),
     joinpath(ROOT, "GIPaper", "test"),
     joinpath(ROOT, "GIPaper", "scripts", "paper_tables"),

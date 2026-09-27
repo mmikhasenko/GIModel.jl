@@ -28,4 +28,5 @@ const params, mq = load_parameters_and_quark_masses(GIPaper.model_parameters_pat
     include("comparison.jl")
     include("annihilation.jl")
     include("residual_reports.jl")
+    include("aqua.jl")
 end

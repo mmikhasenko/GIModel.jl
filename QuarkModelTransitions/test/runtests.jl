@@ -51,6 +51,7 @@ const root = REPOSITORY_ROOT
     include("radiative_decays.jl")
     include("strong_decays.jl")
     include("transition_amplitudes.jl")
+    include("aqua.jl")
 end
 
 include("../scripts/audit_documentation.jl")

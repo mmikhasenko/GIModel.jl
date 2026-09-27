@@ -1,5 +1,6 @@
 name = "QuarkModelTransitions"
 uuid = "87282b95-dd94-4373-9910-f2158c0f9e5e"
+authors = ["Mikhail Mikhasenko <mikhail.mikhasenko@gmail.com>"]
 version = "0.2.0"
 
 [deps]
@@ -12,13 +13,17 @@ GIModel = {path = ".."}
 
 [compat]
 julia = "1.11"
+Aqua = "0.8"
+Test = "1.11"
+LinearAlgebra = "1.11"
 GIModel = "0.4"
 PartialWaveFunctions = "0.2"
 Printf = "1.11.0"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "LinearAlgebra"]
+test = ["Aqua", "Test", "LinearAlgebra"]

@@ -7,7 +7,7 @@ cd "$ROOT"
 
 # FiniteDifferences lives in the test target, so run the suites through Pkg.test.
 # GIPaper's Julia test suite owns the CSV, TOML, and provenance invariants.
-julia --project=. -e 'using Pkg; Pkg.test()'
+GI_HEAVY_TESTS=true julia --project=. -e 'using Pkg; Pkg.test()'
 julia --project=QuarkModelTransitions -e 'using Pkg; Pkg.test()'
 julia --project=GIPaper -e 'using Pkg; Pkg.test()'
 julia GIPaper/scripts/audit_ho_convergence.jl # PA-12: adaptive native-HO certificate

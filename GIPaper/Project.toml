@@ -1,5 +1,6 @@
 name = "GIPaper"
 uuid = "49ec1c8d-b0ea-4dff-ad2d-05293f1534fc"
+authors = ["Mikhail Mikhasenko <mikhail.mikhasenko@gmail.com>"]
 version = "0.1.0"
 
 [deps]
@@ -16,6 +17,8 @@ QuarkModelTransitions = {path = "../QuarkModelTransitions"}
 
 [compat]
 julia = "1.11"
+Aqua = "0.8"
+Test = "1.11"
 CSV = "0.10.16"
 GIModel = "0.4"
 QuarkModelTransitions = "0.2"
@@ -24,7 +27,8 @@ Printf = "1.11.0"
 TOML = "1.0.3"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["Aqua", "Test"]

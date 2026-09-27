@@ -87,7 +87,7 @@ pages = "14-22"
 statement = "Strong-decay amplitudes M* -> M + P over all light + charmed nonets (220 rows, pages 14-22); decay rate = |amplitude|^2."
 status = "reproduced"
 code = ["QuarkModelTransitions/src/strong_decays.jl:decay_amplitude", "GIPaper/scripts/reproduce_table_v.jl"]
-tests = ["Row-oriented decay API"]
+tests = ["Table V strong-decay model", "Table V paper adapter"]
 report = "GIPaper/docs/residual_reports/table_v_reproduction.md"
 metric = "220/220 canonical rows accounted for: 107/134 scoreable rows match, 14 near, 13 miss, 82 convention-deferred, 4 context-only"
 parent = "sec-IV"

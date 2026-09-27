@@ -8,6 +8,12 @@ docs/autonomous_runs/
 # Unreleased research workspace (its own git repository; not part of any package).
 /research/
 
+# Package manifests are resolved locally and in CI from the compat bounds;
+# only the application environments (GIPaper/scripts, examples) pin theirs.
+/Manifest.toml
+/QuarkModelTransitions/Manifest.toml
+/GIPaper/Manifest.toml
+
 # Local environments and caches
 .venv/
 __pycache__/
