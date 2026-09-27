@@ -169,20 +169,26 @@ end
     # beta_grid is a solver field, not a module constant to edit in source. A
     # bracket that excludes the minimum now fails rather than returning a
     # warned-but-usable under-resolved result.
-    # The charmonium S-wave optimum is near 1.05 GeV, so a bracket on either side
-    # rails at its endpoint. (A 0.9:0.1:1.2 bracket used to rail too, but only
-    # because the uncorrected momentum projection made the optimum grid-dependent.)
+    # At the first basis size (nbasis = 24) the 2S objective has its minimum near
+    # beta = 1.0 GeV; the 0.8 and 1.5 GeV endpoints lie 17 keV and 5.5 MeV above
+    # it, so brackets on either side rail robustly. Near the minimum the valley is
+    # flat to about 1 keV (0.9 vs 1.0 GeV), which is why a 0.9:0.1:1.2 bracket
+    # cannot serve as an "excluding" bracket: whether it rails depends on the sign
+    # of a keV-level difference, and the HO momentum-projection fix flipped it.
     narrow = OscillatorSolver(beta_grid = 0.5:0.1:0.8)
     @test narrow.beta_grid == [0.5, 0.6, 0.7, 0.8]
     @test_throws ErrorException channel_solution(
         params, meson.constituent_masses, 0; solver = narrow, nlevels = 2)
     @test_throws ErrorException channel_solution(params, meson.constituent_masses, 0;
         solver = OscillatorSolver(beta_grid = 1.5:0.1:1.8), nlevels = 2)
-    # A bracket that contains the optimum finds the same β as the default grid.
+    # A bracket that contains the optimum gives the same energies as the default
+    # grid. Compare energies, not beta: once converged, the energies are flat in
+    # beta to eV level, so the selected beta itself is not a stable quantity.
+    contained = OscillatorSolver(beta_grid = 0.9:0.1:1.2)
     @test channel_solution(params, meson.constituent_masses, 0;
-        solver = OscillatorSolver(beta_grid = 0.9:0.1:1.2), nlevels = 2).convergence.beta_GeV ≈
+        solver = contained, nlevels = 2).eigenvalues_GeV ≈
           channel_solution(params, meson.constituent_masses, 0;
-        solver = OscillatorSolver(), nlevels = 2).convergence.beta_GeV atol = 5e-3
+        solver = OscillatorSolver(), nlevels = 2).eigenvalues_GeV atol = contained.energy_tolerance_GeV
 
     @testset "PA-12 adaptive HO convergence is certified or fails loudly" begin
         # Explicit fixed-size mode is available only as an unchecked convergence
