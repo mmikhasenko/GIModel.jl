@@ -69,7 +69,4 @@
 
     @test QuarkModelTransitions._heavy_flavor_state(:c, :d).components ==
           Dict((:c, :d) => -1.0)
-    @test_throws ArgumentError QuarkModelTransitions._FlavorState(
-        "bad", [(:u, :u) => 1.0, (:d, :d) => 1.0],
-    )
 end

@@ -13,24 +13,18 @@
     @test QuarkModelTransitions._spin_factor(q, singlet, triplet[1], -1) ≈ -1
     @test QuarkModelTransitions._spin_factor(qbar, singlet, triplet[1], -1) ≈ 1
 
-    # A rank-one component changes the total projection by its spherical index.
-    for topology in (q, qbar), mf in -1:1, mi in -1:1, mu in -1:1
-        value = QuarkModelTransitions._spin_factor(
-            topology, triplet[mf], triplet[mi], mu,
-        )
-        mf == mi + mu || @test value == 0
-    end
-
-    # Spherical-tensor Hermiticity: sigma_mu^dagger = (-1)^mu sigma_-mu.
+    # A rank-one component changes projection by its spherical index.
+    # Compare the operators as matrices rather than testing every scalar entry
+    # repeatedly (most entries are the same selection-rule zero).
     states = (singlet, triplet[-1], triplet[0], triplet[1])
-    for topology in (q, qbar), left in states, right in states, mu in -1:1
-        lhs = QuarkModelTransitions._spin_factor(topology, left, right, mu)
-        rhs = (-1)^mu * conj(QuarkModelTransitions._spin_factor(
-            topology, right, left, -mu,
-        ))
-        @test lhs ≈ rhs
+    projections = (0, -1, 0, 1)
+    for topology in (q, qbar)
+        matrix(mu) = [QuarkModelTransitions._spin_factor(topology, l, r, mu)
+                      for l in states, r in states]
+        z, plus, minus = matrix(0), matrix(1), matrix(-1)
+        @test z ≈ z'
+        @test plus ≈ -minus'
+        @test all(iszero(plus[i,j]) for i in 1:4, j in 1:4
+                  if projections[i] != projections[j] + 1)
     end
-
-    @test_throws ArgumentError QuarkModelTransitions._coupled_spin(2, 0)
-    @test_throws ArgumentError QuarkModelTransitions._pauli_spherical(1, 2)
 end

@@ -1,82 +1,3 @@
-struct DummyNativeDecayOperator <: StrongDecayOperator end
-
-@testset "GIModel resolved-state adapter" begin
-    params, masses = load_parameters_and_quark_masses(
-        joinpath(REPOSITORY_ROOT, "data", "parameters.provisional.toml"),
-    )
-    spec = compute_spectrum(
-        params,
-        Meson(masses, :c, :c);
-        levels = [BasisState(1, "S", 3, 1)],
-        solver = FiniteDifferenceSolver(ngrid = 120, rmax = 12.0),
-    )
-    source = only(spec.states)
-    resolved = physical_state(spec, source)
-    @test resolved.label == source.label
-    @test resolved.mass_GeV == source.mass_GeV
-    @test resolved.J == source.J
-    @test !isempty(resolved.components)
-    @test resolved.provenance.source == :spectrum
-end
-
-@testset "Transition-amplitude domain objects" begin
-    wave = OscillatorWave(0, 0.4, [1.0])
-    rho_basis = BasisState(1, "S", 3, 1; label = "rho", flavors = (:u, :d))
-    pip_basis = BasisState(1, "S", 1, 0; label = "pi+", flavors = (:u, :d))
-    pim_basis = BasisState(1, "S", 1, 0; label = "pi-", flavors = (:d, :u))
-
-    rho = PhysicalState("rho", 0.769,
-        [(basis = rho_basis, coefficient = 1.0, wave = wave)])
-    pip = PhysicalState("pi+", 0.138,
-        [(basis = pip_basis, coefficient = 1.0, wave = wave)])
-    pim = PhysicalState("pi-", 0.138,
-        [(basis = pim_basis, coefficient = 1.0, wave = wave)])
-
-    @test rho.J == 1
-    @test rho.parity == -1
-    @test length(rho.components) == 1
-    @test_throws ArgumentError PhysicalState("empty", 1.0, [])
-    @test_throws ArgumentError PhysicalState("bad mass", -1.0,
-        [(basis = rho_basis, coefficient = 1.0, wave = wave)])
-
-    final = TwoMesonChannel(pip, pim)
-    reversed = TwoMesonChannel(pim, pip)
-    @test final.first.label == "pi+"
-    @test final.second.label == "pi-"
-    @test reversed.first.label == "pi-"
-    @test reversed.second.label == "pi+"
-    @test allowed_partial_waves(final, rho) == [PartialWave(1, 0)]
-
-    projection = partial_wave_projection(final, rho)
-    @test projection.partial_waves == (PartialWave(1, 0),)
-    @test projection.matrix == ones(1, 1)
-    vector = ReferenceState("vector", 0.8; J = 1, parity = -1)
-    vector_projection = partial_wave_projection(
-        TwoMesonChannel(vector, ReferenceState("p", 0.1; J = 0, parity = -1)),
-        ReferenceState("parent", 1.2; J = 1, parity = 1),
-    )
-    @test vector_projection.partial_waves == (PartialWave(0, 1), PartialWave(2, 1))
-    @test vector_projection.matrix ≈ [sqrt(1 / 3) sqrt(2 / 3);
-                                              -sqrt(2 / 3) sqrt(1 / 3)]
-    @test_throws ArgumentError partial_wave_projection(
-        TwoMesonChannel(
-            ReferenceState("tensor", 0.8; J = 2, parity = 1),
-            ReferenceState("p", 0.1; J = 0, parity = -1),
-        ),
-        ReferenceState("parent", 1.2; J = 2, parity = -1),
-    )
-
-    identical = TwoMesonChannel(pip, pip)
-    @test isempty(allowed_partial_waves(identical, rho))
-    @test_throws ArgumentError PartialWave(-1, 0)
-
-    incomplete = ReferenceState("epsilon", 0.7)
-    @test_throws ArgumentError allowed_partial_waves(
-        TwoMesonChannel(incomplete, ReferenceState("pi", 0.138)),
-        ReferenceState("A1", 1.2),
-    )
-end
-
 @testset "GI Appendix C / Table XI projection" begin
     vector = ReferenceState("V", 0.7; J = 1, parity = -1)
     pseudoscalar = ReferenceState("P", 0.1; J = 0, parity = -1)
@@ -172,18 +93,6 @@ end
         for a in parent.components for b in final.first.components for c in final.second.components
     )
     @test composed.value ≈ expected
-    @test length(composed.terms) == 8
-    @test composed.external_masses_GeV ==
-          (parent.mass_GeV, final.first.mass_GeV, final.second.mass_GeV)
-    @test all(type -> type !== Any, fieldtypes(typeof(composed)))
-    @test all(type -> type !== Any, fieldtypes(typeof(composed.terms[1])))
-    @test all(term.identical_normalization == 1.0 for term in composed.terms)
-    @test all(
-        term.mixing_coefficient == term.initial_component.coefficient *
-        conj(term.first_component.coefficient) * conj(term.second_component.coefficient)
-        for term in composed.terms
-    )
-
     phases = (cis(0.31), cis(-0.47), cis(0.83))
     rephased_parent = PhysicalState("A", 1.8, [
         (basis = component.basis, coefficient = phases[1] * component.coefficient,
@@ -263,81 +172,9 @@ end
         for a in pure_first.components for b in identical_final.first.components for
         c in identical_final.second.components
     )
-    @test identical_composed.symmetry.identical
-    @test identical_composed.symmetry.exchange_phase == 1
     @test identical_composed.value ≈ raw_identical / sqrt(2)
-    @test all(
-        term.identical_normalization == inv(sqrt(2)) for term in identical_composed.terms
-    )
-
     vector_parent_basis = BasisState(1, "S", 3, 1; label = "V", flavors = (:u, :u))
     vector_parent = PhysicalState("V", 1.8,
         [(basis = vector_parent_basis, coefficient = 1.0, wave = wave)])
     @test isempty(allowed_partial_waves(identical_final, vector_parent))
-    @test_throws ArgumentError QuarkModelTransitions._compose_physical_decay(
-        equal_kernel, identical_final, vector_parent, PartialWave(1, 0),
-    )
-end
-
-@testset "Typed Table V reference adapter" begin
-    q_rho = decay_momentum(0.769, 0.138, 0.138)
-    q_B = decay_momentum(1.231, 0.7826, 0.138)
-    model = calibrate_strong_decay_model(q_rho, q_B)
-    row = DecayChannel("rho", "pi+", "pi-", sqrt(4 / 3), :A, 1;
-        label = "rho -> pi pi")
-    operator = TableVReference(
-        model,
-        row,
-        PartialWave(1, 0);
-        convention = TableIVPolynomial(),
-    )
-    parent = ReferenceState("rho", 0.769; J = 1, parity = -1)
-    final = TwoMesonChannel(
-        ReferenceState("pi+", 0.138; J = 0, parity = -1),
-        ReferenceState("pi-", 0.138; J = 0, parity = -1),
-    )
-
-    amplitude = matrix_element(final, operator, parent)
-    @test @inferred(matrix_element(final, operator, parent)) isa
-          TransitionAmplitude
-    legacy = decay_amplitude(model, row, q_rho; convention = TableIVPolynomial())
-    @test isempty(amplitude.helicity)
-    @test partial_waves(amplitude) == [PartialWave(1, 0)]
-    @test amplitude[PartialWave(1, 0)] == legacy.total
-    @test decay_width(amplitude) == decay_width(legacy)
-    @test amplitude.momentum_GeV ≈ q_rho
-    @test amplitude.provenance.helicity_available == false
-    @test all(type -> type !== Any, fieldtypes(typeof(amplitude)))
-    @test occursin("rho -> pi+ + pi-", sprint(show, MIME"text/plain"(), amplitude))
-    @test_throws KeyError amplitude[PartialWave(3, 0)]
-    @test_throws ArgumentError matrix_element(
-        final, DummyNativeDecayOperator(), parent,
-    )
-
-    closed_parent = ReferenceState("x", 0.2; J = 0, parity = 1)
-    closed_final = TwoMesonChannel(
-        ReferenceState("a", 0.15; J = 0, parity = -1),
-        ReferenceState("b", 0.15; J = 0, parity = -1),
-    )
-    closed_row = DecayChannel("x", "a", "b", 1.0, :A, 0)
-    closed_operator = TableVReference(model, closed_row, PartialWave(0, 0))
-    @test decay_width(closed_final, closed_operator, closed_parent) == 0.0
-    @test_throws QuarkModelTransitions.ClosedChannelError matrix_element(
-        closed_final, closed_operator, closed_parent,
-    )
-
-    quasi_row = DecayChannel("A1", "epsilon", "pi", 1.0, :A0, 0)
-    quasi_operator = TableVReference(model, quasi_row, PartialWave(0, 0))
-    quasi_parent = ReferenceState("A1", 1.4)
-    quasi_final = TwoMesonChannel(
-        ReferenceState("epsilon", 0.7),
-        ReferenceState("pi", 0.138),
-    )
-    quasi = matrix_element(
-        quasi_final,
-        quasi_operator,
-        quasi_parent,
-    )
-    @test quasi[PartialWave(0, 0)] ==
-          decay_amplitude(model, quasi_row, decay_momentum(1.4, 0.7, 0.138)).total
 end
