@@ -49,8 +49,8 @@ end
     mock_momentum_wave(radial, L; pmax=30.0, npoints=1501) -> MeshMomentumWave
 
 Spherical-Bessel transform of the reduced radial wave to momentum space,
-normalized so `∫ p² Φ² dp = 1` (i.e. `Φ_L(p) = ∫ dr u(r) j_L(pr) √(2/π) p`, the
-[`_momentum_radial_wave`](@ref) kernel).
+`Φ_L(p) = √(2/π) ∫ dr r u(r) j_L(pr)`, sampled on `npoints` momenta up to
+`pmax` (GeV) and normalized so that `∫ p² Φ² dp = 1`.
 """
 function mock_momentum_wave(radial::MeshWave, L::Integer;
                             pmax::Real = 30.0, npoints::Integer = 1501)

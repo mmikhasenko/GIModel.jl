@@ -6,7 +6,25 @@
 #   FineStructure, AnnihilationAmplitudes, CentralPotentialMethod and its
 #   singletons, load_parameters, default_parameters_path
 
-"""Path to the parameter file shipped with GIModel."""
+"""
+    default_parameters_path() -> String
+
+Path to the Godfrey–Isgur parameter set shipped with GIModel: the Table II
+masses and potential parameters with the Appendix A switches. The path does not
+depend on the working directory.
+
+## Example
+
+```julia
+using GIModel
+params, mq = load_parameters_and_quark_masses(default_parameters_path())
+```
+
+## Related
+
+[`load_parameters_and_quark_masses`](@ref) reads both parts;
+[`load_parameters`](@ref) and [`load_quark_masses`](@ref) read one each.
+"""
 default_parameters_path() = normpath(joinpath(@__DIR__, "..", "data", "parameters.provisional.toml"))
 
 # `GIParameters` used to carry a `Basis` type parameter (`FiniteDifferenceBasis` /
@@ -465,7 +483,7 @@ The file describes the model only; pick the radial method with a
 
 ```julia
 using GIModel
-path = joinpath(pkgdir(GIModel), "data", "parameters.provisional.toml")
+path = default_parameters_path()
 params = load_parameters(path)
 meson = Meson(:c, :c, ConstituentMasses(1.628, 1.628))
 ```

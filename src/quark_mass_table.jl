@@ -14,7 +14,7 @@ Flavor-keyed constituent masses in GeV. This is an alias for
 
 ```julia
 using GIModel
-path = joinpath(pkgdir(GIModel), "data", "parameters.provisional.toml")
+path = default_parameters_path()
 mq = load_quark_masses(path)
 mq["c"]                           # charm constituent mass in GeV
 ```
@@ -58,7 +58,7 @@ The light-average mass supplies all three keys `"u"`, `"d"`, and `"q"`.
 
 ```julia
 using GIModel
-path = joinpath(pkgdir(GIModel), "data", "parameters.provisional.toml")
+path = default_parameters_path()
 mq = load_quark_masses(path)
 Meson(mq, :c, :b)
 ```
@@ -81,7 +81,7 @@ Destructure the returned tuple as `params, mq`.
 
 ```julia
 using GIModel
-path = joinpath(pkgdir(GIModel), "data", "parameters.provisional.toml")
+path = default_parameters_path()
 params, mq = load_parameters_and_quark_masses(path)
 meson = Meson(mq, :c, :b)
 ```
