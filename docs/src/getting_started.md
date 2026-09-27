@@ -1,0 +1,173 @@
+# Getting started
+
+This page takes one calculation through every step: load the model, pick a
+meson, compute its spectrum, read one state, and look at its wavefunction.
+Later pages explain each step in more depth.
+
+## Installation
+
+GIModel needs Julia 1.11 or later. It is not yet registered, so add it from
+GitHub:
+
+```julia
+using Pkg
+Pkg.add(url = "https://github.com/mmikhasenko/GIModel.jl")
+```
+
+For a local checkout, use `Pkg.develop(path = "/path/to/GIModel.jl")`.
+The package has four external dependencies (KrylovKit, PartialWaveFunctions,
+QuadGK and SpecialFunctions) and no plotting or file-format dependencies.
+
+## Step 1: load the model
+
+The model is a set of numbers taken from the paper: quark masses, the
+confinement slope and offset, smearing widths, and relativistic factors. They
+ship with the package as a TOML file.
+
+```@example start
+using GIModel
+params, mq = load_parameters_and_quark_masses(default_parameters_path())
+mq
+```
+
+`params` is a [`GIParameters`](@ref) object holding the interaction.
+`mq` is a [`QuarkMassTable`](@ref) with constituent masses in GeV. They are
+kept separate on purpose: the interaction is flavor-blind, and quark masses
+enter only through the meson you build.
+
+## Step 2: choose a meson
+
+A [`Meson`](@ref) is a quark–antiquark pair. The first flavor is the quark,
+the second is the antiquark:
+
+```@example start
+charmonium = Meson(mq, :c, :c)
+```
+
+`Meson(mq, :c, :s)` would be the ``c\bar s`` system (the ``D_s`` family),
+and `Meson(mq, :q, :q)` uses the averaged light mass for ``u`` and ``d``.
+
+## Step 3: choose which levels to compute
+
+States are labeled ``n\,{}^{2S+1}L_J``: radial quantum number ``n``, total
+quark spin ``S``, orbital angular momentum ``L``, and total angular momentum
+``J``. [`spectrum_levels`](@ref) lists all of them up to a radial number:
+
+```@example start
+levels = spectrum_levels(1; L_labels = ("S", "P"))
+[level.label for level in levels]
+```
+
+## Step 4: compute the spectrum
+
+```@example start
+spectrum = compute_spectrum(params, charmonium; levels = spectrum_levels(2))
+```
+
+Each row is a level. The columns are in GeV and add up to the mass:
+
+| column | meaning |
+|---|---|
+| `central` | the spin-independent energy: kinetic term, confinement and Coulomb, plus the quark masses |
+| `contact` | the spin–spin contact (hyperfine) interaction |
+| `fine str` | spin–orbit plus tensor, diagonal in the level |
+| `mixing` | the shift from mixing with other levels of the same ``J^{PC}`` |
+| `mass` | the physical meson mass |
+
+All contributions are evaluated in the same eigenstate, which is why they sum
+exactly to the mass. The last line says that some levels carry mixing: here the
+tensor force mixes ``{}^3S_1`` with ``{}^3D_1``.
+
+## Step 5: look at one state
+
+[`spectrum_state`](@ref) picks a level by its label:
+
+```@example start
+chi_c1 = spectrum_state(spectrum, "1^3P_1")
+chi_c1.mass_GeV
+```
+
+The state also carries its quantum numbers and every contribution:
+
+```@example start
+(chi_c1.n, chi_c1.L, chi_c1.multiplicity, chi_c1.J)
+```
+
+```@example start
+(central = chi_c1.central_GeV,
+ spin_orbit = chi_c1.spin_orbit_shift_GeV,
+ tensor = chi_c1.tensor_shift_GeV,
+ contact = chi_c1.contact_shift_GeV)
+```
+
+## Step 6: get its wavefunction
+
+For a level that does not mix, [`radial_wave`](@ref) returns the radial
+wavefunction:
+
+```@example start
+eta_c = radial_wave(spectrum, "1^1S_0")
+wave_norm(eta_c)
+```
+
+The ``J/\psi`` is slightly mixed with the ``{}^3D_1`` states, so it has more
+than one component. [`physical_components`](@ref) returns all of them, each
+with a signed coefficient and its own radial wave:
+
+```@example start
+[(c.basis.label, round(c.coefficient; digits = 4))
+ for c in physical_components(spectrum, "1^3S_1")]
+```
+
+Asking `radial_wave` for a mixed state throws an error. That is deliberate: a
+mixed state has no single radial wave, so the package does not return one.
+
+The mean-square radius and momentum come from [`wave_mean_squares`](@ref),
+in ``\mathrm{GeV}^{-2}`` and ``\mathrm{GeV}^2``:
+
+```@example start
+wave_mean_squares(eta_c, 0)
+```
+
+To plot the wave, sample it on a grid of radii in ``\mathrm{GeV}^{-1}``:
+
+```@example start
+using CairoMakie
+r = range(0, 12; length = 241)
+fig = Figure(size = (600, 320))
+ax = Axis(fig[1, 1]; xlabel = "r  [GeV⁻¹]", ylabel = "u(r)")
+for label in ("1^1S_0", "2^1S_0", "1^1P_1")
+    wave = sample_wave(radial_wave(spectrum, label), r)
+    lines!(ax, wave.r, wave.u; label)
+end
+axislegend(ax)
+fig
+```
+
+Here `u(r)` is the reduced radial wavefunction, normalized as
+``\int_0^\infty u(r)^2\,dr = 1``.
+
+## Step 7: use the paper's numerical method
+
+`compute_spectrum` uses a fast finite-difference solver by default. Godfrey
+and Isgur expanded the wavefunctions in harmonic-oscillator functions instead.
+Pass an [`OscillatorSolver`](@ref) to use that method:
+
+```@example start
+ho = compute_spectrum(params, charmonium;
+    levels = spectrum_levels(1; L_labels = ("S",)), solver = OscillatorSolver())
+```
+
+The two methods agree to a fraction of an MeV. The oscillator solver also
+checks its own convergence; [Solvers and convergence](@ref) explains both
+solvers.
+
+## Where to go next
+
+- [The model](@ref) writes out the Hamiltonian behind these numbers.
+- [Computing a spectrum](@ref) covers level selection, the stages of the
+  calculation, and switching spin terms on and off.
+- [Wavefunctions](@ref) covers wave representations, momentum space and mixed
+  states.
+- [Charmonium, start to finish](@ref) continues this example with radiative
+  and leptonic decays.

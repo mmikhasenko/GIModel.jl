@@ -4,7 +4,7 @@ doi = "10.1103/PhysRevD.32.189"
 page = 5
 table = "Table II"
 status = "reviewed_runtime_preset"
-authority_note = "Runtime preset reviewed against Table II and Appendix A; see docs/model_inputs.md. Historical filename retained for compatibility. Table II reference transcription lives in GIPaper/data/clean/."
+authority_note = "Runtime preset reviewed against Table II and Appendix A; see the Inputs and parameters documentation page. Historical filename retained for compatibility. The Table II reference transcription lives in GIPaper/data/transcription_parameters.toml."
 
 [masses]
 m_ud_avg_MeV = 220

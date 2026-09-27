@@ -274,8 +274,7 @@ and annihilation mixing of the mass spectrum remain in GIModel.
 
 `ELECTROMAGNETIC_DEFAULTS` and `STRONG_DECAY_DEFAULTS` expose the additional
 phenomenological inputs. They are separate from spectrum parameters and from
-numerical controls. GIPaper owns the table-specific reference data and the
-rate input ledger (retired during GIPaper cleanup).
+numerical controls. GIPaper owns the table-specific reference data.
 
 ## Public API and migration
 
@@ -294,10 +293,11 @@ Use `mass_correction_factor(...; target_momentum=...)` for momentum corrections;
 strong emission also requires `partial_wave`. A ratio is undefined for a closed
 or zero reference amplitude.
 
-The [complete API inventory and documentation graph](docs/discoverability_graph.md)
-lists the access level of every name. The [help conventions](docs/discoverability.md)
-explain the executable-example and connectivity checks. Use `?matrix_element` and `?decay_width`
-as the navigation entry points.
+The [transitions guide](https://mmikhasenko.github.io/GIModel.jl/dev/manual/transitions)
+and the [API reference](https://mmikhasenko.github.io/GIModel.jl/dev/api/transitions)
+cover every supported name. `scripts/audit_documentation.jl` executes all
+docstring and README examples and checks help links; it runs with the tests.
+Use `?matrix_element` and `?decay_width` as the navigation entry points.
 
 `decay_width` returns **MeV** for transition and reference amplitudes. Specialized
 gluonic, leptonic, and `m1_radiative_width` functions return **GeV**;

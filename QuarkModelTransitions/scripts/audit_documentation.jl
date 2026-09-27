@@ -1,4 +1,5 @@
-# Run from the repository root:
+# Execute every public docstring example and check help links. Run from the
+# repository root; as a script it also prints the documentation link graph:
 # julia --project=. QuarkModelTransitions/scripts/audit_documentation.jl
 using GIModel, GIModel.QuarkModelTransitions
 using Test
@@ -108,7 +109,7 @@ function audit_documentation(; write_graph=false)
         append!(lines, ["", "<details>", "<summary>Complete graph ($(length(edges)) links)</summary>", "", "```mermaid", "flowchart LR"])
         append!(lines, ["    $a --> $b" for (a,b) in edges])
         append!(lines, ["```", "", "</details>", ""])
-        write(joinpath(PACKAGE_ROOT, "docs", "discoverability_graph.md"), join(lines, '\n'))
+        println(join(lines, '\n'))
     end
     println("Documentation: $(length(PUBLIC_NAMES)) public names, $(length(entries)) docstrings, $example_count executable examples.")
 end

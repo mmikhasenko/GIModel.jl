@@ -1,13 +1,15 @@
 # GIModel.jl
 
+[![Docs: dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://mmikhasenko.github.io/GIModel.jl/dev/)
+
 A Julia implementation of the Godfrey–Isgur relativized quark model for meson
 spectra, wavefunctions and decays: S. Godfrey and N. Isgur, *Phys. Rev. D*
 **32**, 189 (1985), [doi:10.1103/PhysRevD.32.189](https://doi.org/10.1103/PhysRevD.32.189).
 
 GIModel computes meson spectra and wavefunctions with independent
-harmonic-oscillator and finite-difference solvers. It has three external runtime
-dependencies (KrylovKit, QuadGK and SpecialFunctions), plus Julia standard
-libraries. Julia 1.11 or later is required; release checks use Julia 1.11.
+harmonic-oscillator and finite-difference solvers. It has four external runtime
+dependencies (KrylovKit, PartialWaveFunctions, QuadGK and SpecialFunctions),
+plus Julia standard libraries. Julia 1.11 or later is required; release checks use Julia 1.11.
 
 ## Quick start
 
@@ -22,7 +24,7 @@ spec = compute_spectrum(params, Meson(mq, :c, :c); levels = spectrum_levels(1))
 ```
 
 The preset path is independent of your working directory. The ordinary spectrum
-uses [18 numerical physics inputs](docs/model_inputs.md); optional isoscalar mixing
+uses [18 numerical physics inputs](https://mmikhasenko.github.io/GIModel.jl/dev/manual/inputs); optional isoscalar mixing
 and transition calculations have additional inputs. For wave operations and
 worked examples, see [examples](examples/README.md).
 
@@ -85,20 +87,21 @@ Also in the repository:
 
 ## Documentation
 
-- [Model inputs](docs/model_inputs.md) — the 18 spectrum inputs and where each lives.
-- [Code architecture](docs/code_architecture.md) and [conventions](docs/conventions.md).
-- [Formula map](docs/formula_map.md) — active code paths against paper equations;
-  [paper navigation](docs/paper_navigation.md) — a page map of the article;
-  [Appendix A](docs/appendix_a_from_paper.md) and its
-  [equation audit](docs/appendix_a_equation_audit.md).
-- [Original 1985 algorithm audit](docs/original_1985_algorithm_audit.md) — the
-  paper's mesh-free HO spectrum algorithm against the implementation.
-- [Paper gap ledger](docs/paper_gap_ledger.md) — what remains relative to the paper.
-- [Discoverability](docs/discoverability.md) — help conventions and the
-  [public API documentation graph](docs/discoverability_graph.md).
-- [Paper data and comparisons](GIPaper/README.md) — reference values, kinematic
-  inputs and Julia comparison scripts for Tables V, VI and VII.
-- [Strong decays tutorial](docs/strong_decays_tutorial.qmd) (Quarto).
+The [documentation](https://mmikhasenko.github.io/GIModel.jl/dev/) explains the
+model and the package step by step:
+
+- [Getting started](https://mmikhasenko.github.io/GIModel.jl/dev/getting_started):
+  one calculation from inputs to wavefunctions.
+- **Manual**: the Hamiltonian, inputs, spectra, solvers, wavefunctions,
+  isoscalar mixing, transitions and conventions.
+- **Tutorials**: charmonium from start to finish, heavy-light mixing, the
+  charm-to-bottom limit, η–η′ mixing, and strong decays with solved wavefunctions.
+- **The 1985 paper**: how each table is reproduced, the results, and the
+  mixing-angle discrepancy in the paper's figure captions.
+- **API reference** for GIModel and QuarkModelTransitions.
+
+Build it locally with `julia --project=docs docs/make.jl` (needs Node.js for the
+VitePress site).
 
 ## Beyond the 1985 paper
 
