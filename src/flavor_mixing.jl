@@ -173,7 +173,7 @@ end
 
 `^1S_0` isoscalar annihilation block over the `[1 nn̄, 1 ss̄, 2 nn̄, 2 ss̄]`
 basis built from two [`Spectrum`](@ref)s. Dispatches on the
-[`PseudoscalarAnnihilationModel`](@ref): [`CalibratedP1Annihilation`](@ref)
+`PseudoscalarAnnihilationModel`: [`CalibratedP1Annihilation`](@ref)
 requires explicit `targets` (four masses to calibrate the rank-one block to —
 digitized paper values live in the comparison layer, not here);
 [`PaperP1Annihilation`](@ref)/[`PaperP2Annihilation`](@ref) use the Eq. (18a,b)

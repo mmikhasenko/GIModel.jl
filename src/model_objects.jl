@@ -114,7 +114,7 @@ Reduced radial wavefunction ``u(r)`` on a **uniform** interior grid: samples `u�
 with spacing `h` (for `length(r) ≥ 2`, the two-argument form sets `h = r[2] - r[1]`).
 
 This bundles the data [`fine_structure_components`](@ref), [`contact_hyperfine_shift`](@ref),
-and [`physical_u_norm`](@ref) rely on. It is **one radial eigenlevel** on the mesh — not the
+and `physical_u_norm` rely on. It is **one radial eigenlevel** on the mesh — not the
 full multi-level output of [`channel_solution`](@ref).
 
 For a cached [`ChannelRadialSolution`](@ref), use [`radial_wave`](@ref) to

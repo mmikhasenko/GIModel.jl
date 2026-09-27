@@ -389,10 +389,7 @@ with the filled [`SectorComputation`](@ref).
 `nlevels_per_channel` bounds the radial levels kept per channel; a level with
 `n` beyond it throws `ArgumentError`.
 
-Every wave in the returned spectrum comes from `solver`. There used to be a
-second, oscillator-basis wave cache here for the Table III annihilation matrix
-elements; see the note above `fix_annihilation_phase!` in the mixing code for
-why it is gone.
+Every wave in the returned spectrum comes from `solver`.
 """
 function central_spectrum(
     params::GIParameters,
@@ -612,7 +609,7 @@ diagnostic is not evaluated. Returns a [`MixedSpectrum`](@ref) containing
 
 ```julia
 using GIModel
-path = joinpath(pkgdir(GIModel), "data", "parameters.provisional.toml")
+path = default_parameters_path()
 params, mq = load_parameters_and_quark_masses(path)
 meson = Meson(mq, :c, :b)
 ```
@@ -1130,18 +1127,21 @@ function Base.show(io::IO, ::MIME"text/plain", spec::Spectrum{S}) where {S}
         _stage_name(S), ": ", channel_text, ", ",
         length(spec.states), " levels — all values in GeV",
     )
-    width = isempty(spec.states) ? 8 : maximum(length(s.label) for s in spec.states)
+    # A multi-channel spectrum repeats labels across flavors, so name the channel.
+    row_label(s) = length(spec.channels) > 1 && !isnothing(s.basis.flavors) ?
+        string(s.label, " ", join(string.(s.basis.flavors))) : s.label
+    width = isempty(spec.states) ? 8 : max(5, maximum(length(row_label(s)) for s in spec.states))
     print(io, "  ", rpad("level", width))
     for c in cols
         print(io, lpad(c, 11))
     end
     for s in spec.states
-        print(io, "\n  ", rpad(s.label, width))
+        print(io, "\n  ", rpad(row_label(s), width))
         for v in _stage_values(s)
             print(io, lpad(@sprintf("%.4f", v), 11))
         end
     end
-    if S !== CentralState
+    if S === MixedState
         nmix = count(s -> !isempty(s.mixings), spec.states)
         nmix > 0 && print(io, "\n  (", nmix, " levels carry mixing; see `spec.states[i].mixings`)")
     end

@@ -59,6 +59,13 @@ end
     )
     @test ho_solution isa ChannelRadialSolution{OscillatorWave}
 
+    # Solver settings compare by value, so spectra solved with separately
+    # constructed but identical solvers can be combined.
+    @test OscillatorSolver() == OscillatorSolver()
+    @test hash(OscillatorSolver()) == hash(OscillatorSolver())
+    @test OscillatorSolver() != OscillatorSolver(nbasis = 32)
+    @test OscillatorSolver() != OscillatorSolver(beta_grid = [0.7])
+
     matrix = Symmetric([2.0 1.0; 1.0 2.0])
     for eigensolver in (:full, :krylov)
         solver = FiniteDifferenceSolver(eigensolver = eigensolver)

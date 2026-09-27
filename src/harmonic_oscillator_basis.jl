@@ -374,12 +374,17 @@ _oscillator_momentum_cutoff(w::OscillatorWave) =
     _oscillator_tail_rho(w.L, length(w.coefficients)) * w.beta
 
 """
-    sample_wave(w::OscillatorWave, r) -> MeshWave
+    sample_wave(w::RadialWave, r) -> MeshWave
 
-Sample an oscillator wave on a uniform radial grid `r` in GeV⁻¹ for plotting
-or export. Supply at least two points and enough radial extent to contain the
+Sample a radial wave on a uniform radial grid `r` in GeV⁻¹ for plotting or
+export. Supply at least two points and enough radial extent to contain the
 wave. The returned samples are normalized on this finite grid, so this is a
 plotting representation, not an independent convergence check.
+
+An [`OscillatorWave`](@ref) is evaluated from its expansion. A
+[`MeshWave`](@ref) is linearly interpolated between its mesh points, with
+`u(0) = 0` and `u = 0` beyond its outer boundary, so the same plotting code
+works for either solver.
 
 ## Example
 
@@ -390,7 +395,7 @@ sampled = sample_wave(wave, range(0.0, 15.0; length=301))
 sampled.r, sampled.u  # plot radius against the reduced radial wave u(r)
 ```
 
-A [`MeshWave`](@ref) already has `.r` and `.u`; it needs no sampling step.
+A [`MeshWave`](@ref) also exposes its own mesh directly as `.r` and `.u`.
 
 ## Related
 
@@ -399,6 +404,21 @@ A [`MeshWave`](@ref) already has `.r` and `.u`; it needs no sampling step.
 """
 function sample_wave(w::OscillatorWave, r::AbstractVector{<:Real})
     samples = [_oscillator_radial_value(w, ri) for ri in r]
+    h = r[2] - r[1]
+    samples ./= sqrt(sum(abs2, samples) * h)
+    return MeshWave(samples, r, h)
+end
+
+function sample_wave(w::MeshWave, r::AbstractVector{<:Real})
+    # Nodes include the Dirichlet boundaries u(0) = 0 and u(rmax) = 0.
+    nodes = vcat(0.0, w.r, w.r[end] + w.h)
+    values = vcat(0.0, w.u, 0.0)
+    samples = map(r) do ri
+        (ri <= 0 || ri >= nodes[end]) && return 0.0
+        i = clamp(searchsortedlast(nodes, ri), 1, length(nodes) - 1)
+        t = (ri - nodes[i]) / (nodes[i+1] - nodes[i])
+        (1 - t) * values[i] + t * values[i+1]
+    end
     h = r[2] - r[1]
     samples ./= sqrt(sum(abs2, samples) * h)
     return MeshWave(samples, r, h)

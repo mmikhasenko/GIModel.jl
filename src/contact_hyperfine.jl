@@ -269,7 +269,7 @@ end
     contact_hyperfine_nonperturbative_states(params, masses, L, multiplicity, r, nlevels)
         -> ChannelRadialSolution
 
-Like [`contact_hyperfine_nonperturbative_levels`](@ref) but retains the native
+Like `contact_hyperfine_nonperturbative_levels` but retains the native
 radial waves of the fixed-L Hamiltonian with the contact-hyperfine operator added
 non-perturbatively. The singlet/triplet split of these waves is what makes the
 `^1S_0` (e.g. `pi`) more compact than the `^3S_1` (e.g. `rho`) and drives the
