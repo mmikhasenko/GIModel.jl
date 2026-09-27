@@ -17,9 +17,10 @@ on:
                 type: string
                 default: ubuntu-latest
             arch:
+                description: "Julia architecture; default uses the runner's native architecture"
                 required: false
                 type: string
-                default: x64
+                default: default
             allow_failure:
                 required: false
                 type: boolean
