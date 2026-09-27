@@ -12,6 +12,7 @@ using GIModel
 using LaTeXStrings
 
 const SIMPLIFIED = "--simplified" in ARGS
+const PORTRAIT = "--portrait" in ARGS
 const PAPER_ROOT = dirname(@__DIR__)
 const PDG_TABLE = joinpath(PAPER_ROOT, "data", "pdg_mesons_2026.csv")
 const OUTDIR = joinpath(@__DIR__, "spectrum_plots")
@@ -266,17 +267,17 @@ function draw_panel!(fig, slot, class, model, pdg)
 
     all_masses = vcat([r.mass_MeV for r in model], [r.mass_MeV for r in pdg])
     ylo, yhi = extrema(all_masses)
-    pad = max(65.0, 0.055(yhi - ylo))
+    pad = max(65.0, (PORTRAIT ? 0.10 : 0.055) * (yhi - ylo))
 
     ax = Axis(
         fig[slot...];
         title = CLASS_TITLES[class],
         titlealign = :left,
-        titlesize = SIMPLIFIED ? 19 : 16,
+        titlesize = PORTRAIT ? 22.8 : SIMPLIFIED ? 19 : 16,
         xticks = (1:length(keys), key_label.(keys)),
         xticklabelrotation = 0.0,
-        xticklabelsize = SIMPLIFIED ? 15 : 11,
-        yticklabelsize = SIMPLIFIED ? 13 : 11,
+        xticklabelsize = PORTRAIT ? 18 : SIMPLIFIED ? 15 : 11,
+        yticklabelsize = PORTRAIT ? 15.6 : SIMPLIFIED ? 13 : 11,
         yminorticksvisible = true,
         xgridvisible = false,
         ygridvisible = false,
@@ -287,23 +288,29 @@ function draw_panel!(fig, slot, class, model, pdg)
         topspinevisible = true,
         rightspinevisible = true,
     )
-    xlims!(ax, 0.45, length(keys) + 0.55)
+    xlims!(ax, PORTRAIT ? -0.05 : 0.45, length(keys) + (PORTRAIT ? 1.05 : 0.55))
     ylims!(ax, ylo - pad, yhi + pad)
 
     for x in 1:length(keys)
         vlines!(ax, x; color = (:gray70, 0.18), linewidth = 0.6)
     end
 
-    for row in model
+    label_heights = Dict{Tuple{Int,String,String},Float64}()
+    for row in (PORTRAIT ? sort(model; by = r -> r.mass_MeV) : model)
         key = quantum_key(row.J, row.P, row.C, class)
         x = xof[key]
         linestyle = class == "light isoscalar" && row.flavor_tag == "s" ? :dash : :solid
         lines!(ax, [x - 0.32, x + 0.32], fill(row.mass_MeV, 2);
             color = FAMILY_COLORS[(row.n, row.L)],
             linewidth = SIMPLIFIED ? 2.7 : 2.0, linestyle)
-        text!(ax, x - 0.31, row.mass_MeV + 0.010(yhi - ylo);
+        label_y = row.mass_MeV + 0.010(yhi - ylo)
+        if PORTRAIT
+            label_y = max(label_y, get(label_heights, key, -Inf) + 0.0312(yhi - ylo))
+            label_heights[key] = label_y
+        end
+        text!(ax, x - 0.31, label_y;
             text = model_label(row), align = (:left, :bottom),
-            fontsize = SIMPLIFIED ? 9.2 : 7.0,
+            fontsize = PORTRAIT ? 15.6 : SIMPLIFIED ? 9.2 : 7.0,
             color = (:black, 0.82))
     end
 
@@ -332,10 +339,16 @@ function draw_panel!(fig, slot, class, model, pdg)
             dx = iseven(rank) ? 0.09 : -0.09
             align = iseven(rank) ? (:left, :center) : (:right, :center)
             dy = ((rank % 3) - 1) * 0.008(yhi - ylo)
+            if PORTRAIT && isospin_offset(row) != 0
+                # Place partner labels outward from their corresponding markers.
+                dx = sign(isospin_offset(row)) * 0.09
+                align = dx < 0 ? (:right, :center) : (:left, :center)
+                dy = 0.0
+            end
             text!(ax, xof[row.key] + isospin_offset(row) + dx, row.mass_MeV + dy;
                 text = pdg_latex(row.particle), align,
-                fontsize = SIMPLIFIED ? 6.8 : 5.4,
-                color = (:gray45, 0.62))
+                fontsize = PORTRAIT ? 10.2 : SIMPLIFIED ? 6.8 : 5.4,
+                color = PORTRAIT ? (:gray35, 0.85) : (:gray45, 0.62))
         end
     end
     return ax
@@ -368,6 +381,38 @@ else
 end
 filter!(model_row_in_scope, model)
 
+function render_portrait(classes, stem)
+    nrows = cld(length(classes), 2)
+    fig = Figure(size = (1100, nrows == 3 ? 1500 : 1320), backgroundcolor = :white)
+    for (index, class) in enumerate(classes)
+        slot = ((index - 1) ÷ 2 + 1, (index - 1) % 2 + 1)
+        model_class = [row for row in model if row.class == class]
+        draw_panel!(fig, slot, class, model_class, pdg_rows(pdg, class))
+    end
+    Label(fig[:, 0], L"\mathrm{Mass\ (MeV)}"; rotation = pi / 2, fontsize = 28.8)
+    families = [(1, "S"), (2, "S"), (3, "S"), (1, "P"), (2, "P"), (1, "D"), (1, "F")]
+    Legend(fig[nrows + 1, :],
+        [LineElement(color = FAMILY_COLORS[k], linewidth = 3) for k in families],
+        [string(n, L) for (n, L) in families];
+        orientation = :horizontal, framevisible = false, labelsize = 20.4)
+    Label(fig[nrows + 2, :],
+        "Colored bars: model    ● observed    ○ inferred isospin partner";
+        fontsize = 19.2)
+    rowgap!(fig.layout, 20)
+    colgap!(fig.layout, 22)
+    for ext in ("png", "pdf")
+        path = joinpath(OUTDIR, stem * "." * ext)
+        ext == "png" ? save(path, fig; px_per_unit = 2) : save(path, fig)
+        println("wrote ", path)
+    end
+end
+
+if PORTRAIT
+    render_portrait(["light isoscalar", "light isovector", "charmonium", "bottomonium"],
+        "meson_spectra_hidden_flavor_pdg2026")
+    render_portrait(["kaons", "Bc", "D", "Ds", "B", "Bs"],
+        "meson_spectra_open_flavor_pdg2026")
+else
 fig = Figure(size = (1900, 900), backgroundcolor = :white)
 for (index, class) in enumerate(CLASS_ORDER)
     slot = ((index - 1) ÷ 5 + 1, (index - 1) % 5 + 1)
@@ -397,3 +442,5 @@ save(pdf_path, fig)
 isfile(CALCULATED_TABLE) && println("spectrum table ", CALCULATED_TABLE)
 println("wrote ", png_path)
 println("wrote ", pdf_path)
+
+end
