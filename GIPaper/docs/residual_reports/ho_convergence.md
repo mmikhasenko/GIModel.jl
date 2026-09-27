@@ -16,13 +16,13 @@ defect is recorded independently for PA-17/PA-18 observable audits.
 | flavor | sector | achieved nbasis | refined beta GeV | final max delta MeV | max overlap defect |
 |---|---|---:|---:|---:|---:|
 | `q` | `^1S0` | 64 | 0.56246 | 0.005428 | 1.863e-07 |
-| `q` | `^3P2` | 56 | 0.39628 | 0.007694 | 2.882e-07 |
+| `q` | `^3P2` | 48 | 0.35983 | 0.010817 | 4.107e-07 |
 | `s` | `^1S0` | 56 | 0.58738 | 0.005763 | 2.309e-07 |
-| `s` | `^3P2` | 48 | 0.48313 | 0.004757 | 1.937e-07 |
+| `s` | `^3P2` | 48 | 0.45720 | 0.001961 | 6.619e-08 |
 | `c` | `^1S0` | 56 | 0.83390 | 0.006183 | 1.961e-07 |
-| `c` | `^3P2` | 40 | 0.67361 | 0.008495 | 4.448e-07 |
+| `c` | `^3P2` | 40 | 0.65921 | 0.005196 | 2.616e-07 |
 | `b` | `^1S0` | 72 | 1.39853 | 0.020296 | 3.178e-07 |
-| `b` | `^3P2` | 40 | 0.97724 | 0.009615 | 4.985e-07 |
+| `b` | `^3P2` | 40 | 0.96834 | 0.007556 | 4.024e-07 |
 
 All calibration sectors converged below the default hard cap. A beta
 minimum at either declared endpoint or exhaustion of `max_nbasis` is a

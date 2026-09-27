@@ -1,7 +1,7 @@
 # W6 — paper-order (finite HO-basis) validation of the spin-distorted waves
 
 Scores the Table VII gluonic subtable under three treatments of the
-spin-dependent operators (smeared contact for S-waves, literal
+spin-dependent operators (smeared contact in every L, literal
 A15-A16 spin-orbit + tensor for ³P_J), against the spin-independent
 central-wave baseline. Zero bridge parameters: the operator strengths are
 fixed by the paper equations and Table-II epsilon values. They are the
@@ -62,12 +62,12 @@ The two methods reproduce the light pion with no HO-to-mesh fallback.
 | `Upsilon' -> 3g` | -0.150 | 1.11 | **1.06** | 1.06 | 10.004 |
 | `Upsilon'' -> 3g` | +0.130 | 1.09 | **1.05** | 1.06 | 10.354 |
 | `Upsilon''' -> 3g` | -0.110 | 1.18 | **1.14** | 1.14 | 10.633 |
-| `chi_2c -> 2g` | +0.880 | 1.14 | **1.02** | 1.02 | 3.546 |
-| `chi_0c -> 2g` | +2.500 | 0.78 | **1.03** | 1.03 | 3.439 |
-| `chi_2b -> 2g` | +0.350 | 0.98 | **0.88** | 0.88 | 9.895 |
-| `chi_0b -> 2g` | +0.820 | 0.81 | **1.09** | 1.09 | 9.844 |
-| `chi'_2b -> 2g` | -0.370 | 0.98 | **0.89** | 0.89 | 10.260 |
-| `chi'_0b -> 2g` | -0.820 | 0.85 | **1.08** | 1.08 | 10.224 |
+| `chi_2c -> 2g` | +0.880 | 1.14 | **1.01** | 1.01 | 3.548 |
+| `chi_0c -> 2g` | +2.500 | 0.78 | **1.01** | 1.01 | 3.443 |
+| `chi_2b -> 2g` | +0.350 | 0.98 | **0.88** | 0.88 | 9.896 |
+| `chi_0b -> 2g` | +0.820 | 0.81 | **1.07** | 1.08 | 9.845 |
+| `chi'_2b -> 2g` | -0.370 | 0.98 | **0.88** | 0.89 | 10.261 |
+| `chi'_0b -> 2g` | -0.820 | 0.85 | **1.07** | 1.07 | 10.225 |
 
 - central: median 0.994, spread [0.78, 1.18]
 - paper HO (full diag): median 1.055, spread [0.88, 1.17]

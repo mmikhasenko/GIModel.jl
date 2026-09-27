@@ -953,12 +953,12 @@ wave_profile = "fixed sector, at least four radial levels"
 
     [gluonic.result]
     M = 3.556168201191627
-    S = 0.12907023111635968
+    S = 0.12722283154471034
     alpha = 0.23983888905875067
     label = "chi_2c -> 2g"
-    model = 0.898741838614071
+    model = 0.8858780258408363
     paper = 0.88
-    ratio = 1.0212975438796261
+    ratio = 1.0066795748191322
     sign_ok = true
 
     [gluonic.row_configuration]
@@ -986,12 +986,12 @@ wave_profile = "fixed sector, at least four radial levels"
 
     [gluonic.result]
     M = 3.415497307177493
-    S = 0.18806477499697272
+    S = 0.18511015992331772
     alpha = 0.24439794172049553
     label = "chi_0c -> 2g"
-    model = 2.584103502374403
+    model = 2.5435056224145702
     paper = 2.5
-    ratio = 1.0336414009497612
+    ratio = 1.017402248965828
     sign_ok = true
 
     [gluonic.row_configuration]
@@ -1019,12 +1019,12 @@ wave_profile = "fixed sector, at least four radial levels"
 
     [gluonic.result]
     M = 9.91221
-    S = 0.17933660049049902
+    S = 0.17784200949633916
     alpha = 0.18129221907454404
     label = "chi_2b -> 2g"
-    model = 0.3087621993367174
+    model = 0.3061889755708855
     paper = 0.35
-    ratio = 0.8821777123906211
+    ratio = 0.8748256444882443
     sign_ok = true
 
     [gluonic.row_configuration]
@@ -1052,12 +1052,12 @@ wave_profile = "fixed sector, at least four radial levels"
 
     [gluonic.result]
     M = 9.859440000000001
-    S = 0.2666673693318707
+    S = 0.26386577303090714
     alpha = 0.1814823525146709
     label = "chi_0b -> 2g"
-    model = 0.890012156576344
+    model = 0.8806617258433895
     paper = 0.82
-    ratio = 1.0853806787516391
+    ratio = 1.073977714443158
     sign_ok = true
 
     [gluonic.row_configuration]
@@ -1085,12 +1085,12 @@ wave_profile = "fixed sector, at least four radial levels"
 
     [gluonic.result]
     M = 10.26865
-    S = -0.19292749309651347
+    S = -0.19144149341729488
     alpha = 0.17998871297836697
     label = "chi'_2b -> 2g"
-    model = -0.3297732470743522
+    model = -0.32723321023718555
     paper = -0.37
-    ratio = 0.8912790461468978
+    ratio = 0.8844140817221231
     sign_ok = true
 
     [gluonic.row_configuration]
@@ -1118,12 +1118,12 @@ wave_profile = "fixed sector, at least four radial levels"
 
     [gluonic.result]
     M = 10.2325
-    S = -0.266534613237778
+    S = -0.26404807029763905
     alpha = 0.18012245601917012
     label = "chi'_0b -> 2g"
-    model = -0.8829032958240709
+    model = -0.8746665533973068
     paper = -0.82
-    ratio = 1.0767113363708183
+    ratio = 1.066666528533301
     sign_ok = true
 
     [gluonic.row_configuration]

@@ -29,6 +29,26 @@ Every numerical study here should:
 
 ## Studies
 
+- [Report refresh after the contact correction](report_contact_refresh.md) —
+  dependency map, regeneration commands, and validation for `report/main.tex`.
+
+- [Mixing matching targets](mixing_matching_targets.md) — distinguishes direct
+  caption angles and tensor compositions from conditional energy-shift
+  reconstructions, and checks the two-stage algorithm and its basis limits.
+- [Why the mixing compositions failed](mixing_composition_investigation.md) —
+  demonstrates the missing L>0 smeared contact term as the cause of the wrong
+  singlet–triplet diagonal gaps (fixed in core), certifies both mixing stages,
+  independently re-derives the antisymmetric element, and bounds the remaining
+  ground-state off-diagonal deficit. Numbers: [results](mixing_composition_results.md).
+- [Quantitative mixing-layer review](mixing_layer_review.md) (numbers predate
+  the contact fix) — inventories the
+  ten-panel spectrum, reports all mixing-only shifts and projected angles,
+  checks production eigensystems, and distinguishes paper-angle agreement
+  from conditional shift estimates.
+- [Discrepancies beyond orbital P waves](non_pwave_discrepancies.md) — tests
+  excited-eta composition and tensor two-photon flavor substitutions, checks
+  printed P1-vector consistency, and distinguishes demonstrated explanations
+  from remaining hypotheses across the other residual families.
 - [Light and charmed P-wave fine structure](pwave_fine_structure.md) — separates
   vector spin-orbit, scalar/Thomas, and tensor kernels; compares central-wave
   first order with full fixed-sector diagonalization; and checks native HO
@@ -50,3 +70,20 @@ Reproduce the state-energy pullback check with:
 ```sh
 julia GIPaper/scripts/investigate_state_energy_differentiability.jl
 ```
+
+Regenerate the mixing-composition study (the `before` ledger needs a checkout of 88e9a99):
+
+```sh
+julia --project=GIPaper/scripts GIPaper/scripts/investigate_mixing_composition.jl --label after
+julia --project=GIPaper/scripts GIPaper/scripts/investigate_mixing_composition.jl --report
+```
+
+Replay the non-P-wave composition diagnostics from the recorded native inputs:
+
+```sh
+julia --project=GIPaper/scripts GIPaper/scripts/investigate_excited_eta_moments.jl
+julia --project=GIPaper/scripts GIPaper/scripts/investigate_tensor_photons.jl
+```
+
+These require the files produced by `trace_rate_inputs.jl` in `../input_traces/`.
+They do not modify the canonical residual reports or refit model parameters.

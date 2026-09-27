@@ -139,11 +139,11 @@ function write_residual_report(
         println(io, "# ", title)
         println(io)
         hyperfine_note = if contact_hyperfine && contact_momentum_sandwich
-            "with GI momentum-sandwiched smeared S-wave contact hyperfine"
+            "with GI momentum-sandwiched smeared contact hyperfine (every L)"
         elseif contact_hyperfine
-            "with smeared S-wave contact hyperfine"
+            "with smeared contact hyperfine (every L)"
         else
-            "without S-wave contact hyperfine"
+            "without contact hyperfine"
         end
         fs_note =
             if use_fine_structure &&

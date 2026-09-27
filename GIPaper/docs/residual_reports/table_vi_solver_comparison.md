@@ -8,8 +8,8 @@ canonical states, charges, kinematic inputs, and shared phase conventions.
 | Multipole | Rows | Median relative difference | Largest absolute difference |
 |---|---:|---:|---:|
 | M1 | 42 | 0.099% | 0.00880238 |
-| E1 | 35 | 0.049% | 0.00339146 |
-| M2 | 2 | 0.092% | 0.000546437 |
+| E1 | 35 | 0.047% | 0.00348363 |
+| M2 | 2 | 0.094% | 0.000552937 |
 
 Absolute differences are in μN for M1 and MeV^(1/2) for E1/M2.
 The following rows expose radial mixing and cancellation sensitivity.
@@ -22,10 +22,10 @@ The following rows expose radial mixing and cancellation sensitivity.
 | etaprime_r -> omega | -0.0722687 | -0.070018 | +0.01 |
 | etaprime_r -> rho | -0.218603 | -0.212131 | +0.008 |
 | etaprime_r -> phi | -0.026182 | -0.0300775 | -0.29 |
-| Upsilondoubleprime -> etaprime_b | +0.00734038 | +0.00737292 | +0.007 |
-| Upsilondoubleprime -> eta_b | -0.00373632 | -0.00375188 | -0.004 |
+| Upsilondoubleprime -> etaprime_b | +0.00713656 | +0.00716937 | +0.007 |
+| Upsilondoubleprime -> eta_b | -0.00373863 | -0.00375418 | -0.004 |
 | Upsilon -> etaprime | -3.27426e-05 | -3.27729e-05 | +3e-06 |
-| Upsilondoubleprime -> chi_0b | +0.00218537 | +0.00212905 | -0.002 |
+| Upsilondoubleprime -> chi_0b | +0.00197291 | +0.00191614 | -0.002 |
 
 The excited eta magnitude residuals survive the change of numerical
 representation. They are not resolved by replacing the old central P

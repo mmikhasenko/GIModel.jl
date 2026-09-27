@@ -15,7 +15,10 @@ using GIPaper
 params_path = default_parameters_path()
 params, mq = load_parameters_and_quark_masses(params_path)
 solver_fd = FiniteDifferenceSolver()
-solver_ho = OscillatorSolver()
+# Light 1^3G_5 energies are flat to ~1e-8 GeV for beta in 0.25-0.45 GeV, so
+# rounding can place the argmin on the default 0.25 endpoint and trip the
+# bracket guard. A lower edge of 0.15 changes no converged energy.
+solver_ho = OscillatorSolver(beta_grid = collect(0.15:0.10:2.35))
 
 function with_contact_momentum_sandwich(params::GIParameters, enabled::Bool)
     f = params.factors
