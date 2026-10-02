@@ -196,13 +196,13 @@ preprint planned for Thursday, 1 October 2026; arXiv link to follow).
 }
 
 % this project (provisional; arXiv identifier to follow)
-@article{Mikhasenko:2026xyz,
-    author = "Mikhasenko, M.",
-    title = "{Agentic Godfrey Isgur}",
-    eprint = "2610.XXXXX",
+@article{Mikhasenko:2026qlm,
+    author = "Mikhasenko, Mikhail",
+    title = "{A Full Reproduction of the Godfrey--Isgur Relativized Quark Model}",
+    eprint = "2609.37716",
     archivePrefix = "arXiv",
-    primaryClass = "physics.ph",
-    month = "10",
+    primaryClass = "hep-ph",
+    month = "9",
     year = "2026"
 }
 ```
