@@ -19,6 +19,16 @@
 - Inverse singlet E1 transitions (¹S₀ → ¹P₁) are supported. Before, they threw
   an error.
 
+### Changed
+
+- Photon angular factors are derived from L⊗S coupling instead of being
+  transcribed from the paper's Table VI. The E1 coefficients and the J
+  dependence of the spin-flip denominators (√60 m, 6 m) now come from the same
+  Clebsch–Gordan and spin algebra as strong decays. No computed value changes.
+  The overall spin-flip normalization keeps the GI constant; it is an open
+  question in [#18](https://github.com/mmikhasenko/GIModel.jl/issues/18).
+  ([#19](https://github.com/mmikhasenko/GIModel.jl/pull/19))
+
 ## v0.4.1 (2026-09-29)
 
 - Agent skill for using GIModel.jl (`skills/gimodel`).
