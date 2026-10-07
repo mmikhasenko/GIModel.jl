@@ -125,12 +125,50 @@ function neutral_m1_charge(
     throw(ArgumentError("unsupported neutral flavor $flavor"))
 end
 
+# Orbital matrix element <Lf mf| r_hat_mu |Li mi> of the unit vector.
+function _unit_vector_element(Lf::Int, mf::Int, Li::Int, mi::Int, mu::Int)
+    mf == mi + mu || return 0.0
+    return sqrt((2Li + 1) / (2Lf + 1)) *
+           Float64(CG(Li, 0, 1, 0, Lf, 0)) * Float64(CG(Li, mi, 1, mu, Lf, mf))
+end
+
+_photon_spin_element(Sf, mSf, Si, mSi, ::Nothing) = Float64(Sf == Si && mSf == mSi)
+_photon_spin_element(Sf, mSf, Si, mSi, mu::Int) = _spin_factor(
+    _QuarkEmission(), _coupled_spin(Sf, mSf), _coupled_spin(Si, mSi), mu)
+
+"""
+Photon angular rate between (Li,Si)Ji and (Lf,Sf)Jf: summed over final and
+averaged over initial projections. Each operator is an (orbital, spin)
+component pair; `nothing` is the spin identity.
+"""
+function _photon_angular_rate(Lf::Int, Sf::Int, Jf::Int, Li::Int, Si::Int, Ji::Int, operators)
+    total = 0.0
+    for Mi in -Ji:Ji, Mf in -Jf:Jf, (orbital, spin) in operators
+        amplitude = 0.0
+        for mLi in -Li:Li, mSi in -Si:Si, mLf in -Lf:Lf, mSf in -Sf:Sf
+            mLi + mSi == Mi && mLf + mSf == Mf || continue
+            amplitude += Float64(CG(Li, mLi, Si, mSi, Ji, Mi)) *
+                         Float64(CG(Lf, mLf, Sf, mSf, Jf, Mf)) *
+                         _unit_vector_element(Lf, mLf, Li, mLi, orbital) *
+                         _photon_spin_element(Sf, mSf, Si, mSi, spin)
+        end
+        total += abs2(amplitude)
+    end
+    return total / (2Ji + 1)
+end
+
+# E1 is spin blind: the three dipole components with the spin identity.
+const _E1_OPERATORS = Tuple((mu, nothing) for mu in -1:1)
+# Spin-flip term sigma.(q x eps)(q.r) with q along z: r_hat_0 times sigma_{-lambda}.
+const _SPIN_FLIP_OPERATORS = ((0, -1), (0, 1))
+
 """
     e1_angular_coefficient(J_P; singlet=false, parent_is_S=false)
 
-Angular factor multiplying the neutral M1 charge coefficient times q E1.
-E1 does not act on spin, so P -> S transitions carry 1/3 for both triplet
-P_J -> S1 and singlet P1 -> S0. The inverse S -> P direction carries an extra
+Angular factor multiplying the neutral M1 charge coefficient times q E1. It is
+sqrt(R/3), where R is the E1 angular rate from L⊗S coupling, so that
+Γ = (4/3) α e² q³ R |E1|². E1 does not act on spin: P -> S gives 1/3 for both
+triplet P_J -> S1 and singlet P1 -> S0, and S -> P carries an extra
 sqrt((2J_P+1)/(2J_S+1)).
 
 GI 1985 Table VI prints sqrt(2) q/3 for B -> pi gamma, 3sqrt(2) times the
@@ -141,7 +179,7 @@ q/9 of the equivalent A2 -> rho gamma row. That coefficient is not used here.
 ```julia
 using GIModel, GIModel.QuarkModelTransitions
 import GIModel.QuarkModelTransitions as QMT
-@assert QMT.e1_angular_coefficient(1; singlet=true) == 1/3
+@assert QMT.e1_angular_coefficient(1; singlet=true) ≈ 1/3
 ```
 
 ## Related
@@ -154,8 +192,19 @@ function e1_angular_coefficient(J_P::Integer; singlet::Bool = false, parent_is_S
     else
         J_P in 0:2 || throw(ArgumentError("triplet P state must have J in 0:2"))
     end
-    J_S = singlet ? 0 : 1
-    return (parent_is_S ? sqrt((2J_P + 1) / (2J_S + 1)) : 1.0) / 3
+    S = singlet ? 0 : 1
+    P, Sw = (1, S, Int(J_P)), (0, S, S)
+    final, initial = parent_is_S ? (P, Sw) : (Sw, P)
+    return sqrt(_photon_angular_rate(final..., initial..., _E1_OPERATORS) / 3)
+end
+
+# Denominator of the spin-flip P_J -> S0 amplitude, in units of m. The J
+# dependence is derived; the constant 4 is the GI normalization, giving
+# sqrt(60) for J=2 and 6 for J=1 (see issue #18 on the overall constant).
+function _spin_flip_denominator(J_P::Integer)
+    rate = _photon_angular_rate(0, 0, 0, 1, 1, Int(J_P), _SPIN_FLIP_OPERATORS)
+    rate > 0 || throw(ArgumentError("spin-flip P$(J_P) -> S0 photon emission vanishes"))
+    return sqrt(4 / rate)
 end
 
 """
@@ -187,7 +236,7 @@ function spin_flip_photon_amplitude(
 )
     J_P in (1, 2) || throw(ArgumentError("spin-flip prescription requires J_P=1 or 2"))
     q >= 0 || throw(ArgumentError("photon momentum must be nonnegative"))
-    factor = J_P == 2 ? sqrt(60.0) : 6.0
+    factor = _spin_flip_denominator(J_P)
     mom_S, mom_P = momentum_wave(wave_S, 0), momentum_wave(wave_P, 1)
     return sum(terms) do (c, m)
         m > 0 || throw(ArgumentError("constituent mass must be positive"))
