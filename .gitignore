@@ -9,10 +9,11 @@ docs/autonomous_runs/
 /research/
 
 # Package manifests are resolved locally and in CI from the compat bounds;
-# only the application environments (examples) pin theirs.
+# examples resolve against GIModel by path, so they do not pin one either.
 /Manifest.toml
 /QuarkModelTransitions/Manifest.toml
 /GIPaper/Manifest.toml
+/examples/Manifest.toml
 
 # Local environments and caches
 .venv/

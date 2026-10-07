@@ -76,7 +76,6 @@ function precompute_candidates(; outdir=CANDIDATE_DIR)
         spec = compute_spectrum(params,Meson(masses,q,qb);levels,solver)
         provenance = Dict(
             "parameters"=>read(PARAMS_PATH,String),"parameters_sha256"=>bytes2hex(sha256(read(PARAMS_PATH))),
-            "manifest_sha256"=>bytes2hex(sha256(read(joinpath(@__DIR__,"Manifest.toml")))),
             "source_sha256"=>source_hashes,
             "solver"=>Dict(string(f)=>getfield(solver,f) for f in fieldnames(typeof(solver))),
             "nmax"=>nmax,"channels_in_solve"=>["$(k[1]), S=$((k[2]-1)÷2), J=$(k[3])" for k in keys],
