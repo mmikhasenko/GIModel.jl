@@ -80,14 +80,14 @@ Non-parenthesized targets: 28/31 signs; median |model/paper| 1.002.
 
 ## E1
 
-Non-parenthesized targets: 28/29 signs; median |model/paper| 1.017.
+Non-parenthesized targets: 28/29 signs; median |model/paper| 1.010.
 
 | Decay | Computed | Paper | q MeV | q reference MeV | src |
 |---|---:|---:|---:|---:|---|
 | A2 -> rho gamma | +0.151433 | +0.15 | 431.1 | 430.6 | PDG 2026 |
 | f' -> phi gamma | -0.303014 | -0.31 | 416.2 | 421.4 | PDG 2026 |
 | A2_0 -> omega gamma | +0.447287 | +0.44 | 426.8 | 426.4 | PDG 2026 |
-| A1 -> pi gamma | +0.615351 | +0.56 | 607.3 | 630.0 | PDG 2026 |
+| A1 -> pi gamma | +0.435119 | +0.56 | 607.3 | 630.0 | PDG 2026 |
 | B -> pi gamma | +0.148913 | +0.63 | 607.0 | 607.8 | PDG 2026 |
 | chi_2c -> psi gamma | +0.522025 | +0.50 | 429.6 | 429.4 | PDG 2026 |
 | chi_1c -> psi gamma | +0.453914 | +0.44 | 389.4 | 388.7 | PDG 2026 |
@@ -122,12 +122,12 @@ Non-parenthesized targets: 28/29 signs; median |model/paper| 1.017.
 
 ## M2
 
-Non-parenthesized targets: 2/2 signs; median |model/paper| 0.998.
+Non-parenthesized targets: 2/2 signs; median |model/paper| 0.759.
 
 | Decay | Computed | Paper | q MeV | q reference MeV | src |
 |---|---:|---:|---:|---:|---|
-| A2 -> pi gamma | +0.560402 | +0.55 | 651.9 | 651.8 | PDG 2026 |
-| K*(1420) -> K gamma | +0.468861 | +0.48 | 628.2 | 626.9 | PDG 2026 |
+| A2 -> pi gamma | +0.396264 | +0.55 | 651.9 | 651.8 | PDG 2026 |
+| K*(1420) -> K gamma | +0.382497 | +0.48 | 628.2 | 626.9 | PDG 2026 |
 
 ## Largest magnitude residuals
 
@@ -138,7 +138,7 @@ Non-parenthesized targets: 2/2 signs; median |model/paper| 0.998.
 - eta_r -> omega gamma: |model/paper| 0.500.
 - eta_r -> rho gamma: |model/paper| 0.537.
 - eta_r -> phi gamma: |model/paper| 1.372.
-- Upsilon' -> chi_0b gamma: |model/paper| 1.185.
+- A2 -> pi gamma: |model/paper| 0.720.
 
 ## Kinematics provenance
 
@@ -160,3 +160,12 @@ The equivalent A2 -> rho gamma row (same 1P -> 1S n nbar overlap and isovector
 charge) is printed as q/9. E1 does not act on spin, so 1P1 -> 1S0 carries the same
 1/3 angular factor as 3PJ -> 3S1. The model uses 1/3, so this row sits a factor
 3sqrt(2) below the paper (18 in the rate).
+
+The spin-flip rows (A2 -> pi gamma, A1 -> pi gamma, K*(1420) -> K gamma) are printed
+with denominators sqrt(60) m and 6m. The magnetization current of Eq. (22) gives
+sqrt(120) m and sqrt(72) m: the paper's amplitudes are sqrt(2) too large. This is
+verified with MultipolePhotonEmission, which reproduces the standard M1 and E1
+widths and the Karl-Meshkov-Rosner M2/E1 ratios of chi_cJ -> J/psi gamma with the
+same operator. K*(1420) -> K gamma also carries the centre-of-mass emitter weights
+2 m_other/(m_u+m_s), which the paper omits. A2 -> pi gamma is the row the paper used to
+fit the 0.5 m/E exponent of E_n, so that fit absorbed the factor sqrt(2).

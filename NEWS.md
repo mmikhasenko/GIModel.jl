@@ -22,9 +22,29 @@
   Godfrey's later GI-model papers on D, D_s, B and B_c to within 1.2%
   (`GIPaper/checks/audit_heavy_light_e1.jl`).
   ([#24](https://github.com/mmikhasenko/GIModel.jl/issues/24))
+- **Spin-flip photon rates were 2× too large.** The ³P₂ → ¹S₀ (M2) and
+  ³P₁ → ¹S₀ (E1) kernels used GI 1985's denominators √60 m and 6m. The
+  magnetization current gives √120 m and √72 m. The same operator, evaluated by
+  the new `MultipolePhotonEmission`, reproduces the standard M1 and E1 widths and
+  the Karl–Meshkov–Rosner M2/E1 ratios, and the CLEO and BESIII M2 fractions in
+  charmonium prefer it to the √2-larger normalization (χ² 20 against 38 for 8
+  measurements). Each emitter also gets its centre-of-mass weight 2m_j/(m_i+m_j),
+  as for E1. In the GI paper audit, A₂ → πγ and A₁ → πγ drop by 1/√2 and
+  K*(1420) → Kγ by 0.82. GI fitted their m/E exponent to A₂ → πγ, so that fit
+  absorbed the factor. ([#27](https://github.com/mmikhasenko/GIModel.jl/issues/27))
+- The internal spherical Bessel function lost relative precision for orders
+  l ≥ 9 at small arguments and overflowed at l ≥ 17. No published number changes.
 
 ### Added
 
+- `MultipolePhotonEmission`: photon emission from the quark convection and spin
+  currents, exact in the photon momentum and resolved into every multipole
+  (E1, M1, E2, M2, E3, …). It handles any orbital angular momentum and mixed
+  states, including the ³S₁–³D₁ admixtures that `PhotonEmission` rejects.
+  `multipole_fractions` returns the normalized amplitudes measured in
+  χ_cJ → J/ψγ and ψ(2S) → γχ_cJ. New GIPaper check
+  `audit_charmonium_multipoles.jl` compares them with CLEO and BESIII.
+  ([#27](https://github.com/mmikhasenko/GIModel.jl/issues/27))
 - Inverse singlet E1 transitions (¹S₀ → ¹P₁) are supported. Before, they threw
   an error.
 
@@ -34,9 +54,8 @@
   transcribed from the paper's Table VI. The E1 coefficients and the J
   dependence of the spin-flip denominators (√60 m, 6 m) now come from the same
   Clebsch–Gordan and spin algebra as strong decays. No computed value changes.
-  The overall spin-flip normalization keeps the GI constant; it is an open
-  question in [#18](https://github.com/mmikhasenko/GIModel.jl/issues/18).
-  ([#19](https://github.com/mmikhasenko/GIModel.jl/pull/19))
+  The overall spin-flip normalization kept the GI constant, corrected in #27
+  above. ([#19](https://github.com/mmikhasenko/GIModel.jl/pull/19))
 
 ## v0.4.1 (2026-09-29)
 

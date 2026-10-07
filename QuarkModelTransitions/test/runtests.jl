@@ -51,6 +51,7 @@ const root = REPOSITORY_ROOT
     include("state_helpers.jl")
     include("mass_correction.jl")
     include("radiative_decays.jl")
+    include("photon_multipoles.jl")
     include("strong_decays.jl")
     include("transition_amplitudes.jl")
 end

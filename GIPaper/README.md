@@ -24,6 +24,7 @@ julia GIPaper/checks/audit_mixing_angles.jl
 julia GIPaper/checks/reproduce_table_v.jl
 julia GIPaper/checks/audit_table_vi_photon_decays.jl
 julia GIPaper/checks/audit_heavy_light_e1.jl
+julia GIPaper/checks/audit_charmonium_multipoles.jl
 julia GIPaper/checks/audit_table_vii.jl
 ```
 

@@ -177,9 +177,10 @@ function _spherical_bessel_j1(x::Number)
     return sin(x) / x^2 - cos(x) / x
 end
 
+# Floating point: the integer product overflows Int64 from 35!! on (l >= 17).
 function _odd_double_factorial(n::Integer)
     n >= -1 || throw(ArgumentError("double-factorial argument must be >= -1"))
-    result = 1
+    result = 1.0
     for value in 1:2:n
         result *= value
     end
@@ -199,7 +200,8 @@ function _spherical_bessel_j(order::Integer, x::Number)
         for k in 0:255
             term *= -x^2 / (2 * (k + 1) * (2ell + 2k + 3))
             result_next = result + term
-            abs(term) <= 8eps(Float64) * max(abs(result_next), 1.0) &&
+            # Relative tolerance: j_l(x) ~ x^l/(2l+1)!! can be far below 1.
+            abs(term) <= 8eps(Float64) * abs(result_next) &&
                 return result_next
             result = result_next
         end

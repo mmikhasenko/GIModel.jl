@@ -253,6 +253,8 @@ operator = PhotonEmission(masses)
 - `AllowedE1` — spin-conserving S–P classification.
 - `DirectM1` — same-radial-level M1 classification.
 - `ELECTROMAGNETIC_DEFAULTS` — phenomenological electromagnetic inputs.
+- [`MultipolePhotonEmission`](@ref) — every multipole, exact in q, any orbital
+  angular momentum and mixed states, without the 1985 m/E smearing.
 - `HinderedM1` — different-radial-level M1 classification.
 - `PhotonTransitionClass` — common photon classification type.
 - `RadiativeAmplitude` — photon result and coherent terms.
@@ -542,9 +544,14 @@ function _photon_pure_component(
     ))
     Ld = orbital_angular_momentum(daughter.basis.L_label)
     sw, pw = Ld == 0 ? (daughter, parent) : (parent, daughter)
-    m_emit = _photon_mass(operator, parent.basis.flavors[emitter.constituent])
+    masses = (_photon_mass(operator, parent.basis.flavors[1]),
+              _photon_mass(operator, parent.basis.flavors[2]))
+    m_emit = masses[emitter.constituent]
+    # The (q.r_i) factor of the magnetization term places the emitter at
+    # m_j/(m_i+m_j) of the relative coordinate, as for E1.
+    position = 2 * masses[3 - emitter.constituent] / (masses[1] + masses[2])
     return spin_flip_photon_amplitude(
-        sw.wave, pw.wave, [(emitter.coefficient, m_emit)], pw.basis.J, q;
+        sw.wave, pw.wave, [(emitter.coefficient * position, m_emit)], pw.basis.J, q;
         exponent = operator.electric_exponent,
     )
 end

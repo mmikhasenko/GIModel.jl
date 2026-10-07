@@ -26,7 +26,9 @@ export PhysicalState,
     PseudoscalarEmission,
     decay_width,
     charge_radius_squared,
-    PhotonEmission
+    PhotonEmission,
+    MultipolePhotonEmission,
+    multipole_fractions
 
 include("observable_inputs.jl")
 
@@ -59,5 +61,6 @@ include("mock_meson_overlaps.jl")
 include("radiative_decays.jl")
 
 include("photon_emission.jl")
+include("photon_multipoles.jl")
 
 end
