@@ -38,9 +38,20 @@ end
     @test e1_angular_coefficient(0; parent_is_S = true)^2 /
           e1_angular_coefficient(0)^2 ≈ 1 / 3
     # E1 does not act on spin: 1P1 -> 1S0 and 3PJ -> 3S1 share 1/3.
-    @test e1_angular_coefficient(1; singlet = true) == e1_angular_coefficient(2)
+    @test e1_angular_coefficient(1; singlet = true) ≈ e1_angular_coefficient(2)
     @test e1_angular_coefficient(1; singlet = true, parent_is_S = true)^2 /
           e1_angular_coefficient(1; singlet = true)^2 ≈ 3
+    # The factors are derived from L⊗S coupling; the old hand-typed values
+    # remain as oracles.
+    for J in 0:2
+        @test e1_angular_coefficient(J) ≈ 1 / 3
+        @test e1_angular_coefficient(J; parent_is_S = true) ≈ sqrt((2J + 1) / 3) / 3
+    end
+    @test e1_angular_coefficient(1; singlet = true) ≈ 1 / 3
+    @test e1_angular_coefficient(1; singlet = true, parent_is_S = true) ≈ sqrt(3) / 3
+    @test GIModel.QuarkModelTransitions._spin_flip_denominator(2) ≈ sqrt(60)
+    @test GIModel.QuarkModelTransitions._spin_flip_denominator(1) ≈ 6
+    @test_throws ArgumentError GIModel.QuarkModelTransitions._spin_flip_denominator(0)
     sw = OscillatorWave(0, 0.5, [1.0])
     pw = OscillatorWave(1, 0.5, [1.0])
     a = spin_flip_photon_amplitude(sw, pw, [(1.0, 0.22)], 2, 0.2)
