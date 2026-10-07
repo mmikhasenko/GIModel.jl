@@ -1,0 +1,13 @@
+meson,flavor1,flavor2,initial,final,M_initial_GeV,M_final_GeV,width_keV,source
+D0,c,u,1^3P_2,1^3S_1,2.502,2.041,592,Godfrey-Moats PRD 93 034035 (arXiv:1510.08305) Table VII
+D0,c,u,1^3P_0,1^3S_1,2.399,2.041,288,Godfrey-Moats PRD 93 034035 (arXiv:1510.08305) Table VII
+D+,c,d,1^3P_2,1^3S_1,2.502,2.041,61.2,Godfrey-Moats PRD 93 034035 (arXiv:1510.08305) Table VII
+D+,c,d,1^3P_0,1^3S_1,2.399,2.041,30.0,Godfrey-Moats PRD 93 034035 (arXiv:1510.08305) Table VII
+Ds,c,s,1^3P_2,1^3S_1,2.592,2.129,18.9,Godfrey-Moats PRD 93 034035 (arXiv:1510.08305) Table XXVIII
+Ds,c,s,1^3P_0,1^3S_1,2.484,2.129,9.01,Godfrey-Moats PRD 93 034035 (arXiv:1510.08305) Table XXVIII
+B+,u,b,1^3P_2,1^3S_1,5.797,5.371,444,Godfrey-Moats-Swanson PRD 94 054025 (arXiv:1607.02169) Table VIII
+B+,u,b,1^3P_0,1^3S_1,5.756,5.371,325,Godfrey-Moats-Swanson PRD 94 054025 (arXiv:1607.02169) Table VIII
+B0,d,b,1^3P_2,1^3S_1,5.797,5.371,126,Godfrey-Moats-Swanson PRD 94 054025 (arXiv:1607.02169) Table VIII
+B0,d,b,1^3P_0,1^3S_1,5.756,5.371,92.7,Godfrey-Moats-Swanson PRD 94 054025 (arXiv:1607.02169) Table VIII
+Bc,c,b,1^3P_2,1^3S_1,6.768,6.338,83,Godfrey PRD 70 054017 (arXiv:hep-ph/0406228) Table II
+Bc,c,b,1^3P_0,1^3S_1,6.706,6.338,55,Godfrey PRD 70 054017 (arXiv:hep-ph/0406228) Table II

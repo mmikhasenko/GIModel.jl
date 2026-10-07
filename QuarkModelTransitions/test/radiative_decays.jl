@@ -117,6 +117,24 @@ end
     )])
     @test matrix_element(eta_c, e1, h_c).value ≈ expected_e1
 
+    # Unequal masses: the dipole is taken about the centre of mass, giving the
+    # Eichten-Quigg effective charge (e_c m_b + e_b m_c)/(m_c+m_b) for c bbar.
+    # With the m/E exponent off, E1 no longer depends on the emitter mass.
+    bc(label, L, J, wave, mass) = PhysicalState(label, mass, [(
+        basis = BasisState(1, L, 3, J; flavors = (:c, :b)),
+        coefficient = 1.0, wave = wave,
+    )])
+    bc_tensor, bc_vector = bc("Bc2", "P", 2, pw, 6.75), bc("Bc*", "S", 1, sw, 6.33)
+    flat = PhotonEmission(mq; electric_exponent = 0.0)
+    mc, mb = mq["c"], mq["b"]
+    effective_charge = (2/3 * mb - 1/3 * mc) / (mc + mb)
+    expected_bc = e1_transition_amplitude(
+        sw, momentum_wave(sw, 0), pw, momentum_wave(pw, 1), mc,
+        qvalue -> 2effective_charge * e1_angular_coefficient(2) * qvalue,
+        bc_tensor.mass_GeV, bc_vector.mass_GeV; exponent = 0.0,
+    )
+    @test matrix_element(bc_vector, flat, bc_tensor).value ≈ expected_bc rtol = 1e-12
+
     singlet = PhysicalState("pi", 2.98, [(
         basis = BasisState(1, "S", 1, 0; flavors = (:u, :d)),
         coefficient = 1.0, wave = sw,

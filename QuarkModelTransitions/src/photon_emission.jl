@@ -515,10 +515,16 @@ function _photon_pure_component(
         singlet = sw.basis.multiplicity == 1,
         parent_is_S = orbital_angular_momentum(parent.basis.L_label) == 0,
     )
-    m_emit = _photon_mass(operator, parent.basis.flavors[emitter.constituent])
+    masses = (_photon_mass(operator, parent.basis.flavors[1]),
+              _photon_mass(operator, parent.basis.flavors[2]))
+    m_emit = masses[emitter.constituent]
+    # The dipole is taken about the centre of mass, where constituent i sits at
+    # m_j/(m_i+m_j) of the relative coordinate. Equal masses give 1/2, which the
+    # charge-coefficient convention already contains; hence the factor 2.
+    position = 2 * masses[3 - emitter.constituent] / (masses[1] + masses[2])
     return e1_transition_amplitude(
         sw.wave, momentum_wave(sw.wave, 0), pw.wave, momentum_wave(pw.wave, 1),
-        m_emit, qvalue -> emitter.coefficient * angular * qvalue,
+        m_emit, qvalue -> emitter.coefficient * position * angular * qvalue,
         1.0, 0.0; q = q, exponent = operator.electric_exponent,
     )
 end
