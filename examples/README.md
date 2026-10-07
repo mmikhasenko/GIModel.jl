@@ -207,8 +207,8 @@ julia examples/density_candidates.jl precompute
 The command writes portable TOML caches to `data/density_candidates/`. Each
 cache records the radial grid, coefficient-weighted signed amplitudes grouped
 by `(L,S)`, channel weights, model mass, rms separation, angular-normalization
-and isotropy checks, solver settings, parameter contents and hash, dependency
-manifest hash, Julia version, and hashes of the model sources. There is no
+and isotropy checks, solver settings, parameter contents and hash, Julia
+version, and hashes of the model sources. There is no
 generation timestamp, so rerunning an unchanged calculation produces identical
 files and leaves the repository clean.
 
