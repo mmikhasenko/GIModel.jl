@@ -223,6 +223,11 @@ The Godfrey--Isgur photon-emission operator in the Appendix-D mock-meson
 prescription. The transition class and multipole are inferred from the final
 and initial states by `photon_transition_class`.
 
+The electric moments are not smeared by default (`electric_exponent = 0`), as
+in Godfrey's later GI-model papers and as measured E1 widths prefer; pass
+`electric_exponent = 0.5` for the 1985 prescription. The magnetic exponent
+keeps the paper's 0.7.
+
 `recoil_order=0` selects the class-specific leading expression. Order `2`
 adds the relative `(qr)^2` correction where that correction is implemented;
 currently this is the published M1 `E_2` term. Unsupported combinations fail
@@ -425,6 +430,8 @@ function photon_transition_class(final::PhysicalState, initial::PhysicalState)
     classes = PhotonTransitionClass[]
     for parent in _electromagnetic_components(initial), daughter in _electromagnetic_components(final)
         daughter.basis.flavors == parent.basis.flavors || continue
+        # Spectra list every basis state; an exactly absent one selects no kernel.
+        (iszero(parent.coefficient) || iszero(daughter.coefficient)) && continue
         push!(classes, _component_transition_class(daughter, parent))
     end
     isempty(classes) && throw(ArgumentError(
@@ -573,6 +580,7 @@ function _assemble_photon_amplitude(
     for parent in parents, daughter in daughters
         flavors = parent.basis.flavors
         daughter.basis.flavors == flavors || continue
+        (iszero(parent.coefficient) || iszero(daughter.coefficient)) && continue
         component_class = _component_transition_class(daughter, parent)
         _same_photon_family(class, component_class) || continue
         mixing = parent.coefficient * conj(daughter.coefficient)

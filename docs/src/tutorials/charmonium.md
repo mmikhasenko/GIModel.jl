@@ -231,9 +231,9 @@ end
 ```
 
 ```
-χ_c0 → J/ψ γ: 128.9 keV     ψ(2S) → χ_c0 γ: 14.6 keV
-χ_c1 → J/ψ γ: 210.4 keV     ψ(2S) → χ_c1 γ: 22.7 keV
-χ_c2 → J/ψ γ: 268.4 keV     ψ(2S) → χ_c2 γ: 21.5 keV
+χ_c0 → J/ψ γ: 150.8 keV     ψ(2S) → χ_c0 γ: 17.3 keV
+χ_c1 → J/ψ γ: 243.1 keV     ψ(2S) → χ_c1 γ: 26.6 keV
+χ_c2 → J/ψ γ: 307.4 keV     ψ(2S) → χ_c2 γ: 25.0 keV
 ```
 
 The E1 width scales as $q^3$ times the square of a radial overlap, so the photon momentum drives most of the $J$ dependence.
@@ -291,8 +291,8 @@ end
 ```
 
 ```
-1^3P_1 → 1^3S_1     HO 210.421 keV   FD 210.412 keV
-2^3S_1 → 1^3P_2     HO 21.521 keV   FD 21.507 keV
+1^3P_1 → 1^3S_1     HO 243.133 keV   FD 243.125 keV
+2^3S_1 → 1^3P_2     HO 24.982 keV   FD 24.965 keV
 1^3S_1 → 1^1S_0     HO 2.364 keV   FD 2.365 keV
 ```
 

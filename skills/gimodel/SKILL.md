@@ -128,6 +128,15 @@ decay_width(TwoGluonChannel(), GluonicAnnihilation(mq, M -> alpha_s_q(M)), eta_c
   docs' radiative examples request only S and P waves for this reason. That is
   an approximation: the ³S₁–³D₁ mixing is neglected. Say so when you use it,
   and never drop components from a mixed state to get past the error.
+  **`MultipolePhotonEmission(mq)`** accepts D waves and mixed states. It is
+  exact in the photon momentum and returns every multipole (`.multipoles`,
+  MeV^½ each); `multipole_fractions` gives the normalized a_k measured by CLEO and
+  BESIII. Prefer it for light mesons (q r ~ 1), where the leading kernels
+  overshoot spin-flip widths; it has no m/E smearing.
+- `PhotonEmission` smears electric moments with `electric_exponent = 0` by
+  default (data and Godfrey's later papers). GI 1985 used 0.5; pass it to
+  reproduce the paper's Table VI. Its spin-flip kernels use √120 m and √72 m,
+  not the paper's √60 m and 6m, which overstate those rates by 2.
   Leptonic, two-photon and gluonic operators accept mixed states. For example,
   Γ(J/ψ → ee) changes from 10.51 to 10.46 keV when D waves are included.
 - `PseudoscalarEmission(g, h, mq)`: the couplings `g` and `h` (GeV⁻¹) are

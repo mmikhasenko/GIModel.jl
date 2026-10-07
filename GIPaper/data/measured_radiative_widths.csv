@@ -1,0 +1,18 @@
+group,decay,flavors,initial_label,final_label,initial_pdg,final_pdg,width_keV,error_keV,upper_limit,source
+heavy,chi_c0 -> J/psi gamma,cc,1^3P_0,1^3S_1,chi_c0(1P),J/psi(1S),167.5,11.7,false,PDG 2026 M056 width x M056.6
+heavy,chi_c1 -> J/psi gamma,cc,1^3P_1,1^3S_1,chi_c1(1P),J/psi(1S),278.0,17.3,false,PDG 2026 M055 width x M055.1
+heavy,chi_c2 -> J/psi gamma,cc,1^3P_2,1^3S_1,chi_c2(1P),J/psi(1S),368.6,22.9,false,PDG 2026 M057 width x M057.6
+heavy,psi(2S) -> chi_c0 gamma,cc,2^3S_1,1^3P_0,psi(2S),chi_c0(1P),29.43,1.20,false,PDG 2026 M071 width x M071.56
+heavy,psi(2S) -> chi_c1 gamma,cc,2^3S_1,1^3P_1,psi(2S),chi_c1(1P),28.82,1.17,false,PDG 2026 M071 width x M071.58
+heavy,psi(2S) -> chi_c2 gamma,cc,2^3S_1,1^3P_2,psi(2S),chi_c2(1P),28.18,1.10,false,PDG 2026 M071 width x M071.59
+heavy,Upsilon(2S) -> chi_b0 gamma,bb,2^3S_1,1^3P_0,Upsilon(2S),chi_b0(1P),1.215,0.162,false,PDG 2026 M052 width x M052.9
+heavy,Upsilon(2S) -> chi_b1 gamma,bb,2^3S_1,1^3P_1,Upsilon(2S),chi_b1(1P),2.207,0.221,false,PDG 2026 M052 width x M052.8
+heavy,Upsilon(2S) -> chi_b2 gamma,bb,2^3S_1,1^3P_2,Upsilon(2S),chi_b2(1P),2.287,0.219,false,PDG 2026 M052 width x M052.7
+heavy,Upsilon(3S) -> chi_b0(2P) gamma,bb,3^3S_1,2^3P_0,Upsilon(3S),chi_b0(2P),1.199,0.164,false,PDG 2026 M048 width x M048.7
+heavy,Upsilon(3S) -> chi_b1(2P) gamma,bb,3^3S_1,2^3P_1,Upsilon(3S),chi_b1(2P),2.560,0.338,false,PDG 2026 M048 width x M048.6
+heavy,Upsilon(3S) -> chi_b2(2P) gamma,bb,3^3S_1,2^3P_2,Upsilon(3S),chi_b2(2P),2.662,0.405,false,PDG 2026 M048 width x M048.5
+light_e1,b_1+ -> pi+ gamma,ud,1^1P_1,1^1S_0,b_1(1235)+,pi+,228,59,false,PDG 2026 M011 width x M011.9
+light_e1,f_1(1285) -> rho0 gamma,isoscalar_to_rho,1^3P_1,1^3S_1,f_1(1285)0,rho(770)0,1404,238,false,PDG 2026 M008 width x M008.13
+light_spin_flip,a_2+ -> pi+ gamma,ud,1^3P_2,1^1S_0,a_2(1320)+,pi+,311,32,false,PDG 2026 M012W (107+-5 MeV) x M012.7
+light_spin_flip,K_2*+ -> K+ gamma,us,1^3P_2,1^1S_0,K_2^*(1430)+,K+,261,56,false,PDG 2026 M022 width x M022.8
+light_spin_flip,K_2*0 -> K0 gamma,ds,1^3P_2,1^1S_0,K_2^*(1430)0,K0,98,0,true,PDG 2026 M022 width x M022.10 (90% CL)

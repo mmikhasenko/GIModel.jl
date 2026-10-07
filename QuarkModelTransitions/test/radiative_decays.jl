@@ -169,3 +169,17 @@ end
     @test recoil_amplitude.value ≈ m1_recoil_moment(sw2, sw2, mq["c"], 4/3, qr) rtol=1e-10
 
 end
+
+@testset "Photon emission ignores absent components" begin
+    # Spectra list every basis state; b1 -> pi gamma from a spectrum carries a
+    # zero 3P1 component that must not select the spin-flip kernel.
+    mq = QuarkMassTable("q" => 0.22)
+    sw, pw = OscillatorWave(0, 0.5, [1.0]), OscillatorWave(1, 0.45, [1.0])
+    b1 = PhysicalState("b1", 1.23, [
+        (basis = BasisState(1, "P", 1, 1; flavors = (:u, :d)), coefficient = 1.0, wave = pw),
+        (basis = BasisState(1, "P", 3, 1; flavors = (:u, :d)), coefficient = 0.0, wave = pw),
+    ])
+    pure = PhysicalState("b1", 1.23, [(basis = BasisState(1, "P", 1, 1; flavors = (:u, :d)), coefficient = 1.0, wave = pw)])
+    pion = PhysicalState("pi", 0.14, [(basis = BasisState(1, "S", 1, 0; flavors = (:u, :d)), coefficient = 1.0, wave = sw)])
+    @test decay_width(pion, PhotonEmission(mq), b1) ≈ decay_width(pion, PhotonEmission(mq), pure)
+end
