@@ -13,6 +13,15 @@
   paper's own A₂ → ργ = (q/9) E1^u. The GIPaper Table VI audit now gives
   +0.149 for B → πγ against the printed +0.63 and explains the difference.
   ([#16](https://github.com/mmikhasenko/GIModel.jl/pull/16))
+- **E1 widths ignored the quark masses for unequal-mass mesons.** Each quark's
+  charge entered the E1 dipole with weight ½. The dipole is measured from the
+  centre of mass, so the weight is m_j/(m_i+m_j). This affects every heavy-light,
+  B_c and kaon E1 width. For example, B⁺(1³P₂) → B*⁺γ goes from 0.4 to 133 keV
+  and D_s(1³P₂) → D_s*γ from 45 to 4 keV. Quarkonium and the GI 1985 Table VI
+  audit are unchanged. With the m/E exponent off, the widths now match
+  Godfrey's later GI-model papers on D, D_s, B and B_c to within 1.2%
+  (`GIPaper/checks/audit_heavy_light_e1.jl`).
+  ([#24](https://github.com/mmikhasenko/GIModel.jl/issues/24))
 
 ### Added
 
