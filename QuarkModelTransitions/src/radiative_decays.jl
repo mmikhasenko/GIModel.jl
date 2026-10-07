@@ -129,15 +129,19 @@ end
     e1_angular_coefficient(J_P; singlet=false, parent_is_S=false)
 
 Angular factor multiplying the neutral M1 charge coefficient times q E1.
-Triplet P -> S transitions carry 1/3, with sqrt((2J_P+1)/3) for the inverse
-S -> P direction. The singlet P1 -> S0 factor is sqrt(2).
+E1 does not act on spin, so P -> S transitions carry 1/3 for both triplet
+P_J -> S1 and singlet P1 -> S0. The inverse S -> P direction carries an extra
+sqrt((2J_P+1)/(2J_S+1)).
+
+GI 1985 Table VI prints sqrt(2) q/3 for B -> pi gamma, 3sqrt(2) times the
+q/9 of the equivalent A2 -> rho gamma row. That coefficient is not used here.
 
 ## Example
 
 ```julia
 using GIModel, GIModel.QuarkModelTransitions
 import GIModel.QuarkModelTransitions as QMT
-@assert QMT.e1_angular_coefficient(1; singlet=true) == sqrt(2.0)
+@assert QMT.e1_angular_coefficient(1; singlet=true) == 1/3
 ```
 
 ## Related
@@ -147,11 +151,11 @@ import GIModel.QuarkModelTransitions as QMT
 function e1_angular_coefficient(J_P::Integer; singlet::Bool = false, parent_is_S::Bool = false)
     if singlet
         J_P == 1 || throw(ArgumentError("singlet P state must have J=1"))
-        parent_is_S && throw(ArgumentError("inverse singlet E1 is not provided"))
-        return sqrt(2.0)
+    else
+        J_P in 0:2 || throw(ArgumentError("triplet P state must have J in 0:2"))
     end
-    J_P in 0:2 || throw(ArgumentError("triplet P state must have J in 0:2"))
-    return (parent_is_S ? sqrt((2J_P + 1) / 3) : 1.0) / 3
+    J_S = singlet ? 0 : 1
+    return (parent_is_S ? sqrt((2J_P + 1) / (2J_S + 1)) : 1.0) / 3
 end
 
 """
