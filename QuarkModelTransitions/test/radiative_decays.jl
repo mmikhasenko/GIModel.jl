@@ -37,7 +37,10 @@ end
           e1_angular_coefficient(2)^2 ≈ 5 / 3
     @test e1_angular_coefficient(0; parent_is_S = true)^2 /
           e1_angular_coefficient(0)^2 ≈ 1 / 3
-    @test e1_angular_coefficient(1; singlet = true) == sqrt(2.0)
+    # E1 does not act on spin: 1P1 -> 1S0 and 3PJ -> 3S1 share 1/3.
+    @test e1_angular_coefficient(1; singlet = true) == e1_angular_coefficient(2)
+    @test e1_angular_coefficient(1; singlet = true, parent_is_S = true)^2 /
+          e1_angular_coefficient(1; singlet = true)^2 ≈ 3
     sw = OscillatorWave(0, 0.5, [1.0])
     pw = OscillatorWave(1, 0.5, [1.0])
     a = spin_flip_photon_amplitude(sw, pw, [(1.0, 0.22)], 2, 0.2)
@@ -90,6 +93,18 @@ end
     )
     @test e1_amplitude.value ≈ expected_e1
     @test decay_width(e1_amplitude) ≈ abs2(expected_e1)
+
+    # Same radial waves and photon momentum: h_c -> eta_c gamma equals
+    # chi_c2 -> J/psi gamma.
+    h_c = PhysicalState("h_c", tensor.mass_GeV, [(
+        basis = BasisState(1, "P", 1, 1; flavors = (:c, :c)),
+        coefficient = 1.0, wave = pw,
+    )])
+    eta_c = PhysicalState("eta_c", vector.mass_GeV, [(
+        basis = BasisState(1, "S", 1, 0; flavors = (:c, :c)),
+        coefficient = 1.0, wave = sw,
+    )])
+    @test matrix_element(eta_c, e1, h_c).value ≈ expected_e1
 
     singlet = PhysicalState("pi", 2.98, [(
         basis = BasisState(1, "S", 1, 0; flavors = (:u, :d)),

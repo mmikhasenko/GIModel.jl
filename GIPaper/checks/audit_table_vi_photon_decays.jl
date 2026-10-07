@@ -221,6 +221,12 @@ open(output, "w") do io
     println(io, "The A2 -> pi M2 denominator is sqrt(60) m_u, not sqrt(60 m_u).")
     println(io, "A1 -> pi is spin-flip E1, not M2: J=1 -> J=0 allows a dipole photon.")
     println(io, "Canonical identities, rather than CSV row positions, select every target.")
+    println(io, "\n## Paper inconsistency")
+    println(io, "\nB -> pi gamma is printed as sqrt(2) q/3 E1^u(pi,B), and the printed +0.63 uses it.")
+    println(io, "The equivalent A2 -> rho gamma row (same 1P -> 1S n nbar overlap and isovector")
+    println(io, "charge) is printed as q/9. E1 does not act on spin, so 1P1 -> 1S0 carries the same")
+    println(io, "1/3 angular factor as 3PJ -> 3S1. The model uses 1/3, so this row sits a factor")
+    println(io, "3sqrt(2) below the paper (18 in the rate).")
 end
 println("wrote ", output)
 println("wrote ", csvpath)
