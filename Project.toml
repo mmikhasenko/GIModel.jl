@@ -1,7 +1,7 @@
 name = "GIModel"
 uuid = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
 authors = ["Mikhail Mikhasenko <mikhail.mikhasenko@gmail.com>"]
-version = "0.4.0"
+version = "0.4.2"
 
 [deps]
 KrylovKit = "0b1a1467-8014-51b9-945f-bf0ae24f4b77"

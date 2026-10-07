@@ -482,7 +482,7 @@ version = "1.0.17+0"
 deps = ["KrylovKit", "LinearAlgebra", "PartialWaveFunctions", "Printf", "QuadGK", "SpecialFunctions", "TOML"]
 path = ".."
 uuid = "7b2df1f2-6404-4fb8-a3f7-191b7dc823e0"
-version = "0.4.0"
+version = "0.4.2"
 
 [[deps.GLFW]]
 deps = ["GLFW_jll"]
