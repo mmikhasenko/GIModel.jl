@@ -169,3 +169,27 @@ end
     @test recoil_amplitude.value ≈ m1_recoil_moment(sw2, sw2, mq["c"], 4/3, qr) rtol=1e-10
 
 end
+
+@testset "Photon emission explains mixed states" begin
+    # Spectra list every basis state of a sector, so b1 carries a 3P1 component,
+    # here with coefficient exactly 0. It is treated like any other component,
+    # and the error says how to evaluate components individually.
+    mq = QuarkMassTable("q" => 0.22)
+    sw, pw = OscillatorWave(0, 0.5, [1.0]), OscillatorWave(1, 0.45, [1.0])
+    b1 = PhysicalState("b1", 1.23, [
+        (basis = BasisState(1, "P", 1, 1; flavors = (:u, :d)), coefficient = 1.0, wave = pw),
+        (basis = BasisState(1, "P", 3, 1; flavors = (:u, :d)), coefficient = 0.0, wave = pw),
+    ])
+    pion = PhysicalState("pi", 0.14, [(basis = BasisState(1, "S", 1, 0; flavors = (:u, :d)), coefficient = 1.0, wave = sw)])
+    message = try
+        matrix_element(pion, PhotonEmission(mq), b1)
+        ""
+    catch err
+        err isa ArgumentError ? err.msg : rethrow()
+    end
+    @test occursin("state.components", message)
+    @test occursin("SpinFlipE1", message) && occursin("AllowedE1", message)
+    # The suggested route works.
+    single = PhysicalState(b1.label, b1.mass_GeV, [b1.components[1]])
+    @test decay_width(pion, PhotonEmission(mq), single) > 0
+end

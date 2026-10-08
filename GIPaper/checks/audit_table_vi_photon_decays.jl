@@ -106,6 +106,8 @@ function evaluate(row)
         daughter_state = resolved_physical(daughter; charged)
         operator = PhotonEmission(
             mq;
+            # The paper's prescription: E_n smeared with exponent 0.5 (Table VI).
+            electric_exponent = 0.5,
             recoil_order = table_vi_recoil_order(footnotes),
             recoil_form_factor = "g" in footnotes,
         )
