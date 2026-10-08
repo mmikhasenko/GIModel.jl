@@ -34,7 +34,17 @@ spectra = Dict(
     "us" => compute_spectrum(params, Meson(mq, :u, :s); levels = levels(1), solver),
     "ds" => compute_spectrum(params, Meson(mq, :d, :s); levels = levels(1), solver),
 )
-at_mass(state, M) = PhysicalState(state.label, M, state.components)
+# The component named by the row's label, at the PDG mass. A spectrum state lists
+# every basis state of its sector (b1 carries a 3P1 component with coefficient
+# 0), and PhotonEmission evaluates one kernel per transition, so each row is
+# evaluated for that individual component, as the operator's error advises. The
+# component keeps its coefficient (exactly 1 for every row here).
+function labeled_component(spec, label, M)
+    state = physical_state(spec, label)
+    c = only(c for c in state.components if
+             string(c.basis.n, "^", c.basis.multiplicity, c.basis.L_label, "_", c.basis.J) == label)
+    return PhysicalState(state.label, M, [c])
+end
 
 # Ideally mixed nonstrange isoscalar (u ubar + d dbar)/sqrt 2 and the rho0
 # (u ubar - d dbar)/sqrt 2, built from the n nbar waves.
@@ -51,8 +61,8 @@ function states(r)
         return nonstrange(String(r.initial_label), 1.0, Mi), nonstrange(String(r.final_label), -1.0, Mf)
     end
     spec = spectra[String(r.flavors)]
-    return at_mass(physical_state(spec, String(r.initial_label)), Mi),
-           at_mass(physical_state(spec, String(r.final_label)), Mf)
+    return labeled_component(spec, String(r.initial_label), Mi),
+           labeled_component(spec, String(r.final_label), Mf)
 end
 const STATES = Dict(r.decay => states(r) for r in rows)
 
@@ -84,7 +94,9 @@ open(output, "w") do io
     println(io, """
 
     `PhotonEmission(mq; electric_exponent = p)` on measured widths (keV), GI
-    wavefunctions, PDG 2026 masses for the photon momentum. GI 1985 use p = 0.5
+    wavefunctions, PDG 2026 masses for the photon momentum. Each state is the
+    individual component named in the row (e.g. the 1^1P_1 component of b1),
+    with its coefficient kept. GI 1985 use p = 0.5
     (fitted to A2 -> pi gamma with spin-flip denominators sqrt(2) too small);
     Godfrey's later papers use p = 0. Spin-flip kernels carry the corrected
     normalization (GIModel.jl #27). Errors are experimental only; the model has

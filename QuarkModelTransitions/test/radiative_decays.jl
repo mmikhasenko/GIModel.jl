@@ -170,16 +170,26 @@ end
 
 end
 
-@testset "Photon emission ignores absent components" begin
-    # Spectra list every basis state; b1 -> pi gamma from a spectrum carries a
-    # zero 3P1 component that must not select the spin-flip kernel.
+@testset "Photon emission explains mixed states" begin
+    # Spectra list every basis state of a sector, so b1 carries a 3P1 component,
+    # here with coefficient exactly 0. It is treated like any other component,
+    # and the error says how to evaluate components individually.
     mq = QuarkMassTable("q" => 0.22)
     sw, pw = OscillatorWave(0, 0.5, [1.0]), OscillatorWave(1, 0.45, [1.0])
     b1 = PhysicalState("b1", 1.23, [
         (basis = BasisState(1, "P", 1, 1; flavors = (:u, :d)), coefficient = 1.0, wave = pw),
         (basis = BasisState(1, "P", 3, 1; flavors = (:u, :d)), coefficient = 0.0, wave = pw),
     ])
-    pure = PhysicalState("b1", 1.23, [(basis = BasisState(1, "P", 1, 1; flavors = (:u, :d)), coefficient = 1.0, wave = pw)])
     pion = PhysicalState("pi", 0.14, [(basis = BasisState(1, "S", 1, 0; flavors = (:u, :d)), coefficient = 1.0, wave = sw)])
-    @test decay_width(pion, PhotonEmission(mq), b1) ≈ decay_width(pion, PhotonEmission(mq), pure)
+    message = try
+        matrix_element(pion, PhotonEmission(mq), b1)
+        ""
+    catch err
+        err isa ArgumentError ? err.msg : rethrow()
+    end
+    @test occursin("state.components", message)
+    @test occursin("SpinFlipE1", message) && occursin("AllowedE1", message)
+    # The suggested route works.
+    single = PhysicalState(b1.label, b1.mass_GeV, [b1.components[1]])
+    @test decay_width(pion, PhotonEmission(mq), single) > 0
 end

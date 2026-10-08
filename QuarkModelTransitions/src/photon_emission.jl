@@ -394,6 +394,25 @@ function _component_transition_class(daughter::StateComponent, parent::StateComp
     throw(ArgumentError("3P$(pw.basis.J) -> 1S0 has no implemented photon kernel"))
 end
 
+_component_name(c::StateComponent) = string(c.basis.n, "^", c.basis.multiplicity,
+    c.basis.L_label, "_", c.basis.J, " (coefficient ", round(c.coefficient; sigdigits = 4), ")")
+
+# Explain a transition the leading kernels cannot evaluate with one kernel.
+function _mixed_photon_message(final, initial, pairs)
+    lines = map(pairs) do (parent, daughter, class)
+        kernel = isnothing(class) ?
+            "Not implemented yet. Please submit issue if needed, and/or PR with implementation." :
+            string(nameof(typeof(class)))
+        "  " * _component_name(parent) * " -> " * _component_name(daughter) * ": " * kernel
+    end
+    return string(
+        "PhotonEmission needs one kernel for ", initial.label, " -> ", final.label,
+        ", but its components need:\n", join(lines, "\n"), "\n",
+        "Try computing the decay for individual components, accessed as ",
+        "`state.components`, e.g. `PhysicalState(state.label, state.mass_GeV, [state.components[1]])`.",
+    )
+end
+
 _same_photon_family(a::PhotonTransitionClass, b::PhotonTransitionClass) =
     (a isa Union{DirectM1,HinderedM1} && b isa Union{DirectM1,HinderedM1}) ||
     typeof(a) == typeof(b)
@@ -428,18 +447,25 @@ operator = PhotonEmission(masses)
 """
 function photon_transition_class(final::PhysicalState, initial::PhysicalState)
     classes = PhotonTransitionClass[]
+    pairs = Tuple{StateComponent,StateComponent,Union{Nothing,PhotonTransitionClass}}[]
     for parent in _electromagnetic_components(initial), daughter in _electromagnetic_components(final)
         daughter.basis.flavors == parent.basis.flavors || continue
-        # Spectra list every basis state; an exactly absent one selects no kernel.
-        (iszero(parent.coefficient) || iszero(daughter.coefficient)) && continue
-        push!(classes, _component_transition_class(daughter, parent))
+        class = try
+            _component_transition_class(daughter, parent)
+        catch err
+            err isa Union{ArgumentError,ErrorException} || rethrow()
+            nothing
+        end
+        push!(pairs, (parent, daughter, class))
+        isnothing(class) || push!(classes, class)
     end
-    isempty(classes) && throw(ArgumentError(
+    isempty(pairs) && throw(ArgumentError(
         "initial and final states have no shared pure-flavor component",
     ))
-    selected = first(classes)
-    all(candidate -> _same_photon_family(selected, candidate), classes) ||
-        throw(ArgumentError("mixed-state components imply incompatible photon-transition classes"))
+    selected = isempty(classes) ? nothing : first(classes)
+    (length(classes) == length(pairs) &&
+     all(candidate -> _same_photon_family(selected, candidate), classes)) ||
+        throw(ArgumentError(_mixed_photon_message(final, initial, pairs)))
     if selected isa Union{DirectM1,HinderedM1}
         return any(candidate -> candidate isa HinderedM1, classes) ? HinderedM1() : DirectM1()
     end
@@ -580,7 +606,6 @@ function _assemble_photon_amplitude(
     for parent in parents, daughter in daughters
         flavors = parent.basis.flavors
         daughter.basis.flavors == flavors || continue
-        (iszero(parent.coefficient) || iszero(daughter.coefficient)) && continue
         component_class = _component_transition_class(daughter, parent)
         _same_photon_family(class, component_class) || continue
         mixing = parent.coefficient * conj(daughter.coefficient)

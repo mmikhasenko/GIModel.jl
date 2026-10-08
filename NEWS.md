@@ -32,9 +32,12 @@
   as for E1. In the GI paper audit, A₂ → πγ and A₁ → πγ drop by 1/√2 and
   K*(1420) → Kγ by 0.82. GI fitted their m/E exponent to A₂ → πγ, so that fit
   absorbed the factor. ([#27](https://github.com/mmikhasenko/GIModel.jl/issues/27))
-- Photon emission skips components with an exactly zero coefficient. Spectra
-  list every basis state, so b₁ → πγ from a solved spectrum used to fail with
-  "incompatible photon-transition classes" on an absent ³P₁ component.
+- `PhotonEmission` now explains why it rejects a mixed state. A spectrum state
+  lists every basis state of its sector, so b₁ carries a ³P₁ component with
+  coefficient exactly 0; that component needs the spin-flip kernel and b₁ → πγ
+  failed with a bare "incompatible photon-transition classes". The error now lists
+  each component, its coefficient and its kernel, and says how to evaluate
+  individual components (`state.components`).
 - The internal spherical Bessel function lost relative precision for orders
   l ≥ 9 at small arguments and overflowed at l ≥ 17. No published number changes.
 
