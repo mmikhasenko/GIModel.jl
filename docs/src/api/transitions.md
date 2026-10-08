@@ -27,6 +27,7 @@ MasslessLeptonPair
 
 ```@docs
 PhotonEmission
+MultipolePhotonEmission
 PseudoscalarEmission
 LeptonicCurrent
 TwoPhotonAnnihilation
@@ -40,6 +41,7 @@ AnnihilationTerm
 matrix_element
 decay_width
 partial_waves
+multipole_fractions
 PartialWave
 mass_correction_factor
 charge_radius_squared

@@ -198,13 +198,16 @@ function e1_angular_coefficient(J_P::Integer; singlet::Bool = false, parent_is_S
     return sqrt(_photon_angular_rate(final..., initial..., _E1_OPERATORS) / 3)
 end
 
-# Denominator of the spin-flip P_J -> S0 amplitude, in units of m. The J
-# dependence is derived; the constant 4 is the GI normalization, giving
-# sqrt(60) for J=2 and 6 for J=1 (see issue #18 on the overall constant).
+# Denominator of the spin-flip P_J -> S0 amplitude, in units of m: sqrt(8/T),
+# i.e. sqrt(120) for J=2 and sqrt(72) for J=1. The magnetization term
+# (ê/2m) sigma.(q x eps*)(-i q.r_i) with r_i = r/2 and Gamma = 2 alpha q <|M|^2>
+# gives 8; `MultipolePhotonEmission`, which reproduces the standard M1 and E1
+# widths and the Karl-Meshkov-Rosner M2/E1 ratios, confirms it. GI 1985
+# Table VI prints sqrt(60) m and 6m, sqrt(2) larger in amplitude.
 function _spin_flip_denominator(J_P::Integer)
     rate = _photon_angular_rate(0, 0, 0, 1, 1, Int(J_P), _SPIN_FLIP_OPERATORS)
     rate > 0 || throw(ArgumentError("spin-flip P$(J_P) -> S0 photon emission vanishes"))
-    return sqrt(4 / rate)
+    return sqrt(8 / rate)
 end
 
 """
@@ -213,8 +216,10 @@ end
 Spin-flip P -> S photon amplitude in MeV^(1/2): M2 for P2 -> S0,
 E1 for P1 -> S0. The power of q alone does not determine the multipole. Each term is an emitting
 quark (charge coefficient, constituent mass) pair; q is in GeV. The P2 and
-P1 denominators are sqrt(60)m and 6m, respectively. Charge coefficients
-include the relative sign of antiquark emission for this multipole.
+P1 denominators are sqrt(120)m and sqrt(72)m, respectively; GI 1985 prints
+sqrt(60)m and 6m, which overstate the rate by a factor of 2. Charge coefficients
+include the relative sign of antiquark emission for this multipole and, for
+unequal masses, the centre-of-mass weight 2 m_other/(m_1+m_2) of the emitter.
 
 ## Example
 

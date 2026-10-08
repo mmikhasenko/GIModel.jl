@@ -49,8 +49,8 @@ end
     end
     @test e1_angular_coefficient(1; singlet = true) ≈ 1 / 3
     @test e1_angular_coefficient(1; singlet = true, parent_is_S = true) ≈ sqrt(3) / 3
-    @test GIModel.QuarkModelTransitions._spin_flip_denominator(2) ≈ sqrt(60)
-    @test GIModel.QuarkModelTransitions._spin_flip_denominator(1) ≈ 6
+    @test GIModel.QuarkModelTransitions._spin_flip_denominator(2) ≈ sqrt(120)
+    @test GIModel.QuarkModelTransitions._spin_flip_denominator(1) ≈ sqrt(72)
     @test_throws ArgumentError GIModel.QuarkModelTransitions._spin_flip_denominator(0)
     sw = OscillatorWave(0, 0.5, [1.0])
     pw = OscillatorWave(1, 0.5, [1.0])
@@ -58,7 +58,7 @@ end
     b = spin_flip_photon_amplitude(sw, pw, [(1.0, 0.22)], 2, 0.4)
     @test b ≈ 2^2.5 * a # q^2 times sqrt(q), at fixed waves
     @test spin_flip_photon_amplitude(sw, pw, [(1.0, 0.22)], 1, 0.2) ≈
-          sqrt(60) / 6 * a
+          sqrt(120 / 72) * a
     @test spin_flip_photon_amplitude(sw, pw, [(2/3, 0.22), (1/3, 0.22)], 2, 0.2) ≈ a
 
 end

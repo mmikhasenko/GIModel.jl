@@ -64,6 +64,7 @@ Because it holds all components, a mixed parent or daughter contributes coherent
 | operator | process | final state for `matrix_element` | final state for `decay_width` |
 |----|----|----|----|
 | [`PhotonEmission`](@ref) | $A \to B\gamma$ (E1, M1, M2) | daughter `PhysicalState` | the same |
+| [`MultipolePhotonEmission`](@ref) | $A \to B\gamma$, every multipole, any $L$ | daughter `PhysicalState` | the same |
 | [`PseudoscalarEmission`](@ref) | $A \to B\,P$ | [`TwoMesonChannel`](@ref)`(B, P)` | the same |
 | [`LeptonicCurrent`](@ref) | $V \to e^+e^-$, $P \to \ell\nu$ | [`Vacuum`](@ref)`()` | [`MasslessLeptonPair`](@ref)`()`, [`LeptonNeutrinoChannel`](@ref) |
 | [`TwoPhotonAnnihilation`](@ref) | ${}^1S_0, {}^3P_2 \to \gamma\gamma$ | [`TwoPhotonChannel`](@ref)`()` | the same |
@@ -75,6 +76,7 @@ Widths are always in **MeV**. The amplitude units depend on the process:
 |----|----|
 | M1 photon amplitude | magnetic moment in nuclear magnetons |
 | E1 and M2 photon amplitude | width amplitude in $\mathrm{MeV}^{1/2}$ |
+| multipole photon amplitude | `.multipoles`: one width amplitude in $\mathrm{MeV}^{1/2}$ per multipole |
 | pseudoscalar emission | dimensionless partial-wave amplitudes (see below) |
 | leptonic current | dimensionless reduced current |
 | two-photon | width amplitude in $\mathrm{GeV}^{1/2}$ |
@@ -98,14 +100,35 @@ decay_width(e1)
 │   recoil_order = 0
 └   q_GeV = 0.39208783378512374
 
-0.21042114059605502
+0.21042114059605513
 ```
 
 The classes are `DirectM1` (same radial level), `HinderedM1` (different radial levels), `AllowedE1` (spin-conserving S–P), `SpinFlipE1` and `SpinFlipM2`. `PhotonEmission(mq; recoil_order = 2)` adds the $(qr)^2$ correction where it is implemented (currently M1).
 
 The photon couples to the quark charges, so flavor must be explicit. States built from `:u` and `:d` work; the averaged `:q` is rejected for photon emission because it cannot distinguish $e_u + e_d$ from $e_u - e_d$. States obtained from an isoscalar spectrum carry this information and are resolved into coherent u and d contributions automatically.
 
-Nonzero D-wave admixtures are rejected by these Appendix-D kernels with: “Not implemented yet. Please submit issue if needed, and/or PR with implementation.” No components are silently discarded. General D→P radiative transitions need a separately derived and validated implementation.
+The spin-flip kernels (${}^3P_J \to {}^1S_0$) use the denominators $\sqrt{120}\,m$ (J=2, M2) and $\sqrt{72}\,m$ (J=1, E1) and weight each emitter by its centre-of-mass position, as E1 does. The paper prints $\sqrt{60}\,m$ and $6m$, which overstate these rates by a factor of 2; see the Table VI report.
+
+Nonzero D-wave admixtures are rejected by these Appendix-D kernels with: “Not implemented yet. Please submit issue if needed, and/or PR with implementation.” No components are silently discarded. Use [`MultipolePhotonEmission`](@ref) for D waves and mixed states.
+
+### All multipoles
+
+[`MultipolePhotonEmission`](@ref) evaluates the quark convection and spin currents of the same interaction, exact in the photon momentum, for any pair of states, and resolves the result into multipoles. Electric multipoles are taken from the charge density (Siegert’s theorem with $\omega = q$), as for the leading E1. There is no $m/E$ smearing. In $\chi_{c2} \to J/\psi\,\gamma$ the E1 is accompanied by an M2 from the charm magnetic moment, and [`multipole_fractions`](@ref) gives the normalized amplitudes that CLEO and BESIII measure:
+
+```julia
+chi_c2 = physical_state(spec, "1^3P_2")
+multi = matrix_element(psi, MultipolePhotonEmission(mq), chi_c2)
+multipole_fractions(multi)
+```
+
+```
+Dict{Symbol, Float64} with 3 entries:
+  :E1 => 0.995588
+  :M2 => -0.0938277
+  :E3 => 0.0
+```
+
+The M2 fraction is close to the first-order value $-(3/\sqrt5)\,E_\gamma/4m_c$. An E3 needs S–D or P–F mixing, absent from these pure states. The width `decay_width(multi)` also includes the spin-current contribution to E1, a correction of relative order $E_\gamma/m$ that the leading kernel omits.
 
 ## Pseudoscalar emission
 
