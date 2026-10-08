@@ -80,7 +80,7 @@ kernels omit.
   stays about 3 times below data; spin flip prefers p = 0.2. Each fit fails the
   other group, so the factor does not have the form the data need.
 - The full quark current with no fitted factor describes the spin-flip widths
-  (a2 -> pi gamma, K2* -> K gamma within errors) and halves the f1 -> rho gamma
+  within 2 sigma (a_2+ -> pi+ gamma +1.5 sigma, K_2*+ -> K+ gamma +0.4 sigma) and halves the f1 -> rho gamma
   deficit. The leading kernels expand exp(-i q.r) to first order, which
   overshoots for light mesons (q r ~ 1); the exact Bessel functions supply the
   suppression that the 1985 m/E exponent and recoil form factor were
@@ -89,8 +89,10 @@ kernels omit.
 - For heavy quarkonium the full current is not better than the leading kernel at
   p = 0 (chi^2 119.7 against 73.3): its
   spin-current E1 term, of relative order E_gamma/m, raises chi_c0 and chi_c1 but
-  lowers chi_c2 -> J/psi gamma and psi(2S) -> chi_c0 gamma. All heavy widths stay
-  10-30% below data in either form.
+  lowers chi_c2 -> J/psi gamma and psi(2S) -> chi_c0 gamma. Model/data ratios for
+  the heavy widths range from 0.68 (chi_c0 -> J/psi gamma) to 0.995 (psi(2S) -> chi_c1 gamma) at p = 0 and from
+  0.70 (chi_c2 -> J/psi gamma) to 0.925 (psi(2S) -> chi_c1 gamma) for the full current: the model is below
+  data for every heavy row, by up to about 30%.
 
 PhotonEmission therefore defaults to p = 0. The GI 1985 Table VI audit sets
 p = 0.5 explicitly to reproduce the paper. For light mesons,

@@ -64,7 +64,7 @@
   Godfrey's later GI-model papers also use 0. Charmonium E1 widths rise by about
   15%. The GI 1985 Table VI audit sets 0.5 explicitly and is unchanged. Without
   any fitted factor, `MultipolePhotonEmission` describes the light spin-flip
-  widths (a₂ → πγ, K₂* → Kγ) within errors.
+  widths within 2σ (a₂ → πγ +1.5σ, K₂*⁺ → K⁺γ +0.4σ).
   ([#28](https://github.com/mmikhasenko/GIModel.jl/issues/28))
 - Photon angular factors are derived from L⊗S coupling instead of being
   transcribed from the paper's Table VI. The E1 coefficients and the J
