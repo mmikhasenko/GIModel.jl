@@ -6,7 +6,9 @@ transition amplitudes. This package connects those calculations to paper rows.
 
 - `data/`: paper spectra, tables, state assignments and comparison prescriptions.
   `later_godfrey_e1_widths.csv` holds E1 widths from Godfrey's later GI-model
-  papers, the benchmark for unequal-mass E1 that the 1985 paper lacks.
+  papers, the benchmark for unequal-mass E1 that the 1985 paper lacks;
+  `charmonium_multipole_fractions.csv` the CLEO and BESIII M2/E3 fractions and
+  `measured_radiative_widths.csv` PDG 2026 radiative widths.
   `mass_inputs/` records pinned experimental masses for decay kinematics;
   `provenance/` preserves the original transcription notes and source records.
 - `src/`: Julia readers and paper-specific state matching.
@@ -25,6 +27,7 @@ julia GIPaper/checks/reproduce_table_v.jl
 julia GIPaper/checks/audit_table_vi_photon_decays.jl
 julia GIPaper/checks/audit_heavy_light_e1.jl
 julia GIPaper/checks/audit_charmonium_multipoles.jl
+julia GIPaper/checks/audit_radiative_exponent.jl
 julia GIPaper/checks/audit_table_vii.jl
 ```
 

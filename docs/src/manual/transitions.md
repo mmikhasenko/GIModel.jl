@@ -100,7 +100,7 @@ decay_width(e1)
 │   recoil_order = 0
 └   q_GeV = 0.39208783378512374
 
-0.21042114059605513
+0.24313336631693988
 ```
 
 The classes are `DirectM1` (same radial level), `HinderedM1` (different radial levels), `AllowedE1` (spin-conserving S–P), `SpinFlipE1` and `SpinFlipM2`. `PhotonEmission(mq; recoil_order = 2)` adds the $(qr)^2$ correction where it is implemented (currently M1).

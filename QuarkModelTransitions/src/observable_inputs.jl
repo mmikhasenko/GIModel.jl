@@ -4,6 +4,14 @@ Published phenomenological defaults used by electromagnetic observables.
 These are additional transition-model inputs, not spectrum parameters or
 numerical tolerances. Individual functions accept keyword overrides.
 
+`electric_exponent` is the power p of the smearing |m/sqrt(<E><E>)|^p on the
+electric radial moments E_n. GI 1985 fitted p = 0.5 to A2 -> pi gamma, with
+spin-flip denominators that were sqrt(2) too small. Measured E1 widths prefer
+p = 0, the choice of Godfrey's later GI-model papers, and no single p fits the
+light mesons (GIPaper report `radiative_exponent.md`), so the default is 0.
+Pass `electric_exponent = 0.5` to reproduce the paper. `magnetic_exponent`
+(0.7, fitted to rho -> pi gamma) is the paper's value.
+
 ## Example
 
 ```julia
@@ -19,7 +27,7 @@ operator = PhotonEmission(QuarkMassTable("c" => 1.628))
 """
 const ELECTROMAGNETIC_DEFAULTS = (
     magnetic_exponent = 0.7,
-    electric_exponent = 0.5,
+    electric_exponent = 0.0,
     charge_radius_exponent = 0.2,
     recoil_beta_GeV = 0.40,
 )
