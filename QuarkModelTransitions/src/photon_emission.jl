@@ -223,10 +223,11 @@ The Godfrey--Isgur photon-emission operator in the Appendix-D mock-meson
 prescription. The transition class and multipole are inferred from the final
 and initial states by `photon_transition_class`.
 
-The electric moments are not smeared by default (`electric_exponent = 0`), as
-in Godfrey's later GI-model papers; measured E1 widths disfavour 0.5. Pass
-`electric_exponent = 0.5` for the 1985 prescription. The magnetic exponent
-keeps the paper's 0.7.
+The kernels are those of the 1985 paper with its coefficient errors corrected,
+but since v0.5.0 the default departs from it: electric moments are not smeared
+(`electric_exponent = 0`), as in Godfrey's later GI-model papers; measured E1
+widths disfavour 0.5. Pass `electric_exponent = 0.5` for the 1985 prescription.
+The magnetic exponent keeps the paper's 0.7.
 
 `recoil_order=0` selects the class-specific leading expression. Order `2`
 adds the relative `(qr)^2` correction where that correction is implemented;

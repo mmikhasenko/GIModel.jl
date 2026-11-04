@@ -18,7 +18,7 @@ path = ".."
 [compat]
 CSV = "0.10.16, 1"
 Dates = "1.11"
-GIModel = "0.4"
+GIModel = "0.5"
 LinearAlgebra = "1.11.0"
 Printf = "1.11.0"
 Statistics = "1.11"
