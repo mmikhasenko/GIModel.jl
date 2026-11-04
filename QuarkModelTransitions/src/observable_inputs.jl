@@ -6,9 +6,10 @@ numerical tolerances. Individual functions accept keyword overrides.
 
 `electric_exponent` is the power p of the smearing |m/sqrt(<E><E>)|^p on the
 electric radial moments E_n. GI 1985 fitted p = 0.5 to A2 -> pi gamma, with
-spin-flip denominators that were sqrt(2) too small. Measured E1 widths prefer
-p = 0, the choice of Godfrey's later GI-model papers, and no single p fits the
-light mesons (GIPaper report `radiative_exponent.md`), so the default is 0.
+spin-flip denominators that were sqrt(2) too small. Measured E1 widths disfavour
+p = 0.5 and do not support a positive p, and no single p fits the light mesons
+(GIPaper report `radiative_exponent.md`). The default is 0, no fitted factor, the
+choice of Godfrey's later GI-model papers.
 Pass `electric_exponent = 0.5` to reproduce the paper. `magnetic_exponent`
 (0.7, fitted to rho -> pi gamma) is the paper's value.
 

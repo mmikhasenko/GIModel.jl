@@ -20,81 +20,101 @@ kernels omit.
 
 | group | decay | data | p = 0 | p = 0.5 | full current | ratio p=0 | ratio p=0.5 | ratio full |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| heavy | chi_c0 -> J/psi gamma | 167.5 ± 12 | 113.8 | 97.36 | 132.4 | 0.68 | 0.58 | 0.79 |
+| heavy | chi_c0 -> J/psi gamma | 167.4 ± 13 | 113.8 | 97.36 | 132.4 | 0.68 | 0.58 | 0.79 |
 | heavy | chi_c1 -> J/psi gamma | 278 ± 17 | 238.1 | 206.1 | 255.8 | 0.86 | 0.74 | 0.92 |
 | heavy | chi_c2 -> J/psi gamma | 368.6 ± 23 | 312.1 | 272.6 | 258.3 | 0.85 | 0.74 | 0.70 |
-| heavy | psi(2S) -> chi_c0 gamma | 29.43 ± 1.2 | 25.58 | 21.58 | 20.65 | 0.87 | 0.73 | 0.70 |
-| heavy | psi(2S) -> chi_c1 gamma | 28.82 ± 1.2 | 28.68 | 24.49 | 26.66 | 1.00 | 0.85 | 0.92 |
-| heavy | psi(2S) -> chi_c2 gamma | 28.18 ± 1.1 | 24.43 | 21.05 | 25.12 | 0.87 | 0.75 | 0.89 |
+| heavy | psi(2S) -> chi_c0 gamma | 28.77 ± 1.8 | 25.58 | 21.58 | 20.65 | 0.89 | 0.75 | 0.72 |
+| heavy | psi(2S) -> chi_c1 gamma | 28.17 ± 1.7 | 28.68 | 24.49 | 26.66 | 1.02 | 0.87 | 0.95 |
+| heavy | psi(2S) -> chi_c2 gamma | 27.54 ± 1.7 | 24.43 | 21.05 | 25.12 | 0.89 | 0.76 | 0.91 |
 | heavy | Upsilon(2S) -> chi_b0 gamma | 1.215 ± 0.16 | 0.9178 | 0.8777 | 0.8809 | 0.76 | 0.72 | 0.72 |
 | heavy | Upsilon(2S) -> chi_b1 gamma | 2.207 ± 0.22 | 1.637 | 1.569 | 1.607 | 0.74 | 0.71 | 0.73 |
 | heavy | Upsilon(2S) -> chi_b2 gamma | 2.287 ± 0.22 | 1.889 | 1.813 | 1.903 | 0.83 | 0.79 | 0.83 |
 | heavy | Upsilon(3S) -> chi_b0(2P) gamma | 1.199 ± 0.16 | 1.029 | 0.9794 | 0.9931 | 0.86 | 0.82 | 0.83 |
 | heavy | Upsilon(3S) -> chi_b1(2P) gamma | 2.56 ± 0.34 | 1.908 | 1.819 | 1.875 | 0.75 | 0.71 | 0.73 |
 | heavy | Upsilon(3S) -> chi_b2(2P) gamma | 2.662 ± 0.41 | 2.299 | 2.194 | 2.307 | 0.86 | 0.82 | 0.87 |
-| light_e1 | b_1+ -> pi+ gamma | 228 ± 59 | 75.4 | 22.17 | 59.34 | 0.33 | 0.10 | 0.26 |
+| light_e1 | b_1+ -> pi+ gamma | 227 ± 59 | 75.4 | 22.17 | 59.34 | 0.33 | 0.10 | 0.26 |
 | light_e1 | f_1(1285) -> rho0 gamma | 1404 ± 2.4e+02 | 441.4 | 159 | 911.5 | 0.31 | 0.11 | 0.65 |
 | light_spin_flip | a_2+ -> pi+ gamma | 311 ± 32 | 497.1 | 156.9 | 358.8 | 1.60 | 0.50 | 1.15 |
-| light_spin_flip | K_2*+ -> K+ gamma | 261 ± 56 | 432.3 | 146.4 | 284.4 | 1.66 | 0.56 | 1.09 |
+| light_spin_flip | K_2*+ -> K+ gamma | 240 ± 50 | 432.3 | 146.4 | 284.4 | 1.80 | 0.61 | 1.18 |
 | light_spin_flip | K_2*0 -> K0 gamma | < 98 | 43.32 | 10.82 | 23.73 | below limit | below limit | below limit |
 
 ## chi^2 per group against the exponent
 
 | p | heavy (12) | light_e1 (2) | light_spin_flip (2) |
 |---:|---:|---:|---:|
-| 0.00 | 73.3 | 23.0 | 43.2 |
-| 0.05 | 82.2 | 25.3 | 22.1 |
-| 0.10 | 91.9 | 27.4 | 9.2 |
-| 0.15 | 102.4 | 29.4 | 2.4 |
-| 0.20 | 113.7 | 31.3 | 0.1 |
-| 0.25 | 125.6 | 33.0 | 1.0 |
-| 0.30 | 138.2 | 34.5 | 4.2 |
-| 0.35 | 151.5 | 36.0 | 8.9 |
-| 0.40 | 165.3 | 37.3 | 14.6 |
-| 0.45 | 179.7 | 38.4 | 20.8 |
-| 0.50 | 194.6 | 39.5 | 27.4 |
-| 0.55 | 210.0 | 40.5 | 34.0 |
-| 0.60 | 225.9 | 41.4 | 40.4 |
-| 0.65 | 242.2 | 42.2 | 46.7 |
-| 0.70 | 258.9 | 43.0 | 52.7 |
-| 0.75 | 276.0 | 43.6 | 58.3 |
-| 0.80 | 293.5 | 44.2 | 63.6 |
-| 0.85 | 311.3 | 44.8 | 68.4 |
-| 0.90 | 329.4 | 45.3 | 73.0 |
-| 0.95 | 347.8 | 45.7 | 77.1 |
-| 1.00 | 366.4 | 46.1 | 80.9 |
-| full current (p = 0) | 119.7 | 12.5 | 2.4 |
+| 0.00 | 54.3 | 23.0 | 48.6 |
+| 0.05 | 59.6 | 25.2 | 25.7 |
+| 0.10 | 65.5 | 27.4 | 11.5 |
+| 0.15 | 71.7 | 29.3 | 3.7 |
+| 0.20 | 78.4 | 31.2 | 0.6 |
+| 0.25 | 85.4 | 32.9 | 1.0 |
+| 0.30 | 92.8 | 34.4 | 3.9 |
+| 0.35 | 100.6 | 35.8 | 8.3 |
+| 0.40 | 108.7 | 37.1 | 13.9 |
+| 0.45 | 117.1 | 38.3 | 20.1 |
+| 0.50 | 125.8 | 39.4 | 26.7 |
+| 0.55 | 134.8 | 40.4 | 33.3 |
+| 0.60 | 144.0 | 41.3 | 39.9 |
+| 0.65 | 153.5 | 42.1 | 46.2 |
+| 0.70 | 163.2 | 42.8 | 52.3 |
+| 0.75 | 173.2 | 43.5 | 58.0 |
+| 0.80 | 183.3 | 44.1 | 63.4 |
+| 0.85 | 193.7 | 44.7 | 68.4 |
+| 0.90 | 204.2 | 45.1 | 73.0 |
+| 0.95 | 214.8 | 45.6 | 77.2 |
+| 1.00 | 225.7 | 46.0 | 81.1 |
+| full current (p = 0) | 76.6 | 12.4 | 3.0 |
 
 ## Hold-out
 
-- Fit on light_e1: best p = 0.00 (chi^2 23.0). Predicts light_spin_flip with chi^2 43.2 for 2 points (at its own best p = 0.20: 0.1). Heavy chi^2 at that p: 73.3.
-- Fit on light_spin_flip: best p = 0.20 (chi^2 0.1). Predicts light_e1 with chi^2 31.3 for 2 points (at its own best p = 0.00: 23.0). Heavy chi^2 at that p: 113.7.
+- Fit on light_e1: best p = 0.00, the scan edge (chi^2 23.0). Predicts light_spin_flip with chi^2 48.6 for 2 points (at its own best p = 0.20: 0.6). Heavy chi^2 at that p: 54.3.
+- Fit on light_spin_flip: best p = 0.20 (chi^2 0.6). Predicts light_e1 with chi^2 31.2 for 2 points (at its own best p = 0.00: 23.0). Heavy chi^2 at that p: 78.4.
+
+## Below the scan
+
+`PhotonEmission` rejects p < 0, so these are extrapolated from the exact power law in p on equal-mass rows (checked at p = 1).
+
+| rows | chi^2 at p = 0 | minimum on [-1, 0] | chi^2 there |
+|---|---:|---:|---:|
+| heavy | 54.3 | -0.45 | 30.7 |
+| charmonium | 35.3 | -0.40 | 16.4 |
+| bottomonium | 18.9 | -1.00 | 8.7 |
+| light_e1 | 23.0 | -0.50 | 0.8 |
 
 ## Conclusion
 
-- Heavy quarkonium prefers p = 0 (chi^2 73.3 against
-  194.6 at p = 0.5). The factor is not negligible for charm:
-  |m_c/<E_c>|^0.5 lowers chi_cJ -> J/psi gamma by about 13%. Godfrey's later GI-model
-  papers also use p = 0.
-- No single exponent describes both light groups. Allowed E1 prefers p <= 0 and
-  stays about 3 times below data; spin flip prefers p = 0.2. Each fit fails the
-  other group, so the factor does not have the form the data need.
+- Heavy quarkonium disfavours p = 0.5 (chi^2 125.8 against
+  54.3 at p = 0), but it does not select p = 0: the scan ends there and
+  chi^2 keeps falling below it, to 30.7 at p = -0.45 (see Below the scan).
+  Negative p has no meaning for this factor; it absorbs a common shortfall of the
+  model. The factor is not negligible for charm: |m_c/<E_c>|^0.5 lowers
+  chi_cJ -> J/psi gamma by about 13%. Godfrey's later GI-model papers use p = 0.
+- No single exponent describes both light groups. Allowed E1 chi^2 falls towards low p
+  with no minimum in the scan and stays about 3 times below data at p = 0; spin
+  flip has its minimum at p = 0.2. Each fit fails the other group, so the
+  factor does not have the form the data need.
 - The full quark current with no fitted factor describes the spin-flip widths
-  within 2 sigma (a_2+ -> pi+ gamma +1.5 sigma, K_2*+ -> K+ gamma +0.4 sigma) and halves the f1 -> rho gamma
-  deficit. The leading kernels expand exp(-i q.r) to first order, which
-  overshoots for light mesons (q r ~ 1); the exact Bessel functions supply the
-  suppression that the 1985 m/E exponent and recoil form factor were
-  approximating. b1 -> pi gamma (singlet, no spin current) remains about 4 times
-  low, an open light-quark question.
+  within 2 sigma (a_2+ -> pi+ gamma +1.5 sigma, K_2*+ -> K+ gamma +0.9 sigma). This comes from the exact
+  Bessel functions: the leading kernels expand exp(-i q.r) to first order, and on
+  a_2 -> pi gamma the exact/leading ratio goes from 0.999 at small q to
+  0.722 at the physical q (fixed waves, pure M2). The 1985 m/E
+  exponent and recoil form factor may have imitated this suppression; p = 0.5
+  overdoes it.
+- f_1 -> rho gamma improves for a different reason. Exact charge multipoles alone
+  lower it (441.4 to 387.8 keV); the spin current raises it to
+  911.5 keV, halving the deficit. b_1 -> pi gamma (singlet, no spin
+  current) remains about 4 times low, an open light-quark question.
 - For heavy quarkonium the full current is not better than the leading kernel at
-  p = 0 (chi^2 119.7 against 73.3): its
+  p = 0 (chi^2 76.6 against 54.3): its
   spin-current E1 term, of relative order E_gamma/m, raises chi_c0 and chi_c1 but
   lowers chi_c2 -> J/psi gamma and psi(2S) -> chi_c0 gamma. Model/data ratios for
-  the heavy widths range from 0.68 (chi_c0 -> J/psi gamma) to 0.995 (psi(2S) -> chi_c1 gamma) at p = 0 and from
-  0.70 (chi_c2 -> J/psi gamma) to 0.925 (psi(2S) -> chi_c1 gamma) for the full current: the model is below
-  data for every heavy row, by up to about 30%.
+  the heavy widths range from 0.68 (chi_c0 -> J/psi gamma) to 1.018 (psi(2S) -> chi_c1 gamma) at p = 0 and from
+  0.70 (chi_c2 -> J/psi gamma) to 0.946 (psi(2S) -> chi_c1 gamma) for the full current. The model is below data for
+  11 of 12 heavy rows at p = 0 and 12 of 12 for the full current.
 
-PhotonEmission therefore defaults to p = 0. The GI 1985 Table VI audit sets
-p = 0.5 explicitly to reproduce the paper. For light mesons,
-MultipolePhotonEmission is the better-founded choice.
+PhotonEmission therefore defaults to p = 0: the data disfavour 0.5 and do not
+support any positive factor for E1, and p = 0 applies no fitted factor. The data
+do not single out 0 itself. The GI 1985 Table VI audit sets p = 0.5 explicitly to
+reproduce the paper. For light mesons, MultipolePhotonEmission is the
+better-founded choice.
 

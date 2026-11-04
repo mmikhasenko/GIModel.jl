@@ -26,5 +26,7 @@
     end
     @test exception isa ArgumentError
     @test occursin("1^3D_1 (coefficient 0.1): Not implemented yet. Please submit issue if needed, and/or PR with implementation.", exception.msg)
+    @test occursin("MultipolePhotonEmission", exception.msg)
     @test occursin("state.components", exception.msg)
+    @test occursin("approximation", exception.msg)
 end

@@ -5,7 +5,7 @@
 # GI 1985 multiply every electric radial moment E_n^i by |m_i/sqrt(<E_i><E_i>)|^p
 # and fixed p = 0.5 on A2 -> pi gamma. Godfrey's later papers use p = 0. Here
 # PhotonEmission is evaluated at p in [0, 1] on measured widths, in three groups:
-#   heavy            charmonium and bottomonium E1 (p should hardly matter),
+#   heavy            charmonium and bottomonium E1 (charm is sensitive to p, bottom barely),
 #   light_e1         allowed E1 with light emitters,
 #   light_spin_flip  spin-flip E1/M2 with light emitters.
 # Widths use GI wavefunctions and PDG 2026 masses for the photon momentum.
@@ -85,6 +85,34 @@ npoints(group) = count(r -> r.group == group && !r.upper_limit, rows)
 chi2_exact(group) = sum(((exact[r.decay] - r.width_keV) / r.error_keV)^2
     for r in rows if r.group == group && !r.upper_limit; init = 0.0)
 best(group) = argmin(p -> chi2(group, p), exponents)
+at_edge(p) = p == first(exponents) ? ", the scan edge" : ""
+
+# PhotonEmission rejects p < 0, so the scan cannot show where chi^2 turns over.
+# On these equal-mass rows one factor multiplies the moment and the width is a
+# power law in p, which extrapolates below 0.
+power_law_rows = [r for r in rows if r.group != "light_spin_flip"]
+extrapolated(r, p) = widths[(r.decay, 0.0)] * (widths[(r.decay, 0.5)] / widths[(r.decay, 0.0)])^(2p)
+@assert all(isapprox(extrapolated(r, 1.0), widths[(r.decay, 1.0)]; rtol = 1e-10) for r in power_law_rows)
+below_zero = -1.0:0.05:0.0
+chi2_below(select, p) = sum(((extrapolated(r, p) - r.width_keV) / r.error_keV)^2 for r in power_law_rows if select(r))
+is_heavy(r) = r.group == "heavy"
+is_charm(r) = r.flavors == "cc"
+is_bottom(r) = r.flavors == "bb"
+is_light_e1(r) = r.group == "light_e1"
+best_below(select) = argmin(p -> chi2_below(select, p), below_zero)
+
+# Separate the two effects of the full current. A huge quark mass at fixed waves
+# switches the O(q/m) spin current off and leaves the exact charge multipoles.
+heavy_quark_masses = QuarkMassTable(string(k) => 1e6 * v for (k, v) in pairs(mq))
+no_spin_current_keV(r) = 1000 * decay_width(matrix_element(STATES[r.decay][2],
+    MultipolePhotonEmission(heavy_quark_masses), STATES[r.decay][1]))
+function exact_over_leading(r, parent_mass)
+    parent, daughter = STATES[r.decay]
+    moved = PhysicalState(parent.label, parent_mass, parent.components)
+    decay_width(matrix_element(daughter, MultipolePhotonEmission(mq), moved)) /
+        decay_width(matrix_element(daughter, PhotonEmission(mq; electric_exponent = 0.0), moved))
+end
+row_named(prefix) = only(r for r in rows if startswith(r.decay, prefix))
 
 output = joinpath(ROOT, "reports", "radiative_exponent.md")
 open(output, "w") do io
@@ -125,8 +153,16 @@ open(output, "w") do io
     println(io, "\n## Hold-out\n")
     for (train, test) in (("light_e1", "light_spin_flip"), ("light_spin_flip", "light_e1"))
         p = best(train)
-        @printf(io, "- Fit on %s: best p = %.2f (chi^2 %.1f). Predicts %s with chi^2 %.1f for %d points (at its own best p = %.2f: %.1f). Heavy chi^2 at that p: %.1f.\n",
-            train, p, chi2(train, p), test, chi2(test, p), npoints(test), best(test), chi2(test, best(test)), chi2("heavy", p))
+        @printf(io, "- Fit on %s: best p = %.2f%s (chi^2 %.1f). Predicts %s with chi^2 %.1f for %d points (at its own best p = %.2f: %.1f). Heavy chi^2 at that p: %.1f.\n",
+            train, p, at_edge(p), chi2(train, p), test, chi2(test, p), npoints(test), best(test), chi2(test, best(test)), chi2("heavy", p))
+    end
+    println(io, "\n## Below the scan\n")
+    println(io, "`PhotonEmission` rejects p < 0, so these are extrapolated from the exact power law in p on equal-mass rows (checked at p = 1).\n")
+    println(io, "| rows | chi^2 at p = 0 | minimum on [-1, 0] | chi^2 there |")
+    println(io, "|---|---:|---:|---:|")
+    for (name, select) in (("heavy", is_heavy), ("charmonium", is_charm), ("bottomonium", is_bottom), ("light_e1", is_light_e1))
+        p = best_below(select)
+        @printf(io, "| %s | %.1f | %.2f | %.1f |\n", name, chi2_below(select, 0.0), p, chi2_below(select, p))
     end
     measured(group) = [r for r in rows if r.group == group && !r.upper_limit]
     pulls = join((@sprintf("%s %+.1f sigma", r.decay, (exact[r.decay] - r.width_keV) / r.error_keV)
@@ -138,35 +174,51 @@ open(output, "w") do io
     end
     heavy_p0 = ratio_range(r -> widths[(r.decay, 0.0)])
     heavy_full = ratio_range(r -> exact[r.decay])
+    heavy_rows = measured("heavy")
+    below_p0 = count(r -> widths[(r.decay, 0.0)] < r.width_keV, heavy_rows)
+    below_full = count(r -> exact[r.decay] < r.width_keV, heavy_rows)
+    a2_row, f1_row = row_named("a_2+"), row_named("f_1")
+    a2_physical = exact_over_leading(a2_row, STATES[a2_row.decay][1].mass_GeV)
+    a2_small_q = exact_over_leading(a2_row, STATES[a2_row.decay][2].mass_GeV + 0.05)
+    keV(x) = round(x; digits = 1)
     println(io, """
 
     ## Conclusion
 
-    - Heavy quarkonium prefers p = 0 (chi^2 $(round(chi2("heavy", 0.0); digits = 1)) against
-      $(round(chi2("heavy", 0.5); digits = 1)) at p = 0.5). The factor is not negligible for charm:
-      |m_c/<E_c>|^0.5 lowers chi_cJ -> J/psi gamma by about 13%. Godfrey's later GI-model
-      papers also use p = 0.
-    - No single exponent describes both light groups. Allowed E1 prefers p <= 0 and
-      stays about 3 times below data; spin flip prefers p = 0.2. Each fit fails the
-      other group, so the factor does not have the form the data need.
+    - Heavy quarkonium disfavours p = 0.5 (chi^2 $(keV(chi2("heavy", 0.5))) against
+      $(keV(chi2("heavy", 0.0))) at p = 0), but it does not select p = 0: the scan ends there and
+      chi^2 keeps falling below it, to $(keV(chi2_below(is_heavy, best_below(is_heavy)))) at p = $(best_below(is_heavy)) (see Below the scan).
+      Negative p has no meaning for this factor; it absorbs a common shortfall of the
+      model. The factor is not negligible for charm: |m_c/<E_c>|^0.5 lowers
+      chi_cJ -> J/psi gamma by about 13%. Godfrey's later GI-model papers use p = 0.
+    - No single exponent describes both light groups. Allowed E1 chi^2 falls towards low p
+      with no minimum in the scan and stays about 3 times below data at p = 0; spin
+      flip has its minimum at p = $(best("light_spin_flip")). Each fit fails the other group, so the
+      factor does not have the form the data need.
     - The full quark current with no fitted factor describes the spin-flip widths
-      within 2 sigma ($(pulls)) and halves the f1 -> rho gamma
-      deficit. The leading kernels expand exp(-i q.r) to first order, which
-      overshoots for light mesons (q r ~ 1); the exact Bessel functions supply the
-      suppression that the 1985 m/E exponent and recoil form factor were
-      approximating. b1 -> pi gamma (singlet, no spin current) remains about 4 times
-      low, an open light-quark question.
+      within 2 sigma ($(pulls)). This comes from the exact
+      Bessel functions: the leading kernels expand exp(-i q.r) to first order, and on
+      a_2 -> pi gamma the exact/leading ratio goes from $(round(a2_small_q; digits = 3)) at small q to
+      $(round(a2_physical; digits = 3)) at the physical q (fixed waves, pure M2). The 1985 m/E
+      exponent and recoil form factor may have imitated this suppression; p = 0.5
+      overdoes it.
+    - f_1 -> rho gamma improves for a different reason. Exact charge multipoles alone
+      lower it ($(keV(widths[(f1_row.decay, 0.0)])) to $(keV(no_spin_current_keV(f1_row))) keV); the spin current raises it to
+      $(keV(exact[f1_row.decay])) keV, halving the deficit. b_1 -> pi gamma (singlet, no spin
+      current) remains about 4 times low, an open light-quark question.
     - For heavy quarkonium the full current is not better than the leading kernel at
       p = 0 (chi^2 $(round(chi2_exact("heavy"); digits = 1)) against $(round(chi2("heavy", 0.0); digits = 1))): its
       spin-current E1 term, of relative order E_gamma/m, raises chi_c0 and chi_c1 but
       lowers chi_c2 -> J/psi gamma and psi(2S) -> chi_c0 gamma. Model/data ratios for
       the heavy widths range from $(heavy_p0) at p = 0 and from
-      $(heavy_full) for the full current: the model is below
-      data for every heavy row, by up to about 30%.
+      $(heavy_full) for the full current. The model is below data for
+      $(below_p0) of $(length(heavy_rows)) heavy rows at p = 0 and $(below_full) of $(length(heavy_rows)) for the full current.
 
-    PhotonEmission therefore defaults to p = 0. The GI 1985 Table VI audit sets
-    p = 0.5 explicitly to reproduce the paper. For light mesons,
-    MultipolePhotonEmission is the better-founded choice.
+    PhotonEmission therefore defaults to p = 0: the data disfavour 0.5 and do not
+    support any positive factor for E1, and p = 0 applies no fitted factor. The data
+    do not single out 0 itself. The GI 1985 Table VI audit sets p = 0.5 explicitly to
+    reproduce the paper. For light mesons, MultipolePhotonEmission is the
+    better-founded choice.
     """)
 end
 println("wrote ", output)
