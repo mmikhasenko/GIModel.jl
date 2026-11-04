@@ -1,6 +1,36 @@
 # News
 
-## v0.4.2 (unreleased)
+## v0.5.0 (unreleased)
+
+**First release whose defaults depart from GI 1985.** To keep the 1985
+prescription, pass `electric_exponent = 0.5` or use v0.4.2.
+
+### Changed
+
+- **`PhotonEmission` no longer smears electric moments by default**
+  (`electric_exponent = 0`, was 0.5). GI 1985 fitted 0.5 to A₂ → πγ with
+  spin-flip denominators that were √2 too small. Against 17 measured radiative
+  widths (PDG 2026), heavy quarkonium disfavours 0.5 (χ² 126 against 54 at 0) and
+  no single exponent fits the light mesons (`GIPaper/checks/audit_radiative_exponent.jl`).
+  The data do not single out 0: χ² keeps falling below it, where the factor has no
+  meaning. 0 applies no fitted factor and is what Godfrey's later GI-model papers
+  use. Charmonium E1 widths rise by about 15%. The GI 1985 Table VI audit sets 0.5
+  explicitly and is unchanged. Without any fitted factor, `MultipolePhotonEmission`
+  describes the light spin-flip widths within 2σ (a₂ → πγ +1.5σ, K₂*⁺ → K⁺γ +0.9σ).
+  ([#28](https://github.com/mmikhasenko/GIModel.jl/issues/28))
+
+### Fixed
+
+- `PhotonEmission` now explains why it rejects a mixed state. A spectrum state
+  lists every basis state of its sector, so b₁ carries a ³P₁ component with
+  coefficient exactly 0; that component needs the spin-flip kernel and b₁ → πγ
+  failed with a bare "incompatible photon-transition classes". The error now lists
+  each component, its coefficient and its kernel or the reason it has none, and
+  points to `MultipolePhotonEmission`. Where some components have a kernel it also
+  says how to evaluate them individually (`state.components`), which is an
+  approximation.
+
+## v0.4.2 (2026-11-04)
 
 ### Fixed
 

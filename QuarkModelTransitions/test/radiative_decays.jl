@@ -169,3 +169,45 @@ end
     @test recoil_amplitude.value ≈ m1_recoil_moment(sw2, sw2, mq["c"], 4/3, qr) rtol=1e-10
 
 end
+
+@testset "Photon emission explains mixed states" begin
+    # Spectra list every basis state of a sector, so b1 carries a 3P1 component,
+    # here with coefficient exactly 0. It is treated like any other component,
+    # and the error says how to evaluate components individually.
+    mq = QuarkMassTable("q" => 0.22)
+    sw, pw = OscillatorWave(0, 0.5, [1.0]), OscillatorWave(1, 0.45, [1.0])
+    b1 = PhysicalState("b1", 1.23, [
+        (basis = BasisState(1, "P", 1, 1; flavors = (:u, :d)), coefficient = 1.0, wave = pw),
+        (basis = BasisState(1, "P", 3, 1; flavors = (:u, :d)), coefficient = 0.0, wave = pw),
+    ])
+    pion = PhysicalState("pi", 0.14, [(basis = BasisState(1, "S", 1, 0; flavors = (:u, :d)), coefficient = 1.0, wave = sw)])
+    message = try
+        matrix_element(pion, PhotonEmission(mq), b1)
+        ""
+    catch err
+        err isa ArgumentError ? err.msg : rethrow()
+    end
+    @test occursin("state.components", message)
+    @test occursin("SpinFlipE1", message) && occursin("AllowedE1", message)
+    # The suggested route works.
+    single = PhysicalState(b1.label, b1.mass_GeV, [b1.components[1]])
+    @test decay_width(pion, PhotonEmission(mq), single) > 0
+
+    # Where no component has a kernel, evaluating components cannot help.
+    photon_error(final, initial) = try
+        matrix_element(final, PhotonEmission(mq), initial)
+        ""
+    catch err
+        err isa ArgumentError ? err.msg : rethrow()
+    end
+    a2 = PhysicalState("a2", 1.32, [(basis = BasisState(1, "P", 3, 2; flavors = (:u, :d)), coefficient = 1.0, wave = pw)])
+    p_to_p = photon_error(single, a2)
+    @test occursin("Not implemented yet", p_to_p)
+    @test occursin("MultipolePhotonEmission", p_to_p)
+    @test !occursin("state.components", p_to_p)
+    @test decay_width(single, MultipolePhotonEmission(mq), a2) > 0
+
+    # A pair's own reason survives in the message.
+    a0 = PhysicalState("a0", 0.98, [(basis = BasisState(1, "P", 3, 0; flavors = (:u, :d)), coefficient = 1.0, wave = pw)])
+    @test occursin("3P0 -> 1S0 has no implemented photon kernel", photon_error(pion, a0))
+end

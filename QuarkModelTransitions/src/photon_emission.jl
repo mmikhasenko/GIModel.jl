@@ -223,6 +223,12 @@ The Godfrey--Isgur photon-emission operator in the Appendix-D mock-meson
 prescription. The transition class and multipole are inferred from the final
 and initial states by `photon_transition_class`.
 
+The kernels are those of the 1985 paper with its coefficient errors corrected,
+but since v0.5.0 the default departs from it: electric moments are not smeared
+(`electric_exponent = 0`), as in Godfrey's later GI-model papers; measured E1
+widths disfavour 0.5. Pass `electric_exponent = 0.5` for the 1985 prescription.
+The magnetic exponent keeps the paper's 0.7.
+
 `recoil_order=0` selects the class-specific leading expression. Order `2`
 adds the relative `(qr)^2` correction where that correction is implemented;
 currently this is the published M1 `E_2` term. Unsupported combinations fail
@@ -364,6 +370,7 @@ function _on_shell_photon_momentum(final::TransitionState, initial::TransitionSt
     return photon_momentum(initial.mass_GeV, final.mass_GeV)
 end
 
+# The kernel of one component pair, or a String saying why it has none.
 function _component_transition_class(daughter::StateComponent, parent::StateComponent)
     Ld = orbital_angular_momentum(daughter.basis.L_label)
     Lp = orbital_angular_momentum(parent.basis.L_label)
@@ -371,22 +378,41 @@ function _component_transition_class(daughter::StateComponent, parent::StateComp
     if Ld == 0 && Lp == 0 && Set((md, mp)) == Set((1, 3))
         return daughter.basis.n == parent.basis.n ? DirectM1() : HinderedM1()
     end
-    Set((Ld, Lp)) == Set((0, 1)) || error(
-        "Not implemented yet. Please submit issue if needed, and/or PR with implementation.",
-    )
+    Set((Ld, Lp)) == Set((0, 1)) ||
+        return "Not implemented yet. Please submit issue if needed, and/or PR with implementation."
     sw, pw = Ld == 0 ? (daughter, parent) : (parent, daughter)
     if sw.basis.multiplicity == pw.basis.multiplicity
         return AllowedE1()
     end
-    (sw.basis.multiplicity, pw.basis.multiplicity) == (1, 3) || throw(ArgumentError(
-        "spin-flip photon kernel requires 3P_J -> 1S0",
-    ))
-    Lp == 1 || throw(ArgumentError(
-        "the implemented spin-flip photon kernel requires the P wave to be the parent",
-    ))
+    (sw.basis.multiplicity, pw.basis.multiplicity) == (1, 3) ||
+        return "spin-flip photon kernel requires 3P_J -> 1S0"
+    Lp == 1 || return "the implemented spin-flip photon kernel requires the P wave to be the parent"
     pw.basis.J == 1 && return SpinFlipE1()
     pw.basis.J == 2 && return SpinFlipM2()
-    throw(ArgumentError("3P$(pw.basis.J) -> 1S0 has no implemented photon kernel"))
+    return "3P$(pw.basis.J) -> 1S0 has no implemented photon kernel"
+end
+
+_component_name(c::StateComponent) = string(c.basis.n, "^", c.basis.multiplicity,
+    c.basis.L_label, "_", c.basis.J, " (coefficient ", round(c.coefficient; sigdigits = 4), ")")
+
+# Explain a transition the leading kernels cannot evaluate with one kernel.
+function _mixed_photon_message(final, initial, pairs)
+    lines = map(pairs) do (parent, daughter, class)
+        kernel = class isa PhotonTransitionClass ? string(nameof(typeof(class))) : class
+        "  " * _component_name(parent) * " -> " * _component_name(daughter) * ": " * kernel
+    end
+    message = string(
+        "PhotonEmission evaluates one leading kernel per transition. For ", initial.label,
+        " -> ", final.label, " its components need:\n", join(lines, "\n"), "\n",
+        "`MultipolePhotonEmission(mq)` evaluates all components coherently, in every multipole.",
+    )
+    length(pairs) > 1 && any(pair -> pair[3] isa PhotonTransitionClass, pairs) || return message
+    return string(
+        message, "\n",
+        "To stay with PhotonEmission, compute the decay for individual components, accessed as ",
+        "`state.components`, e.g. `PhysicalState(state.label, state.mass_GeV, [state.components[1]])`. ",
+        "That neglects the other components and is an approximation.",
+    )
 end
 
 _same_photon_family(a::PhotonTransitionClass, b::PhotonTransitionClass) =
@@ -423,16 +449,20 @@ operator = PhotonEmission(masses)
 """
 function photon_transition_class(final::PhysicalState, initial::PhysicalState)
     classes = PhotonTransitionClass[]
+    pairs = Tuple{StateComponent,StateComponent,Union{String,PhotonTransitionClass}}[]
     for parent in _electromagnetic_components(initial), daughter in _electromagnetic_components(final)
         daughter.basis.flavors == parent.basis.flavors || continue
-        push!(classes, _component_transition_class(daughter, parent))
+        class = _component_transition_class(daughter, parent)
+        push!(pairs, (parent, daughter, class))
+        class isa PhotonTransitionClass && push!(classes, class)
     end
-    isempty(classes) && throw(ArgumentError(
+    isempty(pairs) && throw(ArgumentError(
         "initial and final states have no shared pure-flavor component",
     ))
-    selected = first(classes)
-    all(candidate -> _same_photon_family(selected, candidate), classes) ||
-        throw(ArgumentError("mixed-state components imply incompatible photon-transition classes"))
+    selected = isempty(classes) ? nothing : first(classes)
+    (length(classes) == length(pairs) &&
+     all(candidate -> _same_photon_family(selected, candidate), classes)) ||
+        throw(ArgumentError(_mixed_photon_message(final, initial, pairs)))
     if selected isa Union{DirectM1,HinderedM1}
         return any(candidate -> candidate isa HinderedM1, classes) ? HinderedM1() : DirectM1()
     end
@@ -574,6 +604,7 @@ function _assemble_photon_amplitude(
         flavors = parent.basis.flavors
         daughter.basis.flavors == flavors || continue
         component_class = _component_transition_class(daughter, parent)
+        component_class isa PhotonTransitionClass || throw(ArgumentError(component_class))
         _same_photon_family(class, component_class) || continue
         mixing = parent.coefficient * conj(daughter.coefficient)
         for emitter in _photon_emitters(operator.current, class, flavors)

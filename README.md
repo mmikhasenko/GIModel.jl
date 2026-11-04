@@ -111,6 +111,16 @@ julia docs/render.jl
 
 `julia --project=docs docs/make.jl` then builds the site locally.
 
+## Which version reproduces what
+
+| Version | Photon emission | Use it for |
+|---|---|---|
+| v0.4.1 | The paper's printed coefficients, including its errors | Comparing with Table VI as printed |
+| v0.4.2 | The 1985 prescription (`electric_exponent = 0.5`, `magnetic_exponent = 0.7`), coefficient errors corrected | The GI 1985 model, corrected |
+| v0.5.0 and later | Default `electric_exponent = 0`, a departure from 1985; pass 0.5 for the prescription above | Comparing with current data |
+
+The spectrum and strong-decay results are the same in all three.
+
 ## Beyond the 1985 paper
 
 The strong-decay tables in the paper use an analytic SU(6), single-oscillator-

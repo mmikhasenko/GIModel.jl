@@ -88,7 +88,7 @@ function mock_meson_overlap(mwx::MomentumWave, mwy::MomentumWave, m_emit::Real;
 end
 
 """
-    mock_meson_radial_moment(wx, wy, Ex, Ey, m_emit; n=1, exponent=0.5) -> Eₙⁱ (GeV⁻ⁿ)
+    mock_meson_radial_moment(wx, wy, Ex, Ey, m_emit; n=1, exponent=0) -> Eₙⁱ (GeV⁻ⁿ)
 
 Appendix-D E1/M2 radial moment `Eₙⁱ(x,y)` on the position-space reduced waves,
 with `Ex`, `Ey` the mean quark energies (see `mock_mean_energy`):
