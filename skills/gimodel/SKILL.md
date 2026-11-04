@@ -56,7 +56,7 @@ these come out wrong, the setup is wrong.
 - A mixing block contains only the levels you asked for. `spectrum_levels(1;
   L_labels=("S","P"))` has no D waves, so the J/ψ shows up as *unmixed*. Always
   request every level that can mix with the state you study (same J^PC, and
-  n ± 1). The one exception is radiative transitions (see Transitions).
+  n ± 1). Use `MultipolePhotonEmission` to retain mixing in radiative transitions.
 - Unequal-mass mesons mix ¹L_L and ³L_L (for example D₁ and D₁′).
   Self-conjugate mesons do not. The lower state is
   `cos θ |¹L_L⟩ + sin θ |³L_L⟩`. Read the angle from
@@ -108,6 +108,14 @@ these come out wrong, the setup is wrong.
 Always follow the same pattern: `physical_state` → operator →
 `matrix_element(final, op, initial)` (note the order: ⟨f|O|i⟩) →
 `decay_width` (MeV).
+
+For general radiative decays, use **`MultipolePhotonEmission(mq)`**. It accepts
+P→P transitions (including a₂→b₁γ), higher orbital waves and mixed states,
+and returns all multipoles in `.multipoles` (amplitudes in MeV^½).
+`decay_width` sums their squared magnitudes. `PhotonEmission` only implements
+the leading Appendix-D kernels; its "Not implemented yet" error does not mean
+the decay is unsupported by the package. Check the multipole operator before
+reporting that a radiative decay cannot be computed.
 
 ```julia
 spec = compute_spectrum(params, Meson(mq, :c, :c);
