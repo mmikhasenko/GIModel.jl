@@ -1,6 +1,6 @@
 # News
 
-## v0.4.2 (unreleased)
+## v0.5.0 (unreleased)
 
 ### Fixed
 
