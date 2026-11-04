@@ -110,7 +110,7 @@ Always follow the same pattern: `physical_state` → operator →
 `decay_width` (MeV).
 
 For general radiative decays, use **`MultipolePhotonEmission(mq)`**. It accepts
-P→P transitions (including a₂→b₁γ), higher orbital waves and mixed states,
+P→P transitions, higher orbital waves and mixed states,
 and returns all multipoles in `.multipoles` (amplitudes in MeV^½).
 `decay_width` sums their squared magnitudes. `PhotonEmission` only implements
 the leading Appendix-D kernels; its "Not implemented yet" error does not mean
