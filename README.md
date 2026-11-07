@@ -140,6 +140,8 @@ or momentum while holding the waves fixed. The
 [transition guide](QuarkModelTransitions/README.md) covers photon and strong
 emission, leptonic currents, annihilation, units, and correction factors.
 
+An unmerged study, archived as tag [`archive/a-class-universality`](https://github.com/mmikhasenko/GIModel.jl/tree/363fc54/GIPaper/docs/a_class_universality), tests whether the single Table IV amplitude `A = (g + h/4)β` shared by seven transitions survives with realistic wavefunctions across five flavor sectors.
+
 ## Data
 
 - Model configuration (GIModel): `data/parameters.provisional.toml`.
