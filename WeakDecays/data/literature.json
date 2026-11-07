@@ -1,0 +1,196 @@
+{
+  "search_date": "2026-11-07",
+  "scope": "Targeted primary-source survey, not exhaustive; reading depth disclosed per item.",
+  "entries": [
+    {
+      "key": "isgw2",
+      "authors": "Scora and Isgur",
+      "year": "1995",
+      "title": "Semileptonic Meson Decays in the Quark Model: An Update",
+      "url": "https://arxiv.org/abs/hep-ph/9503486",
+      "reading_depth": "Primary abstract and bibliographic record",
+      "idea": "Heavy-quark constraints, spin-dependent waves, recoil shape",
+      "implementation_status": "Principles tested; ISGW2 formula set not reproduced"
+    },
+    {
+      "key": "melikhov",
+      "authors": "Melikhov and Stech",
+      "year": "2000",
+      "title": "Weak form factors for heavy meson decays: an update",
+      "url": "https://arxiv.org/abs/hep-ph/0001113",
+      "reading_depth": "Primary abstract and bibliographic record",
+      "idea": "Dispersion constituent-quark representation and calibration",
+      "implementation_status": "Architecture reviewed; double spectral integrals deferred"
+    },
+    {
+      "key": "fgk",
+      "authors": "Faustov, Galkin and Kang",
+      "year": "2020",
+      "title": "Semileptonic decays of D and Ds mesons in the relativistic quark model",
+      "url": "https://arxiv.org/abs/1911.08209",
+      "reading_depth": "PDF methods and Table I/V/VI inspected",
+      "idea": "Boosts, negative-energy terms, shape and rate comparisons",
+      "implementation_status": "Table-I form factors used as model comparators; full quasipotential current deferred"
+    },
+    {
+      "key": "galkin2025",
+      "authors": "Galkin and Sukhanov",
+      "year": "2025",
+      "title": "Exclusive semileptonic decays of D and Ds into excited states",
+      "url": "https://arxiv.org/abs/2501.16406",
+      "reading_depth": "Primary abstract and HTML inspected",
+      "idea": "Radial and orbital daughter transitions",
+      "implementation_status": "2S waves evaluated; orbital form factors deferred"
+    },
+    {
+      "key": "galkin2026",
+      "authors": "Galkin and Kang",
+      "year": "2026",
+      "title": "Exclusive semileptonic B decays to ground and excited light states",
+      "url": "https://doi.org/10.1103/43c9-kssx",
+      "reading_depth": "Publisher abstract and references inspected",
+      "idea": "Excited light daughters and isoscalar mixing",
+      "implementation_status": "Radial calculations; general orbital and mixing phenomenology deferred"
+    },
+    {
+      "key": "bt",
+      "authors": "Le Yaouanc et al.",
+      "year": "2001",
+      "title": "Uraltsev Sum Rule in Bakamjian-Thomas Quark Models",
+      "url": "https://arxiv.org/abs/hep-ph/0105247",
+      "reading_depth": "PDF sum-rule equations and comparison discussion inspected",
+      "idea": "Heavy-limit slope bound and spin rotations",
+      "implementation_status": "Mass-scaling and slope diagnostic; full BT construction and sum saturation deferred"
+    },
+    {
+      "key": "jaus",
+      "authors": "Jaus",
+      "year": "1999",
+      "title": "Covariant analysis of the light-front quark model",
+      "url": "https://doi.org/10.1103/PhysRevD.60.054026",
+      "reading_depth": "Publisher abstract inspected",
+      "idea": "Zero modes and covariance",
+      "implementation_status": "Scope constraint; no full covariant implementation"
+    },
+    {
+      "key": "chang",
+      "authors": "Chang et al.",
+      "year": "2018",
+      "title": "Self-consistency and covariance of light-front quark models",
+      "url": "https://arxiv.org/abs/1810.00296",
+      "reading_depth": "PDF wave variables and P-to-P current section inspected",
+      "idea": "Good-current overlap and spin factor; type-II cautions",
+      "implementation_status": "P-to-P spacelike plus-current implementation"
+    },
+    {
+      "key": "bs2025",
+      "authors": "Thejus Mary S. and Dhir",
+      "year": "2025",
+      "title": "Weak decays of Bs meson in self-consistent covariant light-front approach",
+      "url": "https://arxiv.org/abs/2507.05104",
+      "reading_depth": "HTML methods and z representation inspected",
+      "idea": "Current/representation separation, lattice calibration, nonleptonic application",
+      "implementation_status": "Pole-z and factorization experiments; no copied fitted parameters"
+    },
+    {
+      "key": "tensor",
+      "authors": "Chen et al.",
+      "year": "2022",
+      "title": "Form factors of P to T transition within light-front quark models",
+      "url": "https://arxiv.org/abs/2112.08016",
+      "reading_depth": "Primary abstract inspected",
+      "idea": "Higher-spin decomposition and covariance checks",
+      "implementation_status": "Reviewed and deferred"
+    },
+    {
+      "key": "baryon2026",
+      "authors": "Lih, Li and Geng",
+      "year": "2026",
+      "title": "Weak Decays of the Lambda-b Baryon in Light-Front Dynamics",
+      "url": "https://arxiv.org/abs/2609.16770",
+      "reading_depth": "Primary abstract inspected",
+      "idea": "Baryon and timelike nonvalence treatment",
+      "implementation_status": "Reviewed; absent baryon state model blocks direct reuse"
+    },
+    {
+      "key": "bcl",
+      "authors": "Bourrely, Caprini and Lellouch",
+      "year": "2009",
+      "title": "Model-independent description of B to pi l nu decays",
+      "url": "https://arxiv.org/abs/0807.2722",
+      "reading_depth": "Primary abstract inspected",
+      "idea": "Analyticity, conformal variables and pole factors",
+      "implementation_status": "Low-order pole-z experiment; full BCL bounds/constraints not imposed"
+    },
+    {
+      "key": "qcdff",
+      "authors": "Beneke et al.",
+      "year": "2000",
+      "title": "QCD factorization for exclusive non-leptonic B decays",
+      "url": "https://arxiv.org/abs/hep-ph/0006124",
+      "reading_depth": "Primary abstract inspected",
+      "idea": "Heavy-light factorization and controlled corrections",
+      "implementation_status": "Naive factorization stress tests only; hard kernels deferred"
+    },
+    {
+      "key": "bl4",
+      "authors": "Kang, Kubis, Hanhart and Meissner",
+      "year": "2014",
+      "title": "Bl4 decays and the extraction of Vub",
+      "url": "https://arxiv.org/abs/1312.1193",
+      "reading_depth": "Primary abstract inspected",
+      "idea": "Two-hadron form factors and rescattering",
+      "implementation_status": "Finite width and elastic toy; Omnes/dispersive solution deferred"
+    },
+    {
+      "key": "latticerho",
+      "authors": "Leskovec et al.",
+      "year": "2025",
+      "title": "B to rho resonance form factors from B to pi pi in lattice QCD",
+      "url": "https://arxiv.org/abs/2501.00903",
+      "reading_depth": "Primary abstract and published excerpt inspected",
+      "idea": "Finite-volume two-hadron current and pole continuation",
+      "implementation_status": "Target observable identified; no lattice reproduction"
+    },
+    {
+      "key": "pdgleptonic",
+      "authors": "Briere et al. / PDG",
+      "year": "2025",
+      "title": "Leptonic Decays of Charged Pseudoscalar Mesons",
+      "url": "https://pdg.lbl.gov/2025/reviews/rpp2025-rev-pseudoscalar-meson-decay-cons.pdf",
+      "reading_depth": "PDF formulas and numerical preferred inputs inspected",
+      "idea": "Dimensionful normalization, QED caveats and constants",
+      "implementation_status": "Frozen constant benchmarks"
+    },
+    {
+      "key": "flag",
+      "authors": "Aoki et al. / FLAG",
+      "year": "2024",
+      "title": "FLAG Review 2024",
+      "url": "https://arxiv.org/abs/2411.04268",
+      "reading_depth": "Primary abstract inspected",
+      "idea": "External lattice constraints",
+      "implementation_status": "Context; numerical values taken from PDG preferred inputs"
+    },
+    {
+      "key": "hflav",
+      "authors": "HFLAV",
+      "year": "2023 averages",
+      "title": "Exclusive B to D branching fractions",
+      "url": "https://hflav-eos.web.cern.ch/hflav-eos/semi/writeup23/html/ExclusiveVcb/exclBtoD.html",
+      "reading_depth": "Full short primary table inspected",
+      "idea": "Light-lepton branching fraction 2.12 percent",
+      "implementation_status": "Separate diagnostic reference, not mixed into PDG.NN snapshot"
+    },
+    {
+      "key": "pdgmultibody",
+      "authors": "PDG",
+      "year": "2025",
+      "title": "Multibody Charm Analyses",
+      "url": "https://pdg.lbl.gov/2025/reviews/rpp2025-rev-d-meson-dalitz-plot-analyses.pdf",
+      "reading_depth": "Primary search excerpt inspected",
+      "idea": "Amplitude-analysis context",
+      "implementation_status": "Background only; no equations adopted"
+    }
+  ]
+}

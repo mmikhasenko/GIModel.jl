@@ -1,0 +1,13 @@
+{
+  "python": "3.14.7 (main, Aug  5 2026, 10:29:49) [Clang 17.0.0 (clang-1700.6.4.2)]",
+  "python_packages": {
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "matplotlib": "3.11.2"
+  },
+  "base_git_revision": "3829e789979d8366a0da43e3dda8a3ef2f0514c9",
+  "branch": "codex/weak-decay-exploration",
+  "julia": "1.12.7",
+  "root_project_sha256": "17cbe2815a77dd95075c0b4b4f0f58f6abcc0ee5086036d5fee9415db889ba28",
+  "gi_parameters": "Repository default_parameters_path; no modifications"
+}

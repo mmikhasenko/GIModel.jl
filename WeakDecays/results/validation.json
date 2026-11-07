@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-07",
+  "status": "passed",
+  "focused_test_summaries": {
+    "tests": [
+      "Exploratory weak current: independent checks |   28     28  3.2s",
+      "Coherent S-wave state adapter |    4      4  0.5s"
+    ],
+    "lightfront": [
+      "Light-front normalization and symmetry |    5      5  0.5s"
+    ],
+    "rescattering": [
+      "Elastic production unitarity (two-pole toy) |   76     76  0.2s"
+    ]
+  },
+  "checks": [
+    "22 positive ground-state rates; physical FL",
+    "HO32/HO48 and FD600/HO48 differences below 0.2 percent",
+    "selected quadrature differences below 0.01 percent",
+    "four narrow-width limits within 0.01 percent",
+    "LF zero-transfer convergence below 0.01 percent",
+    "refined finite-width and spacelike LF integration differences below 0.1 percent"
+  ],
+  "caveat": "These checks validate implementation/numerics, not model completeness or accuracy."
+}

@@ -1,0 +1,78 @@
+[
+  {
+    "id": "S042.30/2026",
+    "parent": 511,
+    "description": "B0 --> D- pi+",
+    "daughters": [
+      -411,
+      211
+    ],
+    "bf": 0.00250609028169199,
+    "error_positive": 7.781666717266576e-05,
+    "error_negative": 7.781666717266576e-05,
+    "is_limit": false,
+    "limit_type": null,
+    "confidence_level": null,
+    "summary": {
+      "id": 341390,
+      "pdgid_id": 9489,
+      "pdgid": "S042.30",
+      "edition": "2026",
+      "value_type": "FC",
+      "in_summary_table": true,
+      "confidence_level": null,
+      "limit_type": null,
+      "comment": null,
+      "value": 0.00250609028169199,
+      "value_text": "(2.51+-0.08)E-3",
+      "error_positive": 7.781666717266576e-05,
+      "error_negative": 7.781666717266576e-05,
+      "scale_factor": 1.036314,
+      "unit_text": "",
+      "display_value_text": "(2.51+-0.08)E-3",
+      "display_power_of_ten": 0,
+      "display_in_percent": false,
+      "sort": 1,
+      "description": "B0 --> D- pi+"
+    },
+    "url": "https://pdglive.lbl.gov/BranchingRatio.action?desig=S042.30"
+  },
+  {
+    "id": "S032.1/2026",
+    "parent": 421,
+    "description": "D0 --> K- pi+",
+    "daughters": [
+      -321,
+      211
+    ],
+    "bf": 0.039361649573135,
+    "error_positive": 0.0002997799468492202,
+    "error_negative": 0.0002997799468492202,
+    "is_limit": false,
+    "limit_type": null,
+    "confidence_level": null,
+    "summary": {
+      "id": 337425,
+      "pdgid_id": 5464,
+      "pdgid": "S032.1",
+      "edition": "2026",
+      "value_type": "FC",
+      "in_summary_table": true,
+      "confidence_level": null,
+      "limit_type": null,
+      "comment": null,
+      "value": 0.039361649573135,
+      "value_text": "(3.936+-0.030)E-2",
+      "error_positive": 0.0002997799468492202,
+      "error_negative": 0.0002997799468492202,
+      "scale_factor": 1.259872,
+      "unit_text": "",
+      "display_value_text": "3.936+-0.030",
+      "display_power_of_ten": -2,
+      "display_in_percent": true,
+      "sort": 1,
+      "description": "D0 --> K- pi+"
+    },
+    "url": "https://pdglive.lbl.gov/BranchingRatio.action?desig=S032.1"
+  }
+]

@@ -1,0 +1,386 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=24mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,booktabs,longtable,tabularx,array}
+\usepackage{graphicx,xcolor,fancyhdr,enumitem,float}
+\usepackage{hyperref}
+\definecolor{ink}{HTML}{173B57}
+\hypersetup{colorlinks=true,linkcolor=ink,citecolor=ink,urlcolor=ink,pdftitle={Weak decays from solved quark-model wavefunctions},pdfauthor={GIModel.jl research exploration}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small GIModel.jl: weak-decay exploration}
+\fancyhead[R]{\small 7 November 2026}
+\fancyfoot[C]{\thepage}
+\setlist{nosep,leftmargin=*}
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{20pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother
+\newcommand{\GeV}{\,\mathrm{GeV}}
+\newcommand{\dd}{\,\mathrm d}
+\newcommand{\BR}{\mathcal B}
+\newcommand{\Tr}{\operatorname{tr}}
+\newcommand{\fig}[3]{\begin{figure}[htbp]\centering\includegraphics[width=#2\linewidth]{figures/#1.pdf}\caption{#3}\end{figure}}
+\newcommand{\tab}[2]{\begin{table}[htbp]\centering\small\input{tables/#1.tex}\caption{#2}\end{table}}
+\title{\color{ink}\textbf{Weak decays from solved quark-model wavefunctions}\\[5mm]\large A computational exploration, literature map, and route toward resonance-aware priors}
+\author{GIModel.jl research branch\\\small\texttt{codex/weak-decay-exploration}}
+\date{7 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+This study builds an isolated weak-decay research workspace on top of GIModel.jl. It evaluates seven pseudoscalar decay constants, eleven ground-state semileptonic channels with two spectator prescriptions, six radial-excitation channels, finite-width effects for two vector resonances, two factorized nonleptonic modes, and a coherent elastic two-pole example. An independent light-front plus-current implementation supplies spacelike pseudoscalar form factors and an explicitly exploratory pole--$z$ continuation. The solved radial waves are retained; no oscillator replacement or decay-data fit is used for weak production.
+
+Several rates are reasonable at the tens-of-percent level, but important failures are exposed. The unmodified GI annihilation current overestimates light decay constants; a Galilean current has a heavy-limit recoil slope below the QCD sum-rule bound; a scalar spectator boost severely suppresses light-pseudoscalar final states. Numerical convergence is much better than this model spread. A literature survey through the task date identifies established relativistic treatments and recent work on excited states and resonance form factors. The result is a reproducible exploration, not a precision weak-decay package or an exhaustive implementation of the literature.
+\end{abstract}
+\vfill
+\textbf{Provenance.} Base revision \texttt{3829e789979d8366a0da43e3dda8a3ef2f0514c9}. Julia 1.12.7. All new code and tabulated outputs live in \texttt{WeakDecays/}. Existing public transition operators and the PDG.NN repository were not modified. The PDF is built from this LaTeX source.
+\clearpage
+{\small\setlength{\parskip}{0pt}\tableofcontents}
+\clearpage
+
+\section{Research question and principal findings}
+The motivating question is whether the solved GI states can replace the very coarse hadronic prior in PDG.NN with more informative exclusive amplitudes, particularly for channels containing resonances. Three separate questions must be answered: whether the existing numerical infrastructure is reusable; whether a specified current produces reasonable rates; and whether resonance dynamics can be added without confusing a bare quark-model state with a physical scattering pole.
+
+The answer to the first question is clearly yes. The second has a qualified positive answer for some channels, with failures that rule out promoting the simplest current as a universal solution. The third requires a distinct scattering layer; this exploration implements finite-width folding and an elastic production example, but not a fitted coupled-channel description.
+
+\begin{itemize}
+\item The Galilean impulse result for $D^0\to K^-e^+\nu$ is $3.287\%$, compared with $3.537\%$ in the frozen local PDG dataset. The corresponding $D^0\to\pi^-e^+\nu$ result is $0.219\%$, versus $0.291\%$.
+\item Independent light-front overlaps followed by a low-order pole--$z$ continuation give $3.81$--$3.96\%$ and $0.294$--$0.310\%$ for these two channels. These are continuation variations, not confidence intervals.
+\item The vector charm modes are typically about $30\%$ high with the Galilean prescription. A scalar boost reduces their rates, but does not consistently improve all channels.
+\item The same boost drives $D\to\pi$ and $B\to\pi$ far below plausible rates. It is a diagnostic hybrid, not a substitute for a fully relativistic current.
+\item A finite-width $K^*$ model changes the integrated rate by about $10\%$. The narrow-width limit is recovered without renormalizing the accessible spectral window.
+\item The numerical results are stable: the largest ground-state width change from HO32 to HO48 is $0.071\%$, and the largest HO48--FD600 difference is $0.068\%$. Those checks do not estimate omitted physics.
+\end{itemize}
+
+\section{Inventory: every ingredient and its status}
+The pre-existing \texttt{LeptonicCurrent} evaluates a vacuum-to-meson annihilation current, not a general meson-to-meson weak transition. That distinction guided the implementation.
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{.27\linewidth}>{\raggedright\arraybackslash}p{.65\linewidth}}
+\toprule Ingredient & Outcome in this exploration \\\midrule
+Solved states and mixing & Reused native spin-dependent GI wavefunctions; 32 states in eight flavor sectors at each numerical resolution. The new adapter coherently combines supported S-wave components. General orbital/flavor-mixed phenomenology is not computed.\\
+Momentum transforms and overlaps & Reused exact HO transforms and FD transforms. Explicit research tabulation feeds multidimensional current integrals.\\
+Vacuum-to-meson weak currents & Audited seven pseudoscalar constants with physical external masses and fixed GI waves. Known normalization $f_P/M_P$ is converted to dimensionful $f_P$.\\
+Pseudoscalar leptonic widths & Computed muonic widths for charged mesons, with explicit CKM. The neutral $B_s$ constant is quoted without assigning it an unphysical charged-current leptonic width.\\
+Meson-to-meson weak currents & Added active-quark S-wave impulse $V-A$ integrals; independent light-front $P\to P$ plus current for $q^2\leq0$.\\
+Semileptonic observables & $P\to P,V$ rates with finite lepton mass, vector longitudinal fraction, and $\tau/\mu$ ratios where open; radial $2S$ studies.\\
+Nonleptonic weak amplitudes & Two factorized $PP$ examples with an explicit effective coefficient and two decay-constant choices. No four-quark matrix-element calculation.\\
+Resonances and rescattering & Running-width folding, narrow-width check, existing GI strong-vertex calibration, coherent two-pole and elastic K-matrix demonstrations. No physical coupled-channel pole extraction.\\
+\bottomrule
+\end{longtable}
+
+The scope boundary is enforced in code. The physical-state adapter rejects non-S-wave components instead of silently dropping them. It changes the first, quark, flavor with a matching antiquark spectator. Charge-conjugate tree-level rates are identified in the benchmarks, but an independent antiquark-current phase convention and CP amplitudes are not implemented. Tensor, axial, scalar and baryon final states remain literature-guided extensions.
+
+\section{Literature map and ideas actually tested}
+\subsection{Search scope and evidence levels}
+The search used primary papers, publisher records, arXiv, PDG and HFLAV \cite{flag,pdgmultibody}, with queries on relativistic quark currents, light-front covariance, excited mesons, nonleptonic factorization and resonance form factors. Recent work through 7 November 2026 was sought explicitly. This is a targeted research map, not a claim that every relevant paper has been found or every formalism reproduced. Full equations or tables were inspected for the light-front, charm-quasipotential, heavy-quark sum-rule and PDG benchmark sources; other entries provide a scoped methodological comparison from their primary records. The accompanying \texttt{data/literature.json} records the reading depth and implementation status.
+
+\subsection{From ISGW2 to relativistic overlap models}
+ISGW2 \cite{isgw2} is a direct historical bridge between spectroscopy and weak transitions. Its emphasis on heavy-quark constraints, hyperfine-distorted states and recoil behavior motivates three choices here: retaining the spin-dependent GI waves, testing heavy-mass scaling, and comparing recoil prescriptions. This code does not reproduce the ISGW2 parameterization or claim to be an ISGW2 implementation.
+
+The dispersion constituent-quark approach of Melikhov and Stech \cite{melikhov} constructs timelike form factors using double spectral representations and constrains its inputs with lattice and decay information. Its relevance is architectural: an overlap model needs a justified analytic continuation and external calibration strategy. A fit of a few spacelike points is not equivalent to their dispersion construction. The present pole--$z$ experiment is therefore labeled an extrapolation stress test.
+
+Faustov, Galkin and Kang \cite{fgk} compute charm form factors with moving-state transformations and negative-energy contributions in a quasipotential treatment. Their Table I gives useful shape comparators: $f_+^{D K}(0)=0.716$, rising to $1.538$ at zero recoil, and $f_+^{D\pi}(0)=0.640$, rising to $2.336$. They are model predictions, not experimental measurements. Here a reasonable integrated rate can coexist with a different normalization and slope; the full $q^2$ curve must be checked.
+
+Recent extensions make the excited-state opportunity concrete. Galkin and Sukhanov \cite{galkin2025} address radially and orbitally excited charm daughters. Galkin and Kang \cite{galkin2026}, published in April 2026, extend semileptonic $B$ calculations to excited light mesons and isoscalar mixing. These works show that the proposed physics direction is established research territory. A useful contribution from this repository would be reproducible native-wave calculations, transparent comparisons between current prescriptions, and interfaces to scattering amplitudes, rather than a claim of discovering excited-state weak decays.
+
+\subsection{Heavy-quark symmetry is a necessary discriminator}
+The Bakamjian--Thomas analysis of Le Yaouanc and collaborators \cite{bt} relates heavy-limit completeness to Bjorken and Uraltsev sum rules. It gives a lower bound $\rho^2\geq3/4$ on the elastic Isgur--Wise slope and emphasizes spectator spin rotations. In this project, a common fixed light-cloud wave is used while the heavy constituent masses are scaled up. The Galilean current approaches the leading spin relations but gives $\rho^2\simeq0.325$, violating that bound. The scalar-boost diagnostic gives approximately $0.922$, but passing one bound does not establish the full sum rules. Neither prescription includes the required complete orbital excitation tower or Wigner rotations.
+
+This is a particularly useful negative result: charge normalization and heavy-spin scaling alone can pass while a stronger constraint fails. The appropriate next step is a consistent relativistic construction, not a channel-dependent rescaling of the current.
+
+\subsection{Light-front currents and covariance}
+Jaus \cite{jaus} and Chang et al. \cite{chang} distinguish good-current calculations from the harder requirements of covariance and zero-mode consistency. The latter paper's $P\to P$ plus-current expression is used here with GI radial waves mapped to light-front variables and with its spin-overlap factor. Only the spacelike/$q^2=0$ pseudoscalar form factor is implemented. No claim is made that the full vector, axial or scalar current is covariant, or that the type-II prescription has been implemented throughout.
+
+The recent $B_s$ study by Thejus Mary and Dhir \cite{bs2025} combines a self-consistent light-front approach, $z$ parameterizations, external lattice inputs and both semileptonic and factorized nonleptonic observables. It motivates separating current evaluation from form-factor representation and fitting. The numerical study below adopts that separation but does not import their fitted parameters or uncertainty model.
+
+Chen et al. \cite{tensor} demonstrate that tensor daughters require their own Lorentz decomposition and checks on unphysical light-front-direction dependence. This is why simply applying S-wave spin algebra to a $P$-wave or tensor wavefunction is not accepted here. A September 2026 baryon study \cite{baryon2026} also treats timelike nonvalence contributions. GIModel's two-body meson solver cannot supply its baryon states; extending the PDG.NN baryon coverage requires a separate state model.
+
+\subsection{Analyticity, nonleptonic factorization and resonances}
+The BCL construction \cite{bcl} motivates a conformal variable and explicit poles. In this exploration a polynomial in $z$ multiplies a single pole. It is not the complete BCL parameterization: no outer functions, coefficient unitarity bound, threshold derivative constraint or covariance matrix from data is imposed. Fit residuals are numerical diagnostics only.
+
+For nonleptonic modes, the factorization work of Beneke et al. \cite{qcdff} provides a controlled heavy-quark setting for selected color-allowed channels. The calculation below uses naive factorization, not their perturbative kernels. It cannot predict exchange, annihilation, penguin, or long-distance rescattering corrections. Charm examples are exploratory and should not inherit the control available in appropriate heavy-quark limits.
+
+Kang et al. \cite{bl4} formulate the two-pion semileptonic final state dispersively, incorporating rescattering and scalar contributions. The 2025 lattice study by Leskovec et al. \cite{latticerho} computes $B\to\pi\pi$ form factors and continues to the $\rho$ pole, at an approximately 320 MeV pion mass. Together they identify the correct long-term observable: a two-hadron amplitude depending on $q^2$ and invariant mass, with resonance properties extracted from it. Our finite-width folding and one-channel K-matrix example explore parts of that structure, but are not an implementation of either calculation.
+
+\subsection{Adopted, tested and deferred ideas}
+\begin{longtable}{>{\raggedright\arraybackslash}p{.30\linewidth}>{\raggedright\arraybackslash}p{.62\linewidth}}
+\toprule Idea & Concrete disposition \\\midrule
+Hyperfine-distorted native waves & Used for all production benchmarks; no Gaussian replacement.\\
+Relativistic active-quark spinors & Implemented and cross-checked against independent Dirac matrices.\\
+Spectator recoil/boost & Compared two explicit prescriptions; large failures retained.\\
+Heavy-limit symmetry and sum rules & Spin relations and slope examined; complete sum rules deferred.\\
+Light-front spin overlap & Implemented for the $P\to P$ plus current, with elastic normalization tests.\\
+Pole--$z$ representation & Degree/window study performed; no precision dispersive claim.\\
+Excited radial states & Six channels evaluated with model daughter masses; sensitive nodes reported.\\
+Orbital daughters and Wigner rotations & Literature mapped; not implemented as rates. Requires a consistent extension.\\
+Factorized nonleptonic modes & Two examples and $a_1$ sensitivity; no Wilson matching.\\
+Finite width, strong vertices, interference & Numerical examples for each; fitted strong normalization labeled.\\
+Coupled-channel/Omn\`es dynamics & Elastic prototype only; fitted multichannel work deferred.\\
+Lattice/experimental calibration & External comparisons made; no weak-parameter fit or CKM extraction.\\
+Baryons and rare weak decays & Out of numerical scope; require new states, operators and matching.\\
+\bottomrule
+\end{longtable}
+
+\section{Numerical construction and conventions}
+\subsection{States, masses and numerical controls}
+The spectrum calculation covers $u\bar d$, $s\bar u$, $c\bar u$, $c\bar s$, $b\bar u$, $b\bar s$, $b\bar c$ and $s\bar s$, with $1S$ and $2S$ singlet/triplet states. The root parameter set is unchanged: $m_{u,d}=0.220$, $m_s=0.419$, $m_c=1.628$ and $m_b=4.977\GeV$. Isospin-related radial waves are shared; in the $D\to\pi$ bookkeeping the final constituent mass labeled $u$ represents the equal-mass physical $d$ transition. The CKM factor is $V_{cd}$, not a flavor-changing neutral current.
+
+The $\phi$ is treated as a pure $s\bar s$ vector in this benchmark; isoscalar mixing corrections are not fitted.
+
+Fixed HO basis sizes 32 and 48 are compared, followed by an independent 600-point finite-difference calculation at $r_{\max}=24\GeV^{-1}$. The HO runs are explicitly fixed-basis convergence experiments, not falsely labeled adaptive-converged runs. Each sector retains two radial levels and uses the repository's variational beta search. The native waves are transformed and tabulated for the multidimensional integrals on $0\leq p\leq12\GeV$ with 6001 points. Ground-state production uses 100 radial and 40 polar Gauss nodes, a $10\GeV$ radial cutoff, and 48 $q^2$ nodes. Additional runs use $(64,24,32,8)$ and $(160,64,80,12)$ for these controls.
+
+Physical external masses and lifetimes are frozen from the installed \texttt{particle} package. Branching fractions come separately from PDG.NN's 2026 extraction. The exact values, software version, source IDs, URLs and hashes are preserved in \texttt{data/}; the editions of these two input sources are not assumed identical. CKM magnitudes use PDG.NN's fixed unitary parameterization. Excited-daughter examples instead use explicitly labeled GI eigenmasses.
+
+All new research widths are in GeV. The established QMT \texttt{decay\_width} returns MeV, so the strong-vertex bridge divides by 1000. Branching fractions use $\BR=\Gamma\tau/\hbar$, with $\hbar=6.582119569\times10^{-25}\GeV\,\mathrm s$. No radiative electroweak corrections are included.
+
+\subsection{An explicit impulse current}
+Work in the parent rest frame, with daughter momentum $\mathbf P=P\hat z$. The active quark initially has momentum $\mathbf k$ and finally $\mathbf k+\mathbf P$; the spectator momentum is $-\mathbf k$. Unit-normalized Dirac spinors and singlet/triplet Pauli spin states define
+\begin{equation}
+ H^\mu=2\sqrt{M E}\int\frac{\dd^3k}{4\pi}\,
+ \Phi_f(k_f)\Phi_i(k)\,\mathcal J^{1/2}\,\mathcal S^\mu(\mathbf k,\mathbf P).
+\end{equation}
+The radial normalization is $\int k^2\dd k\,|\Phi(k)|^2=1$. The factor $2\sqrt{ME}$ fixes the external-state normalization; an elastic, zero-transfer charge check gives unity for the form-factor normalization. The azimuthal integral is analytic for these S-wave components.
+
+For the Galilean prescription,
+\begin{equation}
+ k_{fz}=k_z+\frac{m_s}{m_f+m_s}P,\qquad \mathcal J=1.
+\end{equation}
+For the scalar spectator boost,
+\begin{equation}
+ k_{fz}=w k_z+\sqrt{w^2-1}E_s,\quad
+ \mathcal J=\frac{wE_s+\sqrt{w^2-1}k_z}{E_s},\quad w=E/m.
+\end{equation}
+The latter boosts the spectator momentum and scalar measure but leaves the spin coupling unrotated. It deliberately probes model sensitivity and is not a Poincar\'e-covariant completion. On-shell constituent energies do not in general sum to the bound-state energy, and interaction currents and negative-energy pieces are missing.
+
+For illustration, put $D_i=E_i+m_i$, $D_f=E_f+m_f$, $N=\sqrt{D_iD_f/(4E_iE_f)}$, and $d=\mathbf k\cdot(\mathbf k+\mathbf P)$. The singlet kernels are
+\begin{equation}
+ \mathcal S_V^0=N\left(1+\frac d{D_iD_f}\right),\qquad
+ \mathcal S_V^z=N\left(\frac{k_z}{D_i}+\frac{k_z+P}{D_f}\right).
+\end{equation}
+For a transverse Cartesian triplet the azimuth-averaged axial kernel is
+$N[1-(k_z^2+k_zP)/(D_iD_f)]$. The code also evaluates longitudinal axial and transverse vector components. Independent matrix multiplication tests verify representative signs and factors. Overall state phases do not change widths; physical-state component coefficients are combined before squaring.
+
+\subsection{Form factors, helicities and endpoint tests}
+For $P\to P$,
+\begin{align}
+ H^\mu&=f_+(p+p')^\mu+f_-(p-p')^\mu,\\
+ f_+&=\frac{H^0+(M-E)H^z/P}{2M},\qquad
+ f_0=f_++\frac{q^2}{M^2-m^2}f_- .
+\end{align}
+For $P\to V$ the code extracts $V,A_0,A_1,A_2$ and also computes rates directly from current components, avoiding unstable endpoint divisions. It verifies $f_+(0)=f_0(0)$ and
+\begin{equation}
+ A_0(0)=\frac{M+m}{2m}A_1(0)-\frac{M-m}{2m}A_2(0).
+\end{equation}
+At exact zero recoil individual form-factor extraction is rejected where the current cannot separate them; the physical rate is evaluated by its limit. The massless $q^2=0$ differential rate is finite and is tested explicitly.
+
+With $\delta=m_\ell^2/q^2$,
+\begin{equation}
+ \frac{\dd\Gamma}{\dd q^2}=\frac{G_F^2|V_{ij}|^2Pq^2}{96\pi^3M^2}(1-\delta)^2
+ \left[(1+\delta/2)\sum_{\lambda=\pm,0}|H_\lambda|^2+
+ \frac{3\delta}{2}|H_t|^2\right].
+\end{equation}
+Only $H_0,H_t$ occur for a pseudoscalar daughter. A second calculation from invariant form factors agrees with the current-based rate. For $m_\ell=0$ the pseudoscalar expression reduces to $G_F^2|V|^2P^3|f_+|^2/(24\pi^3)$.
+
+\subsection{Independent light-front overlap and continuation experiment}
+The light-front variables use active fraction $x$, transverse momentum $k_\perp$, and
+\begin{align}
+ M_0^2&=\frac{m_1^2+k_\perp^2}{x}+\frac{m_2^2+k_\perp^2}{1-x},\\
+ k_z&=(x-\tfrac12)M_0+\frac{m_2^2-m_1^2}{2M_0},\quad
+ \frac{\partial k_z}{\partial x}=\frac{M_0}{4x(1-x)}
+ \left[1-\frac{(m_1^2-m_2^2)^2}{M_0^4}\right].
+\end{align}
+For $q^+=0$, $q^2=-Q^2\leq0$ and $\mathbf k'_{\perp}=\mathbf k_\perp-(1-x)\mathbf Q_\perp$. The spin factor is
+\begin{equation}
+ \frac{A_iA_f+\mathbf k_\perp\cdot\mathbf k'_{\perp}}
+ {\sqrt{(A_i^2+k_\perp^2)(A_f^2+k'^2_\perp)}},\qquad
+ A_i=(1-x)m_i+xm_s.
+\end{equation}
+Each GI wave is multiplied by the square root of its longitudinal Jacobian. The elastic overlap normalizes to one, and the zero-transfer transition is invariant under interchanging initial and final waves/masses. Numerical derivatives check the Jacobian. This tests a genuinely different spin/kinematic construction from the rest-frame impulse calculation.
+
+Four spacelike samples, $Q^2=0,1,2,4\GeV^2$, are represented as
+\begin{equation}
+ f_+(q^2)=\frac{\sum_{n=0}^{N}a_n[z(q^2)-z(0)]^n}{1-q^2/M_{\rm pole}^2},\quad N=1,2,
+\end{equation}
+with $z=(\sqrt{t_+-q^2}-\sqrt{t_+-t_0})/(\sqrt{t_+-q^2}+\sqrt{t_+-t_0})$, $t_+=(M+m)^2$ and the usual symmetric-range choice of $t_0$. Windows ending at $Q^2=2$ and $4$ are compared. Pole masses are explicit phenomenological inputs, including an assumed $6.33\GeV$ $b\bar c$ vector pole. The $B\to D$ use of $(M+m)^2$ is a convenient mapping choice, not a proof that all lower crossed-channel singularities have been treated. Massless rates are integrated after continuation. No $f_0$ or massive-lepton LF rate is inferred from $f_+$ alone.
+
+\section{Results and what they establish}
+\subsection{Decay constants: a useful baseline failure}
+\tab{leptonic}{Native HO48 GI current constants versus the preferred theoretical values in the PDG 2025 review \cite{pdgleptonic}. $B_c$ has no reference assigned in this benchmark.}
+\fig{decay_constants}{.88}{An independent FD600 calculation confirms the pattern. Disagreement with the references is much larger than solver changes.}
+The pion and kaon constants are approximately $46\%$ and $51\%$ high. Their muonic widths, combined with the experimental lifetimes, would imply branching fractions above one. This is an incompatibility of the unmodified current/model inputs with those lifetimes, not a probability to clip or renormalize. The $D_s$ constant is about $39\%$ high, whereas $f_B$ is within about $8\%$ of the reference. Consequently, inserting GI annihilation constants into every factorized amplitude is not justified by spectrum agreement.
+
+The audit uses the existing Appendix-D current with coefficient $2\sqrt3$ and converts its reduced value by multiplying by the physical meson mass. CKM is inserted only in the width. This avoids confusing the paper's dimensionless $f_P/M_P$ with the conventional dimensionful constant. Radiative corrections are omitted and cannot explain effects of this size.
+
+\subsection{Ground-state semileptonic channels}
+\tab{rates}{Ground-state branching fractions. ``Boost'' denotes the scalar spectator diagnostic. References are the pinned local PDG.NN rows, not a new global average. Dashes indicate that no matching flat row was imported. Charge-conjugate rates are understood.}
+\fig{benchmark_ratios}{.95}{Ratios to the six directly matched local references. The large suppression of $D\to\pi$ by the hybrid boost is a physical-model failure, not quadrature noise.}
+The simple current produces useful scales for many channels without fitting weak-decay measurements. However, the pattern is not uniformly satisfactory. For $B^0\to D^-e^+\nu$, the Galilean result is $3.63\%$ and the boost result $2.17\%$; a separately inspected HFLAV light-lepton average is $2.12\%$ \cite{hflav}. This comparison favors the latter in this channel but does not validate it globally. The electron benchmark approximates the light-lepton average; it is not a refit to the HFLAV definition or correlations.
+
+For $B\to D^*$ the two predictions are $8.68\%$ and $6.47\%$. Their $R_{\tau/\mu}$ values are approximately $0.218$ and $0.245$, respectively. For $B\to D$ they are $0.239$ and $0.294$. These ratios illustrate differential-shape sensitivity. They are not precision Standard Model predictions and do not support new-physics or CKM inference.
+
+\fig{form_factors}{.97}{Pseudoscalar form factors across the physical region. Both prescriptions obey the algebraic $f_+(0)=f_0(0)$ identity, but give different recoil shapes.}
+For $D\to K$, the Galilean $f_+(0)=0.835$ is larger than the quasipotential comparator $0.716$, even though the integrated rate is lower than the local measured rate. This illustrates why an integrated success can hide an incorrect shape. Checking only branching fractions would miss that tension.
+
+\subsection{Light-front results and the limits of extrapolation}
+\fig{lightfront}{.93}{Independent plus-current overlaps at $q^2=0$. Spin factors and wave mappings differ from the impulse constructions; no weak-data normalization is fitted.}
+\tab{z}{Massless-lepton branching fractions from the light-front pole--$z$ experiment. Ranges span polynomial degree and spacelike fit window only. The $B_s$ reference is a muonic measurement, so that row is an approximate diagnostic comparison rather than an exact matched-lepton benchmark.}
+The light-front $D\to K$ value at zero transfer agrees strikingly with the Galilean result, while the two constructions disagree more for heavier-to-light transitions. The continued $D\to\pi$ rate lies close to the imported reference. This is promising enough to justify further work on a consistent timelike current and data-constrained representation. It does not justify interpreting the narrow spread of four low-order extrapolations as a theoretical error bar. Missing singularities, nonvalence contributions, current matching and uncertainties in the GI model are not scanned.
+
+In particular, the $B\to\pi$ calculation remains too model-dependent to promote. The native-wave light-front result and its continuation provide an independent diagnostic, not evidence that the bound-state Hamiltonian fixes the full weak current. There are only three or four points in the fits; a quadratic fit through three points has no independent residual degrees of freedom. The coefficients and residuals are supplied for auditing rather than significance tests.
+
+\subsection{Heavy-mass constraints}
+\fig{heavy_limit}{.95}{A common fixed $b\bar u$ light-cloud wave is used as both initial and final wave while both heavy masses scale by $1,4,16,64$. Left: suppression of $h_-$ at $w=1.2$. Right: near-zero-recoil slope, compared with the heavy-limit bound.}
+The matrix elements are decomposed as
+\begin{equation}
+ \langle D(v')|V^\mu|B(v)\rangle=\sqrt{Mm}
+ [h_+(v+v')^\mu+h_-(v-v')^\mu].
+\end{equation}
+The test isolates the current construction from finite-mass differences of the waves. At the largest mass scaling, the spin functions $h_+,h_{A_1},h_V$ approach each other and $h_-$ becomes small. Yet the Galilean slope stays near $0.325$. Its failure against the $3/4$ bound disqualifies that construction as a complete heavy-limit model. The boosted slope near $0.922$ is encouraging only as a diagnostic: a common frozen wave, omitted spin rotations, and an incomplete state tower prevent a claim of BT consistency.
+
+\subsection{Radial excitations and node sensitivity}
+\tab{radial}{Radial-excitation branching fractions (dimensionless, not percent). Daughter masses are GI $2S$ eigenvalues. These are bare-state studies, not experimental resonance assignments.}
+The small $B\to D(2S)$ overlap and the much larger vector excitation contribution demonstrate why explicit wavefunctions can add useful information to a learned prior. Near a node, small current or recoil changes can strongly affect a suppressed amplitude. For example, the two $B\to D(2S)$ prescriptions differ by roughly a factor of eight. A model-independent uncertainty cannot be inferred from just these two prescriptions. No completeness sum or inclusive rate is claimed from this truncated set.
+
+\subsection{Nonleptonic stress test}
+The factorized examples use
+\begin{equation}
+ \mathcal A(H\to P\pi)=\frac{G_F}{\sqrt2}V_{ij}V_{ud}\,a_1f_\pi
+ (M_H^2-M_P^2)f_0(m_\pi^2),\qquad
+ \Gamma=\frac{p}{8\pi M_H^2}|\mathcal A|^2.
+\end{equation}
+\tab{nonleptonic}{Branching fractions in percent at $a_1=1$. ``ext.'' uses $f_\pi=130.2$ MeV; ``GI'' uses the computed constant. The complete output also scans $a_1=0.9,1.1$.}
+The local references are $\BR(B^0\to D^-\pi^+)=0.2506\%$ and $\BR(D^0\to K^-\pi^+)=3.936\%$. The Galilean/external-constant $D$ result, $4.65\%$, is reasonably close; the corresponding $B$ result, $0.746\%$, is about three times the reference. Using the GI pion constant raises each width by about a factor of 2.14. The exercise therefore rejects the idea that factorization plus the current spectrum automatically yields a broadly accurate nonleptonic prior. The $a_1$ scan scales rates by $a_1^2$; it is a sensitivity scan, not a Wilson-coefficient calculation or fitted uncertainty.
+
+\section{Resonances: three distinct numerical experiments}
+\subsection{Finite-width production}
+For a vector resonance with a single elastic channel, the diagnostic spectral function is
+\begin{align}
+ \rho_R(s)&=\frac{m_R\Gamma(s)}{\pi[(s-m_R^2)^2+m_R^2\Gamma(s)^2]},\\
+ \Gamma(s)&=\Gamma_R\left[\frac{k(s)}{k(m_R^2)}\right]^3
+ \frac{m_R}{\sqrt s}\frac{1+R^2k(m_R^2)^2}{1+R^2k(s)^2}.
+\end{align}
+The production rate is integrated over $s$ between daughter threshold and $(M-m_\ell)^2$. At each $s$, the same radial vector wave is used with external mass $\sqrt s$; this off-shell continuation is explicitly phenomenological. The chosen spectral numerator is a convention, not a derived dressed propagator. No normalization over the accessible finite window is imposed. Results refer to all elastic charge channels; a particular observed charge channel needs its daughter branching fraction.
+
+A tangent transformation resolves a very narrow pole. Reducing the width by $10^{-4}$ reproduces the stable production result within about $10^{-5}$. At the physical illustrative widths, the $K^*$ running-width factor is about $0.90$. The broad $\rho$ is more sensitive to the barrier radius and recoil prescription.
+\fig{finite_width}{.93}{Running-width fold relative to stable production. Radius and current variations are separate phenomenological choices. No continuum-induced mass shift is computed.}
+
+\subsection{Connecting the existing strong operator}
+The existing \texttt{PseudoscalarEmission} is evaluated for the ordered channels $K^{*-}\to K^-\pi^0$ and $K^{*-}\to\bar K^0\pi^-$. The native $s\bar u$ vector and pseudoscalar waves and resolved pion flavor components enter. For each assumed $h/g=0,0.5,1$, one overall coupling is calibrated so that the sum of these channels is $48.5$ MeV at the pole. The resulting $g$ values are approximately $3.90$, $3.27$ and $2.81\GeV^{-1}$.
+
+This establishes an operational strong-vertex connection and a mass-dependent width curve. It does not independently predict the measured pole width: that width is the calibration input. The computed curves are stored in \texttt{strong\_vertex.csv}; they have not silently replaced the separate Blatt--Weisskopf model used above. The elementary emitted-pion model is also not a general pair-creation model, and cannot supply arbitrary resonance decay channels.
+
+\subsection{Coherence and elastic unitarity}
+A second experiment uses two illustrative vector poles in $K\pi$, with transverse weak-source strengths obtained from the $1S$ and $2S$ GI current overlaps. The second pole is a model eigenmass and its width is assumed. Strong relative coupling signs are unknown; both signs are displayed. No absolute branching fraction is assigned to this example.
+
+For real source and scattering functions,
+\begin{equation}
+ K(s)=\sum_i\frac{g_i^2}{m_i^2-s},\quad
+ P(s)=\sum_i\frac{\beta_i g_i}{m_i^2-s},\quad
+ t=\frac{K}{1-i\rho K},\quad F=\frac{P}{1-i\rho K}.
+\end{equation}
+The implementation uses a polynomial numerator/denominator to avoid artificial numerical singularities at the bare poles. It verifies $\operatorname{Im}t=\rho|t|^2$ and $\operatorname{Im}F=t^*\rho F$ at sampled physical points. This is single-channel elastic unitarity only; inelastic thresholds and left-hand cuts are absent.
+\fig{rescattering}{.98}{Illustrative interference at fixed $q^2=0.02\GeV^2$. Intensities share an arbitrary scale; the logarithmic axis exposes the suppressed second-pole region. The source sign scan demonstrates missing physical information rather than supplying a fitted strong phase.}
+An incoherent sum cannot reproduce the interference structure. A coherent Breit--Wigner sum and an elastic-unitary production amplitude can also differ. This provides a concrete reason to keep weak sources, strong vertices and final-state scattering separate in any PDG.NN integration.
+
+\section{Connection to PDG.NN: useful prior, fair comparison}
+PDG.NN V5 uses a dimensional weak reference scale, CKM weights, selected helicity/CP factors and lifetime conversion, then learns log-rate residuals and blends with a neural predictor. Its earlier small resonance library supplied features rather than amplitudes. The comparison below calls the existing deployed V5 model read-only and records whether each reference row entered its training.
+\tab{pdgnn}{Direct diagnostic comparison. The GI column is the unfitted Galilean baseline. Five of the six reference rows are in V5 training, so this is not a held-out performance contest.}
+The raw prior substantially overestimates these exclusive rates, as expected for a dimensional reference. Explicit hadronic overlaps bring the scale much closer. The trained model often does well on rows it has seen, but its $D_s\to\phi e\nu$ prediction is particularly low in this small comparison. That row is marked outside training by the deployed metadata. It was nevertheless inspected during this exploration, so it cannot be advertised as a prospective blind validation result.
+
+A reasonable integration would export channel-specific $q^2$ form factors, widths, assumptions, supported flavor routes and numerical diagnostics. The learned target could be
+\begin{equation}
+ \Delta_i=\log_{10}\Gamma_i^{\rm observed}-\log_{10}\Gamma_i^{\rm amplitude\ prior}.
+\end{equation}
+For resonance channels, corrections should eventually act on a coherent source or amplitude parameterization. A real-valued branching-fraction residual cannot identify a complex strong phase. Inclusive final states, resonance submodes, cascade products, ratios and limits must remain distinct observables. Summing overlapping resonant branching fractions does not enforce total-width normalization.
+
+No retraining or modification of PDG.NN was done. A fair next benchmark must freeze current choices and calibration inputs before fitting, use matched channel/family holdouts, include upper limits, and report both predictive error and coverage/abstention. A fallback remains necessary for baryons, unsupported daughter spins, rare decays and channels lacking adequate scattering information.
+
+\section{Verification, limitations and next decisions}
+\subsection{What has actually been verified}
+The new checks cover Gauss quadrature, charge normalization, radial orthogonality, independent Dirac traces, invariant/helicity rate agreement, finite-lepton phase space, endpoint identities, complex rephasing and cancellation, unsupported-state rejection, narrow-width convergence, light-front normalization/Jacobian symmetry and elastic production unitarity. The focused test runs comprise 113 passing assertions after the final endpoint check; exact test counts and commands are recorded with the delivered validation summary.
+
+Numerical comparisons separate wave-solver dependence from integral resolution. For the ground-state rates, the largest HO32--HO48 difference is $7.02\times10^{-4}$ relative and the largest FD600--HO48 difference $6.76\times10^{-4}$. The largest standard-to-refined quadrature difference in the selected stress channels is $1.42\times10^{-6}$. Doubling the spectral and $q^2$ folding resolution changes the four tested folded widths by at most $2.75\times10^{-5}$ relative. Refining the nonzero-transfer light-front grids changes the two tested $Q^2=4\GeV^2$ points by less than $4.1\times10^{-8}$. These are finite comparisons, not a rigorous error bound for every excited-state or off-shell amplitude. Excited states near cancellation deserve separate convergence studies before quantitative use.
+
+The pre-existing package implementation is unchanged. The research module is loaded explicitly rather than exported by GIModel. Passing algebraic tests does not establish a correct physical model; the heavy-limit slope failure and the decay-constant mismatch demonstrate this distinction within the same study.
+
+\subsection{What remains uncomputed}
+\begin{itemize}
+\item A consistent boosted spin construction with Wigner/Melosh rotations for all currents, interaction currents, negative-energy contributions, and current matching.
+\item Full axial, scalar, tensor and higher-spin daughter transitions; orbital excitation sums and heavy-quark sum-rule saturation.
+\item General flavor-mixed phenomenology, including controlled $\eta$--$\eta'$ and axial-state treatments; an explicit antiquark-current API and CP phases.
+\item Wilson coefficients, four-quark matrix elements, penguins, annihilation/exchange and nonfactorizable nonleptonic corrections.
+\item Scattering-data fits, inelastic coupled channels, pole dressing, Omn\`es solutions and two-hadron weak form factors as functions of both invariants.
+\item Baryon wavefunctions, inclusive lifetimes, radiative weak corrections and a global uncertainty/calibration model.
+\end{itemize}
+These are not small missing numerical integrations. They are separate physical constructions. The literature survey identifies candidates, but no claim is made that every listed formalism was implemented.
+
+\subsection{Recommended continuation}
+The best next investment is a consistent timelike $P\to P,V$ current, using the present tests as acceptance criteria. The light-front $P\to P$ calculation supplies a useful independent anchor. Before adding more channels, require common normalization conventions, a heavy-limit slope compatible with the sum rules, stable form-factor shapes, and meaningful agreement with lattice/experimental inputs not used to tune the model.
+
+Then develop $D\to K\pi\ell\nu$ with an explicit $K\pi$ partial-wave amplitude. The present $K^*$ weak current, strong vertex and finite-width code form a starting point; the next step is a physical scattering input and a treatment of the scalar component. General nonleptonic charm and broad multi-resonance branching fractions should follow that work, rather than precede it.
+
+The exploration supports the original direction: solved GI waves can provide structured priors beyond flavor counting and phase-space features. It also shows why a useful implementation must preserve explicit model choices and be allowed to fail validation. The present branch provides calculations and counterexamples with which to make that choice.
+
+\appendix
+\section{Reproducibility and artifact map}
+Run from the repository root, with its Julia dependencies instantiated:
+\begin{verbatim}
+JULIA=/path/to/julia PYTHON=/path/to/python \
+  bash WeakDecays/scripts/run_all.sh
+latexmk -pdf -interaction=nonstopmode -halt-on-error \
+  -cd WeakDecays/report/weak_decay_exploration.tex
+\end{verbatim}
+The Python executable needs NumPy, SciPy and Matplotlib. Importing fresh PDG.NN snapshots additionally needs that project's environment; the frozen input files suffice for the numerical reproduction. The exact installed dependency versions are recorded in \texttt{data/runtime.json}.
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{.39\linewidth}>{\raggedright\arraybackslash}p{.53\linewidth}}
+\toprule Path below \texttt{WeakDecays/} & Purpose \\\midrule
+\texttt{src/WeakDecayExploration.jl} & Impulse currents, state adapter, widths, finite-width and factorization utilities.\\
+\texttt{src/LightFront.jl} & Spacelike good-current overlap and variable mapping.\\
+\texttt{scripts/solve\_waves.jl} & Reproducible native GI spectra and numerical wave cache.\\
+\texttt{scripts/benchmark.jl} & Main rates, curves, constants, convergence and resonance results.\\
+\texttt{scripts/lightfront.jl} & Independent LF results and tests.\\
+\texttt{scripts/heavy\_limit.jl} & Heavy-mass scaling diagnostic.\\
+\texttt{scripts/rescattering.jl} & Two-pole coherent/elastic example and unitarity tests.\\
+\texttt{scripts/strong\_vertex.jl} & Existing GI strong-operator bridge and calibration.\\
+\texttt{scripts/analyze.py} & Figures, pole--$z$ continuation and numerical summary.\\
+\texttt{data/} & Frozen references, provenance, literature map and runtime metadata.\\
+\texttt{results/} & CSV outputs and JSON summaries; binary wave caches are regenerated.\\
+\texttt{test/runtests.jl} & Focused current/normalization/endpoint tests.\\
+\texttt{report/} & LaTeX source, generated tables/figures and PDF.\\
+\bottomrule
+\end{longtable}
+
+\section{Reading the output correctly}
+A missing measurement is encoded as a negative sentinel in the frozen input table and displayed as a dash in this report; it is never treated as a negative physical branching fraction. Closed channels return zero. Undefined comparison ratios are NaN. No reference is silently filled by a model prediction. The $B_s$ decay constant is useful even though a charged-current $B_s\to\ell\nu$ mode is not assigned. Absolute ground-state wave signs are conventional; relative signs between production and strong vertices require a common convention and cannot be inferred from isolated widths.
+
+\tab{references}{Imported 2026 PDG branching-fraction rows; the IDs link to PDG Live. Exact central values and errors are in the frozen input files.}
+
+The PDG data snapshot is attributed to the Particle Data Group, 2026 edition, under the CC BY 4.0 terms recorded in its source manifest. Derived predictions are modifications and are not endorsed by PDG.
+
+The wavefunctions are model-dependent inputs. The external masses are used for kinematics without recomputing a spectrum at those masses. Strong couplings and pole widths are extra phenomenological information. None of the displayed current-scheme bands, continuation ranges or $a_1$ scans is a statistically calibrated uncertainty. The report deliberately retains poor results and does not select a different current for each channel after inspecting the data.
+
+\begin{thebibliography}{99}
+\bibitem{isgw2} D. Scora and N. Isgur, \emph{Semileptonic Meson Decays in the Quark Model: An Update}, Phys. Rev. D 52 (1995) 2783, \href{https://arxiv.org/abs/hep-ph/9503486}{hep-ph/9503486}.
+\bibitem{melikhov} D. Melikhov and B. Stech, \emph{Weak form factors for heavy meson decays: an update}, Phys. Rev. D 62 (2000) 014006, \href{https://arxiv.org/abs/hep-ph/0001113}{hep-ph/0001113}.
+\bibitem{fgk} R. N. Faustov, V. O. Galkin and X.-W. Kang, \emph{Semileptonic decays of D and Ds mesons in the relativistic quark model}, Phys. Rev. D 101 (2020) 013004, \href{https://arxiv.org/abs/1911.08209}{arXiv:1911.08209}.
+\bibitem{galkin2025} V. O. Galkin and I. S. Sukhanov, \emph{Exclusive semileptonic decays of D and Ds mesons into orbitally and radially excited states of strange and light mesons}, Phys. Rev. D 111 (2025) 093001, \href{https://arxiv.org/abs/2501.16406}{arXiv:2501.16406}.
+\bibitem{galkin2026} V. O. Galkin and X.-W. Kang, \emph{Exclusive semileptonic B decays to the ground and excited states of light mesons}, Phys. Rev. D 113 (2026) 073001, \href{https://doi.org/10.1103/43c9-kssx}{doi:10.1103/43c9-kssx}.
+\bibitem{bt} A. Le Yaouanc, L. Oliver, O. P\`ene, J.-C. Raynal and V. Mor\'enas, \emph{Uraltsev Sum Rule in Bakamjian--Thomas Quark Models}, Phys. Lett. B 520 (2001) 25, \href{https://arxiv.org/abs/hep-ph/0105247}{hep-ph/0105247}.
+\bibitem{jaus} W. Jaus, \emph{Covariant analysis of the light-front quark model}, Phys. Rev. D 60 (1999) 054026, \href{https://doi.org/10.1103/PhysRevD.60.054026}{doi:10.1103/PhysRevD.60.054026}.
+\bibitem{chang} Q. Chang, X.-N. Li, X.-Q. Li, F. Su and Y.-D. Yang, \emph{Self-consistency and covariance of light-front quark models}, Phys. Rev. D 98 (2018) 114018, \href{https://arxiv.org/abs/1810.00296}{arXiv:1810.00296}, especially Sec. 3.3.
+\bibitem{bs2025} Thejus Mary S. and R. Dhir, \emph{Weak decays of Bs meson in self-consistent covariant light-front approach}, \href{https://arxiv.org/abs/2507.05104}{arXiv:2507.05104} (2025), version 2 inspected.
+\bibitem{tensor} L. Chen, Y.-W. Ren, L.-T. Wang and Q. Chang, \emph{Form factors of P to T transition within the light-front quark models}, Eur. Phys. J. C 82 (2022), \href{https://arxiv.org/abs/2112.08016}{arXiv:2112.08016}.
+\bibitem{baryon2026} C.-C. Lih, C.-Y. Li and C.-Q. Geng, \emph{Weak Decays of the Lambda-b Baryon in Light-Front Dynamics}, \href{https://arxiv.org/abs/2609.16770}{arXiv:2609.16770} (September 2026).
+\bibitem{bcl} C. Bourrely, I. Caprini and L. Lellouch, \emph{Model-independent description of B to pi l nu decays}, Phys. Rev. D 79 (2009) 013008, \href{https://arxiv.org/abs/0807.2722}{arXiv:0807.2722}.
+\bibitem{qcdff} M. Beneke, G. Buchalla, M. Neubert and C. T. Sachrajda, \emph{QCD factorization for exclusive, non-leptonic B meson decays: General arguments and the case of heavy-light final states}, Nucl. Phys. B 591 (2000) 313, \href{https://arxiv.org/abs/hep-ph/0006124}{hep-ph/0006124}.
+\bibitem{bl4} X.-W. Kang, B. Kubis, C. Hanhart and U.-G. Mei\ss ner, \emph{Bl4 decays and the extraction of Vub}, Phys. Rev. D 89 (2014) 053015, \href{https://arxiv.org/abs/1312.1193}{arXiv:1312.1193}.
+\bibitem{latticerho} L. Leskovec et al., \emph{B to rho resonance form factors from B to pi pi in lattice QCD}, Phys. Rev. Lett. 134 (2025) 161901, \href{https://arxiv.org/abs/2501.00903}{arXiv:2501.00903}.
+\bibitem{pdgleptonic} R. A. Briere, J. L. Rosner, S. L. Stone and R. S. Van de Water, \emph{Leptonic Decays of Charged Pseudoscalar Mesons}, PDG 2025 review, \href{https://pdg.lbl.gov/2025/reviews/rpp2025-rev-pseudoscalar-meson-decay-cons.pdf}{review PDF}, Eqs. (71.14), (71.19), (71.20).
+\bibitem{flag} Y. Aoki et al., \emph{FLAG Review 2024}, \href{https://arxiv.org/abs/2411.04268}{arXiv:2411.04268}. Lattice context for the preferred PDG theoretical inputs.
+\bibitem{hflav} HFLAV, \emph{Exclusive B to D branching fractions}, 2023-average web tables, \href{https://hflav-eos.web.cern.ch/hflav-eos/semi/writeup23/html/ExclusiveVcb/exclBtoD.html}{source table}, accessed 7 November 2026.
+\bibitem{pdgmultibody} Particle Data Group, \emph{Multibody Charm Analyses}, 2025, \href{https://pdg.lbl.gov/2025/reviews/rpp2025-rev-d-meson-dalitz-plot-analyses.pdf}{review PDF}. Context for amplitude analyses and resonance conventions.
+\end{thebibliography}
+\end{document}

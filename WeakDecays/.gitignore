@@ -1,0 +1,7 @@
+report/*.aux
+report/*.out
+report/*.toc
+report/*.fls
+report/*.fdb_latexmk
+report/rendered/
+results/*.jls

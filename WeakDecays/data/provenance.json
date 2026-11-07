@@ -1,0 +1,54 @@
+{
+  "source": "/Users/mikhailmikhasenko/Documents/PDG.CAT/PDG.NN",
+  "particle_version": "1.1.0",
+  "date": "2026-11-07",
+  "note": "PDG.NN 2026 branching fractions; installed particle masses/lifetimes are separately pinned here. No assumption that editions coincide.",
+  "files": {
+    "data/decays.json": "5bf44a95e193fec20c657c839a4c1e762cf0e1be72e0738f82b7175847299eab",
+    "data/manifest.json": "ce507c601b292536ab9ff2c78953de1e074d53ddb76ba378cf15c8c51930cd1d",
+    "pdgnn/v5.py": "ae4fe6119d841574341818fa9d97db9f752f658956552751bb277da4526c11ab",
+    "pdgnn/flavor.py": "932b7f55e8baa4648dd19087785dd1f9df5aca135b784c1d888001eb4e1be749"
+  },
+  "decay_source_manifest": {
+    "source": "2026 Review of Particle Physics, data release 2026-05-30 13:41:24 PDT, API version 2026.0\nF. Takahashi <i>et al.</i> (Particle Data Group), Int. J. Mod. Phys. A 41, 2630011 (2026)\n(C) Particle Data Group (PDG), data released under CC BY 4.0\nFor further information see https://pdg.lbl.gov/api",
+    "pdg_package": "2026.0",
+    "edition": "2026",
+    "measured": 748,
+    "limits": 385,
+    "rejected": 822,
+    "parents": {
+      "pi+": 4,
+      "K+": 25,
+      "K(L)0": 17,
+      "K(S)0": 9,
+      "Sigma-": 4,
+      "Lambda": 6,
+      "Sigma+": 5,
+      "Xi-": 2,
+      "Xi0": 3,
+      "Omega-": 4,
+      "D+": 82,
+      "D0": 90,
+      "D(s)+": 40,
+      "Lambda(c)+": 49,
+      "Xi(c)0": 14,
+      "Xi(c)+": 16,
+      "B0": 140,
+      "B+": 138,
+      "B(s)0": 59,
+      "Lambda(b)0": 38,
+      "Xi(b)-": 2,
+      "Xi(b)0": 1
+    },
+    "rejection_reasons": {
+      "ambiguous or inclusive daughter": 708,
+      "invalid or nonnumeric fraction": 75,
+      "Electric charge is not conserved.": 2,
+      "qualified observable": 16,
+      "A decay needs at least two daughters.": 5,
+      "parent unavailable": 2,
+      "daughter has no MC ID": 14
+    },
+    "sha256": "5bf44a95e193fec20c657c839a4c1e762cf0e1be72e0738f82b7175847299eab"
+  }
+}
