@@ -84,6 +84,11 @@ Also in the repository:
 - [`LearningTrack/`](LearningTrack/README.md) — a pen-and-paper course from
   radial quantum mechanics to the complete spectrum algorithm; the LaTeX
   sources build with `make`.
+- [`WeakDecays/`](WeakDecays/README.md) — this branch only. A closed
+  computational exercise: weak currents on solved GI waves, written up in
+  `WeakDecays/report/weak_decay_exploration.pdf`. Load it with `include`. It
+  is not a package, not part of a release, and not an extension of the
+  QuarkModelTransitions API. Widths in that directory are in GeV.
 
 ## Documentation
 

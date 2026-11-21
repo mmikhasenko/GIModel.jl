@@ -27,3 +27,7 @@ __pycache__/
 
 # The report is a separate repository, checked out here for local builds.
 /report/
+
+# Local PDF exports and image drafts. The weak-decay report that belongs in
+# git is WeakDecays/report/weak_decay_exploration.pdf.
+/output/

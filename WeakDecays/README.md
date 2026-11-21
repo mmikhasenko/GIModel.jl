@@ -1,10 +1,14 @@
-# Weak-decay research workspace
+# Weak-decay research exercise
 
-This branch explores weak meson decays using native GI wavefunctions. It is an
-explicitly loaded research module, not an extension of the stable QMT API.
+This directory is a closed exercise on this branch. It computes weak meson
+decays from native GI wavefunctions and writes them up in
+`report/weak_decay_exploration.pdf` (LaTeX source alongside the PDF). Frozen
+numerical results and provenance are in `results/` and `data/`. That report is
+the deliverable; the module and scripts exist so the report can be reproduced.
 
-Start with `report/weak_decay_exploration.pdf` (LaTeX source alongside it).
-Frozen numerical results and provenance are in `results/` and `data/`.
+Load the module with `include`. It is not a package, not part of a release,
+and not an extension of the QuarkModelTransitions API. A PDF under `output/`
+at the repository root is only a local export of this same report.
 
 ## Reproduce
 
