@@ -111,6 +111,17 @@ julia docs/render.jl
 
 `julia --project=docs docs/make.jl` then builds the site locally.
 
+## Versions
+
+This series, `v0.4.x`, is the original Godfrey–Isgur model. It keeps the 1985
+values and algorithms: no extra tuning, and no change to a default, a
+parameter value, or an algorithm. A later release on this series only corrects
+a mistake in that reproduction.
+
+Releases from `v0.5.0` on may change defaults, retune the model, and improve
+algorithms. That work is on `main`, and its changes are recorded in `NEWS.md`
+there.
+
 ## Beyond the 1985 paper
 
 The strong-decay tables in the paper use an analytic SU(6), single-oscillator-
