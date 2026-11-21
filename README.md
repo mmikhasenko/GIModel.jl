@@ -111,15 +111,15 @@ julia docs/render.jl
 
 `julia --project=docs docs/make.jl` then builds the site locally.
 
-## Which version reproduces what
+## Versions
 
-| Version | Photon emission | Use it for |
-|---|---|---|
-| v0.4.1 | The paper's printed coefficients, including its errors | Comparing with Table VI as printed |
-| v0.4.2 | The 1985 prescription (`electric_exponent = 0.5`, `magnetic_exponent = 0.7`), coefficient errors corrected | The GI 1985 model, corrected |
-| v0.5.0 and later | Default `electric_exponent = 0`, a departure from 1985; pass 0.5 for the prescription above | Comparing with current data |
+Releases `v0.4.x` are the original Godfrey–Isgur model. They keep the 1985
+values and algorithms: no extra tuning, and no change to a default, a
+parameter value, or an algorithm. A later `v0.4` release only corrects a
+mistake in that reproduction.
 
-The spectrum and strong-decay results are the same in all three.
+From `v0.5.0` on, releases may change defaults, retune the model, and improve
+algorithms. The changes in each release are recorded in [NEWS](NEWS.md).
 
 ## Beyond the 1985 paper
 
